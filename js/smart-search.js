@@ -1,344 +1,490 @@
 /**
- * FoodWala Smart Food Search & Typo-Tolerant Engine (Static Demo Port)
- * Ported from com.tap.util.FoodAliasDictionary & com.tap.util.FuzzySearchUtil
+ * FoodWala Smart Search Engine
+ * Operates across complete Bengaluru restaurant dataset (data/restaurants.json & data/menu-items.json)
+ * Supports typo tolerance (Jaro-Winkler), phonetic alias resolution, multi-attribute matching, and dynamic filtering.
  */
-(function(window) {
-    'use strict';
 
-    const FoodSearch = {};
+(function (window) {
+  'use strict';
 
-    // 1. Canonical Food Display Names
-    const CANONICAL_DISPLAY = {
-        'biryani': 'Biryani',
-        'dum biryani': 'Dum Biryani',
-        'chicken biryani': 'Chicken Biryani',
-        'mutton biryani': 'Mutton Biryani',
-        'egg biryani': 'Egg Biryani',
-        'veg biryani': 'Veg Biryani',
-        'donne biryani': 'Donne Biryani',
-        'hyderabadi biryani': 'Hyderabadi Biryani',
-        'ambur biryani': 'Ambur Biryani',
-        'dosa': 'Dosa',
-        'masala dosa': 'Masala Dosa',
-        'benne dosa': 'Benne Dosa',
-        'set dosa': 'Set Dosa',
-        'rava dosa': 'Rava Dosa',
-        'ghee roast dosa': 'Ghee Roast Dosa',
-        'idli': 'Idli',
-        'idli vada': 'Idli Vada',
-        'thatte idli': 'Thatte Idli',
-        'vada': 'Medu Vada',
-        'paneer': 'Paneer',
-        'paneer butter masala': 'Paneer Butter Masala',
-        'paneer tikka': 'Paneer Tikka',
-        'kadai paneer': 'Kadai Paneer',
-        'chicken': 'Chicken',
-        'butter chicken': 'Butter Chicken',
-        'chicken tikka': 'Chicken Tikka',
-        'chicken kebab': 'Chicken Kebab',
-        'chilli chicken': 'Chilli Chicken',
-        'pizza': 'Pizza',
-        'margherita pizza': 'Margherita Pizza',
-        'burger': 'Burger',
-        'chicken burger': 'Chicken Burger',
-        'veg burger': 'Veg Burger',
-        'shawarma': 'Shawarma',
-        'chicken shawarma': 'Chicken Shawarma',
-        'momo': 'Momos',
-        'steamed momos': 'Steamed Momos',
-        'fried momos': 'Fried Momos',
-        'pasta': 'Pasta',
-        'noodles': 'Noodles',
-        'fried rice': 'Fried Rice',
-        'sandwich': 'Sandwich',
-        'filter coffee': 'Filter Coffee',
-        'tea': 'Chai / Tea',
-        'lassi': 'Lassi',
-        'ice cream': 'Ice Cream',
-        'falooda': 'Falooda',
-        'south indian': 'South Indian',
-        'north indian': 'North Indian',
-        'chinese': 'Chinese',
-        'thali': 'Meals / Thali'
-    };
+  const ALIAS_DICTIONARY = {
+    // Biryani variations
+    'biriyani': 'biryani',
+    'briyani': 'biryani',
+    'birany': 'biryani',
+    'biryani': 'biryani',
+    'biryaani': 'biryani',
+    'biryan': 'biryani',
+    'dumbiriyani': 'dum biryani',
+    'dumbiryani': 'dum biryani',
+    'dum biriyani': 'dum biryani',
+    'chiken biryani': 'chicken biryani',
+    'chikn biryani': 'chicken biryani',
+    'chickn biryani': 'chicken biryani',
+    'chicken biriyani': 'chicken biryani',
+    'chiken biriyani': 'chicken biryani',
+    'mutton biriyani': 'mutton biryani',
+    'muttan biryani': 'mutton biryani',
+    'egg biriyani': 'egg biryani',
+    'veg biriyani': 'veg biryani',
+    'donne biriyani': 'donne biryani',
+    'donnebiryani': 'donne biryani',
+    'hyderabadi biriyani': 'hyderabadi biryani',
+    'ambur biriyani': 'ambur biryani',
 
-    // 2. Transliterations, Misspellings & Common Synonyms
-    const ALIAS_MAP = {
-        // Biryani variations
-        'biriyani': 'biryani',
-        'briyani': 'biryani',
-        'birany': 'biryani',
-        'biryani': 'biryani',
-        'biryaani': 'biryani',
-        'biryan': 'biryani',
-        'biryanis': 'biryani',
-        'dumbiriyani': 'dum biryani',
-        'dumbiryani': 'dum biryani',
-        'dum biriyani': 'dum biryani',
-        'chiken biryani': 'chicken biryani',
-        'chikn biryani': 'chicken biryani',
-        'chickn biryani': 'chicken biryani',
-        'chicken biriyani': 'chicken biryani',
-        'chiken biriyani': 'chicken biryani',
-        'mutton biriyani': 'mutton biryani',
-        'muttan biryani': 'mutton biryani',
-        'muttonbiryani': 'mutton biryani',
-        'egg biriyani': 'egg biryani',
-        'eggbiryani': 'egg biryani',
-        'veg biriyani': 'veg biryani',
-        'vegbiryani': 'veg biryani',
-        'donne biriyani': 'donne biryani',
-        'donnebiryani': 'donne biryani',
+    // Dosa variations
+    'dhosa': 'dosa',
+    'dosai': 'dosa',
+    'dose': 'dosa',
+    'dosa': 'dosa',
+    'masaladosa': 'masala dosa',
+    'masala dhosa': 'masala dosa',
+    'masala dose': 'masala dosa',
+    'bennedosa': 'benne dosa',
+    'benne dose': 'benne dosa',
+    'butter dosa': 'benne dosa',
+    'ravadosa': 'rava dosa',
+    'ghee roast': 'ghee roast dosa',
 
-        // Dosa variations
-        'dhosa': 'dosa',
-        'dosai': 'dosa',
-        'dose': 'dosa',
-        'dosa': 'dosa',
-        'masaladosa': 'masala dosa',
-        'masala dhosa': 'masala dosa',
-        'masala dose': 'masala dosa',
-        'masaladhosa': 'masala dosa',
-        'bennedosa': 'benne dosa',
-        'benne dose': 'benne dosa',
-        'butter dosa': 'benne dosa',
+    // Idli & Vada
+    'idly': 'idli',
+    'iddly': 'idli',
+    'thatte idly': 'thatte idli',
+    'thatteidli': 'thatte idli',
+    'wada': 'vada',
+    'medu vada': 'vada',
+    'idli vada': 'idli vada',
 
-        // Idli & Vada variations
-        'idly': 'idli',
-        'iddly': 'idli',
-        'idli': 'idli',
-        'idlivada': 'idli vada',
-        'idly vada': 'idli vada',
-        'thatte idly': 'thatte idli',
-        'thatteidli': 'thatte idli',
-        'wada': 'vada',
-        'vada': 'vada',
-        'medu vada': 'vada',
-        'meduvada': 'vada',
+    // Paneer
+    'panner': 'paneer',
+    'paner': 'paneer',
+    'paneer': 'paneer',
+    'panner butter masala': 'paneer butter masala',
+    'paneerbuttermasala': 'paneer butter masala',
+    'panner tikka': 'paneer tikka',
+    'kadai panner': 'kadai paneer',
 
-        // Paneer variations
-        'panner': 'paneer',
-        'paner': 'paneer',
-        'paneer': 'paneer',
-        'panner butter masala': 'paneer butter masala',
-        'paneerbuttermasala': 'paneer butter masala',
-        'panner tikka': 'paneer tikka',
-        'paneertikka': 'paneer tikka',
+    // Chicken
+    'chiken': 'chicken',
+    'chikn': 'chicken',
+    'chickn': 'chicken',
+    'chikin': 'chicken',
+    'chicken': 'chicken',
+    'butter chiken': 'butter chicken',
+    'butterchicken': 'butter chicken',
+    'chiken tikka': 'chicken tikka',
+    'chiken kebab': 'chicken kebab',
+    'chilli chiken': 'chilli chicken',
 
-        // Chicken variations
-        'chiken': 'chicken',
-        'chikn': 'chicken',
-        'chickn': 'chicken',
-        'chikin': 'chicken',
-        'chicken': 'chicken',
-        'butter chiken': 'butter chicken',
-        'butterchicken': 'butter chicken',
-        'chiken tikka': 'chicken tikka',
-        'chickentikka': 'chicken tikka',
-        'chiken kebab': 'chicken kebab',
-        'chickenkebab': 'chicken kebab',
+    // Fast food & Chinese
+    'piza': 'pizza',
+    'pizaa': 'pizza',
+    'burgur': 'burger',
+    'burgr': 'burger',
+    'shawarma': 'shawarma',
+    'shavarma': 'shawarma',
+    'shwarma': 'shawarma',
+    'momos': 'momo',
+    'dimsum': 'momo',
+    'noodles': 'noodles',
+    'noddles': 'noodles',
+    'nudles': 'noodles',
+    'chowmein': 'noodles',
+    'friedrice': 'fried rice',
 
-        // Fast foods
-        'piza': 'pizza',
-        'pizaa': 'pizza',
-        'pizza': 'pizza',
-        'burgur': 'burger',
-        'burgr': 'burger',
-        'burger': 'burger',
-        'shawarma': 'shawarma',
-        'shavarma': 'shawarma',
-        'shawrma': 'shawarma',
-        'shwarma': 'shawarma',
-        'roll': 'shawarma',
-        'momos': 'momo',
-        'momo': 'momo',
-        'dimsum': 'momo',
-        'noodles': 'noodles',
-        'noddles': 'noodles',
-        'nudles': 'noodles',
-        'chowmein': 'noodles',
-        'friedrice': 'fried rice',
+    // Beverages & Sweets
+    'coffee': 'filter coffee',
+    'kaapi': 'filter coffee',
+    'chai': 'tea',
+    'icecream': 'ice cream',
+    'lassi': 'lassi',
+    'falooda': 'falooda',
+    'gulab jamun': 'gulab jamun'
+  };
 
-        // Beverages & Desserts
-        'coffee': 'filter coffee',
-        'kaapi': 'filter coffee',
-        'filtercoffee': 'filter coffee',
-        'chai': 'tea',
-        'tea': 'tea',
-        'lassi': 'lassi',
-        'icecream': 'ice cream',
-        'ice cream': 'ice cream',
+  const CANONICAL_NAMES = {
+    'biryani': 'Biryani',
+    'dum biryani': 'Dum Biryani',
+    'chicken biryani': 'Chicken Biryani',
+    'mutton biryani': 'Mutton Biryani',
+    'donne biryani': 'Donne Biryani',
+    'dosa': 'Dosa',
+    'masala dosa': 'Masala Dosa',
+    'benne dosa': 'Benne Dosa',
+    'idli': 'Idli',
+    'vada': 'Vada',
+    'paneer': 'Paneer',
+    'paneer butter masala': 'Paneer Butter Masala',
+    'chicken': 'Chicken',
+    'butter chicken': 'Butter Chicken',
+    'pizza': 'Pizza',
+    'burger': 'Burger',
+    'shawarma': 'Shawarma',
+    'momos': 'Momos',
+    'noodles': 'Noodles',
+    'filter coffee': 'Filter Coffee',
+    'tea': 'Chai / Tea',
+    'ice cream': 'Ice Cream'
+  };
 
-        // Cuisines
-        'southindian': 'south indian',
-        'south indian': 'south indian',
-        'northindian': 'north indian',
-        'north indian': 'north indian',
-        'thali': 'thali',
-        'meals': 'thali'
-    };
+  function normalize(str) {
+    if (!str) return '';
+    return String(str).toLowerCase().trim().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ');
+  }
 
-    const POPULAR_SEARCHES = [
-        'Biryani', 'Masala Dosa', 'Pizza', 'Burger', 'Paneer Butter Masala',
-        'Shawarma', 'Filter Coffee', 'Momos', 'Butter Chicken', 'Ice Cream'
-    ];
+  function jaroWinkler(s1, s2) {
+    if (!s1 || !s2) return 0.0;
+    if (s1 === s2) return 1.0;
 
-    FoodSearch.normalize = function(str) {
-        if (!str) return '';
-        return String(str).toLowerCase().trim().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ');
-    };
+    const len1 = s1.length;
+    const len2 = s2.length;
+    const maxDist = Math.max(Math.floor(Math.max(len1, len2) / 2) - 1, 0);
 
-    FoodSearch.jaroWinkler = function(s1, s2) {
-        if (!s1 || !s2) return 0.0;
-        if (s1 === s2) return 1.0;
+    const match1 = new Array(len1).fill(false);
+    const match2 = new Array(len2).fill(false);
 
-        const len1 = s1.length;
-        const len2 = s2.length;
-        const maxDist = Math.max(Math.floor(Math.max(len1, len2) / 2) - 1, 0);
+    let matches = 0;
+    for (let i = 0; i < len1; i++) {
+      const start = Math.max(0, i - maxDist);
+      const end = Math.min(i + maxDist + 1, len2);
+      for (let j = start; j < end; j++) {
+        if (!match2[j] && s1[i] === s2[j]) {
+          match1[i] = true;
+          match2[j] = true;
+          matches++;
+          break;
+        }
+      }
+    }
 
-        const match1 = new Array(len1).fill(false);
-        const match2 = new Array(len2).fill(false);
+    if (matches === 0) return 0.0;
 
-        let matches = 0;
-        for (let i = 0; i < len1; i++) {
-            const start = Math.max(0, i - maxDist);
-            const end = Math.min(i + maxDist + 1, len2);
-            for (let j = start; j < end; j++) {
-                if (!match2[j] && s1[i] === s2[j]) {
-                    match1[i] = true;
-                    match2[j] = true;
-                    matches++;
-                    break;
-                }
+    let t = 0;
+    let point = 0;
+    for (let i = 0; i < len1; i++) {
+      if (match1[i]) {
+        while (!match2[point]) point++;
+        if (s1[i] !== s2[point]) t++;
+        point++;
+      }
+    }
+    const transpositions = t / 2.0;
+    const jaro = (matches / len1 + matches / len2 + (matches - transpositions) / matches) / 3.0;
+
+    let prefix = 0;
+    for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
+      if (s1[i] === s2[i]) prefix++;
+      else break;
+    }
+
+    return jaro + (prefix * 0.1 * (1.0 - jaro));
+  }
+
+  function getSearchTokens(query) {
+    const tokens = new Set();
+    const norm = normalize(query);
+    if (!norm) return tokens;
+
+    tokens.add(norm);
+    const noSpaces = norm.replace(/\s+/g, '');
+    if (noSpaces !== norm) tokens.add(noSpaces);
+
+    // Alias lookups
+    if (ALIAS_DICTIONARY[norm]) tokens.add(ALIAS_DICTIONARY[norm]);
+    if (ALIAS_DICTIONARY[noSpaces]) tokens.add(ALIAS_DICTIONARY[noSpaces]);
+
+    // Token substitutions
+    const parts = norm.split(' ');
+    if (parts.length > 1) {
+      const replaced = parts.map(p => ALIAS_DICTIONARY[p] || p).join(' ');
+      tokens.add(replaced);
+    }
+
+    // Phonetic corrections
+    if (/biriyani|briyani/i.test(norm)) tokens.add(norm.replace(/biriyani|briyani/g, 'biryani'));
+    if (/dhosa|dose/i.test(norm)) tokens.add(norm.replace(/dhosa|dose/g, 'dosa'));
+    if (/panner/i.test(norm)) tokens.add(norm.replace(/panner/g, 'paneer'));
+    if (/chiken|chikn/i.test(norm)) tokens.add(norm.replace(/chiken|chikn/g, 'chicken'));
+
+    return Array.from(tokens);
+  }
+
+  function getDidYouMean(rawQuery) {
+    if (!rawQuery || rawQuery.trim().length < 3) return null;
+    const norm = normalize(rawQuery);
+    const noSpace = norm.replace(/\s+/g, '');
+
+    if (ALIAS_DICTIONARY[norm] && ALIAS_DICTIONARY[norm] !== norm) {
+      return CANONICAL_NAMES[ALIAS_DICTIONARY[norm]] || ALIAS_DICTIONARY[norm];
+    }
+    if (ALIAS_DICTIONARY[noSpace] && ALIAS_DICTIONARY[noSpace] !== norm) {
+      return CANONICAL_NAMES[ALIAS_DICTIONARY[noSpace]] || ALIAS_DICTIONARY[noSpace];
+    }
+
+    let bestCanonical = null;
+    let bestScore = 0.0;
+    for (const [key, display] of Object.entries(CANONICAL_NAMES)) {
+      const sim = jaroWinkler(norm, key);
+      if (sim > bestScore && sim >= 0.78 && key !== norm) {
+        bestScore = sim;
+        bestCanonical = display;
+      }
+    }
+
+    return bestCanonical;
+  }
+
+  // Master Search Function
+  function search(rawQuery, filters = {}, datasetRestaurants = null, datasetMenus = null) {
+    const restaurants = datasetRestaurants || (window.FoodWalaApp ? window.FoodWalaApp.getRestaurants() : window.FOODWALA_RESTAURANTS) || [];
+    const menus = datasetMenus || (window.FoodWalaApp ? window.FoodWalaApp.getMenuItems() : window.FOODWALA_MENUS) || [];
+
+    const query = (rawQuery || '').trim();
+    const tokens = getSearchTokens(query);
+    const didYouMean = getDidYouMean(query);
+    const correctedTerm = tokens.length > 1 ? tokens[1] : (tokens[0] || query);
+
+    // Group menu items by restaurantId for fast matching
+    const menuMap = new Map();
+    for (let i = 0; i < menus.length; i++) {
+      const m = menus[i];
+      const rId = m.restaurantId;
+      if (!menuMap.has(rId)) menuMap.set(rId, []);
+      menuMap.get(rId).push(m);
+    }
+
+    const matchedResults = [];
+
+    for (let i = 0; i < restaurants.length; i++) {
+      const r = restaurants[i];
+      const rItems = menuMap.get(r.restaurantId || r.id) || [];
+
+      // 1. Text Matching Score
+      let score = 0;
+      const matchedDishes = [];
+
+      if (tokens.length === 0) {
+        // No search query: all restaurants match
+        score = 100 + (r.rating || 4.0) * 10;
+      } else {
+        const rNameNorm = normalize(r.name);
+        const rCuisineNorm = normalize(r.cuisineType || '');
+        const rAreaNorm = normalize(r.area || '');
+        const rAddressNorm = normalize(r.address || '');
+
+        for (const token of tokens) {
+          const tNorm = normalize(token);
+          if (!tNorm) continue;
+
+          // Match Restaurant Name
+          if (rNameNorm === tNorm) {
+            score = Math.max(score, 500);
+          } else if (rNameNorm.startsWith(tNorm)) {
+            score = Math.max(score, 350);
+          } else if (rNameNorm.includes(tNorm)) {
+            score = Math.max(score, 250);
+          } else {
+            const jw = jaroWinkler(rNameNorm, tNorm);
+            if (jw >= 0.82) score = Math.max(score, Math.round(jw * 200));
+          }
+
+          // Match Cuisine
+          if (rCuisineNorm.includes(tNorm)) {
+            score = Math.max(score, 200);
+          } else {
+            const jwC = jaroWinkler(rCuisineNorm, tNorm);
+            if (jwC >= 0.82) score = Math.max(score, Math.round(jwC * 160));
+          }
+
+          // Match Area / Location
+          if (rAreaNorm.includes(tNorm) || rAddressNorm.includes(tNorm)) {
+            score = Math.max(score, 180);
+          }
+
+          // Match Dishes inside Menu
+          for (let j = 0; j < rItems.length; j++) {
+            const dish = rItems[j];
+            const dishNameNorm = normalize(dish.name || dish.itemName || '');
+            const dishCatNorm = normalize(dish.category || dish.categoryName || '');
+
+            if (dishNameNorm === tNorm) {
+              score = Math.max(score, 320);
+              if (!matchedDishes.find(d => d.id === dish.id)) matchedDishes.push(dish);
+            } else if (dishNameNorm.startsWith(tNorm)) {
+              score = Math.max(score, 260);
+              if (!matchedDishes.find(d => d.id === dish.id)) matchedDishes.push(dish);
+            } else if (dishNameNorm.includes(tNorm)) {
+              score = Math.max(score, 220);
+              if (!matchedDishes.find(d => d.id === dish.id)) matchedDishes.push(dish);
+            } else if (dishCatNorm.includes(tNorm)) {
+              score = Math.max(score, 180);
+              if (!matchedDishes.find(d => d.id === dish.id)) matchedDishes.push(dish);
+            } else {
+              const jwD = jaroWinkler(dishNameNorm, tNorm);
+              if (jwD >= 0.82) {
+                score = Math.max(score, Math.round(jwD * 190));
+                if (!matchedDishes.find(d => d.id === dish.id)) matchedDishes.push(dish);
+              }
             }
+          }
         }
+      }
 
-        if (matches === 0) return 0.0;
+      if (tokens.length > 0 && score === 0) {
+        continue; // Does not match search query
+      }
 
-        let t = 0;
-        let point = 0;
-        for (let i = 0; i < len1; i++) {
-            if (match1[i]) {
-                while (!match2[point]) point++;
-                if (s1[i] !== s2[point]) t++;
-                point++;
-            }
+      // 2. Apply Filters
+      if (filters.area && filters.area !== 'all') {
+        const targetArea = normalize(filters.area);
+        const rArea = normalize(r.area || '');
+        const rAddr = normalize(r.address || '');
+        if (!rArea.includes(targetArea) && !rAddr.includes(targetArea)) {
+          continue;
         }
-        const transpositions = t / 2.0;
+      }
 
-        const jaro = (matches / len1 + matches / len2 + (matches - transpositions) / matches) / 3.0;
-        let prefix = 0;
-        for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
-            if (s1[i] === s2[i]) prefix++;
-            else break;
+      if (filters.cuisine && filters.cuisine !== 'all') {
+        const targetCuisine = normalize(filters.cuisine);
+        const rCuisines = normalize(r.cuisineType || '');
+        if (!rCuisines.includes(targetCuisine)) {
+          continue;
         }
+      }
 
-        return jaro + (prefix * 0.1 * (1.0 - jaro));
+      if (filters.pureVeg && !r.isPureVeg) {
+        continue;
+      }
+
+      if (filters.topRated && (r.rating || 0) < 4.0) {
+        continue;
+      }
+
+      if (filters.fastDelivery && (r.deliveryTime || 40) > 30) {
+        continue;
+      }
+
+      if (filters.openNow && !r.isOpen && !r.isActive) {
+        continue;
+      }
+
+      // Distance calculation (based on user location or default)
+      const userLoc = window.FoodWalaApp ? window.FoodWalaApp.Location.getCurrentLocation() : { lat: 12.9352, lng: 77.6245 };
+      const dist = (window.FoodWalaApp && window.FoodWalaApp.Location)
+        ? window.FoodWalaApp.Location.calculateDistance(userLoc.lat, userLoc.lng, r.latitude, r.longitude)
+        : (r.distance || 3.2);
+
+      if (filters.within5km && dist > 5.0) {
+        continue;
+      }
+
+      if (filters.within10km && dist > 10.0) {
+        continue;
+      }
+
+      matchedResults.push({
+        ...r,
+        distance: dist,
+        score: score,
+        matchedDishes: matchedDishes
+      });
+    }
+
+    // 3. Sorting
+    const sortBy = filters.sortBy || 'relevance';
+    matchedResults.sort((a, b) => {
+      if (sortBy === 'rating') {
+        return (b.rating || 0) - (a.rating || 0);
+      } else if (sortBy === 'deliveryTime') {
+        return (a.deliveryTime || 30) - (b.deliveryTime || 30);
+      } else if (sortBy === 'distance') {
+        return (a.distance || 0) - (b.distance || 0);
+      } else if (sortBy === 'cost_asc') {
+        return (a.costForTwo || 400) - (b.costForTwo || 400);
+      } else if (sortBy === 'cost_desc') {
+        return (b.costForTwo || 400) - (a.costForTwo || 400);
+      } else {
+        // Relevance
+        return b.score - a.score || (b.rating || 0) - (a.rating || 0);
+      }
+    });
+
+    return {
+      restaurants: matchedResults,
+      totalCount: matchedResults.length,
+      didYouMean: didYouMean,
+      correctedTerm: correctedTerm,
+      query: rawQuery
     };
+  }
 
-    FoodSearch.getSearchTokensAndAliases = function(rawQuery) {
-        const result = new Set();
-        if (!rawQuery || !rawQuery.trim()) return result;
+  // Fast Autocomplete Suggestions across all dishes, cuisines, restaurants, areas
+  function getSuggestions(prefix, limit = 6) {
+    if (!prefix || prefix.trim().length < 2) return [];
+    const norm = normalize(prefix);
+    const suggestions = [];
+    const seen = new Set();
 
-        const norm = FoodSearch.normalize(rawQuery);
-        const noSpace = norm.replace(/\s+/g, '');
-        result.add(norm);
-        if (noSpace !== norm) result.add(noSpace);
+    const restaurants = (window.FoodWalaApp ? window.FoodWalaApp.getRestaurants() : window.FOODWALA_RESTAURANTS) || [];
+    const menus = (window.FoodWalaApp ? window.FoodWalaApp.getMenuItems() : window.FOODWALA_MENUS) || [];
 
-        // 1. Direct alias check
-        if (ALIAS_MAP[norm]) result.add(ALIAS_MAP[norm]);
-        if (ALIAS_MAP[noSpace]) result.add(ALIAS_MAP[noSpace]);
+    // 1. Check Canonical food dishes
+    for (const [key, display] of Object.entries(CANONICAL_NAMES)) {
+      if ((key.startsWith(norm) || key.includes(norm) || jaroWinkler(norm, key) >= 0.78) && !seen.has(display.toLowerCase())) {
+        suggestions.push({ text: display, type: 'dish' });
+        seen.add(display.toLowerCase());
+        if (suggestions.length >= limit) return suggestions;
+      }
+    }
 
-        // 2. Token level replacement
-        const tokens = norm.split(' ');
-        if (tokens.length > 1) {
-            const replaced = tokens.map(t => ALIAS_MAP[t] || t).join(' ');
-            result.add(replaced);
-            if (ALIAS_MAP[replaced]) result.add(ALIAS_MAP[replaced]);
-        }
+    // 2. Check Popular Menu items
+    for (let i = 0; i < menus.length; i++) {
+      const dishName = menus[i].name || menus[i].itemName || '';
+      const dNorm = normalize(dishName);
+      if ((dNorm.startsWith(norm) || dNorm.includes(norm)) && !seen.has(dNorm)) {
+        suggestions.push({ text: dishName, type: 'dish' });
+        seen.add(dNorm);
+        if (suggestions.length >= limit) return suggestions;
+      }
+    }
 
-        // 3. Known phonetic substitutions
-        if (/biriyani|briyani|birany/i.test(norm)) result.add(norm.replace(/biriyani|briyani|birany/g, 'biryani'));
-        if (/dhosa|dosai|dose/i.test(norm)) result.add(norm.replace(/dhosa|dosai|dose/g, 'dosa'));
-        if (/idly/i.test(norm)) result.add(norm.replace(/idly/g, 'idli'));
-        if (/panner/i.test(norm)) result.add(norm.replace(/panner/g, 'paneer'));
-        if (/chiken|chikn/i.test(norm)) result.add(norm.replace(/chiken|chikn/g, 'chicken'));
+    // 3. Check Restaurant Names
+    for (let i = 0; i < restaurants.length; i++) {
+      const rName = restaurants[i].name || '';
+      const rNorm = normalize(rName);
+      if ((rNorm.startsWith(norm) || rNorm.includes(norm)) && !seen.has(rNorm)) {
+        suggestions.push({ text: rName, type: 'restaurant' });
+        seen.add(rNorm);
+        if (suggestions.length >= limit) return suggestions;
+      }
+    }
 
-        return result;
-    };
+    // 4. Check Cuisines
+    const cuisines = ['Biryani', 'South Indian', 'North Indian', 'Chinese', 'Italian', 'Burgers', 'Desserts', 'Cafe', 'Street Food'];
+    for (const c of cuisines) {
+      const cNorm = normalize(c);
+      if ((cNorm.startsWith(norm) || cNorm.includes(norm)) && !seen.has(cNorm)) {
+        suggestions.push({ text: c, type: 'cuisine' });
+        seen.add(cNorm);
+        if (suggestions.length >= limit) return suggestions;
+      }
+    }
 
-    FoodSearch.getClosestCanonical = function(rawQuery) {
-        if (!rawQuery || !rawQuery.trim()) return null;
-        const norm = FoodSearch.normalize(rawQuery);
-        const noSpace = norm.replace(/\s+/g, '');
+    return suggestions;
+  }
 
-        if (ALIAS_MAP[norm]) {
-            const c = ALIAS_MAP[norm];
-            return CANONICAL_DISPLAY[c] || c;
-        }
-        if (ALIAS_MAP[noSpace]) {
-            const c = ALIAS_MAP[noSpace];
-            return CANONICAL_DISPLAY[c] || c;
-        }
+  window.FoodWalaSearch = {
+    search,
+    getSuggestions,
+    getSearchTokens,
+    getDidYouMean,
+    jaroWinkler,
+    normalize,
+    ALIAS_DICTIONARY,
+    CANONICAL_NAMES
+  };
 
-        // Fuzzy match against canonicals
-        let bestMatch = null;
-        let bestSim = 0.0;
-        for (const [key, display] of Object.entries(CANONICAL_DISPLAY)) {
-            const sim = FoodSearch.jaroWinkler(norm, key);
-            if (sim > bestSim && sim >= 0.78) {
-                bestSim = sim;
-                bestMatch = display;
-            }
-        }
+  // Backward compatibility alias
+  window.FoodSearch = window.FoodWalaSearch;
 
-        return bestMatch;
-    };
-
-    FoodSearch.getFoodSuggestions = function(prefix, limit) {
-        limit = limit || 5;
-        if (!prefix || !prefix.trim()) return [];
-        const norm = FoodSearch.normalize(prefix);
-        const suggestions = [];
-        const seen = new Set();
-
-        for (const [key, display] of Object.entries(CANONICAL_DISPLAY)) {
-            if ((key.startsWith(norm) || key.includes(norm) || FoodSearch.jaroWinkler(norm, key) >= 0.75) && !seen.has(display.toLowerCase())) {
-                suggestions.push(display);
-                seen.add(display.toLowerCase());
-                if (suggestions.length >= limit) break;
-            }
-        }
-
-        if (suggestions.length < limit) {
-            for (const p of POPULAR_SEARCHES) {
-                if ((FoodSearch.normalize(p).startsWith(norm) || FoodSearch.normalize(p).includes(norm)) && !seen.has(p.toLowerCase())) {
-                    suggestions.push(p);
-                    seen.add(p.toLowerCase());
-                    if (suggestions.length >= limit) break;
-                }
-            }
-        }
-
-        return suggestions;
-    };
-
-    FoodSearch.getPopularSearches = function() {
-        return POPULAR_SEARCHES;
-    };
-
-    // Calculate Haversine distance in KM
-    FoodSearch.calculateDistance = function(lat1, lon1, lat2, lon2) {
-        if (!lat1 || !lon1 || !lat2 || !lon2) return 2.5;
-        const R = 6371; // Earth radius in km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    };
-
-    window.FoodSearch = FoodSearch;
 })(window);

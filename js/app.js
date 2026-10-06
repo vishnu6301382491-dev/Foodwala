@@ -1,7 +1,6 @@
 /**
- * FoodWala Application Core JavaScript
- * Handles Cart, Authentication, Location, Orders, and UI State via localStorage
- * Works seamlessly with GitHub Pages static hosting and foodwala-data.js
+ * FoodWala Core Application Module
+ * Manages Dynamic Data Loading from data/ JSON files, Cart, Auth, Location & Orders State
  */
 
 const FoodWalaApp = (function () {
@@ -17,7 +16,14 @@ const FoodWalaApp = (function () {
     COUPON: 'foodwala_applied_coupon'
   };
 
-  // Pre-defined Bengaluru Locations
+  // State
+  let restaurantsCache = [];
+  let menuItemsCache = [];
+  let categoriesCache = [];
+  const individualMenuCache = new Map();
+  let dataReadyPromise = null;
+
+  // 12 Pre-defined Bengaluru Delivery Locations
   const BENGALURU_LOCATIONS = [
     { id: 'koramangala', name: 'Koramangala, Bengaluru', shortName: 'Koramangala', lat: 12.9352, lng: 77.6245, landmark: '5th Block, near Sony World Signal' },
     { id: 'indiranagar', name: 'Indiranagar, Bengaluru', shortName: 'Indiranagar', lat: 12.9784, lng: 77.6408, landmark: '100ft Road, near Metro' },
@@ -84,7 +90,6 @@ const FoodWalaApp = (function () {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultVal;
     } catch (e) {
-      console.warn('LocalStorage read error for ' + key, e);
       return defaultVal;
     }
   }
@@ -93,8 +98,87 @@ const FoodWalaApp = (function () {
     try {
       localStorage.setItem(key, JSON.stringify(val));
     } catch (e) {
-      console.warn('LocalStorage write error for ' + key, e);
+      console.warn('LocalStorage error', e);
     }
+  }
+
+  // --- ASYNC DATA LOADER ---
+  function loadData() {
+    if (dataReadyPromise) return dataReadyPromise;
+
+    dataReadyPromise = new Promise(async (resolve) => {
+      try {
+        // Fetch restaurants.json
+        const restRes = await fetch('./data/restaurants.json');
+        if (restRes.ok) {
+          restaurantsCache = await restRes.json();
+        }
+      } catch (e) {
+        // Fallback to static window.FOODWALA_RESTAURANTS if fetch fails
+        if (window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
+          restaurantsCache = window.FOODWALA_RESTAURANTS;
+        }
+      }
+
+      try {
+        // Fetch menu-items.json
+        const menuRes = await fetch('./data/menu-items.json');
+        if (menuRes.ok) {
+          menuItemsCache = await menuRes.json();
+        }
+      } catch (e) {
+        if (window.FOODWALA_MENUS && window.FOODWALA_MENUS.length > 0) {
+          menuItemsCache = window.FOODWALA_MENUS;
+        }
+      }
+
+      // If caches are still empty, check global window objects
+      if (restaurantsCache.length === 0 && window.FOODWALA_RESTAURANTS) {
+        restaurantsCache = window.FOODWALA_RESTAURANTS;
+      }
+      if (menuItemsCache.length === 0 && window.FOODWALA_MENUS) {
+        menuItemsCache = window.FOODWALA_MENUS;
+      }
+
+      window.dispatchEvent(new CustomEvent('foodwala:dataLoaded', {
+        detail: {
+          restaurantsCount: restaurantsCache.length,
+          menuItemsCount: menuItemsCache.length
+        }
+      }));
+
+      resolve({
+        restaurants: restaurantsCache,
+        menuItems: menuItemsCache
+      });
+    });
+
+    return dataReadyPromise;
+  }
+
+  // Fetch individual restaurant menu with lazy loading
+  async function getRestaurantMenu(restaurantId) {
+    const id = parseInt(restaurantId);
+    if (individualMenuCache.has(id)) {
+      return individualMenuCache.get(id);
+    }
+
+    try {
+      const res = await fetch(`./data/menus/${id}.json`);
+      if (res.ok) {
+        const items = await res.json();
+        individualMenuCache.set(id, items);
+        return items;
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    // Filter from loaded menu items cache
+    await loadData();
+    const filtered = menuItemsCache.filter(m => (m.restaurantId === id || m.restaurant_id === id));
+    individualMenuCache.set(id, filtered);
+    return filtered;
   }
 
   // --- LOCATION MODULE ---
@@ -112,21 +196,8 @@ const FoodWalaApp = (function () {
       window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: loc }));
       return loc;
     },
-    setCustomLocation: function (name, lat, lng) {
-      const loc = {
-        id: 'custom_' + Date.now(),
-        name: name,
-        shortName: name.split(',')[0],
-        lat: lat,
-        lng: lng,
-        landmark: 'Custom Bengaluru Location'
-      };
-      setStorage(STORAGE_KEYS.LOCATION, loc);
-      window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: loc }));
-      return loc;
-    },
     calculateDistance: function (lat1, lon1, lat2, lon2) {
-      if (!lat1 || !lon1 || !lat2 || !lon2) return 3.5;
+      if (!lat1 || !lon1 || !lat2 || !lon2) return 3.2;
       const R = 6371; // km
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -135,24 +206,18 @@ const FoodWalaApp = (function () {
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return Math.round(R * c * 10) / 10;
-    },
-    estimateDeliveryTime: function (distanceKm) {
-      const basePrepTime = 20;
-      const travelTime = Math.round(distanceKm * 3.5);
-      return Math.min(65, Math.max(15, basePrepTime + travelTime));
     }
   };
 
   // --- AUTH MODULE ---
   const Auth = {
     getCurrentUser: function () {
-      return getStorage(STORAGE_KEYS.USER, DEMO_USERS.customer); // default logged in as Rahul
+      return getStorage(STORAGE_KEYS.USER, DEMO_USERS.customer);
     },
     isLoggedIn: function () {
       return !!this.getCurrentUser();
     },
     login: function (email, password) {
-      // Find matching demo user or create session
       let user = Object.values(DEMO_USERS).find(u => u.email.toLowerCase() === (email || '').toLowerCase().trim());
       if (!user) {
         user = {
@@ -240,45 +305,47 @@ const FoodWalaApp = (function () {
     getItemQuantity: function (menuId) {
       const cart = this.getCart();
       if (!cart.items) return 0;
-      const found = cart.items.find(i => i.menuId === menuId);
+      const found = cart.items.find(i => i.menuId === menuId || i.id === menuId);
       return found ? found.quantity : 0;
     },
     addItem: function (item, restaurant) {
       let cart = this.getCart();
 
-      // Check if cart has items from a different restaurant
-      if (cart.items && cart.items.length > 0 && cart.restaurantId && cart.restaurantId !== item.restaurantId) {
-        if (!confirm(`Your cart already contains items from "${cart.restaurantName}". Would you like to reset your cart and add items from "${restaurant.name}"?`)) {
+      const rId = item.restaurantId || restaurant.restaurantId || restaurant.id;
+      if (cart.items && cart.items.length > 0 && cart.restaurantId && cart.restaurantId !== rId) {
+        if (!confirm(`Your cart contains items from "${cart.restaurantName}". Reset cart to order from "${restaurant.name}"?`)) {
           return false;
         }
         cart = {
-          restaurantId: item.restaurantId,
+          restaurantId: rId,
           restaurantName: restaurant.name || '',
           restaurantAddress: restaurant.address || '',
-          restaurantImage: restaurant.imagePath || '',
+          restaurantImage: restaurant.imagePath || restaurant.image || '',
           items: []
         };
       }
 
       if (!cart.restaurantId) {
-        cart.restaurantId = item.restaurantId;
+        cart.restaurantId = rId;
         cart.restaurantName = restaurant ? restaurant.name : '';
         cart.restaurantAddress = restaurant ? restaurant.address : '';
-        cart.restaurantImage = restaurant ? restaurant.imagePath : '';
+        cart.restaurantImage = restaurant ? (restaurant.imagePath || restaurant.image) : '';
       }
 
-      const existingIndex = cart.items.findIndex(i => i.menuId === item.menuId);
+      const mId = item.menuId || item.id;
+      const existingIndex = cart.items.findIndex(i => (i.menuId === mId || i.id === mId));
       if (existingIndex > -1) {
         cart.items[existingIndex].quantity += 1;
       } else {
         cart.items.push({
-          menuId: item.menuId,
-          restaurantId: item.restaurantId,
-          name: item.itemName || item.name,
+          id: mId,
+          menuId: mId,
+          restaurantId: rId,
+          name: item.name || item.itemName,
           price: parseFloat(item.price),
           isVeg: !!item.isVeg,
           category: item.category || '',
-          imagePath: item.imagePath || '',
+          imagePath: item.imagePath || item.image || '',
           quantity: 1
         });
       }
@@ -290,7 +357,7 @@ const FoodWalaApp = (function () {
       const cart = this.getCart();
       if (!cart.items) return;
 
-      const idx = cart.items.findIndex(i => i.menuId === menuId);
+      const idx = cart.items.findIndex(i => i.menuId === menuId || i.id === menuId);
       if (idx > -1) {
         cart.items[idx].quantity += delta;
         if (cart.items[idx].quantity <= 0) {
@@ -309,7 +376,7 @@ const FoodWalaApp = (function () {
     },
     removeItem: function (menuId) {
       const cart = this.getCart();
-      cart.items = cart.items.filter(i => i.menuId !== menuId);
+      cart.items = cart.items.filter(i => i.menuId !== menuId && i.id !== menuId);
       if (cart.items.length === 0) {
         cart.restaurantId = null;
         cart.restaurantName = '';
@@ -337,11 +404,11 @@ const FoodWalaApp = (function () {
       }
       const totals = this.getBillTotals(false);
       if (totals.itemTotal < coupon.minOrder) {
-        return { success: false, message: `Minimum order of ₹${coupon.minOrder} required for coupon ${cleanCode}.` };
+        return { success: false, message: `Minimum order of ₹${coupon.minOrder} required for ${cleanCode}.` };
       }
       const couponObj = { code: cleanCode, ...coupon };
       setStorage(STORAGE_KEYS.COUPON, couponObj);
-      return { success: true, message: `Coupon ${cleanCode} applied successfully!`, coupon: couponObj };
+      return { success: true, message: `Coupon ${cleanCode} applied!`, coupon: couponObj };
     },
     removeCoupon: function () {
       localStorage.removeItem(STORAGE_KEYS.COUPON);
@@ -351,9 +418,9 @@ const FoodWalaApp = (function () {
       const cart = this.getCart();
       const itemTotal = (cart.items || []).reduce((sum, i) => sum + (i.price * i.quantity), 0);
       
-      let deliveryFee = itemTotal > 250 || itemTotal === 0 ? 0 : 35; // Free delivery above 250
+      let deliveryFee = itemTotal > 250 || itemTotal === 0 ? 0 : 35;
       let platformFee = itemTotal > 0 ? 5 : 0;
-      let gst = Math.round(itemTotal * 0.05); // 5% GST
+      let gst = Math.round(itemTotal * 0.05);
       
       let discount = 0;
       const coupon = withCoupon ? this.getAppliedCoupon() : null;
@@ -396,7 +463,6 @@ const FoodWalaApp = (function () {
       const orders = getStorage(STORAGE_KEYS.ORDERS, null);
       if (orders && orders.length > 0) return orders;
 
-      // Seed initial realistic past orders for demonstration
       const initialOrders = [
         {
           orderId: 'FW-89421',
@@ -404,7 +470,6 @@ const FoodWalaApp = (function () {
           restaurantId: 1,
           restaurantName: 'Meghana Foods',
           restaurantAddress: '5th Block, Koramangala, Bengaluru',
-          restaurantImage: 'images/restaurants/meghana.jpg',
           items: [
             { name: 'Meghana Special Chicken Biryani', quantity: 2, price: 340, isVeg: false },
             { name: 'Chicken 65', quantity: 1, price: 280, isVeg: false }
@@ -418,42 +483,13 @@ const FoodWalaApp = (function () {
           deliveryAddress: 'Flat 402, Sunshine Heights, 5th Block, Koramangala, Bengaluru - 560095',
           paymentMethod: 'UPI (Google Pay)',
           status: 'DELIVERED',
-          deliveryPartner: { name: 'Ramesh Kumar', phone: '+91 91234 56789', rating: 4.9 },
+          deliveryPartner: { name: 'Ramesh Kumar', phone: '+91 91234 56789', rating: 4.9, vehicle: 'Royal Enfield (KA 01 AB 1234)', otp: 4892 },
           statusTimeline: [
             { title: 'Order Placed', time: '07:30 PM', done: true },
             { title: 'Restaurant Accepted', time: '07:32 PM', done: true },
             { title: 'Food Prepared', time: '07:48 PM', done: true },
             { title: 'Out for Delivery', time: '07:52 PM', done: true },
             { title: 'Delivered', time: '08:08 PM', done: true }
-          ]
-        },
-        {
-          orderId: 'FW-89105',
-          date: '2026-10-01T09:15:00.000Z',
-          restaurantId: 2,
-          restaurantName: 'Vidyarthi Bhavan',
-          restaurantAddress: 'Gandhi Bazaar Main Road, Basavanagudi, Bengaluru',
-          restaurantImage: 'images/restaurants/vidyarthi.jpg',
-          items: [
-            { name: 'Benne Masala Dosa', quantity: 3, price: 85, isVeg: true },
-            { name: 'Filter Coffee', quantity: 3, price: 35, isVeg: true }
-          ],
-          itemTotal: 360,
-          deliveryFee: 0,
-          platformFee: 5,
-          gst: 18,
-          discount: 50,
-          grandTotal: 333,
-          deliveryAddress: 'Flat 402, Sunshine Heights, 5th Block, Koramangala, Bengaluru - 560095',
-          paymentMethod: 'Cash on Delivery',
-          status: 'DELIVERED',
-          deliveryPartner: { name: 'Suresh Gowda', phone: '+91 98877 66554', rating: 4.8 },
-          statusTimeline: [
-            { title: 'Order Placed', time: '09:15 AM', done: true },
-            { title: 'Restaurant Accepted', time: '09:17 AM', done: true },
-            { title: 'Food Prepared', time: '09:30 AM', done: true },
-            { title: 'Out for Delivery', time: '09:35 AM', done: true },
-            { title: 'Delivered', time: '09:55 AM', done: true }
           ]
         }
       ];
@@ -516,7 +552,7 @@ const FoodWalaApp = (function () {
     }
   };
 
-  // --- TOAST NOTIFICATIONS ---
+  // Toast UI
   function showToast(message, type = 'success') {
     let container = document.getElementById('foodwala-toast-container');
     if (!container) {
@@ -527,23 +563,19 @@ const FoodWalaApp = (function () {
       document.body.appendChild(container);
     }
 
-    const toastId = 'toast_' + Date.now();
     const bgClass = type === 'error' ? 'bg-danger text-white' : type === 'warning' ? 'bg-warning text-dark' : 'bg-success text-white';
     const icon = type === 'error' ? 'bi-exclamation-triangle-fill' : type === 'warning' ? 'bi-exclamation-circle' : 'bi-check-circle-fill';
 
     const toastEl = document.createElement('div');
-    toastEl.id = toastId;
     toastEl.className = `toast align-items-center ${bgClass} border-0 show shadow-lg mb-2`;
     toastEl.setAttribute('role', 'alert');
-    toastEl.setAttribute('aria-live', 'assertive');
-    toastEl.setAttribute('aria-atomic', 'true');
     toastEl.innerHTML = `
       <div class="d-flex">
         <div class="toast-body d-flex align-items-center gap-2">
           <i class="bi ${icon} fs-5"></i>
           <span>${message}</span>
         </div>
-        <button type="button" class="btn-close ${type !== 'warning' ? 'btn-close-white' : ''} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <button type="button" class="btn-close ${type !== 'warning' ? 'btn-close-white' : ''} me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     `;
 
@@ -559,14 +591,13 @@ const FoodWalaApp = (function () {
     });
   }
 
-  // --- NAVBAR & HEADER RENDERER ---
+  // Common UI Init
   function initCommonUI() {
     Cart.updateCartBadge();
     updateUserNavUI();
     updateLocationNavUI();
     bindLocationModalEvents();
 
-    // Listen to storage events
     window.addEventListener('foodwala:cartChanged', () => Cart.updateCartBadge());
     window.addEventListener('foodwala:authChanged', () => updateUserNavUI());
     window.addEventListener('foodwala:locationChanged', () => updateLocationNavUI());
@@ -648,7 +679,9 @@ const FoodWalaApp = (function () {
     });
   }
 
-  // Auto-init on DOM ready
+  // Kick off data loading immediately
+  loadData();
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCommonUI);
   } else {
@@ -660,6 +693,11 @@ const FoodWalaApp = (function () {
     BENGALURU_LOCATIONS,
     DEMO_USERS,
     AVAILABLE_COUPONS,
+    loadData,
+    getRestaurants: () => restaurantsCache,
+    getMenuItems: () => menuItemsCache,
+    getCategories: () => categoriesCache,
+    getRestaurantMenu,
     Location,
     Auth,
     Cart,
@@ -669,5 +707,4 @@ const FoodWalaApp = (function () {
   };
 })();
 
-// Global reference for inline event handlers
 window.FoodWalaApp = FoodWalaApp;

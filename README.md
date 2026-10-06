@@ -6,19 +6,20 @@
 [![Apache Tomcat](https://img.shields.io/badge/Apache%20Tomcat-11.0.4-yellow?logo=apache-tomcat)](https://tomcat.apache.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-blue?logo=mysql)](https://www.mysql.com/)
 
-**FoodWala** is a full-featured Bengaluru Food Discovery & Delivery Web Application originally built using Java Servlets, JSP, JDBC, and MySQL running on Apache Tomcat 11 / Jakarta EE. 
+**FoodWala** is a full-featured Bengaluru Food Discovery & Delivery Web Application originally built using Java Servlets, JSP, JDBC, and MySQL running on Apache Tomcat 11 / Jakarta EE.
 
 This repository provides:
-1. 🌐 **Live GitHub Pages Interactive Demo**: [https://vishnu6301382491-dev.github.io/Foodwala/](https://vishnu6301382491-dev.github.io/Foodwala/) — An interactive frontend simulation featuring all 105 iconic Bengaluru restaurants, 756 menu items, client-side Jaro-Winkler fuzzy smart search, cart, checkout simulation, and live delivery timeline.
+1. 🌐 **Live GitHub Pages Interactive Demo**: [https://vishnu6301382491-dev.github.io/Foodwala/](https://vishnu6301382491-dev.github.io/Foodwala/) — An interactive frontend simulation featuring the complete Bengaluru restaurant catalog, categorized menus, client-side Jaro-Winkler fuzzy smart search, cart, checkout simulation, and live delivery timeline.
 2. ☕ **Full Java/Jakarta EE Backend**: Complete Java Servlet, DAO, Model, and MySQL database layer (`sql/fudwala.sql`) ready to run locally in Eclipse IDE with Apache Tomcat 11.
 
 ---
 
 ## 🌟 Key Features
 
-### 1. 🏙️ Bengaluru Restaurant Catalog (105 Restaurants, 756 Dishes)
+### 1. 🏙️ Complete Bengaluru Restaurant Catalog & Menus
 - Curated dining institutions across 12 Bengaluru zones: Koramangala, Indiranagar, Whitefield, MG Road, HSR Layout, Malleshwaram, Jayanagar, Electronic City, JP Nagar, Bellandur, Marathahalli, and Hebbal.
 - Multi-category menus (Starters, Biryani, Main Course, Dosa & Tiffins, Desserts, Beverages) with real-time pricing and veg/non-veg badges.
+- Individual restaurant menus lazily loaded via structured `data/menus/<restaurantId>.json` endpoints for maximum frontend speed.
 
 ### 2. 🔍 Smart Typo-Tolerant Food Search Engine
 - Tolerates typos, phonetic transliterations, and compound words (`biriyani` ↔ `biryani`, `dumbiriyani` ↔ `dum biryani`, `dhosa` ↔ `dosa`, `panner` ↔ `paneer`, `chikn` ↔ `chicken`).
@@ -57,7 +58,11 @@ This repository provides:
 The static frontend demo is deployed at:
 👉 **[https://vishnu6301382491-dev.github.io/Foodwala/](https://vishnu6301382491-dev.github.io/Foodwala/)**
 
-All data is bundled in [`js/foodwala-data.js`](./js/foodwala-data.js) and state is persisted in the browser's `localStorage`.
+### Static Data Architecture
+- `data/restaurants.json`: Complete restaurant metadata and locations.
+- `data/menu-items.json`: Complete catalog of menu items with pricing and categories.
+- `data/categories.json`: Complete list of dining categories.
+- `data/menus/<id>.json`: Individual lazy-loaded restaurant menu datasets.
 
 ---
 
@@ -94,7 +99,8 @@ To run the complete full-stack Java Servlet / JSP / MySQL application locally:
 FoodWala/
 ├── index.html                  # Live Demo Landing Page
 ├── restaurants.html            # Restaurant Discovery & Smart Search
-├── menu.html                   # Restaurant Menu & Add-to-Cart
+├── restaurant-details.html     # Restaurant Details & Lazy Menu Loading
+├── menu.html                   # Menu URL alias
 ├── cart.html                   # Shopping Cart & Bill Breakdown
 ├── checkout.html               # Secure Checkout & Payment Simulation
 ├── order-track.html            # Live Visual Delivery Timeline
@@ -104,13 +110,19 @@ FoodWala/
 ├── profile.html                # User Profile & Saved Addresses
 ├── css/
 │   └── style.css               # Modern Responsive FoodWala Styling
+├── data/
+│   ├── restaurants.json        # Complete Restaurant Dataset
+│   ├── menu-items.json         # Complete Menu Items Dataset
+│   ├── categories.json         # Menu Categories
+│   └── menus/                  # 105 Individual Lazy-Loaded Menu JSONs
+│       ├── 1.json
+│       ├── 2.json
+│       └── ...
 ├── js/
-│   ├── foodwala-data.js        # Bundled 105 Bengaluru Restaurants & 756 Dishes
-│   ├── smart-search.js         # Jaro-Winkler Client Fuzzy Search & Typo Engine
-│   └── app.js                  # Shared Cart, Auth, Location & Orders State
-├── images/
-│   └── restaurants/            # Restaurant Imagery
-├── src/main/java/com/tap/      # Java Servlets, DAOs, Models & Smart Search Backend
+│   ├── foodwala-data.js        # Bundled Offline Dataset Fallback
+│   ├── smart-search.js         # Jaro-Winkler Client Fuzzy Search Engine
+│   └── app.js                  # Dynamic Data Loader, Cart & State Manager
+├── src/main/java/com/tap/      # Java Servlets, DAOs, Models & Backend
 │   ├── controller/             # Jakarta Servlet Controllers
 │   ├── dao/ & daoimpl/         # JDBC DAO Layer
 │   ├── model/                  # POJO Entity Models
