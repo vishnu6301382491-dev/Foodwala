@@ -18,7 +18,7 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4" href="./index.html">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4 text-decoration-none" href="./index.html">
         <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
           <i class="bi bi-bag-heart-fill fs-5"></i>
         </div>
@@ -30,13 +30,13 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarContent">
-        <!-- Location Picker Button -->
+        <!-- Location Picker Button (No fake default) -->
         <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
-          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal" title="Select Delivery Location">
             <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
             <div class="text-start lh-1" id="navbar-location-display">
-              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Koramangala</span>
-              <small class="text-muted d-block">Bengaluru</small>
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Select Location</span>
+              <small class="text-muted d-block" style="font-size: 0.75rem;">Click to set location</small>
             </div>
             <i class="bi bi-chevron-down text-muted ms-1 small"></i>
           </button>
@@ -65,9 +65,15 @@
               <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
             </a>
           </li>
+          <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
           <li class="nav-item ms-lg-2" id="navbar-user-slot">
-            <!-- Populated dynamically by FoodWalaApp.Auth -->
-            <a href="./login.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+            <div class="d-flex align-items-center gap-2">
+              <a href="./login.html" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill fw-semibold d-flex align-items-center gap-1">
+                <i class="bi bi-person"></i>
+                <span>Login</span>
+              </a>
+              <a href="./register.html" class="btn btn-danger btn-sm px-3 py-2 rounded-pill fw-semibold">Sign Up</a>
+            </div>
           </li>
         </ul>
       </div>
@@ -80,14 +86,12 @@
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
         <div class="modal-header bg-danger text-white border-0 py-3">
           <h5 class="modal-title fw-bold" id="locationModalLabel">
-            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Location
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0">
-          <div class="list-group list-group-flush" id="location-options-list">
-            <!-- Populated by FoodWalaApp -->
-          </div>
+        <div class="modal-body p-0" id="location-options-list">
+          <!-- Populated by FoodWalaApp.bindLocationModalEvents() -->
         </div>
       </div>
     </div>
@@ -99,7 +103,7 @@
     <div class="d-flex align-items-center justify-content-between mb-4">
       <div>
         <h2 class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-success me-2"></i>Secure Checkout</h2>
-        <p class="text-muted mb-0 small">Verify your delivery address & select payment method</p>
+        <p class="text-muted mb-0 small">Verify your delivery location & select payment method</p>
       </div>
       <a href="./cart.html" class="btn btn-outline-dark btn-sm rounded-pill px-3">
         <i class="bi bi-arrow-left me-1"></i> Back to Cart
@@ -113,16 +117,21 @@
         
         <!-- 1. Delivery Address Selection Card -->
         <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
             <div>
               <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                <span class="badge bg-danger rounded-circle p-2">1</span> Select Delivery Address
+                <span class="badge bg-danger rounded-circle p-2">1</span> Delivery Location
               </h5>
-              <small class="text-muted">Choose where you want your hot food delivered in Bengaluru</small>
+              <small class="text-muted">Choose saved address, use live GPS, or add a delivery address</small>
             </div>
-            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-              <i class="bi bi-plus-lg me-1"></i> Add New Address
-            </button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold" id="checkout-use-gps-btn">
+                <i class="bi bi-crosshair me-1"></i> Use Live GPS
+              </button>
+              <button type="button" class="btn btn-danger btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                <i class="bi bi-plus-lg me-1"></i> Add Address
+              </button>
+            </div>
           </div>
 
           <div class="row g-3" id="saved-addresses-grid">
@@ -217,8 +226,8 @@
           <div class="d-flex align-items-center gap-3 pb-3 mb-3 border-bottom">
             <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500" class="rounded-3" style="width: 50px; height: 50px; object-fit: cover;" id="checkout-rest-img" alt="Restaurant">
             <div class="text-truncate">
-              <h6 class="fw-bold text-dark mb-0 text-truncate" id="checkout-rest-name">Meghana Foods</h6>
-              <small class="text-muted text-truncate d-block" id="checkout-rest-addr">Koramangala, Bengaluru</small>
+              <h6 class="fw-bold text-dark mb-0 text-truncate" id="checkout-rest-name">Restaurant</h6>
+              <small class="text-muted text-truncate d-block" id="checkout-rest-addr">Bengaluru</small>
             </div>
           </div>
 
@@ -284,7 +293,7 @@
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
         <div class="modal-header bg-danger text-white border-0 py-3">
           <h5 class="modal-title fw-bold" id="addAddressModalLabel">
-            <i class="bi bi-geo-alt-fill me-2"></i>Add New Delivery Address
+            <i class="bi bi-geo-alt-fill me-2"></i>Add Delivery Address
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -317,9 +326,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label small fw-bold text-dark">Area / Neighborhood in Bengaluru *</label>
+                <label class="form-label small fw-bold text-dark">Area in Bengaluru *</label>
                 <select class="form-select rounded-3" id="modal-area" required>
-                  <option value="Koramangala" selected>Koramangala</option>
+                  <option value="Koramangala">Koramangala</option>
                   <option value="Indiranagar">Indiranagar</option>
                   <option value="Whitefield">Whitefield</option>
                   <option value="HSR Layout">HSR Layout</option>
@@ -336,21 +345,12 @@
 
               <div class="col-md-6">
                 <label class="form-label small fw-bold text-dark">Pincode *</label>
-                <input type="text" class="form-control rounded-3" id="modal-pincode" placeholder="560095" value="560095" required>
+                <input type="text" class="form-control rounded-3" id="modal-pincode" placeholder="560001" required>
               </div>
 
               <div class="col-12">
                 <label class="form-label small fw-bold text-dark">Landmark (Optional)</label>
-                <input type="text" class="form-control rounded-3" id="modal-landmark" placeholder="e.g. Near Sony World Signal">
-              </div>
-
-              <div class="col-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="modal-set-default" checked>
-                  <label class="form-check-label small" for="modal-set-default">
-                    Set as default delivery address
-                  </label>
-                </div>
+                <input type="text" class="form-control rounded-3" id="modal-landmark" placeholder="e.g. Near Metro Station">
               </div>
 
             </div>
@@ -438,13 +438,9 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Verify Authentication
-      if (!FoodWalaApp.Auth.requireAuth('./checkout.html')) return;
-      
-      const user = FoodWalaApp.Auth.getCurrentUser();
       const cart = FoodWalaApp.Cart.getCart();
 
-      // 2. Validate Cart Items
+      // 1. Validate Cart Items
       if (!cart.items || cart.items.length === 0) {
         alert('Your cart is empty. Please add items from a restaurant.');
         window.location.href = './restaurants.html';
@@ -453,14 +449,14 @@
 
       await FoodWalaApp.loadData();
 
-      // 3. Render Restaurant Details in Summary
+      // 2. Render Restaurant Details in Summary
       document.getElementById('checkout-rest-name').textContent = cart.restaurantName || 'Bengaluru Restaurant';
       document.getElementById('checkout-rest-addr').textContent = cart.restaurantAddress || 'Bengaluru';
       if (cart.restaurantImage) {
         document.getElementById('checkout-rest-img').src = cart.restaurantImage;
       }
 
-      // 4. Render Cart Items
+      // 3. Render Cart Items
       function renderItemsAndTotals() {
         const itemsList = document.getElementById('checkout-items-list');
         itemsList.innerHTML = cart.items.map(i => `
@@ -493,7 +489,7 @@
 
       renderItemsAndTotals();
 
-      // 5. Coupon Handling
+      // 4. Coupon Handling
       document.getElementById('checkout-apply-coupon-btn').addEventListener('click', () => {
         const code = document.getElementById('checkout-coupon-input').value;
         const res = FoodWalaApp.Cart.applyCoupon(code);
@@ -510,60 +506,167 @@
         renderItemsAndTotals();
       });
 
-      // 6. Address Management UI
-      let selectedAddressId = null;
+      // 5. Active Delivery Target Resolution
+      let activeDeliveryLocation = null; // { address, lat, lng, type }
 
       function renderAddressCards() {
         const currentUser = FoodWalaApp.Auth.getCurrentUser();
-        const addresses = currentUser.addresses || [];
+        const addresses = (currentUser && currentUser.addresses) ? currentUser.addresses : [];
+        const appLocation = FoodWalaApp.Location.getCurrentLocation();
         const container = document.getElementById('saved-addresses-grid');
 
-        if (addresses.length === 0) {
-          container.innerHTML = `
-            <div class="col-12 text-center py-4 text-muted">
-              <i class="bi bi-geo-alt fs-1 text-danger d-block mb-2"></i>
-              <p class="mb-2">No saved addresses found. Please add a delivery address to proceed.</p>
-              <button class="btn btn-danger btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                + Add Address Now
-              </button>
+        let cardsHtml = '';
+
+        // If active GPS or manual location exists
+        if (appLocation && appLocation.latitude && appLocation.longitude) {
+          const isGpsActive = (!activeDeliveryLocation || activeDeliveryLocation.type === 'GPS' || activeDeliveryLocation.type === 'AppLocation');
+          if (isGpsActive) {
+            activeDeliveryLocation = {
+              address: appLocation.address || 'Live Location',
+              lat: appLocation.latitude,
+              lng: appLocation.longitude,
+              type: appLocation.source === 'gps' ? 'Live GPS Location' : 'Current Location'
+            };
+          }
+
+          cardsHtml += `
+            <div class="col-md-6">
+              <div class="address-card ${isGpsActive ? 'selected' : ''}" id="gps-delivery-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="address-type-badge address-type-home">
+                    <i class="bi bi-crosshair text-danger me-1"></i> ${appLocation.source === 'gps' ? 'Live GPS' : 'Selected Location'}
+                  </span>
+                  <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="gps" ${isGpsActive ? 'checked' : ''}>
+                </div>
+                <div class="fw-bold text-dark text-truncate">${appLocation.shortName || 'Current Location'}</div>
+                <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
+                  ${appLocation.address}
+                </p>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+                  <small class="text-success fw-semibold"><i class="bi bi-geo-alt"></i> ${appLocation.accuracy ? `Accuracy ~${appLocation.accuracy}m` : 'Accurate Coordinates'}</small>
+                  <span class="badge bg-danger-subtle text-danger border small">Active</span>
+                </div>
+              </div>
             </div>
           `;
+        }
+
+        // Render saved user addresses
+        addresses.forEach(addr => {
+          const isSelected = activeDeliveryLocation && activeDeliveryLocation.id === addr.id;
+          cardsHtml += `
+            <div class="col-md-6">
+              <div class="address-card ${isSelected ? 'selected' : ''}" data-address-id="${addr.id}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="address-type-badge address-type-${(addr.type || 'home').toLowerCase()}">
+                    <i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : 'bi-house-door'} me-1"></i> ${addr.type || 'Home'}
+                  </span>
+                  <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="${addr.id}" ${isSelected ? 'checked' : ''}>
+                </div>
+                <div class="fw-bold text-dark text-truncate">${addr.fullName || (currentUser ? currentUser.name : 'Customer')}</div>
+                <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
+                  ${addr.addressLine}
+                </p>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+                  <small class="text-muted"><i class="bi bi-telephone me-1"></i> ${addr.phone || ''}</small>
+                  ${addr.isDefault ? '<span class="badge bg-light text-success border small">Default</span>' : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        if (!cardsHtml) {
+          container.innerHTML = `
+            <div class="col-12 text-center py-4 text-muted bg-light rounded-4 border">
+              <i class="bi bi-geo-alt fs-1 text-danger d-block mb-2"></i>
+              <p class="mb-3">No delivery address selected. Use your live GPS or add an address to continue.</p>
+              <div class="d-flex justify-content-center gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold" id="empty-use-gps-btn">
+                  <i class="bi bi-crosshair me-1"></i> Use Current Location (GPS)
+                </button>
+                <button type="button" class="btn btn-danger btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                  + Add Address
+                </button>
+              </div>
+            </div>
+          `;
+
+          const emptyGps = document.getElementById('empty-use-gps-btn');
+          if (emptyGps) emptyGps.addEventListener('click', triggerGpsDetection);
           return;
         }
 
-        const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
-        if (!selectedAddressId || !addresses.some(a => a.id === selectedAddressId)) {
-          selectedAddressId = defaultAddr.id;
+        container.innerHTML = cardsHtml;
+
+        // Bind GPS card click
+        const gpsCard = document.getElementById('gps-delivery-card');
+        if (gpsCard) {
+          gpsCard.addEventListener('click', () => {
+            if (appLocation) {
+              activeDeliveryLocation = {
+                address: appLocation.address,
+                lat: appLocation.latitude,
+                lng: appLocation.longitude,
+                type: 'GPS'
+              };
+              renderAddressCards();
+            }
+          });
         }
 
-        container.innerHTML = addresses.map(addr => `
-          <div class="col-md-6">
-            <div class="address-card ${addr.id === selectedAddressId ? 'selected' : ''}" data-address-id="${addr.id}">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="address-type-badge address-type-${(addr.type || 'home').toLowerCase()}">
-                  <i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : addr.type === 'Home' ? 'bi-house-door' : 'bi-geo'} me-1"></i> ${addr.type || 'Home'}
-                </span>
-                <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="${addr.id}" ${addr.id === selectedAddressId ? 'checked' : ''}>
-              </div>
-              <div class="fw-bold text-dark text-truncate">${addr.fullName || currentUser.name}</div>
-              <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
-                ${addr.addressLine}
-              </p>
-              <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
-                <small class="text-muted"><i class="bi bi-telephone me-1"></i> ${addr.phone || currentUser.phone}</small>
-                ${addr.isDefault ? '<span class="badge bg-light text-success border small">Default</span>' : ''}
-              </div>
-            </div>
-          </div>
-        `).join('');
-
-        container.querySelectorAll('.address-card').forEach(card => {
+        // Bind address card clicks
+        container.querySelectorAll('.address-card[data-address-id]').forEach(card => {
           card.addEventListener('click', () => {
-            selectedAddressId = card.getAttribute('data-address-id');
-            renderAddressCards();
+            const addrId = card.getAttribute('data-address-id');
+            const target = addresses.find(a => a.id === addrId);
+            if (target) {
+              activeDeliveryLocation = {
+                id: target.id,
+                address: target.addressLine,
+                lat: target.latitude || 12.9716,
+                lng: target.longitude || 77.5946,
+                type: target.type
+              };
+              renderAddressCards();
+            }
           });
         });
       }
+
+      function triggerGpsDetection() {
+        const btn = document.getElementById('checkout-use-gps-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Detecting...';
+        }
+
+        FoodWalaApp.Location.detectCurrentLocation(
+          (loc) => {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
+            }
+            activeDeliveryLocation = {
+              address: loc.address,
+              lat: loc.latitude,
+              lng: loc.longitude,
+              type: 'GPS'
+            };
+            renderAddressCards();
+            FoodWalaApp.showToast(`GPS location detected: ${loc.shortName}!`, 'success');
+          },
+          (errMsg) => {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
+            }
+            FoodWalaApp.showToast(errMsg, 'warning');
+          }
+        );
+      }
+
+      document.getElementById('checkout-use-gps-btn').addEventListener('click', triggerGpsDetection);
 
       renderAddressCards();
 
@@ -576,45 +679,60 @@
         const area = document.getElementById('modal-area').value;
         const pincode = document.getElementById('modal-pincode').value.trim();
         const landmark = document.getElementById('modal-landmark').value.trim();
-        const isDefault = document.getElementById('modal-set-default').checked;
 
-        const newAddr = FoodWalaApp.Auth.addAddress({
-          type,
-          houseNo,
-          street,
-          area,
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          pincode,
-          landmark,
-          isDefault
-        });
+        const currentUser = FoodWalaApp.Auth.getCurrentUser();
+        const fullAddrText = `${houseNo}, ${street}, ${area}, Bengaluru, Karnataka - ${pincode}`;
 
-        selectedAddressId = newAddr.id;
+        if (currentUser) {
+          const newAddr = FoodWalaApp.Auth.addAddress({
+            type,
+            houseNo,
+            street,
+            area,
+            city: 'Bengaluru',
+            state: 'Karnataka',
+            pincode,
+            landmark,
+            isDefault: true
+          });
+          activeDeliveryLocation = {
+            id: newAddr.id,
+            address: newAddr.addressLine,
+            lat: newAddr.latitude,
+            lng: newAddr.longitude,
+            type: newAddr.type
+          };
+        } else {
+          // Guest manual address
+          activeDeliveryLocation = {
+            address: fullAddrText,
+            lat: 12.9716,
+            lng: 77.5946,
+            type: type
+          };
+          FoodWalaApp.Location.setCustomAddressLocation(fullAddrText, area);
+        }
 
         const modalEl = document.getElementById('addAddressModal');
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
 
         renderAddressCards();
-        FoodWalaApp.showToast('Address added and selected successfully!', 'success');
+        FoodWalaApp.showToast('Delivery address saved & selected!', 'success');
       });
 
-      // 7. Payment Execution & Razorpay Integration
+      // 6. Payment Execution & Razorpay Integration
       const placeOrderBtn = document.getElementById('place-order-btn');
 
       placeOrderBtn.addEventListener('click', () => {
-        const currentUser = FoodWalaApp.Auth.getCurrentUser();
-        const addresses = currentUser.addresses || [];
-        const selectedAddr = addresses.find(a => a.id === selectedAddressId);
-
-        if (!selectedAddr) {
-          FoodWalaApp.showToast('Please add or select a delivery address to proceed.', 'error');
+        if (!activeDeliveryLocation || !activeDeliveryLocation.address) {
+          FoodWalaApp.showToast('Please select or add a delivery address to proceed.', 'error');
           const modalEl = new bootstrap.Modal(document.getElementById('addAddressModal'));
           modalEl.show();
           return;
         }
 
+        const currentUser = FoodWalaApp.Auth.getCurrentUser();
         const selectedPayMethod = document.querySelector('input[name="paymentMethodRadio"]:checked').value;
         const totals = FoodWalaApp.Cart.getBillTotals();
         const amountInPaise = Math.round(totals.grandTotal * 100);
@@ -628,26 +746,28 @@
             description: `Order for ${cart.restaurantName}`,
             image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200",
             prefill: {
-              name: currentUser.name,
-              email: currentUser.email,
-              contact: currentUser.phone
+              name: currentUser ? currentUser.name : 'Customer',
+              email: currentUser ? currentUser.email : 'customer@example.com',
+              contact: currentUser ? currentUser.phone : '+91 98765 43210'
             },
             notes: {
-              address: selectedAddr.addressLine,
+              address: activeDeliveryLocation.address,
               restaurant: cart.restaurantName
             },
             theme: {
               color: "#ff5200"
             },
             handler: function (response) {
-              console.log('Razorpay Payment Success:', response);
+              console.log('[FoodWala] Razorpay Payment Success:', response);
               
               const newOrder = FoodWalaApp.Orders.placeOrder({
-                name: currentUser.name,
-                phone: currentUser.phone,
-                address: selectedAddr.addressLine,
-                lat: selectedAddr.lat,
-                lng: selectedAddr.lng,
+                name: currentUser ? currentUser.name : 'Customer',
+                phone: currentUser ? currentUser.phone : '+91 98765 43210',
+                address: activeDeliveryLocation.address,
+                latitude: activeDeliveryLocation.lat,
+                longitude: activeDeliveryLocation.lng,
+                lat: activeDeliveryLocation.lat,
+                lng: activeDeliveryLocation.lng,
                 paymentMethod: 'Razorpay (Test Sandbox)',
                 paymentStatus: 'PAID',
                 razorpayPaymentId: response.razorpay_payment_id || 'pay_test_' + Date.now(),
@@ -661,7 +781,7 @@
             },
             modal: {
               ondismiss: function () {
-                FoodWalaApp.showToast('Payment was cancelled. You can retry or choose COD.', 'warning');
+                FoodWalaApp.showToast('Payment was cancelled.', 'warning');
               }
             }
           };
@@ -671,24 +791,26 @@
             rzp.open();
           } catch (err) {
             console.error('Razorpay SDK init error:', err);
-            confirmOrderOffline(selectedAddr, 'Razorpay Online');
+            confirmOrderOffline(activeDeliveryLocation, 'Razorpay Online');
           }
 
         } else if (selectedPayMethod === 'Cash on Delivery') {
-          confirmOrderOffline(selectedAddr, 'Cash on Delivery');
+          confirmOrderOffline(activeDeliveryLocation, 'Cash on Delivery');
         } else {
-          confirmOrderOffline(selectedAddr, 'UPI Instant');
+          confirmOrderOffline(activeDeliveryLocation, 'UPI Instant');
         }
       });
 
-      function confirmOrderOffline(selectedAddr, paymentName) {
+      function confirmOrderOffline(locationObj, paymentName) {
         const currentUser = FoodWalaApp.Auth.getCurrentUser();
         const newOrder = FoodWalaApp.Orders.placeOrder({
-          name: currentUser.name,
-          phone: currentUser.phone,
-          address: selectedAddr.addressLine,
-          lat: selectedAddr.lat,
-          lng: selectedAddr.lng,
+          name: currentUser ? currentUser.name : 'Customer',
+          phone: currentUser ? currentUser.phone : '+91 98765 43210',
+          address: locationObj.address,
+          latitude: locationObj.lat,
+          longitude: locationObj.lng,
+          lat: locationObj.lat,
+          lng: locationObj.lng,
           paymentMethod: paymentName,
           paymentStatus: paymentName === 'Cash on Delivery' ? 'PENDING_COD' : 'PAID',
           instructions: document.getElementById('delivery-custom-notes').value

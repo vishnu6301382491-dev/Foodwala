@@ -16,7 +16,7 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4" href="./index.html">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4 text-decoration-none" href="./index.html">
         <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
           <i class="bi bi-bag-heart-fill fs-5"></i>
         </div>
@@ -28,13 +28,13 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarContent">
-        <!-- Location Picker Button -->
+        <!-- Location Picker Button (No fake default) -->
         <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
-          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal" title="Select Delivery Location">
             <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
             <div class="text-start lh-1" id="navbar-location-display">
-              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Koramangala</span>
-              <small class="text-muted d-block">Bengaluru</small>
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Select Location</span>
+              <small class="text-muted d-block" style="font-size: 0.75rem;">Click to set location</small>
             </div>
             <i class="bi bi-chevron-down text-muted ms-1 small"></i>
           </button>
@@ -63,9 +63,15 @@
               <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
             </a>
           </li>
+          <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
           <li class="nav-item ms-lg-2" id="navbar-user-slot">
-            <!-- Populated dynamically by FoodWalaApp.Auth -->
-            <a href="./login.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+            <div class="d-flex align-items-center gap-2">
+              <a href="./login.html" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill fw-semibold d-flex align-items-center gap-1">
+                <i class="bi bi-person"></i>
+                <span>Login</span>
+              </a>
+              <a href="./register.html" class="btn btn-danger btn-sm px-3 py-2 rounded-pill fw-semibold">Sign Up</a>
+            </div>
           </li>
         </ul>
       </div>
@@ -78,14 +84,12 @@
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
         <div class="modal-header bg-danger text-white border-0 py-3">
           <h5 class="modal-title fw-bold" id="locationModalLabel">
-            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Location
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0">
-          <div class="list-group list-group-flush" id="location-options-list">
-            <!-- Populated by FoodWalaApp -->
-          </div>
+        <div class="modal-body p-0" id="location-options-list">
+          <!-- Populated by FoodWalaApp.bindLocationModalEvents() -->
         </div>
       </div>
     </div>
@@ -104,8 +108,8 @@
               <i class="bi bi-person-fill"></i>
             </div>
             <div>
-              <h6 class="fw-bold text-dark mb-0" id="sidebar-user-name">Rahul Sharma</h6>
-              <small class="text-muted" id="sidebar-user-phone">+91 98765 43210</small>
+              <h6 class="fw-bold text-dark mb-0" id="sidebar-user-name">User Account</h6>
+              <small class="text-muted" id="sidebar-user-phone">+91 00000 00000</small>
             </div>
           </div>
 
@@ -130,7 +134,7 @@
       <div class="col-lg-9">
         <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
           
-          <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4 pb-2 border-bottom">
             <div>
               <h4 class="fw-bold text-dark mb-1"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Manage Delivery Addresses</h4>
               <p class="text-muted small mb-0">Add, edit or set your primary delivery location in Bengaluru</p>
@@ -182,18 +186,18 @@
 
               <div class="col-12">
                 <label class="form-label small fw-bold text-dark">Flat / House No. / Building Name *</label>
-                <input type="text" class="form-control rounded-3" id="crud-houseNo" placeholder="e.g. Flat 402, Sunshine Heights" required>
+                <input type="text" class="form-control rounded-3" id="crud-houseNo" placeholder="e.g. Flat 301, Brigade Orchards" required>
               </div>
 
               <div class="col-12">
                 <label class="form-label small fw-bold text-dark">Street / Road / Society *</label>
-                <input type="text" class="form-control rounded-3" id="crud-street" placeholder="e.g. 5th Block, 80ft Road" required>
+                <input type="text" class="form-control rounded-3" id="crud-street" placeholder="e.g. 100ft Road" required>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label small fw-bold text-dark">Area in Bengaluru *</label>
                 <select class="form-select rounded-3" id="crud-area" required>
-                  <option value="Koramangala" selected>Koramangala</option>
+                  <option value="Koramangala">Koramangala</option>
                   <option value="Indiranagar">Indiranagar</option>
                   <option value="Whitefield">Whitefield</option>
                   <option value="HSR Layout">HSR Layout</option>
@@ -210,12 +214,12 @@
 
               <div class="col-md-6">
                 <label class="form-label small fw-bold text-dark">Pincode *</label>
-                <input type="text" class="form-control rounded-3" id="crud-pincode" placeholder="560095" value="560095" required>
+                <input type="text" class="form-control rounded-3" id="crud-pincode" placeholder="560001" required>
               </div>
 
               <div class="col-12">
                 <label class="form-label small fw-bold text-dark">Landmark (Optional)</label>
-                <input type="text" class="form-control rounded-3" id="crud-landmark" placeholder="e.g. Near Sony World Signal">
+                <input type="text" class="form-control rounded-3" id="crud-landmark" placeholder="e.g. Near Metro Station">
               </div>
 
               <div class="col-12">
@@ -316,8 +320,8 @@
       if (!FoodWalaApp.Auth.requireAuth('./addresses.html')) return;
       const user = FoodWalaApp.Auth.getCurrentUser();
 
-      document.getElementById('sidebar-user-name').textContent = user.name;
-      document.getElementById('sidebar-user-phone').textContent = user.phone || '+91 98765 43210';
+      document.getElementById('sidebar-user-name').textContent = user.name || 'User Account';
+      document.getElementById('sidebar-user-phone').textContent = user.phone || '+91 00000 00000';
 
       function renderAddresses() {
         const currentUser = FoodWalaApp.Auth.getCurrentUser();
@@ -343,7 +347,7 @@
             <div class="card border p-3 rounded-4 h-100 shadow-sm position-relative">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="address-type-badge address-type-${(addr.type || 'home').toLowerCase()}">
-                  <i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : addr.type === 'Home' ? 'bi-house-door' : 'bi-geo'} me-1"></i> ${addr.type || 'Home'}
+                  <i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : 'bi-house-door'} me-1"></i> ${addr.type || 'Home'}
                 </span>
                 ${addr.isDefault ? '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small">Default Address</span>' : ''}
               </div>
@@ -362,6 +366,7 @@
           </div>
         `).join('');
 
+        // Bind Set Default
         container.querySelectorAll('.js-set-default').forEach(btn => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
@@ -371,6 +376,7 @@
           });
         });
 
+        // Bind Delete
         container.querySelectorAll('.js-delete-addr').forEach(btn => {
           btn.addEventListener('click', () => {
             if (confirm('Are you sure you want to delete this address?')) {
@@ -382,6 +388,7 @@
           });
         });
 
+        // Bind Edit
         container.querySelectorAll('.js-edit-addr').forEach(btn => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
@@ -392,7 +399,7 @@
             document.getElementById('crud-houseNo').value = target.houseNo || '';
             document.getElementById('crud-street').value = target.street || '';
             document.getElementById('crud-area').value = target.area || 'Koramangala';
-            document.getElementById('crud-pincode').value = target.pincode || '560095';
+            document.getElementById('crud-pincode').value = target.pincode || '560001';
             document.getElementById('crud-landmark').value = target.landmark || '';
             document.getElementById('crud-set-default').checked = !!target.isDefault;
 

@@ -2,8 +2,9 @@
  * FoodWala Core Application Module
  * Complete end-to-end management of:
  * - Dynamic data loading (restaurants, menus, categories)
- * - User Authentication, Session State & Profile Management
- * - Multi-Address Management (Home, Work, Other, Set Default)
+ * - User Authentication & Session State (NO default user)
+ * - Single Consistent Location State & Real Browser Geolocation (NO default location)
+ * - Multi-Address Management (User-specific)
  * - Cart & Coupon Engine
  * - Razorpay Test Payment & Order Lifecycle
  * - Geolocation & Live Order Tracking Persistence
@@ -15,7 +16,7 @@ const FoodWalaApp = (function () {
   // Storage Keys
   const STORAGE_KEYS = {
     CART: 'foodwala_cart',
-    USER: 'foodwala_user',
+    CURRENT_USER: 'foodwala_current_user',
     LOCATION: 'foodwala_location',
     ORDERS: 'foodwala_orders',
     FAVORITES: 'foodwala_favorites',
@@ -29,7 +30,7 @@ const FoodWalaApp = (function () {
   const individualMenuCache = new Map();
   let dataReadyPromise = null;
 
-  // 12 Pre-defined Bengaluru Delivery Locations with Geocoordinates
+  // 14 Bengaluru Delivery Hubs (Used for manual location selection & landmark geocoding)
   const BENGALURU_LOCATIONS = [
     { id: 'koramangala', name: 'Koramangala, Bengaluru', shortName: 'Koramangala', lat: 12.9352, lng: 77.6245, landmark: '5th Block, near Sony World Signal' },
     { id: 'indiranagar', name: 'Indiranagar, Bengaluru', shortName: 'Indiranagar', lat: 12.9784, lng: 77.6408, landmark: '100ft Road, near Metro Station' },
@@ -46,111 +47,6 @@ const FoodWalaApp = (function () {
     { id: 'basavanagudi', name: 'Basavanagudi, Bengaluru', shortName: 'Basavanagudi', lat: 12.9421, lng: 77.5754, landmark: 'Gandhi Bazaar Main Road' },
     { id: 'rajajinagar', name: 'Rajajinagar, Bengaluru', shortName: 'Rajajinagar', lat: 12.9915, lng: 77.5526, landmark: '1st Block, Dr. Rajkumar Road' }
   ];
-
-  // Default Demo Users
-  const DEMO_USERS = {
-    customer: {
-      userId: 1,
-      name: 'Rahul Sharma',
-      email: 'customer@foodwala.com',
-      phone: '+91 98765 43210',
-      role: 'CUSTOMER',
-      memberSince: 'March 2024',
-      addresses: [
-        {
-          id: 'addr_1',
-          fullName: 'Rahul Sharma',
-          phone: '+91 98765 43210',
-          type: 'Home',
-          houseNo: 'Flat 402, Sunshine Heights',
-          street: '5th Block, 80ft Road',
-          area: 'Koramangala',
-          landmark: 'Near Sony World Signal',
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          pincode: '560095',
-          lat: 12.9352,
-          lng: 77.6245,
-          addressLine: 'Flat 402, Sunshine Heights, 5th Block, 80ft Road, Koramangala, Bengaluru, Karnataka - 560095',
-          isDefault: true
-        },
-        {
-          id: 'addr_2',
-          fullName: 'Rahul Sharma',
-          phone: '+91 98765 43210',
-          type: 'Work',
-          houseNo: 'Floor 3, Tower B',
-          street: 'EcoSpace Business Park, Outer Ring Road',
-          area: 'Bellandur',
-          landmark: 'Opposite Central Mall',
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          pincode: '560103',
-          lat: 12.9304,
-          lng: 77.6784,
-          addressLine: 'Floor 3, Tower B, EcoSpace Business Park, Bellandur, Bengaluru, Karnataka - 560103',
-          isDefault: false
-        }
-      ]
-    },
-    restaurant: {
-      userId: 2,
-      name: 'Vidyarthi Bhavan Manager',
-      email: 'vidyarthi@foodwala.com',
-      phone: '+91 80266 77588',
-      role: 'RESTAURANT_ADMIN',
-      restaurantId: 2,
-      memberSince: 'January 2024',
-      addresses: [
-        {
-          id: 'addr_rest',
-          fullName: 'Vidyarthi Bhavan Admin',
-          phone: '+91 80266 77588',
-          type: 'Work',
-          houseNo: '32',
-          street: 'Gandhi Bazaar Main Road',
-          area: 'Basavanagudi',
-          landmark: 'Near Circle',
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          pincode: '560004',
-          lat: 12.9421,
-          lng: 77.5754,
-          addressLine: '32, Gandhi Bazaar Main Road, Basavanagudi, Bengaluru - 560004',
-          isDefault: true
-        }
-      ]
-    },
-    partner: {
-      userId: 3,
-      name: 'Ramesh Kumar',
-      email: 'partner@foodwala.com',
-      phone: '+91 91234 56789',
-      role: 'DELIVERY_PARTNER',
-      memberSince: 'June 2024',
-      vehicle: 'Royal Enfield (KA 01 AB 1234)',
-      rating: 4.9,
-      addresses: [
-        {
-          id: 'addr_p',
-          fullName: 'Ramesh Kumar',
-          phone: '+91 91234 56789',
-          type: 'Home',
-          houseNo: '124, 7th Cross',
-          street: 'Sector 2',
-          area: 'HSR Layout',
-          landmark: 'Near BDA Complex',
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          pincode: '560102',
-          lat: 12.9121,
-          lng: 77.6446,
-          addressLine: '124, 7th Cross, Sector 2, HSR Layout, Bengaluru - 560102',
-          isDefault: true
-        }
-      ]
-    }
-  };
 
   // Coupons
   const AVAILABLE_COUPONS = {
@@ -176,6 +72,27 @@ const FoodWalaApp = (function () {
       console.warn('LocalStorage error for ' + key, e);
     }
   }
+
+  // --- CLEANUP OBSOLETE DEMO DATA ---
+  function cleanupObsoleteDemoData() {
+    try {
+      // Clean obsolete key 'foodwala_user' if present
+      localStorage.removeItem('foodwala_user');
+      
+      // Clean obsolete fake default location if it has the old dummy format
+      const locStr = localStorage.getItem(STORAGE_KEYS.LOCATION);
+      if (locStr) {
+        try {
+          const loc = JSON.parse(locStr);
+          if (loc && ((loc.id === 'koramangala' && !loc.source) || (loc.landmark && loc.landmark.includes('GPS Accuracy ~83m')))) {
+            localStorage.removeItem(STORAGE_KEYS.LOCATION);
+          }
+        } catch(e) {}
+      }
+    } catch (e) {}
+  }
+
+  cleanupObsoleteDemoData();
 
   // --- ASYNC DATA LOADER ---
   function loadData() {
@@ -256,66 +173,144 @@ const FoodWalaApp = (function () {
     return filtered;
   }
 
-  // --- LOCATION MODULE ---
+  // --- LOCATION MODULE (NO FAKE DEFAULT) ---
   const Location = {
-    getAllLocations: function () {
+    getBengaluruHubs: function () {
       return BENGALURU_LOCATIONS;
     },
+
     getCurrentLocation: function () {
-      const saved = getStorage(STORAGE_KEYS.LOCATION, null);
-      return saved || BENGALURU_LOCATIONS[0]; // default Koramangala
+      // Returns null if user has not selected location or granted GPS
+      const loc = getStorage(STORAGE_KEYS.LOCATION, null);
+      if (loc && loc.latitude && loc.longitude) {
+        return loc;
+      }
+      return null;
     },
-    setCurrentLocation: function (locationId) {
-      const loc = BENGALURU_LOCATIONS.find(l => l.id === locationId) || BENGALURU_LOCATIONS[0];
-      setStorage(STORAGE_KEYS.LOCATION, loc);
-      window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: loc }));
-      return loc;
+
+    setManualLocation: function (hubId) {
+      const hub = BENGALURU_LOCATIONS.find(h => h.id === hubId || h.shortName.toLowerCase() === (hubId || '').toLowerCase());
+      if (!hub) return null;
+
+      const locState = {
+        latitude: hub.lat,
+        longitude: hub.lng,
+        accuracy: null,
+        shortName: hub.shortName,
+        address: hub.name,
+        source: 'manual'
+      };
+
+      setStorage(STORAGE_KEYS.LOCATION, locState);
+      window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: locState }));
+      updateLocationNavUI();
+      return locState;
     },
+
+    setSavedAddressLocation: function (savedAddress) {
+      if (!savedAddress) return null;
+      const locState = {
+        latitude: savedAddress.latitude || savedAddress.lat || 12.9716,
+        longitude: savedAddress.longitude || savedAddress.lng || 77.5946,
+        accuracy: null,
+        shortName: (savedAddress.type || 'Home') + ': ' + (savedAddress.area || 'Bengaluru'),
+        address: savedAddress.addressLine || savedAddress.address || 'Bengaluru',
+        source: 'saved-address'
+      };
+      setStorage(STORAGE_KEYS.LOCATION, locState);
+      window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: locState }));
+      updateLocationNavUI();
+      return locState;
+    },
+
+    clearLocation: function () {
+      localStorage.removeItem(STORAGE_KEYS.LOCATION);
+      window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: null }));
+      updateLocationNavUI();
+    },
+
     detectCurrentLocation: function (onSuccess, onError) {
+      console.log("[FoodWala] Requesting current location via browser Geolocation API...");
+
       if (!navigator.geolocation) {
-        if (onError) onError('Geolocation is not supported by your browser.');
+        const msg = "Location services are not supported by this browser.";
+        console.error("[FoodWala] Location error:", msg);
+        if (onError) onError(msg);
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
+          const accuracy = position.coords.accuracy ? Math.round(position.coords.accuracy) : null;
 
-          // Find closest known Bengaluru neighborhood
-          let closest = BENGALURU_LOCATIONS[0];
-          let minDistance = Infinity;
+          console.log("[FoodWala] Location success:", {
+            latitude: lat,
+            longitude: lng,
+            accuracy: accuracy
+          });
 
-          for (const loc of BENGALURU_LOCATIONS) {
-            const d = Location.calculateDistance(lat, lng, loc.lat, loc.lng);
-            if (d < minDistance) {
-              minDistance = d;
-              closest = loc;
+          let shortName = "Current Location";
+          let fullAddress = `Live GPS Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+
+          // Reverse Geocoding with OpenStreetMap Nominatim
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+              headers: { 'Accept': 'application/json' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.address) {
+                const addr = data.address;
+                const neighborhood = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.city_district || addr.locality || addr.village || addr.town || addr.city;
+                if (neighborhood) {
+                  shortName = neighborhood;
+                }
+                if (data.display_name) {
+                  fullAddress = data.display_name;
+                }
+              }
             }
+          } catch (e) {
+            console.warn("[FoodWala] Reverse geocode lookup error (using coordinates):", e);
           }
 
-          const detectedLoc = {
-            id: 'geo_' + Date.now(),
-            name: `${closest.shortName}, Bengaluru (Live GPS)`,
-            shortName: closest.shortName,
-            lat: lat,
-            lng: lng,
-            landmark: `GPS Accuracy ~${Math.round(position.coords.accuracy || 20)}m`
+          const locationState = {
+            latitude: lat,
+            longitude: lng,
+            accuracy: accuracy,
+            shortName: shortName,
+            address: fullAddress,
+            source: "gps"
           };
 
-          setStorage(STORAGE_KEYS.LOCATION, detectedLoc);
-          window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: detectedLoc }));
-          if (onSuccess) onSuccess(detectedLoc);
+          setStorage(STORAGE_KEYS.LOCATION, locationState);
+          window.dispatchEvent(new CustomEvent('foodwala:locationChanged', { detail: locationState }));
+          updateLocationNavUI();
+
+          if (onSuccess) onSuccess(locationState);
         },
-        (err) => {
-          const msg = err.code === 1
-            ? 'Location permission was denied. Please enter or select your address manually.'
-            : 'Unable to detect location. Please select an area manually.';
-          if (onError) onError(msg);
+        (error) => {
+          console.error("[FoodWala] Location error:", error);
+          let errorMsg = "Unable to retrieve your location. Please try again.";
+          if (error.code === 1) { // PERMISSION_DENIED
+            errorMsg = "Location permission was denied. Please allow location access in your browser settings or enter your address manually.";
+          } else if (error.code === 2) { // POSITION_UNAVAILABLE
+            errorMsg = "Your current location could not be determined. Please try again.";
+          } else if (error.code === 3) { // TIMEOUT
+            errorMsg = "Location request timed out. Please try again.";
+          }
+          if (onError) onError(errorMsg);
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
       );
     },
+
     calculateDistance: function (lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return 3.2;
       const R = 6371;
@@ -329,22 +324,17 @@ const FoodWalaApp = (function () {
     }
   };
 
-  // --- AUTH MODULE ---
+  // --- AUTH MODULE (NO DEFAULT USER) ---
   const Auth = {
     getCurrentUser: function () {
-      const u = getStorage(STORAGE_KEYS.USER, null);
-      if (u) return u;
-      // If user never explicitly logged out, initialize with Rahul customer demo
-      const hasLoggedOut = localStorage.getItem('foodwala_logged_out');
-      if (!hasLoggedOut) {
-        setStorage(STORAGE_KEYS.USER, DEMO_USERS.customer);
-        return DEMO_USERS.customer;
-      }
-      return null;
+      // Returns null if no authenticated user exists
+      return getStorage(STORAGE_KEYS.CURRENT_USER, null);
     },
+
     isLoggedIn: function () {
       return !!this.getCurrentUser();
     },
+
     requireAuth: function (redirectTarget = './login.html') {
       const user = this.getCurrentUser();
       if (!user) {
@@ -356,100 +346,144 @@ const FoodWalaApp = (function () {
       }
       return true;
     },
+
     login: function (email, password) {
-      localStorage.removeItem('foodwala_logged_out');
-      let user = Object.values(DEMO_USERS).find(u => u.email.toLowerCase() === (email || '').toLowerCase().trim());
-      if (!user) {
-        const namePart = (email || 'Foodie').split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        user = {
-          userId: Date.now(),
-          name: namePart,
-          email: email,
-          phone: '+91 98765 00000',
+      if (!email || !email.trim()) return null;
+      const cleanEmail = email.trim().toLowerCase();
+      const namePart = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      const user = {
+        userId: Date.now(),
+        name: namePart,
+        email: cleanEmail,
+        phone: '+91 98765 00000',
+        role: 'CUSTOMER',
+        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        addresses: []
+      };
+
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
+      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+      updateUserNavUI();
+      return user;
+    },
+
+    loginAsDemo: function (roleType) {
+      // Triggered only upon explicit demo button click in login.html
+      const demoProfiles = {
+        customer: {
+          userId: 101,
+          name: 'Rahul Sharma',
+          email: 'customer@foodwala.com',
+          phone: '+91 98765 43210',
           role: 'CUSTOMER',
-          memberSince: 'October 2026',
+          memberSince: 'March 2024',
           addresses: [
             {
-              id: 'addr_new',
-              fullName: namePart,
-              phone: '+91 98765 00000',
+              id: 'addr_1',
+              userId: 101,
+              label: 'Home',
               type: 'Home',
-              houseNo: 'Flat 101',
-              street: '4th Block',
+              fullName: 'Rahul Sharma',
+              phone: '+91 98765 43210',
+              houseNo: 'Flat 402, Sunshine Heights',
+              street: '5th Block, 80ft Road',
               area: 'Koramangala',
-              landmark: 'Near BDA Complex',
               city: 'Bengaluru',
               state: 'Karnataka',
-              pincode: '560034',
-              lat: 12.9352,
-              lng: 77.6245,
-              addressLine: 'Flat 101, 4th Block, Koramangala, Bengaluru, Karnataka - 560034',
+              pincode: '560095',
+              latitude: 12.9352,
+              longitude: 77.6245,
+              addressLine: 'Flat 402, Sunshine Heights, 5th Block, 80ft Road, Koramangala, Bengaluru - 560095',
               isDefault: true
             }
           ]
-        };
-      }
-      setStorage(STORAGE_KEYS.USER, user);
+        },
+        restaurant: {
+          userId: 102,
+          name: 'Vidyarthi Bhavan Manager',
+          email: 'vidyarthi@foodwala.com',
+          phone: '+91 80266 77588',
+          role: 'RESTAURANT_ADMIN',
+          memberSince: 'January 2024',
+          addresses: []
+        },
+        partner: {
+          userId: 103,
+          name: 'Ramesh Kumar',
+          email: 'partner@foodwala.com',
+          phone: '+91 91234 56789',
+          role: 'DELIVERY_PARTNER',
+          memberSince: 'June 2024',
+          vehicle: 'Royal Enfield (KA 01 AB 1234)',
+          rating: 4.9,
+          addresses: []
+        }
+      };
+
+      const user = demoProfiles[roleType] || demoProfiles.customer;
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+      updateUserNavUI();
       return user;
     },
-    loginAsDemo: function (roleType) {
-      localStorage.removeItem('foodwala_logged_out');
-      const user = DEMO_USERS[roleType] || DEMO_USERS.customer;
-      setStorage(STORAGE_KEYS.USER, user);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
-      return user;
-    },
+
     logout: function () {
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      localStorage.setItem('foodwala_logged_out', 'true');
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
-      showToast('You have been signed out successfully.', 'success');
+      updateUserNavUI();
+      showToast('You have been signed out.', 'success');
       setTimeout(() => {
         window.location.href = './login.html';
       }, 400);
     },
+
     updateProfile: function (updatedFields) {
       const user = this.getCurrentUser();
       if (!user) return null;
       Object.assign(user, updatedFields);
-      setStorage(STORAGE_KEYS.USER, user);
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+      updateUserNavUI();
       return user;
     },
+
     register: function (name, email, phone, password, addressText) {
-      localStorage.removeItem('foodwala_logged_out');
+      const cleanEmail = (email || '').trim().toLowerCase();
       const newUser = {
         userId: Date.now(),
         name: name || 'Food Lover',
-        email: email,
+        email: cleanEmail,
         phone: phone || '+91 98765 00000',
         role: 'CUSTOMER',
-        memberSince: 'October 2026',
-        addresses: [
+        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        addresses: addressText ? [
           {
             id: 'addr_' + Date.now(),
+            userId: Date.now(),
+            label: 'Home',
+            type: 'Home',
             fullName: name || 'Food Lover',
             phone: phone || '+91 98765 00000',
-            type: 'Home',
-            houseNo: 'House No. 1',
-            street: addressText || 'Main Road',
-            area: 'Koramangala',
-            landmark: 'Near Metro',
+            houseNo: '',
+            street: addressText,
+            area: 'Bengaluru',
             city: 'Bengaluru',
             state: 'Karnataka',
             pincode: '560001',
-            lat: 12.9352,
-            lng: 77.6245,
-            addressLine: (addressText || 'Koramangala, Bengaluru') + ', Karnataka - 560001',
+            latitude: 12.9716,
+            longitude: 77.5946,
+            addressLine: addressText + ', Bengaluru, Karnataka - 560001',
             isDefault: true
           }
-        ]
+        ] : []
       };
-      setStorage(STORAGE_KEYS.USER, newUser);
+      setStorage(STORAGE_KEYS.CURRENT_USER, newUser);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
+      updateUserNavUI();
       return newUser;
     },
+
     addAddress: function (addressObj) {
       const user = this.getCurrentUser();
       if (!user) return null;
@@ -458,35 +492,26 @@ const FoodWalaApp = (function () {
       const id = 'addr_' + Date.now();
       const isFirst = user.addresses.length === 0;
 
-      // Geocode area coordinates if available
-      let lat = 12.9352, lng = 77.6245;
-      const matchedLoc = BENGALURU_LOCATIONS.find(l => 
-        (addressObj.area || '').toLowerCase().includes(l.shortName.toLowerCase()) ||
-        (addressObj.street || '').toLowerCase().includes(l.shortName.toLowerCase())
-      );
-      if (matchedLoc) {
-        lat = matchedLoc.lat;
-        lng = matchedLoc.lng;
-      }
-
       const formattedLine = `${addressObj.houseNo ? addressObj.houseNo + ', ' : ''}${addressObj.street ? addressObj.street + ', ' : ''}${addressObj.area ? addressObj.area + ', ' : ''}${addressObj.city || 'Bengaluru'}, ${addressObj.state || 'Karnataka'} - ${addressObj.pincode || '560001'}`;
 
       const newAddr = {
         id: id,
+        userId: user.userId,
+        label: addressObj.label || addressObj.type || 'Home',
+        type: addressObj.type || 'Home',
         fullName: addressObj.fullName || user.name,
         phone: addressObj.phone || user.phone,
-        type: addressObj.type || 'Home',
         houseNo: addressObj.houseNo || '',
         street: addressObj.street || '',
-        area: addressObj.area || 'Koramangala',
+        area: addressObj.area || 'Bengaluru',
         landmark: addressObj.landmark || '',
         city: addressObj.city || 'Bengaluru',
         state: addressObj.state || 'Karnataka',
         pincode: addressObj.pincode || '560001',
-        lat: lat,
-        lng: lng,
+        latitude: addressObj.latitude || addressObj.lat || 12.9716,
+        longitude: addressObj.longitude || addressObj.lng || 77.5946,
         addressLine: formattedLine,
-        isDefault: addressObj.isDefault || isFirst
+        isDefault: addressObj.isDefault !== undefined ? addressObj.isDefault : isFirst
       };
 
       if (newAddr.isDefault) {
@@ -494,10 +519,11 @@ const FoodWalaApp = (function () {
       }
 
       user.addresses.push(newAddr);
-      setStorage(STORAGE_KEYS.USER, user);
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
       return newAddr;
     },
+
     updateAddress: function (addressId, addressObj) {
       const user = this.getCurrentUser();
       if (!user || !user.addresses) return null;
@@ -516,10 +542,11 @@ const FoodWalaApp = (function () {
         addressLine: formattedLine
       };
 
-      setStorage(STORAGE_KEYS.USER, user);
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
       return user.addresses[idx];
     },
+
     deleteAddress: function (addressId) {
       const user = this.getCurrentUser();
       if (!user || !user.addresses) return false;
@@ -527,15 +554,16 @@ const FoodWalaApp = (function () {
       if (user.addresses.length > 0 && !user.addresses.some(a => a.isDefault)) {
         user.addresses[0].isDefault = true;
       }
-      setStorage(STORAGE_KEYS.USER, user);
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
       return true;
     },
+
     setDefaultAddress: function (addressId) {
       const user = this.getCurrentUser();
       if (!user || !user.addresses) return;
       user.addresses.forEach(a => a.isDefault = (a.id === addressId));
-      setStorage(STORAGE_KEYS.USER, user);
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
     }
   };
@@ -718,56 +746,7 @@ const FoodWalaApp = (function () {
   // --- ORDERS & LIVE TRACKING MODULE ---
   const Orders = {
     getAllOrders: function () {
-      const orders = getStorage(STORAGE_KEYS.ORDERS, null);
-      if (orders && orders.length > 0) return orders;
-
-      const initialOrders = [
-        {
-          id: 'FW-89421',
-          orderId: 'FW-89421',
-          userId: 1,
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-          restaurantId: 1,
-          restaurantName: 'Meghana Foods',
-          restaurantAddress: '5th Block, Koramangala, Bengaluru',
-          restaurantImage: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500',
-          restaurantLocation: { lat: 12.9352, lng: 77.6245 },
-          deliveryAddress: 'Flat 402, Sunshine Heights, 5th Block, Koramangala, Bengaluru - 560095',
-          deliveryLocation: { lat: 12.9308, lng: 77.6210 },
-          items: [
-            { name: 'Meghana Special Chicken Biryani', quantity: 2, price: 340, isVeg: false },
-            { name: 'Chicken 65', quantity: 1, price: 280, isVeg: false }
-          ],
-          itemTotal: 960,
-          deliveryFee: 0,
-          platformFee: 5,
-          gst: 48,
-          discount: 100,
-          grandTotal: 913,
-          paymentStatus: 'PAID',
-          paymentMethod: 'UPI (Google Pay)',
-          razorpayPaymentId: 'pay_test_98412meghana',
-          status: 'DELIVERED',
-          progressPercentage: 100,
-          estimatedMinutes: 0,
-          deliveryPartner: {
-            name: 'Ramesh Kumar',
-            phone: '+91 91234 56789',
-            rating: 4.9,
-            vehicle: 'Royal Enfield (KA 01 AB 1234)',
-            otp: 4892
-          },
-          statusTimeline: [
-            { title: 'Order Placed', time: '07:30 PM', done: true },
-            { title: 'Restaurant Accepted', time: '07:32 PM', done: true },
-            { title: 'Food Prepared', time: '07:48 PM', done: true },
-            { title: 'Delivery Partner on the Way', time: '07:52 PM', done: true },
-            { title: 'Delivered', time: '08:08 PM', done: true }
-          ]
-        }
-      ];
-      setStorage(STORAGE_KEYS.ORDERS, initialOrders);
-      return initialOrders;
+      return getStorage(STORAGE_KEYS.ORDERS, []);
     },
     getOrderById: function (orderId) {
       const orders = this.getAllOrders();
@@ -802,22 +781,24 @@ const FoodWalaApp = (function () {
       }
 
       // Resolve customer delivery coordinates
-      let destLat = orderDetails.lat || loc.lat || 12.9308;
-      let destLng = orderDetails.lng || loc.lng || 77.6210;
+      let destLat = orderDetails.latitude || orderDetails.lat || (loc ? loc.latitude : 12.9308);
+      let destLng = orderDetails.longitude || orderDetails.lng || (loc ? loc.longitude : 77.6210);
 
       const newOrder = {
         id: newId,
         orderId: newId,
-        userId: user ? user.userId : 1,
+        userId: user ? user.userId : null,
         createdAt: new Date().toISOString(),
         restaurantId: cart.restaurantId,
         restaurantName: cart.restaurantName || 'Bengaluru Restaurant',
         restaurantAddress: cart.restaurantAddress || 'Bengaluru',
         restaurantImage: cart.restaurantImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500',
         restaurantLocation: { lat: restLat, lng: restLng },
-        deliveryAddress: orderDetails.address || (user && user.addresses ? user.addresses[0].addressLine : loc.name),
+        deliveryAddress: orderDetails.address || (loc ? loc.address : 'Bengaluru Delivery Address'),
+        deliveryLatitude: destLat,
+        deliveryLongitude: destLng,
         deliveryLocation: { lat: destLat, lng: destLng },
-        customerName: orderDetails.name || (user ? user.name : 'Guest'),
+        customerName: orderDetails.name || (user ? user.name : 'Guest Customer'),
         customerPhone: orderDetails.phone || (user ? user.phone : '+91 98765 43210'),
         customerEmail: user ? user.email : 'guest@foodwala.com',
         deliveryInstructions: orderDetails.instructions || '',
@@ -892,10 +873,13 @@ const FoodWalaApp = (function () {
       setTimeout(() => toastEl.remove(), 300);
     }, 4000);
 
-    toastEl.querySelector('.btn-close').addEventListener('click', () => {
-      toastEl.classList.remove('show');
-      setTimeout(() => toastEl.remove(), 300);
-    });
+    const closeBtn = toastEl.querySelector('.btn-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        toastEl.classList.remove('show');
+        setTimeout(() => toastEl.remove(), 300);
+      });
+    }
   }
 
   // Common UI Init
@@ -906,8 +890,14 @@ const FoodWalaApp = (function () {
     bindLocationModalEvents();
 
     window.addEventListener('foodwala:cartChanged', () => Cart.updateCartBadge());
-    window.addEventListener('foodwala:authChanged', () => updateUserNavUI());
-    window.addEventListener('foodwala:locationChanged', () => updateLocationNavUI());
+    window.addEventListener('foodwala:authChanged', () => {
+      updateUserNavUI();
+      bindLocationModalEvents();
+    });
+    window.addEventListener('foodwala:locationChanged', () => {
+      updateLocationNavUI();
+      bindLocationModalEvents();
+    });
   }
 
   function updateUserNavUI() {
@@ -915,7 +905,7 @@ const FoodWalaApp = (function () {
     const userNavSlot = document.getElementById('navbar-user-slot');
     if (!userNavSlot) return;
 
-    if (user) {
+    if (user && user.name) {
       userNavSlot.innerHTML = `
         <div class="dropdown">
           <button class="btn btn-outline-dark btn-sm dropdown-toggle d-flex align-items-center gap-2 py-2 px-3 rounded-pill" type="button" id="userDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
@@ -946,8 +936,11 @@ const FoodWalaApp = (function () {
     } else {
       userNavSlot.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-          <a href="./login.html" class="btn btn-outline-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
-          <a href="./register.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Register</a>
+          <a href="./login.html" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill fw-semibold d-flex align-items-center gap-1">
+            <i class="bi bi-person"></i>
+            <span>Login</span>
+          </a>
+          <a href="./register.html" class="btn btn-danger btn-sm px-3 py-2 rounded-pill fw-semibold">Sign Up</a>
         </div>
       `;
     }
@@ -956,50 +949,87 @@ const FoodWalaApp = (function () {
   function updateLocationNavUI() {
     const loc = Location.getCurrentLocation();
     const locSlot = document.getElementById('navbar-location-display');
-    if (locSlot) {
+    if (!locSlot) return;
+
+    if (loc && loc.latitude && loc.longitude) {
+      const accuracyText = loc.accuracy ? `GPS Accuracy ~${loc.accuracy}m` : (loc.source === 'gps' ? 'Live GPS Location' : (loc.address || 'Bengaluru'));
       locSlot.innerHTML = `
-        <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">${loc.shortName}</span>
-        <small class="text-muted d-block text-truncate" style="max-width: 180px;">${loc.landmark || 'Bengaluru'}</small>
+        <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">${loc.shortName || 'Current Location'}</span>
+        <small class="text-muted d-block text-truncate" style="max-width: 180px;">${accuracyText}</small>
+      `;
+    } else {
+      locSlot.innerHTML = `
+        <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Select Location</span>
+        <small class="text-muted d-block text-truncate" style="max-width: 180px;">Click to set delivery area</small>
       `;
     }
   }
 
   function bindLocationModalEvents() {
-    const modalList = document.getElementById('location-options-list');
-    if (!modalList) return;
+    const modalContainer = document.getElementById('location-options-list');
+    if (!modalContainer) return;
 
-    const current = Location.getCurrentLocation();
-    modalList.innerHTML = `
+    const currentLoc = Location.getCurrentLocation();
+    const currentUser = Auth.getCurrentUser();
+    const savedAddresses = (currentUser && currentUser.addresses) ? currentUser.addresses : [];
+    const hubs = Location.getBengaluruHubs();
+
+    let html = `
       <div class="p-3 bg-light border-bottom">
-        <button type="button" class="btn btn-outline-danger btn-sm w-100 rounded-pill py-2 fw-bold d-flex align-items-center justify-content-center gap-2" id="use-current-gps-btn">
-          <i class="bi bi-crosshair"></i> Use Current Location (GPS)
+        <button type="button" class="btn btn-danger btn-sm w-100 rounded-pill py-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm mb-2" id="use-current-gps-btn">
+          <i class="bi bi-crosshair fs-5"></i> Use Current Location (GPS)
         </button>
-      </div>
-    ` + BENGALURU_LOCATIONS.map(l => `
-      <button class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-0 border-bottom ${l.id === current.id ? 'active text-white' : ''}" 
-              data-loc-id="${l.id}">
-        <div>
-          <div class="fw-bold"><i class="bi bi-geo-alt-fill me-2 text-danger"></i>${l.shortName}</div>
-          <small class="${l.id === current.id ? 'text-light' : 'text-muted'}">${l.landmark}</small>
+        <div class="input-group input-group-sm mt-2">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" id="manual-search-hub-input" placeholder="Search Bengaluru area...">
         </div>
-        ${l.id === current.id ? '<i class="bi bi-check2-circle fs-4"></i>' : '<i class="bi bi-chevron-right text-muted"></i>'}
-      </button>
-    `).join('');
+      </div>
+    `;
 
-    modalList.querySelectorAll('button[data-loc-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-loc-id');
-        Location.setCurrentLocation(id);
-        const modalEl = document.getElementById('locationModal');
-        if (modalEl && window.bootstrap && bootstrap.Modal) {
-          const modal = bootstrap.Modal.getInstance(modalEl);
-          if (modal) modal.hide();
-        }
-        showToast(`Delivery location set to ${Location.getCurrentLocation().shortName}!`);
-        setTimeout(() => window.location.reload(), 300);
-      });
-    });
+    // Saved addresses section (if logged in and has addresses)
+    if (savedAddresses.length > 0) {
+      html += `
+        <div class="p-3 bg-white border-bottom">
+          <small class="fw-bold text-uppercase text-muted d-block mb-2" style="font-size: 11px;"><i class="bi bi-bookmark-fill text-danger me-1"></i> Saved Addresses</small>
+          <div class="d-flex flex-column gap-2">
+            ${savedAddresses.map(addr => `
+              <button type="button" class="btn btn-light text-start p-2 rounded-3 border d-flex align-items-center justify-content-between js-select-saved-addr" data-addr-id="${addr.id}">
+                <div>
+                  <span class="fw-bold text-dark small"><i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : 'bi-house-door'} text-danger me-1"></i> ${addr.type || 'Home'}</span>
+                  <small class="text-muted d-block text-truncate" style="max-width: 260px;">${addr.addressLine}</small>
+                </div>
+                <i class="bi bi-chevron-right text-muted small"></i>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
 
+    // Popular Hubs list
+    html += `
+      <div class="p-2">
+        <small class="fw-bold text-uppercase text-muted d-block px-2 py-1" style="font-size: 11px;"><i class="bi bi-geo-alt-fill text-primary me-1"></i> Popular Bengaluru Delivery Hubs</small>
+        <div class="list-group list-group-flush" id="bengaluru-hubs-list">
+          ${hubs.map(h => {
+            const isSelected = currentLoc && (currentLoc.shortName === h.shortName || (currentLoc.latitude === h.lat && currentLoc.longitude === h.lng));
+            return `
+              <button type="button" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-2 px-3 border-0 rounded-3 mb-1 ${isSelected ? 'active text-white' : ''}" data-hub-id="${h.id}">
+                <div>
+                  <div class="fw-bold"><i class="bi bi-geo-alt-fill me-2 ${isSelected ? 'text-white' : 'text-danger'}"></i>${h.shortName}</div>
+                  <small class="${isSelected ? 'text-light' : 'text-muted'}">${h.landmark}</small>
+                </div>
+                ${isSelected ? '<i class="bi bi-check2-circle fs-5"></i>' : '<i class="bi bi-chevron-right text-muted small"></i>'}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    modalContainer.innerHTML = html;
+
+    // Bind GPS Button Click
     const gpsBtn = document.getElementById('use-current-gps-btn');
     if (gpsBtn) {
       gpsBtn.addEventListener('click', () => {
@@ -1007,21 +1037,69 @@ const FoodWalaApp = (function () {
         gpsBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Detecting GPS Location...';
 
         Location.detectCurrentLocation(
-          (loc) => {
+          (detectedLoc) => {
+            gpsBtn.disabled = false;
+            gpsBtn.innerHTML = '<i class="bi bi-crosshair fs-5"></i> Use Current Location (GPS)';
+            
             const modalEl = document.getElementById('locationModal');
             if (modalEl && window.bootstrap && bootstrap.Modal) {
-              const modal = bootstrap.Modal.getInstance(modalEl);
-              if (modal) modal.hide();
+              const modalInstance = bootstrap.Modal.getInstance(modalEl);
+              if (modalInstance) modalInstance.hide();
             }
-            showToast(`Location detected: ${loc.name}!`);
-            setTimeout(() => window.location.reload(), 300);
+            showToast(`Location set: ${detectedLoc.shortName}!`, 'success');
           },
           (errMsg) => {
             gpsBtn.disabled = false;
-            gpsBtn.innerHTML = '<i class="bi bi-crosshair"></i> Use Current Location (GPS)';
+            gpsBtn.innerHTML = '<i class="bi bi-crosshair fs-5"></i> Use Current Location (GPS)';
             showToast(errMsg, 'warning');
           }
         );
+      });
+    }
+
+    // Bind Saved Address Selection
+    modalContainer.querySelectorAll('.js-select-saved-addr').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const addrId = btn.getAttribute('data-addr-id');
+        const targetAddr = savedAddresses.find(a => a.id === addrId);
+        if (targetAddr) {
+          Location.setSavedAddressLocation(targetAddr);
+          const modalEl = document.getElementById('locationModal');
+          if (modalEl && window.bootstrap && bootstrap.Modal) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+          }
+          showToast(`Delivery location set to ${targetAddr.type}!`, 'success');
+        }
+      });
+    });
+
+    // Bind Hub selection
+    modalContainer.querySelectorAll('button[data-hub-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const hubId = btn.getAttribute('data-hub-id');
+        const loc = Location.setManualLocation(hubId);
+        const modalEl = document.getElementById('locationModal');
+        if (modalEl && window.bootstrap && bootstrap.Modal) {
+          const modalInstance = bootstrap.Modal.getInstance(modalEl);
+          if (modalInstance) modalInstance.hide();
+        }
+        showToast(`Delivery location set to ${loc.shortName}!`, 'success');
+      });
+    });
+
+    // Search filter inside modal
+    const searchInput = document.getElementById('manual-search-hub-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        modalContainer.querySelectorAll('button[data-hub-id]').forEach(btn => {
+          const hubId = btn.getAttribute('data-hub-id');
+          const hub = hubs.find(h => h.id === hubId);
+          if (!hub) return;
+          const matches = hub.name.toLowerCase().includes(term) || hub.shortName.toLowerCase().includes(term) || hub.landmark.toLowerCase().includes(term);
+          btn.style.display = matches ? 'flex' : 'none';
+        });
       });
     }
   }
@@ -1038,7 +1116,6 @@ const FoodWalaApp = (function () {
   return {
     STORAGE_KEYS,
     BENGALURU_LOCATIONS,
-    DEMO_USERS,
     AVAILABLE_COUPONS,
     loadData,
     getRestaurants: () => restaurantsCache,
@@ -1050,6 +1127,8 @@ const FoodWalaApp = (function () {
     Cart,
     Orders,
     showToast,
+    updateAuthUI: updateUserNavUI,
+    updateLocationUI: updateLocationNavUI,
     initCommonUI
   };
 })();

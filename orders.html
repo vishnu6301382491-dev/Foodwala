@@ -16,7 +16,7 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4" href="./index.html">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4 text-decoration-none" href="./index.html">
         <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
           <i class="bi bi-bag-heart-fill fs-5"></i>
         </div>
@@ -28,13 +28,13 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarContent">
-        <!-- Location Picker Button -->
+        <!-- Location Picker Button (No fake default) -->
         <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
-          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal" title="Select Delivery Location">
             <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
             <div class="text-start lh-1" id="navbar-location-display">
-              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Koramangala</span>
-              <small class="text-muted d-block">Bengaluru</small>
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Select Location</span>
+              <small class="text-muted d-block" style="font-size: 0.75rem;">Click to set location</small>
             </div>
             <i class="bi bi-chevron-down text-muted ms-1 small"></i>
           </button>
@@ -52,7 +52,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 text-danger" href="./orders.html">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./orders.html">
               <i class="bi bi-bag-check me-1"></i> Orders
             </a>
           </li>
@@ -63,9 +63,15 @@
               <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
             </a>
           </li>
+          <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
           <li class="nav-item ms-lg-2" id="navbar-user-slot">
-            <!-- Populated dynamically by FoodWalaApp.Auth -->
-            <a href="./login.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+            <div class="d-flex align-items-center gap-2">
+              <a href="./login.html" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill fw-semibold d-flex align-items-center gap-1">
+                <i class="bi bi-person"></i>
+                <span>Login</span>
+              </a>
+              <a href="./register.html" class="btn btn-danger btn-sm px-3 py-2 rounded-pill fw-semibold">Sign Up</a>
+            </div>
           </li>
         </ul>
       </div>
@@ -78,14 +84,12 @@
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
         <div class="modal-header bg-danger text-white border-0 py-3">
           <h5 class="modal-title fw-bold" id="locationModalLabel">
-            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Location
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0">
-          <div class="list-group list-group-flush" id="location-options-list">
-            <!-- Populated by FoodWalaApp -->
-          </div>
+        <div class="modal-body p-0" id="location-options-list">
+          <!-- Populated by FoodWalaApp.bindLocationModalEvents() -->
         </div>
       </div>
     </div>
@@ -184,9 +188,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Auth Guard
-      if (!FoodWalaApp.Auth.requireAuth('./orders.html')) return;
-
       const container = document.getElementById('orders-list-container');
       const orders = FoodWalaApp.Orders.getAllOrders();
 
@@ -271,7 +272,7 @@
 
                 <div class="d-flex gap-2">
                   <a href="./order-tracking.html?orderId=${order.orderId || order.id}" class="btn ${isLive ? 'btn-danger shadow' : 'btn-outline-danger'} btn-sm rounded-pill px-4 py-2 fw-bold">
-                    <i class="bi ${isLive ? 'bi-broadcast' : 'bi-map'} me-1"></i> ${isLive ? 'Live Track Order' : 'View Tracking & Route'}
+                    <i class="bi ${isLive ? 'bi-broadcast' : 'bi-map'} me-1"></i> ${isLive ? 'Live Track Order' : 'View Route & Tracking'}
                   </a>
                   <a href="./restaurant-details.html?id=${order.restaurantId}" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold">
                     <i class="bi bi-arrow-repeat me-1"></i> Reorder

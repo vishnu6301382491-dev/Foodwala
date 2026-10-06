@@ -368,11 +368,12 @@
         continue;
       }
 
-      // Distance calculation (based on user location or default)
-      const userLoc = window.FoodWalaApp ? window.FoodWalaApp.Location.getCurrentLocation() : { lat: 12.9352, lng: 77.6245 };
-      const dist = (window.FoodWalaApp && window.FoodWalaApp.Location)
-        ? window.FoodWalaApp.Location.calculateDistance(userLoc.lat, userLoc.lng, r.latitude, r.longitude)
-        : (r.distance || 3.2);
+      // Distance calculation (based on actual user location if available)
+      const userLoc = window.FoodWalaApp ? window.FoodWalaApp.Location.getCurrentLocation() : null;
+      let dist = r.distance || 3.2;
+      if (userLoc && userLoc.latitude && userLoc.longitude && r.latitude && r.longitude && window.FoodWalaApp && window.FoodWalaApp.Location) {
+        dist = window.FoodWalaApp.Location.calculateDistance(userLoc.latitude, userLoc.longitude, r.latitude, r.longitude);
+      }
 
       if (filters.within5km && dist > 5.0) {
         continue;
