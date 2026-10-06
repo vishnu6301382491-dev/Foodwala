@@ -1,5 +1,6 @@
 package com.tap.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -7,6 +8,8 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tap.service.SMSService;
 
@@ -36,6 +39,7 @@ public class SendOTPServlet extends HttpServlet {
 
     public static final Map<String, OTPRecord> OTP_STORE = new ConcurrentHashMap<>();
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final Pattern PHONE_JSON_PATTERN = Pattern.compile("\"phone\"\\s*:\\s*\"([^\"]+)\"");
 
     public static String normalizePhone(String raw) {
         if (raw == null) return null;
@@ -62,14 +66,58 @@ public class SendOTPServlet extends HttpServlet {
         }
     }
 
+    private void applyCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        if (origin != null && !origin.isBlank()) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+        } else {
+            response.setHeader("Access-Control-Allow-Origin", "*");
+        }
+        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin");
+        response.setHeader("Access-Control-Max-Age", "3600");
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        applyCorsHeaders(request, response);
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private String extractPhone(HttpServletRequest request) throws IOException {
+        String phoneParam = request.getParameter("phone");
+        if (phoneParam != null && !phoneParam.isBlank()) {
+            return phoneParam.trim();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = request.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        String body = sb.toString();
+        if (!body.isBlank()) {
+            Matcher m = PHONE_JSON_PATTERN.matcher(body);
+            if (m.find()) {
+                return m.group(1).trim();
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        applyCorsHeaders(request, response);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
-        String rawPhone = request.getParameter("phone");
+        String rawPhone = extractPhone(request);
         String normalized = normalizePhone(rawPhone);
 
         if (normalized == null) {
@@ -83,7 +131,7 @@ public class SendOTPServlet extends HttpServlet {
         if (existing != null && (now - existing.lastSentAt) < 30000) {
             long waitSec = (30000 - (now - existing.lastSentAt)) / 1000 + 1;
             response.setStatus(429);
-            out.print("{\"success\": false, \"error\": \"TOO_MANY_REQUESTS\", \"message\": \"Please wait " + waitSec + "s before requesting a new OTP.\"}");
+            out.print("{\"success\": false, \"error\": \"TOO_MANY_REQUESTS\", \"message\": \"Please wait " + waitSec + "s before requesting a new OTP.\", \"cooldownRemaining\": " + waitSec + "}");
             return;
         }
 
@@ -93,18 +141,18 @@ public class SendOTPServlet extends HttpServlet {
         long expiresAt = now + (5 * 60 * 1000);
 
         OTP_STORE.put(normalized, new OTPRecord(hashed, expiresAt, now));
+
+        // Console Dev Mode Logging
+        System.out.println("==================================================");
+        System.out.println("[FoodWala OTP] Development OTP: " + otp);
+        System.out.println("[FoodWala OTP] Phone: " + normalized);
+        System.out.println("[FoodWala OTP] Expiration: 5 minutes");
+        System.out.println("==================================================");
+
+        // Deliver via SMS provider if configured
         SMSService.getInstance().sendOtp(normalized, otp);
 
-        String devMode = System.getenv("OTP_DEV_MODE");
-        boolean isDev = (devMode == null || "true".equalsIgnoreCase(devMode));
-
-        StringBuilder json = new StringBuilder();
-        json.append("{\"success\": true, \"message\": \"OTP sent successfully.\", \"phone\": \"").append(normalized).append("\", \"expiresIn\": 300");
-        if (isDev) {
-            json.append(", \"devOtp\": \"").append(otp).append("\"");
-        }
-        json.append("}");
-
-        out.print(json.toString());
+        String json = "{\"success\": true, \"message\": \"OTP sent successfully.\", \"phone\": \"" + normalized + "\", \"expiresIn\": 300}";
+        out.print(json);
     }
 }

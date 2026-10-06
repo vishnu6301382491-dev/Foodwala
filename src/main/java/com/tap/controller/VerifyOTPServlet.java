@@ -1,8 +1,11 @@
 package com.tap.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tap.dao.UserDAO;
 import com.tap.daoimpl.UserDAOImpl;
@@ -20,18 +23,71 @@ public class VerifyOTPServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private UserDAO userDAO = new UserDAOImpl();
 
+    private static final Pattern PHONE_JSON_PATTERN = Pattern.compile("\"phone\"\\s*:\\s*\"([^\"]+)\"");
+    private static final Pattern OTP_JSON_PATTERN = Pattern.compile("\"otp\"\\s*:\\s*\"([^\"]+)\"");
+
+    private void applyCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        if (origin != null && !origin.isBlank()) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+        } else {
+            response.setHeader("Access-Control-Allow-Origin", "*");
+        }
+        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin");
+        response.setHeader("Access-Control-Max-Age", "3600");
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        applyCorsHeaders(request, response);
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private static class VerifyInput {
+        String phone;
+        String otp;
+    }
+
+    private VerifyInput extractInput(HttpServletRequest request) throws IOException {
+        VerifyInput input = new VerifyInput();
+        input.phone = request.getParameter("phone");
+        input.otp = request.getParameter("otp");
+
+        if ((input.phone == null || input.phone.isBlank()) || (input.otp == null || input.otp.isBlank())) {
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader reader = request.getReader()) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+            }
+            String body = sb.toString();
+            if (!body.isBlank()) {
+                Matcher pm = PHONE_JSON_PATTERN.matcher(body);
+                if (pm.find()) input.phone = pm.group(1).trim();
+                Matcher om = OTP_JSON_PATTERN.matcher(body);
+                if (om.find()) input.otp = om.group(1).trim();
+            }
+        }
+        return input;
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        applyCorsHeaders(request, response);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
-        String rawPhone = request.getParameter("phone");
-        String otp = request.getParameter("otp");
-        String normalized = SendOTPServlet.normalizePhone(rawPhone);
+        VerifyInput input = extractInput(request);
+        String normalized = SendOTPServlet.normalizePhone(input.phone);
+        String otp = (input.otp != null) ? input.otp.trim() : null;
 
-        if (normalized == null || otp == null || otp.trim().length() != 6) {
+        if (normalized == null || otp == null || otp.length() != 6 || !otp.matches("^\\d{6}$")) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"success\": false, \"error\": \"INVALID_OTP_FORMAT\", \"message\": \"Please enter the 6-digit verification code.\"}");
             return;
@@ -52,7 +108,7 @@ public class VerifyOTPServlet extends HttpServlet {
             return;
         }
 
-        String computed = SendOTPServlet.hashOtp(normalized, otp.trim());
+        String computed = SendOTPServlet.hashOtp(normalized, otp);
         if (!computed.equals(record.hashedOtp)) {
             record.attempts++;
             int remaining = 5 - record.attempts;
@@ -65,15 +121,21 @@ public class VerifyOTPServlet extends HttpServlet {
 
         User user = null;
         try {
-            user = userDAO.getUser(1);
-        } catch (Exception e) {}
+            user = userDAO.getUserByPhone(normalized);
+            if (user == null) {
+                // Fallback check user 1 if present
+                user = userDAO.getUser(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         HttpSession session = request.getSession();
         String token = "fw_sess_" + UUID.randomUUID().toString();
 
         if (user != null) {
             session.setAttribute("currentUser", user);
-            out.print("{\"success\": true, \"isNewUser\": false, \"message\": \"Mobile number verified successfully.\", \"token\": \"" + token + "\", \"user\": {\"userId\": " + user.getUserId() + ", \"name\": \"" + user.getName() + "\", \"phone\": \"" + normalized + "\", \"email\": \"" + (user.getEmail() != null ? user.getEmail() : "") + "\"}}");
+            out.print("{\"success\": true, \"isNewUser\": false, \"message\": \"Mobile number verified successfully.\", \"token\": \"" + token + "\", \"user\": {\"userId\": " + user.getUserId() + ", \"name\": \"" + (user.getName() != null ? user.getName().replace("\"", "\\\"") : "") + "\", \"phone\": \"" + normalized + "\", \"email\": \"" + (user.getEmail() != null ? user.getEmail().replace("\"", "\\\"") : "") + "\"}}");
         } else {
             out.print("{\"success\": true, \"isNewUser\": true, \"phone\": \"" + normalized + "\", \"message\": \"Mobile number verified successfully. Please complete your profile.\"}");
         }

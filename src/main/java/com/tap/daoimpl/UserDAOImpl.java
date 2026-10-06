@@ -16,6 +16,8 @@ public class UserDAOImpl implements UserDAO {
             "SELECT * FROM `user` WHERE user_id = ?";
     private static final String GET_BY_EMAIL_QUERY =
             "SELECT * FROM `user` WHERE email = ?";
+    private static final String GET_BY_PHONE_QUERY =
+            "SELECT * FROM `user` WHERE phone = ? OR phone = ? OR phone = ?";
     private static final String UPDATE_QUERY =
             "UPDATE `user` SET username=?, password=?, email=?, phone=?, address=?, role=? WHERE user_id=?";
     private static final String DELETE_QUERY =
@@ -65,6 +67,26 @@ public class UserDAOImpl implements UserDAO {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(GET_BY_EMAIL_QUERY)) {
             ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapUser(rs);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
+    }
+
+    @Override
+    public User getUserByPhone(String phone) {
+        if (phone == null || phone.isBlank()) return null;
+        String clean = phone.replaceAll("[^0-9]", "");
+        String raw10 = clean.length() >= 10 ? clean.substring(clean.length() - 10) : clean;
+        String withPlus91 = "+91" + raw10;
+        String with91 = "91" + raw10;
+
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(GET_BY_PHONE_QUERY)) {
+            ps.setString(1, phone);
+            ps.setString(2, withPlus91);
+            ps.setString(3, raw10);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapUser(rs);
             }

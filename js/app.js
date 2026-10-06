@@ -324,19 +324,52 @@ const FoodWalaApp = (function () {
     }
   };
 
-  // --- AUTH MODULE (NO DEFAULT USER) ---
+  // --- AUTH MODULE (NO DEFAULT USER - REAL JAVA BACKEND INTEGRATION) ---
   const Auth = {
-    // Client-side dev OTP cache for seamless local testing or static hosting
-    _clientDevOtpStore: new Map(),
-
-    // Resolve API Base URL (Window override -> Localhost -> Empty for relative / static)
+    // Resolve API Base URL (Window override -> Stored config -> Localhost Tomcat -> Null for unconfigured remote)
     getApiBaseUrl: function () {
+      // 1. Explicit window override
       if (typeof window !== 'undefined' && window.FOODWALA_API_URL) {
         return window.FOODWALA_API_URL.replace(/\/+$/, '');
       }
-      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return 'http://localhost:5000';
+      if (typeof window !== 'undefined' && window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_URL) {
+        return window.FOODWALA_CONFIG.API_URL.replace(/\/+$/, '');
       }
+
+      // 2. Explicit localStorage override (for developer runtime testing of public backend)
+      try {
+        const storedUrl = localStorage.getItem('foodwala_api_base_url');
+        if (storedUrl && typeof storedUrl === 'string' && storedUrl.trim().length > 0) {
+          return storedUrl.trim().replace(/\/+$/, '');
+        }
+      } catch (e) {}
+
+      // 3. Localhost Development Environment (Tomcat Java backend)
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        const port = window.location.port;
+
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          // If page is hosted on Tomcat directly (e.g. port 8080 with context /FoodWala or /Foodwala)
+          if (port === '8080') {
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            const context = (pathSegments.length > 0 && /Foodwala/i.test(pathSegments[0])) ? '/' + pathSegments[0] : '/FoodWala';
+            return window.location.origin + context;
+          }
+          // Default local Tomcat backend URL
+          return 'http://localhost:8080/FoodWala';
+        }
+
+        // 4. Remote / GitHub Pages Hosting (e.g. vishnu6301382491-dev.github.io)
+        if (hostname.endsWith('github.io')) {
+          if (window.FOODWALA_PUBLIC_API_URL) {
+            return window.FOODWALA_PUBLIC_API_URL.replace(/\/+$/, '');
+          }
+          // Return null so we do NOT issue broken relative POST requests to GitHub Pages (which yield 405 Method Not Allowed)
+          return null;
+        }
+      }
+
       return '';
     },
 
@@ -407,7 +440,21 @@ const FoodWalaApp = (function () {
       }
 
       const apiBase = this.getApiBaseUrl();
-      const endpoint = (apiBase ? apiBase : '') + '/api/auth/send-otp';
+
+      // Check if running on GitHub Pages without configured public Java Backend
+      if (apiBase === null) {
+        console.error('[FoodWala OTP] Architecture Notice: Java Backend is not yet configured for GitHub Pages production hosting.');
+        console.warn('[FoodWala OTP] GitHub Pages is a static host and cannot execute Java Servlets / Tomcat backend.');
+        console.info('[FoodWala OTP] To test locally: Open http://localhost:8080/FoodWala/login.html in your browser.');
+        console.info('[FoodWala OTP] To connect GitHub Pages to a live backend: Set window.FOODWALA_API_URL = "https://your-public-java-backend".');
+        return {
+          success: false,
+          error: 'BACKEND_NOT_CONFIGURED',
+          message: 'GitHub Pages is a static file host and cannot execute Java Servlets. Please run FoodWala locally on Tomcat (http://localhost:8080/FoodWala/) or configure a public Java backend URL.'
+        };
+      }
+
+      const endpoint = apiBase.replace(/\/+$/, '') + '/api/auth/send-otp';
 
       console.log('[FoodWala OTP] Sending OTP...');
       console.log('[FoodWala OTP] API:', endpoint);
@@ -416,7 +463,10 @@ const FoodWalaApp = (function () {
       try {
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ phone: normalized })
         });
 
@@ -424,74 +474,57 @@ const FoodWalaApp = (function () {
 
         if (res.ok) {
           const data = await res.json();
-          console.log('[FoodWala OTP] Response:', { ...data, devOtp: data.devOtp ? '******' : undefined });
-          if (data.devOtp) {
-            this._clientDevOtpStore.set(normalized, { otp: data.devOtp, expiresAt: Date.now() + 300000, lastSentAt: Date.now(), attempts: 0 });
-          }
+          console.log('[FoodWala OTP] Response:', data);
           return data;
-        } else if (res.status === 404) {
-          // Static host (e.g. GitHub Pages) where relative /api/ route returns 404
-          console.warn('[FoodWala OTP] API endpoint returned 404 (Static/GitHub Pages hosting). Engaging Client Development Mode.');
-          return this._handleClientDevSendOtp(normalized);
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          console.error('[FoodWala OTP] API Error response:', errData);
-          let message = errData.message;
-          if (!message) {
-            if (res.status === 400) message = 'Invalid mobile number or request format.';
-            else if (res.status === 429) message = 'Too many OTP requests. Please wait 30 seconds.';
-            else if (res.status === 500) message = 'Unable to send OTP. Please try again later.';
-            else message = 'Unable to send OTP right now. Please try again.';
-          }
+        }
+
+        // Specifically detect and log HTTP 405 Method Not Allowed
+        if (res.status === 405) {
+          console.error('[FoodWala OTP] Request URL:', endpoint);
+          console.error('[FoodWala OTP] Status Code: 405 (Method Not Allowed)');
+          console.error('[FoodWala OTP] OTP API URL is pointing to a server that does not support this POST endpoint.');
+          console.error('[FoodWala OTP] The POST request was sent to a static host or invalid endpoint instead of the Java Servlet.');
           return {
             success: false,
-            error: errData.error || 'API_ERROR',
-            message: message,
-            cooldownRemaining: errData.cooldownRemaining
+            error: 'METHOD_NOT_ALLOWED',
+            message: 'OTP API URL is pointing to a server that does not support this POST endpoint. Please check your Java backend configuration.'
           };
         }
-      } catch (e) {
-        console.warn('[FoodWala OTP] Backend API unreachable (' + e.message + '). Engaging Client Development Mode.');
-        return this._handleClientDevSendOtp(normalized);
-      }
-    },
 
-    _handleClientDevSendOtp: function (normalized) {
-      const now = Date.now();
-      const existing = this._clientDevOtpStore.get(normalized);
-      if (existing && (now - existing.lastSentAt) < 30000) {
-        const waitSec = Math.ceil((30000 - (now - existing.lastSentAt)) / 1000);
+        let errData = {};
+        try {
+          errData = await res.json();
+        } catch (jsonErr) {
+          console.error('[FoodWala OTP] Error parsing response body:', jsonErr);
+        }
+
+        console.error('[FoodWala OTP] Request URL:', endpoint);
+        console.error('[FoodWala OTP] Status Code:', res.status);
+        console.error('[FoodWala OTP] Response Body:', errData);
+
+        let message = errData.message;
+        if (!message) {
+          if (res.status === 400) message = 'Invalid mobile number or request format.';
+          else if (res.status === 429) message = 'Too many OTP requests. Please wait 30 seconds before retrying.';
+          else if (res.status === 500) message = 'Backend error while generating OTP. Please try again later.';
+          else message = 'Unable to send OTP right now. Please try again.';
+        }
+
         return {
           success: false,
-          error: 'TOO_MANY_REQUESTS',
-          message: `Please wait ${waitSec}s before requesting a new OTP.`,
-          cooldownRemaining: waitSec
+          error: errData.error || 'API_ERROR',
+          message: message,
+          cooldownRemaining: errData.cooldownRemaining
+        };
+      } catch (networkErr) {
+        console.error('[FoodWala OTP] Network error:', networkErr);
+        console.error('[FoodWala OTP] Request URL:', endpoint);
+        return {
+          success: false,
+          error: 'NETWORK_ERROR',
+          message: `Unable to connect to Java backend at ${endpoint}. Please ensure Tomcat server is running on localhost:8080.`
         };
       }
-
-      // Generate 6-digit random test OTP
-      const devOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      this._clientDevOtpStore.set(normalized, {
-        otp: devOtp,
-        expiresAt: now + (5 * 60 * 1000),
-        attempts: 0,
-        lastSentAt: now
-      });
-
-      console.log(`\n==================================================`);
-      console.log(`[FoodWala Client DEV OTP]`);
-      console.log(`Recipient: ${normalized}`);
-      console.log(`OTP Code : ${devOtp}`);
-      console.log(`Valid for: 5 minutes (Use this code in the UI)`);
-      console.log(`==================================================\n`);
-
-      return {
-        success: true,
-        message: 'OTP sent successfully. (Dev mode: OTP logged to console)',
-        phone: normalized,
-        expiresIn: 300,
-        devOtp: devOtp
-      };
     },
 
     verifyOtp: async function (rawPhone, otp) {
@@ -506,7 +539,17 @@ const FoodWalaApp = (function () {
       }
 
       const apiBase = this.getApiBaseUrl();
-      const endpoint = (apiBase ? apiBase : '') + '/api/auth/verify-otp';
+
+      if (apiBase === null) {
+        console.error('[FoodWala OTP] Java Backend is not configured for GitHub Pages hosting.');
+        return {
+          success: false,
+          error: 'BACKEND_NOT_CONFIGURED',
+          message: 'GitHub Pages is static and cannot process OTP verification directly. Please run FoodWala locally on Tomcat.'
+        };
+      }
+
+      const endpoint = apiBase.replace(/\/+$/, '') + '/api/auth/verify-otp';
 
       console.log('[FoodWala OTP] Verifying OTP...');
       console.log('[FoodWala OTP] API:', endpoint);
@@ -515,7 +558,10 @@ const FoodWalaApp = (function () {
       try {
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ phone: normalized, otp: cleanOtp })
         });
 
@@ -530,67 +576,50 @@ const FoodWalaApp = (function () {
             updateUserNavUI();
           }
           return data;
-        } else if (res.status === 404) {
-          console.warn('[FoodWala OTP] Verify endpoint returned 404. Using Client Development Mode verification.');
-          return this._handleClientDevVerifyOtp(normalized, cleanOtp);
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          console.error('[FoodWala OTP] Verify Error:', errData);
-          let message = errData.message;
-          if (!message) {
-            if (res.status === 400) message = 'Incorrect OTP or OTP expired. Please try again.';
-            else if (res.status === 401) message = 'Incorrect OTP. Please check and try again.';
-            else if (res.status === 429) message = 'Too many attempts. Please request a new OTP.';
-            else message = 'Verification failed. Please try again.';
-          }
+        }
+
+        if (res.status === 405) {
+          console.error('[FoodWala OTP] Verify Request URL:', endpoint);
+          console.error('[FoodWala OTP] Verify Status Code: 405 (Method Not Allowed)');
+          console.error('[FoodWala OTP] OTP API URL is pointing to a server that does not support this POST endpoint.');
           return {
             success: false,
-            error: errData.error || 'VERIFY_FAILED',
-            message: message,
-            remainingAttempts: errData.attemptsRemaining || errData.remainingAttempts
+            error: 'METHOD_NOT_ALLOWED',
+            message: 'OTP API URL is pointing to a server that does not support this POST endpoint.'
           };
         }
-      } catch (e) {
-        console.warn('[FoodWala OTP] Verify API unreachable. Using Client Development Mode verification.');
-        return this._handleClientDevVerifyOtp(normalized, cleanOtp);
-      }
-    },
 
-    _handleClientDevVerifyOtp: function (normalized, cleanOtp) {
-      const record = this._clientDevOtpStore.get(normalized);
-      if (!record || Date.now() > record.expiresAt) {
-        return { success: false, error: 'OTP_EXPIRED', message: 'OTP expired. Please request a new OTP.' };
-      }
+        let errData = {};
+        try {
+          errData = await res.json();
+        } catch (jsonErr) {}
 
-      if (record.attempts >= 5) {
-        this._clientDevOtpStore.delete(normalized);
-        return { success: false, error: 'TOO_MANY_ATTEMPTS', message: 'Too many incorrect attempts. Please request a new OTP.' };
-      }
+        console.error('[FoodWala OTP] Verify Request URL:', endpoint);
+        console.error('[FoodWala OTP] Verify Status Code:', res.status);
+        console.error('[FoodWala OTP] Verify Response Body:', errData);
 
-      if (record.otp !== cleanOtp) {
-        record.attempts += 1;
-        const remaining = 5 - record.attempts;
+        let message = errData.message;
+        if (!message) {
+          if (res.status === 400) message = 'Incorrect OTP or OTP expired. Please try again.';
+          else if (res.status === 401) message = 'Incorrect OTP. Please check and try again.';
+          else if (res.status === 429) message = 'Too many attempts. Please request a new OTP.';
+          else message = 'Verification failed. Please try again.';
+        }
+
         return {
           success: false,
-          error: 'INCORRECT_OTP',
-          message: `Incorrect OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
+          error: errData.error || 'VERIFY_FAILED',
+          message: message,
+          remainingAttempts: errData.attemptsRemaining || errData.remainingAttempts
         };
-      }
-
-      // OTP is valid!
-      this._clientDevOtpStore.delete(normalized);
-
-      // Check if user already exists in storage or registered users
-      const existingUsers = getStorage('foodwala_registered_users', []);
-      const matched = existingUsers.find(u => u.phone === normalized);
-
-      if (matched) {
-        setStorage(STORAGE_KEYS.CURRENT_USER, matched);
-        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: matched }));
-        updateUserNavUI();
-        return { success: true, isNewUser: false, user: matched };
-      } else {
-        return { success: true, isNewUser: true, phone: normalized };
+      } catch (networkErr) {
+        console.error('[FoodWala OTP] Network error during verification:', networkErr);
+        console.error('[FoodWala OTP] Target Endpoint:', endpoint);
+        return {
+          success: false,
+          error: 'NETWORK_ERROR',
+          message: `Unable to connect to Java backend at ${endpoint}. Please ensure Tomcat server is running on localhost:8080.`
+        };
       }
     },
 
