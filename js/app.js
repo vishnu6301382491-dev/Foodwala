@@ -327,21 +327,28 @@ const FoodWalaApp = (function () {
   // --- AUTH MODULE (NO DEFAULT USER) ---
   const Auth = {
     getCurrentUser: function () {
-      // Returns null if no authenticated user exists
-      return getStorage(STORAGE_KEYS.CURRENT_USER, null);
+      // Returns null if no authenticated user exists or user object is malformed
+      const user = getStorage(STORAGE_KEYS.CURRENT_USER, null);
+      if (user && typeof user === 'object' && user.name && String(user.name).trim().length > 0 && user.email && String(user.email).trim().length > 0) {
+        return user;
+      }
+      return null;
     },
 
     isLoggedIn: function () {
-      return !!this.getCurrentUser();
+      return this.getCurrentUser() !== null;
     },
 
-    requireAuth: function (redirectTarget = './login.html') {
+    requireAuth: function (redirectTarget = './checkout.html') {
       const user = this.getCurrentUser();
       if (!user) {
-        showToast('Please sign in to continue.', 'warning');
+        try {
+          localStorage.setItem('foodwala_post_login_redirect', redirectTarget);
+        } catch (e) {}
+        showToast('Please sign in to proceed with your order.', 'warning');
         setTimeout(() => {
-          window.location.href = `./login.html?redirect=${encodeURIComponent(redirectTarget || window.location.href)}`;
-        }, 500);
+          window.location.href = `./login.html?redirect=${encodeURIComponent(redirectTarget)}`;
+        }, 400);
         return false;
       }
       return true;

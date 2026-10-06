@@ -174,10 +174,10 @@
             <span class="text-danger" id="bill-grand-total">₹0</span>
           </div>
 
-          <a href="./checkout.html" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+          <button type="button" id="proceed-checkout-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
             <span>Proceed to Checkout</span>
             <i class="bi bi-arrow-right"></i>
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -192,6 +192,40 @@
       <a href="./restaurants.html" class="btn btn-danger rounded-pill px-4 py-2 mt-2 fw-semibold">
         <i class="bi bi-shop me-1"></i> Browse Restaurants
       </a>
+    </div>
+
+    <!-- Login Required Modal -->
+    <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+          <div class="modal-header bg-danger text-white border-0 py-3">
+            <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="loginRequiredModalLabel">
+              <i class="bi bi-shield-lock-fill"></i> Sign In to Proceed
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4 text-center">
+            <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 68px; height: 68px;">
+              <i class="bi bi-person-fill-lock fs-1"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Sign in to Complete Checkout</h5>
+            <p class="text-muted small mb-4">
+              Your cart items are securely preserved. Please sign in or create a free FoodWala account to choose your delivery address and complete payment.
+            </p>
+            <div class="d-grid gap-2">
+              <button type="button" id="modal-login-btn" class="btn btn-danger btn-lg rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                <i class="bi bi-box-arrow-in-right"></i> Login to Continue
+              </button>
+              <button type="button" id="modal-register-btn" class="btn btn-outline-danger btn-lg rounded-pill fw-bold d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-person-plus"></i> Create New Account
+              </button>
+              <button type="button" class="btn btn-light rounded-pill fw-semibold text-muted mt-1" data-bs-dismiss="modal">
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -391,6 +425,56 @@
           renderCart();
         }
       });
+
+      // Proceed to Checkout Authentication Check
+      const proceedBtn = document.getElementById('proceed-checkout-btn');
+      if (proceedBtn) {
+        proceedBtn.addEventListener('click', () => {
+          const currentCart = FoodWalaApp.Cart.getCart();
+          if (!currentCart.items || currentCart.items.length === 0) {
+            FoodWalaApp.showToast('Your cart is empty. Please add items to proceed.', 'warning');
+            return;
+          }
+
+          const currentUser = FoodWalaApp.Auth.getCurrentUser();
+          if (currentUser) {
+            window.location.href = './checkout.html';
+          } else {
+            try {
+              localStorage.setItem('foodwala_post_login_redirect', './checkout.html');
+            } catch (e) {}
+
+            const modalEl = document.getElementById('loginRequiredModal');
+            if (modalEl && window.bootstrap && bootstrap.Modal) {
+              const loginModal = new bootstrap.Modal(modalEl);
+              loginModal.show();
+            } else {
+              window.location.href = './login.html?redirect=./checkout.html';
+            }
+          }
+        });
+      }
+
+      // Modal Actions
+      const modalLoginBtn = document.getElementById('modal-login-btn');
+      if (modalLoginBtn) {
+        modalLoginBtn.addEventListener('click', () => {
+          try {
+            localStorage.setItem('foodwala_post_login_redirect', './checkout.html');
+          } catch (e) {}
+          window.location.href = './login.html?redirect=./checkout.html';
+        });
+      }
+
+      const modalRegBtn = document.getElementById('modal-register-btn');
+      if (modalRegBtn) {
+        modalRegBtn.addEventListener('click', () => {
+          try {
+            localStorage.setItem('foodwala_post_login_redirect', './checkout.html');
+          } catch (e) {}
+          window.location.href = './register.html?redirect=./checkout.html';
+        });
+      }
 
       renderCart();
     });

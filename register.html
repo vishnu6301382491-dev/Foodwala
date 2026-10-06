@@ -214,6 +214,17 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRedirect = urlParams.get('redirect');
+      const storedRedirect = localStorage.getItem('foodwala_post_login_redirect');
+      const redirectTarget = urlRedirect || storedRedirect || './index.html';
+
+      // Propagate redirect parameter to login link if present
+      const loginLink = document.querySelector('a[href="./login.html"]');
+      if (loginLink && redirectTarget && redirectTarget !== './index.html') {
+        loginLink.href = `./login.html?redirect=${encodeURIComponent(redirectTarget)}`;
+      }
+
       document.getElementById('register-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('reg-name').value.trim();
@@ -225,9 +236,12 @@
         if (name && email) {
           FoodWalaApp.Auth.register(name, email, phone, password, address);
           FoodWalaApp.showToast(`Welcome to FoodWala, ${name}!`, 'success');
+          try {
+            localStorage.removeItem('foodwala_post_login_redirect');
+          } catch (e) {}
           setTimeout(() => {
-            window.location.href = './index.html';
-          }, 500);
+            window.location.href = redirectTarget;
+          }, 400);
         }
       });
     });

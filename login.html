@@ -219,7 +219,24 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const redirectTarget = urlParams.get('redirect') || './index.html';
+      const urlRedirect = urlParams.get('redirect');
+      const storedRedirect = localStorage.getItem('foodwala_post_login_redirect');
+      const redirectTarget = urlRedirect || storedRedirect || './index.html';
+
+      // Propagate redirect parameter to register link if present
+      const regLink = document.querySelector('a[href="./register.html"]');
+      if (regLink && redirectTarget && redirectTarget !== './index.html') {
+        regLink.href = `./register.html?redirect=${encodeURIComponent(redirectTarget)}`;
+      }
+
+      function handlePostLoginNavigation() {
+        try {
+          localStorage.removeItem('foodwala_post_login_redirect');
+        } catch (e) {}
+        setTimeout(() => {
+          window.location.href = redirectTarget;
+        }, 400);
+      }
 
       // Demo login buttons
       document.querySelectorAll('.js-demo-login').forEach(btn => {
@@ -227,9 +244,7 @@
           const role = btn.getAttribute('data-role');
           const user = FoodWalaApp.Auth.loginAsDemo(role);
           FoodWalaApp.showToast(`Signed in as ${user.name}!`, 'success');
-          setTimeout(() => {
-            window.location.href = redirectTarget;
-          }, 500);
+          handlePostLoginNavigation();
         });
       });
 
@@ -242,9 +257,7 @@
         if (email) {
           const user = FoodWalaApp.Auth.login(email, password);
           FoodWalaApp.showToast(`Welcome back, ${user.name}!`, 'success');
-          setTimeout(() => {
-            window.location.href = redirectTarget;
-          }, 500);
+          handlePostLoginNavigation();
         }
       });
     });

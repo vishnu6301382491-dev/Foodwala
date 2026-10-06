@@ -438,12 +438,27 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      // 0. Top-Level Checkout Protection: Require Authenticated FoodWala User
+      const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      if (!currentUser) {
+        try {
+          localStorage.setItem('foodwala_post_login_redirect', './checkout.html');
+        } catch (e) {}
+        FoodWalaApp.showToast('Please sign in to proceed with checkout.', 'warning');
+        setTimeout(() => {
+          window.location.replace('./login.html?redirect=./checkout.html');
+        }, 300);
+        return;
+      }
+
       const cart = FoodWalaApp.Cart.getCart();
 
       // 1. Validate Cart Items
       if (!cart.items || cart.items.length === 0) {
-        alert('Your cart is empty. Please add items from a restaurant.');
-        window.location.href = './restaurants.html';
+        FoodWalaApp.showToast('Your cart is empty. Please add items from a restaurant.', 'warning');
+        setTimeout(() => {
+          window.location.replace('./restaurants.html');
+        }, 400);
         return;
       }
 
