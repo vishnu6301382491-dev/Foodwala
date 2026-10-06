@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tap.service.SMSService;
+import com.tap.service.SMSService.SMSResult;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -122,7 +123,7 @@ public class SendOTPServlet extends HttpServlet {
 
         if (normalized == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\": false, \"error\": \"INVALID_PHONE\", \"message\": \"Please enter a valid 10-digit mobile number.\"}");
+            out.print("{\"success\": false, \"error\": \"INVALID_PHONE\", \"message\": \"Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.\"}");
             return;
         }
 
@@ -135,24 +136,44 @@ public class SendOTPServlet extends HttpServlet {
             return;
         }
 
+        // Generate 6-digit OTP
         int otpInt = 100000 + RANDOM.nextInt(900000);
         String otp = String.valueOf(otpInt);
+
+        // Deliver via configured SMS Provider (or Console in Dev Mode)
+        SMSResult smsResult = SMSService.getInstance().sendOtp(normalized, otp);
+
+        if (!smsResult.success) {
+            // SMS delivery failed: NEVER return success=true
+            response.setStatus(smsResult.statusCode >= 400 ? smsResult.statusCode : 502);
+            String safeMsg = (smsResult.errorMessage != null) ? smsResult.errorMessage.replace("\"", "\\\"") : "SMS provider rejected message";
+            out.print("{\"success\": false, \"error\": \"SMS_DELIVERY_FAILED\", \"provider\": \"" + smsResult.provider + "\", \"message\": \"" + safeMsg + "\"}");
+            return;
+        }
+
+        // Provider accepted or dev mode generated: Save OTP in memory store
         String hashed = hashOtp(normalized, otp);
         long expiresAt = now + (5 * 60 * 1000);
-
         OTP_STORE.put(normalized, new OTPRecord(hashed, expiresAt, now));
 
-        // Console Dev Mode Logging
-        System.out.println("==================================================");
-        System.out.println("[FoodWala OTP] Development OTP: " + otp);
-        System.out.println("[FoodWala OTP] Phone: " + normalized);
-        System.out.println("[FoodWala OTP] Expiration: 5 minutes");
-        System.out.println("==================================================");
+        String userMsg = smsResult.isDevMode
+                ? "Development OTP generated. Check the Tomcat server console."
+                : "OTP sent successfully to your mobile number.";
 
-        // Deliver via SMS provider if configured
-        SMSService.getInstance().sendOtp(normalized, otp);
+        StringBuilder json = new StringBuilder();
+        json.append("{")
+            .append("\"success\": true,")
+            .append("\"isDevMode\": ").append(smsResult.isDevMode).append(",")
+            .append("\"provider\": \"").append(smsResult.provider).append("\",")
+            .append("\"phone\": \"").append(normalized).append("\",")
+            .append("\"expiresIn\": 300,")
+            .append("\"message\": \"").append(userMsg).append("\"");
 
-        String json = "{\"success\": true, \"message\": \"OTP sent successfully.\", \"phone\": \"" + normalized + "\", \"expiresIn\": 300}";
-        out.print(json);
+        if (smsResult.messageId != null) {
+            json.append(", \"messageId\": \"").append(smsResult.messageId).append("\"");
+        }
+
+        json.append("}");
+        out.print(json.toString());
     }
 }

@@ -365,11 +365,15 @@
                     document.getElementById('display-masked-phone').textContent = currentPhone;
                     document.getElementById('otp-step-phone').style.display = 'none';
                     document.getElementById('otp-step-verify').style.display = 'block';
-                    showOtpAlert('OTP sent successfully!', true);
+                    if (data.isDevMode) {
+                        showOtpAlert('💡 Development OTP mode active: Code printed to your Tomcat server console.', true);
+                    } else {
+                        showOtpAlert('✅ OTP sent successfully via SMS to your mobile phone!', true);
+                    }
                     clearOtpBoxes();
                     startCountdown(30);
                 } else {
-                    showOtpAlert(data.message || 'Unable to send OTP. Please try again.');
+                    showOtpAlert(data.message || 'Unable to send OTP. Please check SMS provider settings.');
                 }
             } catch (err) {
                 sendBtn.disabled = false;

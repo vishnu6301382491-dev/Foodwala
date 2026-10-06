@@ -466,7 +466,11 @@
           clearOtpBoxes();
           otpBoxes[0].focus();
           startResendCountdown(30);
-          FoodWalaApp.showToast('OTP sent successfully!', 'success');
+          if (res.isDevMode) {
+            FoodWalaApp.showToast('Development OTP generated. Check Tomcat server console.', 'info');
+          } else {
+            FoodWalaApp.showToast('OTP sent successfully via SMS!', 'success');
+          }
         } else {
           phoneError.textContent = res.message || 'Unable to send OTP right now. Please try again.';
           phoneError.style.display = 'block';
