@@ -1,0 +1,16 @@
+# Compiled binaries & build artifacts
+build/
+bin/
+target/
+*.class
+
+# Eclipse workspace metadata
+.metadata/
+.recommenders/
+tmp/
+*.tmp
+
+# Logs & temporary files
+*.log
+sources.txt
+FoodWala_Eclipse_Project/

@@ -1,0 +1,53 @@
+FoodWala/
+├── sql/
+│   └── fudwala.sql
+├── src/main/java/com/tap/
+│   ├── model/
+│   │   ├── User.java
+│   │   ├── Restaurant.java
+│   │   ├── Menu.java
+│   │   ├── Order.java
+│   │   ├── OrderItem.java
+│   │   ├── Cart.java
+│   │   └── CartItem.java
+│   ├── dao/
+│   │   ├── UserDAO.java
+│   │   ├── RestaurantDAO.java
+│   │   ├── MenuDAO.java
+│   │   ├── OrderDAO.java
+│   │   └── OrderItemDAO.java
+│   ├── daoimpl/
+│   │   ├── UserDAOImpl.java
+│   │   ├── RestaurantDAOImpl.java
+│   │   ├── MenuDAOImpl.java
+│   │   ├── OrderDAOImpl.java
+│   │   └── OrderItemDAOImpl.java
+│   ├── util/
+│   │   ├── DBConnection.java
+│   │   └── PasswordUtil.java
+│   ├── service/
+│   │   └── OrderService.java
+│   └── controller/
+│       ├── HomeController.java
+│       ├── RestaurantController.java
+│       ├── MenuController.java
+│       ├── CartController.java
+│       ├── RegistrationController.java
+│       ├── LoginController.java
+│       ├── LogoutController.java
+│       ├── CheckoutController.java
+│       ├── OrderConfirmationController.java
+│       ├── MyOrdersController.java
+│       └── RegisterAliasController.java
+└── src/main/webapp/
+    ├── index.jsp
+    ├── restaurant.jsp
+    ├── menu.jsp
+    ├── cart.jsp
+    ├── login.jsp
+    ├── register.jsp
+    ├── checkout.jsp
+    ├── orderConfirmation.jsp
+    ├── orders.jsp
+    ├── style.css
+    └── WEB-INF/web.xml
