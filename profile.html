@@ -3,259 +3,379 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Profile — FoodWala</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>User Profile | FoodWala</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="bg-light">
+<body class="bg-light d-flex flex-column min-vh-100">
 
-
-  <!-- Navigation Bar -->
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-3 text-dark text-decoration-none" href="./index.html">
-        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; box-shadow: 0 4px 10px rgba(255, 75, 75, 0.35);">
-          <i class="bi bi-fire fs-4"></i>
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4" href="./index.html">
+        <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+          <i class="bi bi-bag-heart-fill fs-5"></i>
         </div>
-        <span>Food<span class="text-danger">Wala</span></span>
+        <span>Food<span class="text-dark">Wala</span></span>
       </a>
 
-      <!-- Location Selector Pill -->
-      <div class="d-none d-md-flex align-items-center ms-3 me-auto">
-        <button type="button" class="btn btn-light border d-flex align-items-center gap-2 px-3 py-2 rounded-pill location-btn" data-bs-toggle="modal" data-bs-target="#locationModal" title="Change Location">
-          <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-          <div class="text-start" id="navbar-location-display">
-            <span class="fw-bold text-dark d-inline-block">Koramangala</span>
-            <small class="text-muted d-block" style="font-size: 0.75rem;">5th Block, Bengaluru</small>
-          </div>
-          <i class="bi bi-chevron-down text-muted ms-1 small"></i>
-        </button>
-      </div>
-
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="mainNavbar">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3 my-2 my-lg-0">
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./restaurants.html">
-              <i class="bi bi-search text-danger"></i> Explore Restaurants
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./orders.html">
-              <i class="bi bi-bag-check text-primary"></i> My Orders
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-danger position-relative rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm text-white" href="./cart.html">
-              <i class="bi bi-cart3 fs-5"></i>
-              <span>Cart</span>
-              <span class="badge bg-white text-danger rounded-pill fw-bold js-cart-count" style="display:none;">0</span>
-            </a>
-          </li>
-          <li class="nav-item" id="navbar-user-slot">
-            <div class="d-flex align-items-center gap-2">
-              <a href="./login.html" class="btn btn-outline-dark btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <!-- Location Picker Button -->
+        <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal">
+            <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+            <div class="text-start lh-1" id="navbar-location-display">
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Koramangala</span>
+              <small class="text-muted d-block">Bengaluru</small>
             </div>
+            <i class="bi bi-chevron-down text-muted ms-1 small"></i>
+          </button>
+        </div>
+
+        <ul class="navbar-nav ms-auto align-items-center gap-lg-3 my-2 my-lg-0">
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./index.html">
+              <i class="bi bi-house-door me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./restaurants.html">
+              <i class="bi bi-shop me-1"></i> Restaurants
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./orders.html">
+              <i class="bi bi-bag-check me-1"></i> Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 position-relative d-flex align-items-center gap-2" href="./cart.html">
+              <i class="bi bi-cart3 fs-6"></i>
+              <span class="fw-bold">Cart</span>
+              <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2" id="navbar-user-slot">
+            <!-- Populated dynamically by FoodWalaApp.Auth -->
+            <a href="./login.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Location Picker Modal -->
+  <!-- Location Selection Modal -->
   <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="modal-header bg-danger text-white p-4">
-          <h5 class="modal-title fw-bold" id="locationModalLabel"><i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru</h5>
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="locationModalLabel">
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru
+          </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0" style="max-height: 420px; overflow-y: auto;">
+        <div class="modal-body p-0">
           <div class="list-group list-group-flush" id="location-options-list">
-            <!-- Populated via FoodWalaApp.Location -->
+            <!-- Populated by FoodWalaApp -->
           </div>
         </div>
       </div>
     </div>
   </div>
 
-
-  <div class="container py-4">
+  <!-- MAIN CONTAINER -->
+  <main class="container my-4 flex-grow-1">
+    
     <div class="row g-4">
-      <div class="col-lg-4">
-        <!-- Profile Info Card -->
-        <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white mb-4">
-          <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 72px; height: 72px;">
-            <i class="bi bi-person-fill fs-1"></i>
-          </div>
-          <h4 class="fw-bold text-dark mb-1" id="prof-name">Rahul Sharma</h4>
-          <p class="text-muted small mb-3" id="prof-email">customer@foodwala.com</p>
-          <div class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-bold mb-3" id="prof-role">FoodWala Member</div>
-          
-          <hr class="my-3">
-
-          <div class="d-grid gap-2">
-            <a href="./orders.html" class="btn btn-outline-dark btn-sm rounded-pill py-2"><i class="bi bi-bag-check me-2"></i>My Orders</a>
-            <button class="btn btn-outline-danger btn-sm rounded-pill py-2" onclick="FoodWalaApp.Auth.logout(); window.location.href='./index.html';"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-8">
-        <!-- Saved Addresses -->
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Saved Delivery Addresses</h5>
-            <button class="btn btn-danger btn-sm rounded-pill px-3" data-bs-toggle="collapse" data-bs-target="#add-address-form"><i class="bi bi-plus-lg me-1"></i>Add New</button>
-          </div>
-
-          <div class="collapse mb-3" id="add-address-form">
-            <div class="p-3 bg-light rounded-3">
-              <h6 class="fw-bold text-dark mb-2">New Address</h6>
-              <div class="mb-2">
-                <input type="text" id="new-addr-type" class="form-control form-control-sm mb-2" placeholder="Label (e.g. Home, Office, Gym)">
-                <textarea id="new-addr-text" class="form-control form-control-sm" rows="2" placeholder="Full address in Bengaluru..."></textarea>
-              </div>
-              <button class="btn btn-danger btn-sm rounded-pill px-3" id="save-new-addr-btn">Save Address</button>
+      
+      <!-- Left Sidebar: Profile Navigation -->
+      <div class="col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+          <div class="d-flex align-items-center gap-3 p-2 mb-3 border-bottom">
+            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 48px; height: 48px;">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold text-dark mb-0" id="sidebar-user-name">Rahul Sharma</h6>
+              <small class="text-muted" id="sidebar-user-role">Customer</small>
             </div>
           </div>
 
-          <div class="d-flex flex-column gap-3" id="saved-addresses-list">
-            <!-- Populated via JS -->
+          <div class="list-group list-group-flush border-0">
+            <a href="./profile.html" class="list-group-item list-group-item-action border-0 rounded-3 py-2 fw-semibold active bg-danger text-white">
+              <i class="bi bi-person me-2"></i> My Profile
+            </a>
+            <a href="./addresses.html" class="list-group-item list-group-item-action border-0 rounded-3 py-2 fw-semibold text-dark">
+              <i class="bi bi-geo-alt me-2 text-danger"></i> Saved Addresses
+            </a>
+            <a href="./orders.html" class="list-group-item list-group-item-action border-0 rounded-3 py-2 fw-semibold text-dark">
+              <i class="bi bi-bag-check me-2 text-success"></i> My Orders
+            </a>
+            <a href="./cart.html" class="list-group-item list-group-item-action border-0 rounded-3 py-2 fw-semibold text-dark">
+              <i class="bi bi-cart3 me-2 text-warning"></i> View Cart
+            </a>
+            <button class="list-group-item list-group-item-action border-0 rounded-3 py-2 fw-semibold text-danger js-profile-logout-btn">
+              <i class="bi bi-box-arrow-right me-2"></i> Logout
+            </button>
           </div>
         </div>
+      </div>
+
+      <!-- Right Main: Profile Info & Quick Stats -->
+      <div class="col-lg-9">
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+          
+          <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-person-badge text-primary me-2"></i>Personal Information</h4>
+              <p class="text-muted small mb-0">Manage your FoodWala personal profile details</p>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+              <i class="bi bi-pencil me-1"></i> Edit Profile
+            </button>
+          </div>
+
+          <div class="row g-4">
+            
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-4 border">
+                <small class="text-muted d-block mb-1">Full Name</small>
+                <div class="fw-bold text-dark fs-6" id="profile-name">Rahul Sharma</div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-4 border">
+                <small class="text-muted d-block mb-1">Email Address</small>
+                <div class="fw-bold text-dark fs-6" id="profile-email">customer@foodwala.com</div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-4 border">
+                <small class="text-muted d-block mb-1">Mobile Phone Number</small>
+                <div class="fw-bold text-dark fs-6" id="profile-phone">+91 98765 43210</div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-4 border">
+                <small class="text-muted d-block mb-1">Member Since</small>
+                <div class="fw-bold text-dark fs-6" id="profile-membersince">March 2024</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Quick Activity Stats -->
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
+              <i class="bi bi-bag-check fs-1 text-success mb-2"></i>
+              <h4 class="fw-bold text-dark mb-0" id="stat-orders-count">0</h4>
+              <small class="text-muted">Total Orders Placed</small>
+              <div class="mt-3">
+                <a href="./orders.html" class="btn btn-light btn-sm rounded-pill px-3 fw-semibold">View History</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
+              <i class="bi bi-geo-alt fs-1 text-danger mb-2"></i>
+              <h4 class="fw-bold text-dark mb-0" id="stat-addresses-count">0</h4>
+              <small class="text-muted">Saved Bengaluru Addresses</small>
+              <div class="mt-3">
+                <a href="./addresses.html" class="btn btn-light btn-sm rounded-pill px-3 fw-semibold">Manage</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
+              <i class="bi bi-cart3 fs-1 text-warning mb-2"></i>
+              <h4 class="fw-bold text-dark mb-0" id="stat-cart-count">0</h4>
+              <small class="text-muted">Items currently in Cart</small>
+              <div class="mt-3">
+                <a href="./cart.html" class="btn btn-light btn-sm rounded-pill px-3 fw-semibold">Go to Cart</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="editProfileModalLabel">
+            <i class="bi bi-pencil me-2"></i>Edit Profile
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="edit-profile-form" class="p-3">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Full Name *</label>
+              <input type="text" class="form-control rounded-3" id="edit-name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Mobile Phone Number *</label>
+              <input type="text" class="form-control rounded-3" id="edit-phone" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Email Address (Read Only)</label>
+              <input type="email" class="form-control rounded-3 bg-light" id="edit-email" readonly disabled>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Save Changes</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
-
-  <!-- Footer -->
-  <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+  <!-- FOOTER -->
+  <footer class="bg-dark text-light pt-5 pb-4 mt-auto border-top border-secondary">
     <div class="container">
       <div class="row g-4">
         <div class="col-lg-4 col-md-6">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-              <i class="bi bi-fire fs-5"></i>
+            <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-bag-heart-fill fs-5"></i>
             </div>
-            <span class="fw-bold fs-4 text-white">Food<span class="text-danger">Wala</span></span>
+            <h4 class="text-white fw-bold mb-0">Food<span class="text-danger">Wala</span></h4>
           </div>
-          <p class="text-muted small">Bengaluru's premier food discovery & delivery platform. Explore authentic cuisines, typo-tolerant smart search, and lightning-fast local delivery across Bengaluru.</p>
-          <div class="d-flex gap-3 text-secondary fs-5 mt-3">
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-instagram"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-twitter-x"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-linkedin"></i></a>
+          <p class="text-muted small mb-3">Bengaluru's premier authentic food discovery and hyper-fast delivery network. Bringing 105+ iconic restaurants and 750+ delicacies straight to your doorstep.</p>
+          <div class="d-flex gap-3 fs-5">
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
-          <h6 class="fw-bold text-white mb-3">Popular Cuisines</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
-            <li><a href="./restaurants.html?cuisine=Biryani" class="text-muted text-decoration-none hover-white">Biryani</a></li>
-            <li><a href="./restaurants.html?cuisine=South+Indian" class="text-muted text-decoration-none hover-white">South Indian Dosa</a></li>
-            <li><a href="./restaurants.html?cuisine=North+Indian" class="text-muted text-decoration-none hover-white">North Indian Curry</a></li>
-            <li><a href="./restaurants.html?cuisine=Chinese" class="text-muted text-decoration-none hover-white">Chinese & Momos</a></li>
-            <li><a href="./restaurants.html?cuisine=Italian" class="text-muted text-decoration-none hover-white">Woodfired Pizza</a></li>
-            <li><a href="./restaurants.html?cuisine=Desserts" class="text-muted text-decoration-none hover-white">Ice Creams & Sweets</a></li>
+        <div class="col-lg-2 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Quick Links</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+            <li><a href="./index.html" class="text-muted text-decoration-none hover-light">Home</a></li>
+            <li><a href="./restaurants.html" class="text-muted text-decoration-none hover-light">All Restaurants</a></li>
+            <li><a href="./orders.html" class="text-muted text-decoration-none hover-light">My Orders</a></li>
+            <li><a href="./cart.html" class="text-muted text-decoration-none hover-light">Cart</a></li>
+            <li><a href="./profile.html" class="text-muted text-decoration-none hover-light">User Profile</a></li>
+            <li><a href="./addresses.html" class="text-muted text-decoration-none hover-light">Saved Addresses</a></li>
           </ul>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
-          <h6 class="fw-bold text-white mb-3">Bengaluru Hubs</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
-            <li><a href="./restaurants.html?area=Koramangala" class="text-muted text-decoration-none hover-white">Koramangala</a></li>
-            <li><a href="./restaurants.html?area=Indiranagar" class="text-muted text-decoration-none hover-white">Indiranagar</a></li>
-            <li><a href="./restaurants.html?area=Whitefield" class="text-muted text-decoration-none hover-white">Whitefield</a></li>
-            <li><a href="./restaurants.html?area=MG+Road" class="text-muted text-decoration-none hover-white">MG Road / Brigade</a></li>
-            <li><a href="./restaurants.html?area=Malleshwaram" class="text-muted text-decoration-none hover-white">Malleshwaram</a></li>
-            <li><a href="./restaurants.html?area=HSR+Layout" class="text-muted text-decoration-none hover-white">HSR Layout</a></li>
+        <div class="col-lg-3 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Top Bengaluru Areas</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0 text-muted">
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Koramangala & HSR</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Indiranagar & MG Road</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Whitefield & Marathahalli</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Malleshwaram & Rajajinagar</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Jayanagar & Basavanagudi</li>
           </ul>
         </div>
 
-        <div class="col-lg-4 col-md-12">
-          <div class="bg-secondary bg-opacity-25 p-4 rounded-4">
-            <h6 class="fw-bold text-white mb-2"><i class="bi bi-github me-2 text-danger"></i>GitHub Pages Interactive Demo</h6>
-            <p class="text-white-50 small mb-3">Powered by the complete FoodWala Bengaluru restaurant and menu dataset with client-side smart fuzzy search.</p>
-            <div class="badge bg-success py-2 px-3 fw-semibold"><i class="bi bi-check-circle me-1"></i> Full Local Tomcat + Java Servlet Backend Available in Repo</div>
+        <div class="col-lg-3 col-md-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Secure Payments</h6>
+          <p class="text-muted small mb-2">100% Secure Checkout powered by Razorpay Test Sandbox and UPI.</p>
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <span class="badge bg-secondary p-2"><i class="bi bi-credit-card me-1"></i> Cards</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-qr-code me-1"></i> UPI</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-bank me-1"></i> NetBanking</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-cash-stack me-1"></i> Cash On Delivery</span>
           </div>
+          <small class="text-secondary d-block">Razorpay Public Test Key: <code class="text-light">rzp_test_TjiZvLxLbxKe38</code></small>
         </div>
       </div>
 
       <hr class="border-secondary my-4">
+
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
-        <div>&copy; 2026 FoodWala Delivery Technologies Pvt. Ltd. All rights reserved.</div>
-        <div class="d-flex gap-3 mt-2 mt-md-0">
-          <a href="./restaurants.html" class="text-muted text-decoration-none">Restaurants</a>
-          <a href="./orders.html" class="text-muted text-decoration-none">Track Order</a>
-          <a href="./cart.html" class="text-muted text-decoration-none">Cart</a>
-          <a href="https://github.com/vishnu6301382491-dev/Foodwala" target="_blank" class="text-muted text-decoration-none"><i class="bi bi-github"></i> Repository</a>
+        <div>&copy; 2026 FoodWala Inc. All rights reserved. Built with Java Servlets, JSP & Modern Web Architecture.</div>
+        <div class="mt-2 mt-md-0">
+          <span>Bengaluru, Karnataka &bull; 105 Real Restaurants &bull; 756 Menu Items</span>
         </div>
       </div>
     </div>
   </footer>
 
-
+  <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="./js/foodwala-data.js"></script>
+  <!-- Core FoodWala JS -->
   <script src="./js/app.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // 1. Auth Guard
+      if (!FoodWalaApp.Auth.requireAuth('./profile.html')) return;
       const user = FoodWalaApp.Auth.getCurrentUser();
-      if (!user) {
-        window.location.href = './login.html';
-        return;
-      }
 
-      document.getElementById('prof-name').textContent = user.name;
-      document.getElementById('prof-email').textContent = user.email;
-      document.getElementById('prof-role').textContent = `${user.role || 'CUSTOMER'} • ${user.phone || '+91 98765 43210'}`;
-
-      const addrList = document.getElementById('saved-addresses-list');
-      function renderAddresses() {
+      function updateProfileUI() {
         const u = FoodWalaApp.Auth.getCurrentUser();
-        const addrs = (u && u.addresses) ? u.addresses : [];
-        if (addrs.length === 0) {
-          addrList.innerHTML = '<p class="text-muted small">No saved addresses yet.</p>';
-          return;
-        }
-        addrList.innerHTML = addrs.map(a => `
-          <div class="p-3 border rounded-3 d-flex justify-content-between align-items-start ${a.isDefault ? 'border-danger bg-danger bg-opacity-10' : ''}">
-            <div>
-              <div class="fw-bold text-dark"><i class="bi bi-house-door-fill text-danger me-1"></i>${a.type} ${a.isDefault ? '<span class="badge bg-danger ms-2">Default</span>' : ''}</div>
-              <small class="text-muted">${a.addressLine}</small>
-            </div>
-            ${!a.isDefault ? `<button class="btn btn-outline-secondary btn-sm rounded-pill js-set-default" data-id="${a.id}">Set Default</button>` : ''}
-          </div>
-        `).join('');
+        document.getElementById('sidebar-user-name').textContent = u.name;
+        document.getElementById('sidebar-user-role').textContent = u.role || 'Customer';
+        document.getElementById('profile-name').textContent = u.name;
+        document.getElementById('profile-email').textContent = u.email;
+        document.getElementById('profile-phone').textContent = u.phone || '+91 98765 43210';
+        document.getElementById('profile-membersince').textContent = u.memberSince || 'March 2024';
 
-        document.querySelectorAll('.js-set-default').forEach(btn => {
-          btn.addEventListener('click', () => {
-            FoodWalaApp.Auth.setDefaultAddress(btn.getAttribute('data-id'));
-            renderAddresses();
-          });
-        });
+        const orders = FoodWalaApp.Orders.getAllOrders();
+        document.getElementById('stat-orders-count').textContent = orders.length;
+        document.getElementById('stat-addresses-count').textContent = (u.addresses || []).length;
+        document.getElementById('stat-cart-count').textContent = FoodWalaApp.Cart.getItemCount();
+
+        document.getElementById('edit-name').value = u.name;
+        document.getElementById('edit-phone').value = u.phone || '';
+        document.getElementById('edit-email').value = u.email;
       }
 
-      document.getElementById('save-new-addr-btn').addEventListener('click', () => {
-        const type = document.getElementById('new-addr-type').value.trim() || 'Home';
-        const text = document.getElementById('new-addr-text').value.trim();
-        if (text) {
-          FoodWalaApp.Auth.addAddress(type, text);
-          FoodWalaApp.showToast('Address added!');
-          document.getElementById('new-addr-text').value = '';
-          renderAddresses();
-        }
+      updateProfileUI();
+
+      // Edit Profile Handler
+      document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('edit-name').value.trim();
+        const newPhone = document.getElementById('edit-phone').value.trim();
+
+        FoodWalaApp.Auth.updateProfile({
+          name: newName,
+          phone: newPhone
+        });
+
+        const modalEl = document.getElementById('editProfileModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        FoodWalaApp.showToast('Profile updated successfully!', 'success');
+        updateProfileUI();
       });
 
-      renderAddresses();
+      // Logout button in sidebar
+      document.querySelectorAll('.js-profile-logout-btn').forEach(btn => {
+        btn.addEventListener('click', () => FoodWalaApp.Auth.logout());
+      });
+
     });
   </script>
 </body>

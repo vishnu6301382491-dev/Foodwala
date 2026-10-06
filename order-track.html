@@ -3,333 +3,529 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Delivery Tracking — FoodWala</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Live Order Tracking | FoodWala Bengaluru</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS for Interactive OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="bg-light">
+<body class="bg-light d-flex flex-column min-vh-100">
 
-
-  <!-- Navigation Bar -->
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-3 text-dark text-decoration-none" href="./index.html">
-        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; box-shadow: 0 4px 10px rgba(255, 75, 75, 0.35);">
-          <i class="bi bi-fire fs-4"></i>
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4" href="./index.html">
+        <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+          <i class="bi bi-bag-heart-fill fs-5"></i>
         </div>
-        <span>Food<span class="text-danger">Wala</span></span>
+        <span>Food<span class="text-dark">Wala</span></span>
       </a>
 
-      <!-- Location Selector Pill -->
-      <div class="d-none d-md-flex align-items-center ms-3 me-auto">
-        <button type="button" class="btn btn-light border d-flex align-items-center gap-2 px-3 py-2 rounded-pill location-btn" data-bs-toggle="modal" data-bs-target="#locationModal" title="Change Location">
-          <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-          <div class="text-start" id="navbar-location-display">
-            <span class="fw-bold text-dark d-inline-block">Koramangala</span>
-            <small class="text-muted d-block" style="font-size: 0.75rem;">5th Block, Bengaluru</small>
-          </div>
-          <i class="bi bi-chevron-down text-muted ms-1 small"></i>
-        </button>
-      </div>
-
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="mainNavbar">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3 my-2 my-lg-0">
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./restaurants.html">
-              <i class="bi bi-search text-danger"></i> Explore Restaurants
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./orders.html">
-              <i class="bi bi-bag-check text-primary"></i> My Orders
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-danger position-relative rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm text-white" href="./cart.html">
-              <i class="bi bi-cart3 fs-5"></i>
-              <span>Cart</span>
-              <span class="badge bg-white text-danger rounded-pill fw-bold js-cart-count" style="display:none;">0</span>
-            </a>
-          </li>
-          <li class="nav-item" id="navbar-user-slot">
-            <div class="d-flex align-items-center gap-2">
-              <a href="./login.html" class="btn btn-outline-dark btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <!-- Location Picker Button -->
+        <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal">
+            <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+            <div class="text-start lh-1" id="navbar-location-display">
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Koramangala</span>
+              <small class="text-muted d-block">Bengaluru</small>
             </div>
+            <i class="bi bi-chevron-down text-muted ms-1 small"></i>
+          </button>
+        </div>
+
+        <ul class="navbar-nav ms-auto align-items-center gap-lg-3 my-2 my-lg-0">
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./index.html">
+              <i class="bi bi-house-door me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./restaurants.html">
+              <i class="bi bi-shop me-1"></i> Restaurants
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-danger" href="./orders.html">
+              <i class="bi bi-bag-check me-1"></i> Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 position-relative d-flex align-items-center gap-2" href="./cart.html">
+              <i class="bi bi-cart3 fs-6"></i>
+              <span class="fw-bold">Cart</span>
+              <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2" id="navbar-user-slot">
+            <!-- Populated dynamically by FoodWalaApp.Auth -->
+            <a href="./login.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Location Picker Modal -->
+  <!-- Location Selection Modal -->
   <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="modal-header bg-danger text-white p-4">
-          <h5 class="modal-title fw-bold" id="locationModalLabel"><i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru</h5>
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="locationModalLabel">
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru
+          </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0" style="max-height: 420px; overflow-y: auto;">
+        <div class="modal-body p-0">
           <div class="list-group list-group-flush" id="location-options-list">
-            <!-- Populated via FoodWalaApp.Location -->
+            <!-- Populated by FoodWalaApp -->
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MAIN CONTAINER -->
+  <main class="container my-4 flex-grow-1">
+    
+    <!-- Top Status Banner -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="live-badge-pulse"><span class="live-dot"></span> LIVE TRACKING</span>
+                <span class="badge bg-light text-dark border fw-bold" id="order-id-badge">Order #FW-89421</span>
+              </div>
+              <h2 class="fw-bold mb-0 text-dark" id="order-status-heading">Food is being Prepared...</h2>
+              <p class="text-muted mb-0 small" id="order-rest-subtext">Order placed with <span class="fw-semibold text-dark" id="order-rest-name">Meghana Foods</span></p>
+            </div>
+            <div class="text-md-end bg-light p-3 rounded-4 border">
+              <span class="text-muted small d-block">Estimated Delivery Time</span>
+              <span class="fs-2 fw-extrabold text-danger" id="eta-display">24 mins</span>
+              <div class="small text-success fw-semibold" id="distance-display"><i class="bi bi-geo-alt"></i> ~2.8 km away</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="container py-4">
-    <!-- Header Banner -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-      <div class="row align-items-center g-3">
-        <div class="col-md-7">
-          <div class="d-flex align-items-center gap-3">
-            <div class="bg-success text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
-              <i class="bi bi-check2-circle fs-2"></i>
+    <!-- Map & Details Grid -->
+    <div class="row g-4">
+      
+      <!-- Left Column: Leaflet Map & Timeline -->
+      <div class="col-lg-8">
+        
+        <!-- Live Map Card -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+          <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+              <i class="bi bi-map text-danger"></i> Live Delivery Route (Bengaluru)
+            </h6>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small">
+              <i class="bi bi-broadcast"></i> GPS Active
+            </span>
+          </div>
+          <div class="p-0 position-relative">
+            <div id="delivery-map" style="height: 420px; width: 100%;"></div>
+            <div class="position-absolute bottom-0 start-0 m-3 bg-white p-2 px-3 rounded-pill shadow-sm border small z-3 d-flex align-items-center gap-3">
+              <span class="d-flex align-items-center gap-1"><span class="badge bg-danger rounded-circle p-1"></span> Restaurant</span>
+              <span class="d-flex align-items-center gap-1"><span class="badge bg-warning rounded-circle p-1"></span> Partner</span>
+              <span class="d-flex align-items-center gap-1"><span class="badge bg-success rounded-circle p-1"></span> You</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Step Status Timeline Card -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+          <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-clock-history text-danger me-2"></i>Order Timeline</h5>
+          <div class="tracking-timeline" id="tracking-timeline-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Delivery Partner & Order Summary -->
+      <div class="col-lg-4">
+        
+        <!-- Delivery Partner Card -->
+        <div class="rider-card mb-4 shadow-sm">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="badge bg-warning text-dark fw-bold px-3 py-1 rounded-pill">Valet Assigned</span>
+            <div class="text-warning small"><i class="bi bi-star-fill"></i> <span id="rider-rating">4.9</span> (500+ deliveries)</div>
+          </div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="bg-white text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 54px; height: 54px;" id="rider-avatar">
+              <i class="bi bi-person-fill text-danger"></i>
             </div>
             <div>
-              <span class="badge bg-success rounded-pill px-3 py-1 fw-bold mb-1">Order Confirmed</span>
-              <h3 class="fw-extrabold text-dark mb-0">Arriving in <span class="text-danger" id="eta-timer">28 mins</span></h3>
-              <small class="text-muted">Order ID: <strong id="order-id-label">FW-00000</strong></small>
+              <h5 class="fw-bold mb-0 text-white" id="rider-name">Ramesh Kumar</h5>
+              <small class="text-white-50" id="rider-vehicle">Royal Enfield (KA 01 AB 1234)</small>
             </div>
+          </div>
+          
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
+            <div class="otp-box flex-grow-1 me-2">
+              <small class="text-white-50 d-block" style="font-size: 11px;">DELIVERY OTP</small>
+              <span class="otp-code" id="delivery-otp">4892</span>
+            </div>
+            <a href="tel:+919123456789" class="btn btn-light rounded-pill px-3 py-2 fw-bold text-dark d-flex align-items-center gap-1">
+              <i class="bi bi-telephone-fill text-success"></i> Call
+            </a>
           </div>
         </div>
 
-        <div class="col-md-5 text-md-end">
-          <a href="./orders.html" class="btn btn-outline-dark btn-sm rounded-pill px-3 me-2">All Orders</a>
-          <a href="./restaurants.html" class="btn btn-danger btn-sm rounded-pill px-3">Order More</a>
+        <!-- Delivery Address Card -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+          <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Delivery Destination</h6>
+          <p class="text-muted small mb-0 lh-base" id="delivery-destination-text">
+            Flat 402, Sunshine Heights, 5th Block, Koramangala, Bengaluru - 560095
+          </p>
         </div>
+
+        <!-- Order Items & Bill Summary -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+          <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-receipt text-danger me-1"></i> Order Items & Receipt</h6>
+          
+          <div id="order-items-list" class="d-flex flex-column gap-2 mb-3">
+            <!-- Items populated dynamically -->
+          </div>
+
+          <hr class="my-2">
+
+          <div class="d-flex flex-column gap-1 small text-muted mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Item Total</span>
+              <span class="fw-semibold text-dark" id="receipt-item-total">₹0</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Delivery Partner Fee</span>
+              <span class="text-success" id="receipt-delivery-fee">FREE</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Platform Fee</span>
+              <span class="text-dark" id="receipt-platform-fee">₹5</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>GST & Restaurant Taxes (5%)</span>
+              <span class="text-dark" id="receipt-gst">₹0</span>
+            </div>
+            <div class="d-flex justify-content-between text-success" id="receipt-discount-row" style="display: none;">
+              <span>Coupon Discount</span>
+              <span class="fw-bold" id="receipt-discount">-₹0</span>
+            </div>
+            <div class="d-flex justify-content-between pt-2 border-top fw-bold text-dark fs-6">
+              <span>Grand Total</span>
+              <span class="text-danger" id="receipt-grand-total">₹0</span>
+            </div>
+            <div class="d-flex justify-content-between mt-1 pt-1 border-top" style="font-size: 11px;">
+              <span>Payment Mode</span>
+              <span class="badge bg-success-subtle text-success" id="receipt-payment-method">PAID (UPI)</span>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a href="./orders.html" class="btn btn-outline-dark btn-sm rounded-pill py-2">
+              <i class="bi bi-arrow-left me-1"></i> Back to My Orders
+            </a>
+            <a href="./restaurants.html" class="btn btn-primary btn-sm rounded-pill py-2">
+              <i class="bi bi-shop me-1"></i> Order from More Restaurants
+            </a>
+          </div>
+        </div>
+
       </div>
+
     </div>
 
-    <div class="row g-4">
-      <!-- Left: Visual Timeline & Rider Details -->
-      <div class="col-lg-8">
-        <!-- Live Timeline Card -->
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-          <h5 class="fw-bold text-dark mb-4"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Live Order Status</h5>
-          
-          <div class="tracking-timeline d-flex flex-column gap-4 position-relative ps-4" id="timeline-container">
-            <!-- Populated via JS -->
-          </div>
-        </div>
+  </main>
 
-        <!-- Delivery Partner Card -->
-        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-          <h5 class="fw-bold text-dark mb-3"><i class="bi bi-bicycle text-primary me-2"></i>Delivery Partner Assigned</h5>
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-3">
-              <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                <i class="bi bi-person-badge-fill fs-3"></i>
-              </div>
-              <div>
-                <div class="fw-bold text-dark fs-6" id="rider-name">Ramesh Kumar</div>
-                <small class="text-muted d-block" id="rider-vehicle">Royal Enfield (KA 01 AB 1234)</small>
-                <div class="badge bg-warning text-dark small mt-1"><i class="bi bi-star-fill text-warning"></i> 4.9 Rating</div>
-              </div>
-            </div>
-            <div class="text-end">
-              <div class="badge bg-danger bg-opacity-10 text-danger p-2 rounded-3 fw-bold">
-                OTP: <span id="delivery-otp" class="fs-6">4892</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Order Details Receipt -->
-      <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-          <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">Order Receipt</h5>
-          
-          <div class="mb-3">
-            <div class="fw-bold text-dark" id="order-rest-name">Restaurant Name</div>
-            <small class="text-muted" id="order-rest-addr">Basavanagudi, Bengaluru</small>
-          </div>
-
-          <div class="d-flex flex-column gap-2 border-bottom pb-3 mb-3" id="order-receipt-items">
-            <!-- Populated via JS -->
-          </div>
-
-          <div class="d-flex justify-content-between text-muted small mb-2">
-            <span>Item Total</span>
-            <span class="text-dark fw-semibold" id="receipt-item-total">₹0</span>
-          </div>
-
-          <div class="d-flex justify-content-between text-muted small mb-2">
-            <span>Delivery Fee</span>
-            <span class="text-dark fw-semibold" id="receipt-delivery-fee">FREE</span>
-          </div>
-
-          <div class="d-flex justify-content-between text-muted small mb-2">
-            <span>Taxes & Fees</span>
-            <span class="text-dark fw-semibold" id="receipt-taxes">₹0</span>
-          </div>
-
-          <div id="receipt-discount-row" class="d-flex justify-content-between text-success small mb-2" style="display:none;">
-            <span>Discount</span>
-            <span class="fw-bold" id="receipt-discount">-₹0</span>
-          </div>
-
-          <hr class="my-3">
-
-          <div class="d-flex justify-content-between fs-5 fw-bold text-dark mb-3">
-            <span>Total Paid</span>
-            <span class="text-danger" id="receipt-grand-total">₹0</span>
-          </div>
-
-          <div class="p-3 bg-light rounded-3 small">
-            <div class="fw-bold text-dark mb-1"><i class="bi bi-pin-map-fill text-danger me-1"></i> Delivery Address:</div>
-            <div class="text-muted" id="receipt-address">Koramangala, Bengaluru</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- Footer -->
-  <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+  <!-- FOOTER -->
+  <footer class="bg-dark text-light pt-5 pb-4 mt-auto border-top border-secondary">
     <div class="container">
       <div class="row g-4">
         <div class="col-lg-4 col-md-6">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-              <i class="bi bi-fire fs-5"></i>
+            <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-bag-heart-fill fs-5"></i>
             </div>
-            <span class="fw-bold fs-4 text-white">Food<span class="text-danger">Wala</span></span>
+            <h4 class="text-white fw-bold mb-0">Food<span class="text-danger">Wala</span></h4>
           </div>
-          <p class="text-muted small">Bengaluru's premier food discovery & delivery platform. Explore authentic cuisines, typo-tolerant smart search, and lightning-fast local delivery across Bengaluru.</p>
-          <div class="d-flex gap-3 text-secondary fs-5 mt-3">
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-instagram"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-twitter-x"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-linkedin"></i></a>
+          <p class="text-muted small mb-3">Bengaluru's premier authentic food discovery and hyper-fast delivery network. Bringing 105+ iconic restaurants and 750+ delicacies straight to your doorstep.</p>
+          <div class="d-flex gap-3 fs-5">
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
-          <h6 class="fw-bold text-white mb-3">Popular Cuisines</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
-            <li><a href="./restaurants.html?cuisine=Biryani" class="text-muted text-decoration-none hover-white">Biryani</a></li>
-            <li><a href="./restaurants.html?cuisine=South+Indian" class="text-muted text-decoration-none hover-white">South Indian Dosa</a></li>
-            <li><a href="./restaurants.html?cuisine=North+Indian" class="text-muted text-decoration-none hover-white">North Indian Curry</a></li>
-            <li><a href="./restaurants.html?cuisine=Chinese" class="text-muted text-decoration-none hover-white">Chinese & Momos</a></li>
-            <li><a href="./restaurants.html?cuisine=Italian" class="text-muted text-decoration-none hover-white">Woodfired Pizza</a></li>
-            <li><a href="./restaurants.html?cuisine=Desserts" class="text-muted text-decoration-none hover-white">Ice Creams & Sweets</a></li>
+        <div class="col-lg-2 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Quick Links</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+            <li><a href="./index.html" class="text-muted text-decoration-none hover-light">Home</a></li>
+            <li><a href="./restaurants.html" class="text-muted text-decoration-none hover-light">All Restaurants</a></li>
+            <li><a href="./orders.html" class="text-muted text-decoration-none hover-light">My Orders</a></li>
+            <li><a href="./cart.html" class="text-muted text-decoration-none hover-light">Cart</a></li>
+            <li><a href="./profile.html" class="text-muted text-decoration-none hover-light">User Profile</a></li>
+            <li><a href="./addresses.html" class="text-muted text-decoration-none hover-light">Saved Addresses</a></li>
           </ul>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
-          <h6 class="fw-bold text-white mb-3">Bengaluru Hubs</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
-            <li><a href="./restaurants.html?area=Koramangala" class="text-muted text-decoration-none hover-white">Koramangala</a></li>
-            <li><a href="./restaurants.html?area=Indiranagar" class="text-muted text-decoration-none hover-white">Indiranagar</a></li>
-            <li><a href="./restaurants.html?area=Whitefield" class="text-muted text-decoration-none hover-white">Whitefield</a></li>
-            <li><a href="./restaurants.html?area=MG+Road" class="text-muted text-decoration-none hover-white">MG Road / Brigade</a></li>
-            <li><a href="./restaurants.html?area=Malleshwaram" class="text-muted text-decoration-none hover-white">Malleshwaram</a></li>
-            <li><a href="./restaurants.html?area=HSR+Layout" class="text-muted text-decoration-none hover-white">HSR Layout</a></li>
+        <div class="col-lg-3 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Top Bengaluru Areas</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0 text-muted">
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Koramangala & HSR</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Indiranagar & MG Road</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Whitefield & Marathahalli</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Malleshwaram & Rajajinagar</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Jayanagar & Basavanagudi</li>
           </ul>
         </div>
 
-        <div class="col-lg-4 col-md-12">
-          <div class="bg-secondary bg-opacity-25 p-4 rounded-4">
-            <h6 class="fw-bold text-white mb-2"><i class="bi bi-github me-2 text-danger"></i>GitHub Pages Interactive Demo</h6>
-            <p class="text-white-50 small mb-3">Powered by the complete FoodWala Bengaluru restaurant and menu dataset with client-side smart fuzzy search.</p>
-            <div class="badge bg-success py-2 px-3 fw-semibold"><i class="bi bi-check-circle me-1"></i> Full Local Tomcat + Java Servlet Backend Available in Repo</div>
+        <div class="col-lg-3 col-md-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Secure Payments</h6>
+          <p class="text-muted small mb-2">100% Secure Checkout powered by Razorpay Test Sandbox and UPI.</p>
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <span class="badge bg-secondary p-2"><i class="bi bi-credit-card me-1"></i> Cards</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-qr-code me-1"></i> UPI</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-bank me-1"></i> NetBanking</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-cash-stack me-1"></i> Cash On Delivery</span>
           </div>
+          <small class="text-secondary d-block">Razorpay Public Test Key: <code class="text-light">rzp_test_TjiZvLxLbxKe38</code></small>
         </div>
       </div>
 
       <hr class="border-secondary my-4">
+
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
-        <div>&copy; 2026 FoodWala Delivery Technologies Pvt. Ltd. All rights reserved.</div>
-        <div class="d-flex gap-3 mt-2 mt-md-0">
-          <a href="./restaurants.html" class="text-muted text-decoration-none">Restaurants</a>
-          <a href="./orders.html" class="text-muted text-decoration-none">Track Order</a>
-          <a href="./cart.html" class="text-muted text-decoration-none">Cart</a>
-          <a href="https://github.com/vishnu6301382491-dev/Foodwala" target="_blank" class="text-muted text-decoration-none"><i class="bi bi-github"></i> Repository</a>
+        <div>&copy; 2026 FoodWala Inc. All rights reserved. Built with Java Servlets, JSP & Modern Web Architecture.</div>
+        <div class="mt-2 mt-md-0">
+          <span>Bengaluru, Karnataka &bull; 105 Real Restaurants &bull; 756 Menu Items</span>
         </div>
       </div>
     </div>
   </footer>
 
-
+  <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="./js/foodwala-data.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Core FoodWala JS -->
   <script src="./js/app.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const orderId = urlParams.get('orderId');
 
-      const orders = FoodWalaApp.Orders.getAllOrders();
-      const order = (orderId ? orders.find(o => o.orderId === orderId) : null) || orders[0];
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Auth Guard
+      const user = FoodWalaApp.Auth.getCurrentUser();
+      
+      // 2. Resolve target Order
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetOrderId = urlParams.get('orderId');
+
+      await FoodWalaApp.loadData();
+      const allOrders = FoodWalaApp.Orders.getAllOrders();
+      let order = null;
+
+      if (targetOrderId) {
+        order = FoodWalaApp.Orders.getOrderById(targetOrderId);
+      }
+      if (!order && allOrders.length > 0) {
+        order = allOrders[0];
+      }
 
       if (!order) {
-        window.location.href = './orders.html';
+        alert('No active order found to track. Redirecting to restaurants...');
+        window.location.href = './restaurants.html';
         return;
       }
 
-      document.getElementById('order-id-label').textContent = order.orderId;
-      document.getElementById('order-rest-name').textContent = order.restaurantName || 'Bengaluru Restaurant';
-      document.getElementById('order-rest-addr').textContent = order.restaurantAddress || 'Bengaluru';
-      document.getElementById('receipt-address').textContent = order.deliveryAddress || 'Bengaluru';
-
+      // 3. Render Order Header Details
+      document.getElementById('order-id-badge').textContent = `Order #${order.orderId || order.id}`;
+      document.getElementById('order-rest-name').textContent = order.restaurantName;
+      document.getElementById('delivery-destination-text').textContent = order.deliveryAddress;
+      
       if (order.deliveryPartner) {
-        document.getElementById('rider-name').textContent = order.deliveryPartner.name;
-        document.getElementById('rider-vehicle').textContent = order.deliveryPartner.vehicle || 'Hero Splendor (KA 03 XY 9988)';
-        document.getElementById('delivery-otp').textContent = order.deliveryPartner.otp || '5621';
+        document.getElementById('rider-name').textContent = order.deliveryPartner.name || 'Ramesh Kumar';
+        document.getElementById('rider-vehicle').textContent = order.deliveryPartner.vehicle || 'Royal Enfield (KA 01 AB 1234)';
+        document.getElementById('rider-rating').textContent = order.deliveryPartner.rating || '4.9';
+        document.getElementById('delivery-otp').textContent = order.deliveryPartner.otp || '4892';
       }
 
-      // Render Receipt Items
-      const itemsList = document.getElementById('order-receipt-items');
+      // 4. Render Receipt Items
+      const itemsList = document.getElementById('order-items-list');
       itemsList.innerHTML = (order.items || []).map(i => `
-        <div class="d-flex justify-content-between small">
-          <span>${i.quantity}x ${i.name}</span>
-          <span class="fw-semibold">₹${(i.price * i.quantity).toFixed(0)}</span>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light text-dark border px-2 py-1">${i.quantity}x</span>
+            <span class="text-truncate fw-semibold small text-dark" style="max-width: 180px;">${i.name}</span>
+          </div>
+          <span class="small fw-bold text-dark">₹${i.price * i.quantity}</span>
         </div>
       `).join('');
 
-      document.getElementById('receipt-item-total').textContent = `₹${order.itemTotal || 0}`;
-      document.getElementById('receipt-delivery-fee').textContent = (order.deliveryFee === 0 || !order.deliveryFee) ? 'FREE' : `₹${order.deliveryFee}`;
-      document.getElementById('receipt-taxes').textContent = `₹${(order.gst || 0) + (order.platformFee || 5)}`;
+      document.getElementById('receipt-item-total').textContent = `₹${order.itemTotal}`;
+      document.getElementById('receipt-delivery-fee').textContent = order.deliveryFee === 0 ? 'FREE' : `₹${order.deliveryFee}`;
+      document.getElementById('receipt-platform-fee').textContent = `₹${order.platformFee}`;
+      document.getElementById('receipt-gst').textContent = `₹${order.gst}`;
       if (order.discount && order.discount > 0) {
-        document.getElementById('receipt-discount-row').style.display = 'flex';
+        const discRow = document.getElementById('receipt-discount-row');
+        discRow.style.display = 'flex';
         document.getElementById('receipt-discount').textContent = `-₹${order.discount}`;
       }
-      document.getElementById('receipt-grand-total').textContent = `₹${order.grandTotal || 0}`;
+      document.getElementById('receipt-grand-total').textContent = `₹${order.grandTotal}`;
+      document.getElementById('receipt-payment-method').textContent = `${order.paymentStatus || 'PAID'} (${order.paymentMethod || 'UPI'})`;
 
-      // Render Timeline
-      const timeline = document.getElementById('timeline-container');
-      const steps = order.statusTimeline || [
-        { title: 'Order Placed', time: 'Just now', done: true },
-        { title: 'Restaurant Accepted', time: 'Just now', done: true },
-        { title: 'Food is being Prepared', time: 'In progress', done: true, active: true },
-        { title: 'Delivery Partner on the Way', time: '~15 mins', done: false },
-        { title: 'Delivered', time: '~28 mins', done: false }
-      ];
+      // 5. Initialize Leaflet Map
+      const restCoords = order.restaurantLocation || { lat: 12.9352, lng: 77.6245 };
+      const destCoords = order.deliveryLocation || { lat: 12.9308, lng: 77.6210 };
 
-      timeline.innerHTML = steps.map((s, idx) => `
-        <div class="d-flex align-items-center gap-3">
-          <div class="rounded-circle d-flex align-items-center justify-content-center ${s.done ? (s.active ? 'bg-warning text-dark' : 'bg-success text-white') : 'bg-light text-muted border'}" style="width: 36px; height: 36px; min-width:36px;">
-            <i class="bi ${s.done ? (s.active ? 'bi-hourglass-split' : 'bi-check-lg') : 'bi-circle'} fs-6"></i>
-          </div>
-          <div>
-            <div class="fw-bold ${s.done ? 'text-dark' : 'text-muted'}">${s.title}</div>
-            <small class="text-muted">${s.time}</small>
-          </div>
-        </div>
-      `).join('');
+      const centerLat = (restCoords.lat + destCoords.lat) / 2;
+      const centerLng = (restCoords.lng + destCoords.lng) / 2;
+
+      const map = L.map('delivery-map').setView([centerLat, centerLng], 14);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Custom Pin HTML
+      const restIcon = L.divIcon({
+        className: 'custom-leaflet-pin',
+        html: `<div class="custom-map-pin pin-restaurant"><i class="bi bi-shop"></i></div>`,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
+
+      const destIcon = L.divIcon({
+        className: 'custom-leaflet-pin',
+        html: `<div class="custom-map-pin pin-destination"><i class="bi bi-house-door-fill"></i></div>`,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
+
+      const riderIcon = L.divIcon({
+        className: 'custom-leaflet-pin',
+        html: `<div class="custom-map-pin pin-rider"><i class="bi bi-bicycle"></i></div>`,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
+
+      const restMarker = L.marker([restCoords.lat, restCoords.lng], { icon: restIcon }).addTo(map)
+        .bindPopup(`<b>${order.restaurantName}</b><br>Kitchen preparing food`).openPopup();
+
+      const destMarker = L.marker([destCoords.lat, destCoords.lng], { icon: destIcon }).addTo(map)
+        .bindPopup(`<b>Your Delivery Location</b><br>${order.deliveryAddress}`);
+
+      // 6. Generate Waypoints and Route Polyline
+      const totalSteps = 20;
+      const waypoints = [];
+      for (let s = 0; s <= totalSteps; s++) {
+        const factor = s / totalSteps;
+        const curveOffset = Math.sin(factor * Math.PI) * 0.0035;
+        waypoints.push([
+          restCoords.lat + (destCoords.lat - restCoords.lat) * factor + curveOffset,
+          restCoords.lng + (destCoords.lng - restCoords.lng) * factor - curveOffset
+        ]);
+      }
+
+      const routeLine = L.polyline(waypoints, {
+        color: '#ff5200',
+        weight: 4,
+        opacity: 0.8,
+        dashArray: '8, 8'
+      }).addTo(map);
+
+      map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+      // 7. Persistent Rider Animation & Live Simulation
+      const storageSimKey = `foodwala_tracking_sim_${order.orderId || order.id}`;
+      let currentStep = parseInt(localStorage.getItem(storageSimKey) || '4');
+
+      let riderMarker = L.marker(waypoints[Math.min(currentStep, totalSteps)], { icon: riderIcon }).addTo(map)
+        .bindPopup(`<b>${order.deliveryPartner ? order.deliveryPartner.name : 'Valet'}</b><br>On the way!`);
+
+      function updateStatusUI(step) {
+        const fraction = step / totalSteps;
+        const remainingKm = Math.max(0, Math.round((3.2 * (1 - fraction)) * 10) / 10);
+        const remainingMin = Math.max(0, Math.round(28 * (1 - fraction)));
+
+        document.getElementById('eta-display').textContent = remainingMin > 0 ? `${remainingMin} mins` : 'Arrived!';
+        document.getElementById('distance-display').innerHTML = remainingKm > 0 
+          ? `<i class="bi bi-geo-alt"></i> ~${remainingKm} km away` 
+          : `<i class="bi bi-check-circle-fill text-success"></i> Reached Destination`;
+
+        const timelineContainer = document.getElementById('tracking-timeline-container');
+        let stageIndex = 2; // Default prepared
+        if (fraction >= 1.0) {
+          stageIndex = 5;
+          document.getElementById('order-status-heading').textContent = 'Order Delivered! 🎉';
+        } else if (fraction >= 0.3) {
+          stageIndex = 4;
+          document.getElementById('order-status-heading').textContent = 'Delivery Partner on the Way';
+        } else if (fraction >= 0.15) {
+          stageIndex = 3;
+          document.getElementById('order-status-heading').textContent = 'Food Prepared & Handed Over';
+        } else {
+          stageIndex = 2;
+          document.getElementById('order-status-heading').textContent = 'Food is being Prepared...';
+        }
+
+        const stages = [
+          { title: 'Order Placed & Confirmed', time: 'Just now', icon: 'bi-check-lg' },
+          { title: 'Restaurant Accepted Order', time: 'Just now', icon: 'bi-check-lg' },
+          { title: 'Food is being Prepared', time: stageIndex >= 3 ? 'Completed' : 'In Kitchen', icon: 'bi-fire' },
+          { title: 'Delivery Partner on the Way', time: stageIndex >= 4 ? 'Rider En Route' : '~15 mins', icon: 'bi-bicycle' },
+          { title: 'Order Delivered to Doorstep', time: stageIndex === 5 ? 'Completed' : '~' + remainingMin + ' mins', icon: 'bi-house-check' }
+        ];
+
+        timelineContainer.innerHTML = stages.map((stg, idx) => {
+          const isDone = (idx + 1) < stageIndex;
+          const isActive = (idx + 1) === stageIndex;
+          const statusClass = isDone ? 'completed' : isActive ? 'active' : '';
+          return `
+            <div class="timeline-step ${statusClass}">
+              <div class="step-icon">
+                <i class="bi ${isDone ? 'bi-check2' : stg.icon}"></i>
+              </div>
+              <div class="step-title">${stg.title} ${isActive ? '<span class="badge bg-danger ms-2 px-2 py-0 small">Active</span>' : ''}</div>
+              <div class="step-time">${stg.time}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      updateStatusUI(currentStep);
+
+      const simInterval = setInterval(() => {
+        if (currentStep < totalSteps) {
+          currentStep += 1;
+          localStorage.setItem(storageSimKey, currentStep.toString());
+          const newPos = waypoints[currentStep];
+          riderMarker.setLatLng(newPos);
+          updateStatusUI(currentStep);
+
+          if (currentStep === totalSteps) {
+            riderMarker.bindPopup(`<b>Delivered!</b><br>Enjoy your hot meal!`).openPopup();
+            FoodWalaApp.showToast('Your order has been delivered! Enjoy your meal 🎉', 'success');
+            clearInterval(simInterval);
+          }
+        } else {
+          clearInterval(simInterval);
+        }
+      }, 3500);
+
     });
   </script>
 </body>

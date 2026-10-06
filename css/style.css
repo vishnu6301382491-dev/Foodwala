@@ -1447,3 +1447,255 @@ textarea.form-control {
 }
 
 
+
+
+/* ==========================================================================
+   LIVE ORDER TRACKING & LEAFLET MAP STYLES
+   ========================================================================== */
+.delivery-map-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+
+#delivery-map {
+    height: 420px;
+    width: 100%;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    #delivery-map {
+        height: 320px;
+    }
+}
+
+/* Custom Marker Pins */
+.custom-map-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.pin-restaurant {
+    background: #ef4444;
+    border: 3px solid #ffffff;
+}
+
+.pin-destination {
+    background: #10b981;
+    border: 3px solid #ffffff;
+}
+
+.pin-rider {
+    background: #ff5200;
+    border: 3px solid #ffffff;
+    animation: riderPulseRing 1.8s infinite;
+}
+
+@keyframes riderPulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 82, 0, 0.7), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    70% {
+        box-shadow: 0 0 0 16px rgba(255, 82, 0, 0), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 82, 0, 0), 0 4px 12px rgba(0,0,0,0.3);
+    }
+}
+
+/* Live Pulse Badges */
+.live-badge-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fee2e2;
+    color: #ef4444;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    animation: livePulse 1.5s infinite;
+}
+
+@keyframes livePulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1.15);
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Tracking Step Timeline */
+.tracking-timeline {
+    position: relative;
+    padding-left: 32px;
+}
+
+.tracking-timeline::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 14px;
+    width: 3px;
+    background: #e2e8f0;
+}
+
+.timeline-step {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.timeline-step:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-step .step-icon {
+    position: absolute;
+    left: -32px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    border: 3px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.timeline-step.completed .step-icon {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.timeline-step.active .step-icon {
+    background: #ff5200;
+    color: #ffffff;
+    box-shadow: 0 0 0 6px rgba(255, 82, 0, 0.2);
+}
+
+.timeline-step .step-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.timeline-step.completed .step-title {
+    color: #0f172a;
+}
+
+.timeline-step.active .step-title {
+    color: #ff5200;
+}
+
+.timeline-step .step-time {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Address Cards */
+.address-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: #ffffff;
+    position: relative;
+}
+
+.address-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.address-card.selected {
+    border-color: #ff5200;
+    background: #fffbf9;
+    box-shadow: 0 4px 16px rgba(255, 82, 0, 0.12);
+}
+
+.address-type-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.address-type-home {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.address-type-work {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.address-type-other {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* Rider Card */
+.rider-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.otp-box {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: center;
+}
+
+.otp-code {
+    font-family: monospace;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #fbbf24;
+}

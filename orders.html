@@ -3,226 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Orders — FoodWala</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>My Orders | FoodWala Bengaluru</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="bg-light">
+<body class="bg-light d-flex flex-column min-vh-100">
 
-
-  <!-- Navigation Bar -->
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-3 text-dark text-decoration-none" href="./index.html">
-        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; box-shadow: 0 4px 10px rgba(255, 75, 75, 0.35);">
-          <i class="bi bi-fire fs-4"></i>
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4" href="./index.html">
+        <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+          <i class="bi bi-bag-heart-fill fs-5"></i>
         </div>
-        <span>Food<span class="text-danger">Wala</span></span>
+        <span>Food<span class="text-dark">Wala</span></span>
       </a>
 
-      <!-- Location Selector Pill -->
-      <div class="d-none d-md-flex align-items-center ms-3 me-auto">
-        <button type="button" class="btn btn-light border d-flex align-items-center gap-2 px-3 py-2 rounded-pill location-btn" data-bs-toggle="modal" data-bs-target="#locationModal" title="Change Location">
-          <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-          <div class="text-start" id="navbar-location-display">
-            <span class="fw-bold text-dark d-inline-block">Koramangala</span>
-            <small class="text-muted d-block" style="font-size: 0.75rem;">5th Block, Bengaluru</small>
-          </div>
-          <i class="bi bi-chevron-down text-muted ms-1 small"></i>
-        </button>
-      </div>
-
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="mainNavbar">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3 my-2 my-lg-0">
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./restaurants.html">
-              <i class="bi bi-search text-danger"></i> Explore Restaurants
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./orders.html">
-              <i class="bi bi-bag-check text-primary"></i> My Orders
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-danger position-relative rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm text-white" href="./cart.html">
-              <i class="bi bi-cart3 fs-5"></i>
-              <span>Cart</span>
-              <span class="badge bg-white text-danger rounded-pill fw-bold js-cart-count" style="display:none;">0</span>
-            </a>
-          </li>
-          <li class="nav-item" id="navbar-user-slot">
-            <div class="d-flex align-items-center gap-2">
-              <a href="./login.html" class="btn btn-outline-dark btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <!-- Location Picker Button -->
+        <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal">
+            <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+            <div class="text-start lh-1" id="navbar-location-display">
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Koramangala</span>
+              <small class="text-muted d-block">Bengaluru</small>
             </div>
+            <i class="bi bi-chevron-down text-muted ms-1 small"></i>
+          </button>
+        </div>
+
+        <ul class="navbar-nav ms-auto align-items-center gap-lg-3 my-2 my-lg-0">
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./index.html">
+              <i class="bi bi-house-door me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./restaurants.html">
+              <i class="bi bi-shop me-1"></i> Restaurants
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-danger" href="./orders.html">
+              <i class="bi bi-bag-check me-1"></i> Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 position-relative d-flex align-items-center gap-2" href="./cart.html">
+              <i class="bi bi-cart3 fs-6"></i>
+              <span class="fw-bold">Cart</span>
+              <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2" id="navbar-user-slot">
+            <!-- Populated dynamically by FoodWalaApp.Auth -->
+            <a href="./login.html" class="btn btn-primary btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Location Picker Modal -->
+  <!-- Location Selection Modal -->
   <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="modal-header bg-danger text-white p-4">
-          <h5 class="modal-title fw-bold" id="locationModalLabel"><i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru</h5>
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="locationModalLabel">
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru
+          </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0" style="max-height: 420px; overflow-y: auto;">
+        <div class="modal-body p-0">
           <div class="list-group list-group-flush" id="location-options-list">
-            <!-- Populated via FoodWalaApp.Location -->
+            <!-- Populated by FoodWalaApp -->
           </div>
         </div>
       </div>
     </div>
   </div>
 
-
-  <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-extrabold text-dark mb-0"><i class="bi bi-bag-check-fill text-danger me-2"></i>My Orders</h2>
-      <a href="./restaurants.html" class="btn btn-danger btn-sm rounded-pill px-3 fw-semibold">Order Food</a>
+  <!-- MAIN CONTAINER -->
+  <main class="container my-4 flex-grow-1">
+    
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-bag-check-fill text-danger me-2"></i>My Orders</h2>
+        <p class="text-muted mb-0 small">Track active deliveries & view past food order history</p>
+      </div>
+      <a href="./restaurants.html" class="btn btn-danger btn-sm rounded-pill px-3 py-2 fw-bold">
+        <i class="bi bi-shop me-1"></i> Explore Restaurants
+      </a>
     </div>
 
     <div class="row g-4" id="orders-list-container">
-      <!-- Populated via JS -->
+      <!-- Orders dynamically populated -->
     </div>
-  </div>
 
+  </main>
 
-  <!-- Footer -->
-  <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+  <!-- FOOTER -->
+  <footer class="bg-dark text-light pt-5 pb-4 mt-auto border-top border-secondary">
     <div class="container">
       <div class="row g-4">
         <div class="col-lg-4 col-md-6">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-              <i class="bi bi-fire fs-5"></i>
+            <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-bag-heart-fill fs-5"></i>
             </div>
-            <span class="fw-bold fs-4 text-white">Food<span class="text-danger">Wala</span></span>
+            <h4 class="text-white fw-bold mb-0">Food<span class="text-danger">Wala</span></h4>
           </div>
-          <p class="text-muted small">Bengaluru's premier food discovery & delivery platform. Explore authentic cuisines, typo-tolerant smart search, and lightning-fast local delivery across Bengaluru.</p>
-          <div class="d-flex gap-3 text-secondary fs-5 mt-3">
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-instagram"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-twitter-x"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-linkedin"></i></a>
+          <p class="text-muted small mb-3">Bengaluru's premier authentic food discovery and hyper-fast delivery network. Bringing 105+ iconic restaurants and 750+ delicacies straight to your doorstep.</p>
+          <div class="d-flex gap-3 fs-5">
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
-          <h6 class="fw-bold text-white mb-3">Popular Cuisines</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
-            <li><a href="./restaurants.html?cuisine=Biryani" class="text-muted text-decoration-none hover-white">Biryani</a></li>
-            <li><a href="./restaurants.html?cuisine=South+Indian" class="text-muted text-decoration-none hover-white">South Indian Dosa</a></li>
-            <li><a href="./restaurants.html?cuisine=North+Indian" class="text-muted text-decoration-none hover-white">North Indian Curry</a></li>
-            <li><a href="./restaurants.html?cuisine=Chinese" class="text-muted text-decoration-none hover-white">Chinese & Momos</a></li>
-            <li><a href="./restaurants.html?cuisine=Italian" class="text-muted text-decoration-none hover-white">Woodfired Pizza</a></li>
-            <li><a href="./restaurants.html?cuisine=Desserts" class="text-muted text-decoration-none hover-white">Ice Creams & Sweets</a></li>
+        <div class="col-lg-2 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Quick Links</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+            <li><a href="./index.html" class="text-muted text-decoration-none hover-light">Home</a></li>
+            <li><a href="./restaurants.html" class="text-muted text-decoration-none hover-light">All Restaurants</a></li>
+            <li><a href="./orders.html" class="text-muted text-decoration-none hover-light">My Orders</a></li>
+            <li><a href="./cart.html" class="text-muted text-decoration-none hover-light">Cart</a></li>
+            <li><a href="./profile.html" class="text-muted text-decoration-none hover-light">User Profile</a></li>
+            <li><a href="./addresses.html" class="text-muted text-decoration-none hover-light">Saved Addresses</a></li>
           </ul>
         </div>
 
-        <div class="col-lg-2 col-md-3 col-6">
-          <h6 class="fw-bold text-white mb-3">Bengaluru Hubs</h6>
-          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
-            <li><a href="./restaurants.html?area=Koramangala" class="text-muted text-decoration-none hover-white">Koramangala</a></li>
-            <li><a href="./restaurants.html?area=Indiranagar" class="text-muted text-decoration-none hover-white">Indiranagar</a></li>
-            <li><a href="./restaurants.html?area=Whitefield" class="text-muted text-decoration-none hover-white">Whitefield</a></li>
-            <li><a href="./restaurants.html?area=MG+Road" class="text-muted text-decoration-none hover-white">MG Road / Brigade</a></li>
-            <li><a href="./restaurants.html?area=Malleshwaram" class="text-muted text-decoration-none hover-white">Malleshwaram</a></li>
-            <li><a href="./restaurants.html?area=HSR+Layout" class="text-muted text-decoration-none hover-white">HSR Layout</a></li>
+        <div class="col-lg-3 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Top Bengaluru Areas</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0 text-muted">
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Koramangala & HSR</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Indiranagar & MG Road</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Whitefield & Marathahalli</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Malleshwaram & Rajajinagar</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Jayanagar & Basavanagudi</li>
           </ul>
         </div>
 
-        <div class="col-lg-4 col-md-12">
-          <div class="bg-secondary bg-opacity-25 p-4 rounded-4">
-            <h6 class="fw-bold text-white mb-2"><i class="bi bi-github me-2 text-danger"></i>GitHub Pages Interactive Demo</h6>
-            <p class="text-white-50 small mb-3">Powered by the complete FoodWala Bengaluru restaurant and menu dataset with client-side smart fuzzy search.</p>
-            <div class="badge bg-success py-2 px-3 fw-semibold"><i class="bi bi-check-circle me-1"></i> Full Local Tomcat + Java Servlet Backend Available in Repo</div>
+        <div class="col-lg-3 col-md-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Secure Payments</h6>
+          <p class="text-muted small mb-2">100% Secure Checkout powered by Razorpay Test Sandbox and UPI.</p>
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <span class="badge bg-secondary p-2"><i class="bi bi-credit-card me-1"></i> Cards</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-qr-code me-1"></i> UPI</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-bank me-1"></i> NetBanking</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-cash-stack me-1"></i> Cash On Delivery</span>
           </div>
+          <small class="text-secondary d-block">Razorpay Public Test Key: <code class="text-light">rzp_test_TjiZvLxLbxKe38</code></small>
         </div>
       </div>
 
       <hr class="border-secondary my-4">
+
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
-        <div>&copy; 2026 FoodWala Delivery Technologies Pvt. Ltd. All rights reserved.</div>
-        <div class="d-flex gap-3 mt-2 mt-md-0">
-          <a href="./restaurants.html" class="text-muted text-decoration-none">Restaurants</a>
-          <a href="./orders.html" class="text-muted text-decoration-none">Track Order</a>
-          <a href="./cart.html" class="text-muted text-decoration-none">Cart</a>
-          <a href="https://github.com/vishnu6301382491-dev/Foodwala" target="_blank" class="text-muted text-decoration-none"><i class="bi bi-github"></i> Repository</a>
+        <div>&copy; 2026 FoodWala Inc. All rights reserved. Built with Java Servlets, JSP & Modern Web Architecture.</div>
+        <div class="mt-2 mt-md-0">
+          <span>Bengaluru, Karnataka &bull; 105 Real Restaurants &bull; 756 Menu Items</span>
         </div>
       </div>
     </div>
   </footer>
 
-
+  <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="./js/foodwala-data.js"></script>
+  <!-- Core FoodWala JS -->
   <script src="./js/app.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // 1. Auth Guard
+      if (!FoodWalaApp.Auth.requireAuth('./orders.html')) return;
+
       const container = document.getElementById('orders-list-container');
       const orders = FoodWalaApp.Orders.getAllOrders();
 
       if (!orders || orders.length === 0) {
         container.innerHTML = `
           <div class="col-12 text-center py-5">
-            <i class="bi bi-bag-x display-3 text-muted mb-3 d-block"></i>
-            <h4 class="fw-bold">No orders found</h4>
-            <p class="text-muted">You have not placed any orders yet. Try Bengaluru's top restaurants!</p>
-            <a href="./restaurants.html" class="btn btn-danger rounded-pill px-4">Browse Menu</a>
+            <div class="bg-white p-5 rounded-4 shadow-sm border">
+              <i class="bi bi-bag-x fs-1 text-danger d-block mb-3"></i>
+              <h4 class="fw-bold text-dark">No orders placed yet</h4>
+              <p class="text-muted small mb-4">Explore 105+ authentic Bengaluru restaurants and order delicious food today!</p>
+              <a href="./restaurants.html" class="btn btn-danger rounded-pill px-4 py-2 fw-bold">
+                Browse Restaurants
+              </a>
+            </div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = orders.map(order => `
-        <div class="col-lg-6">
-          <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
-            <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
-              <div>
-                <span class="badge ${order.status === 'DELIVERED' ? 'bg-success' : 'bg-warning text-dark'} rounded-pill px-3 py-1 mb-2 fw-bold">
-                  ${order.status === 'DELIVERED' ? '<i class="bi bi-check2-circle me-1"></i> Delivered' : '<i class="bi bi-hourglass-split me-1"></i> In Progress'}
-                </span>
-                <h5 class="fw-bold text-dark mb-0">${order.restaurantName || 'Bengaluru Restaurant'}</h5>
-                <small class="text-muted">${order.restaurantAddress || 'Bengaluru'}</small>
-              </div>
-              <div class="text-end">
-                <div class="fw-bold text-dark fs-5">₹${order.grandTotal}</div>
-                <small class="text-muted">${new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
-              </div>
-            </div>
+      container.innerHTML = orders.map(order => {
+        const isLive = order.status === 'IN_PROGRESS' || order.status === 'PLACED';
+        const formattedDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
 
-            <div class="d-flex flex-column gap-2 mb-3">
-              ${(order.items || []).map(i => `
-                <div class="d-flex justify-content-between small">
-                  <span>${i.quantity}x ${i.name}</span>
-                  <span class="text-muted">₹${(i.price * i.quantity).toFixed(0)}</span>
+        return `
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+                
+                <div class="d-flex align-items-center gap-3">
+                  <img src="${order.restaurantImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500'}" class="rounded-3" style="width: 60px; height: 60px; object-fit: cover;" alt="${order.restaurantName}">
+                  <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <h5 class="fw-bold text-dark mb-0">${order.restaurantName}</h5>
+                      ${isLive ? '<span class="live-badge-pulse"><span class="live-dot"></span> ON THE WAY</span>' : '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small"><i class="bi bi-check2-circle"></i> Delivered</span>'}
+                    </div>
+                    <small class="text-muted"><i class="bi bi-geo-alt me-1"></i> ${order.restaurantAddress}</small>
+                  </div>
                 </div>
-              `).join('')}
-            </div>
 
-            <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
-              <small class="text-muted">ID: <strong>${order.orderId}</strong></small>
-              <div class="d-flex gap-2">
-                <a href="./order-track.html?orderId=${order.orderId}" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold">
-                  <i class="bi bi-geo-alt me-1"></i> Track / View
-                </a>
+                <div class="text-md-end">
+                  <span class="badge bg-light text-dark border fw-bold mb-1">Order #${order.orderId || order.id}</span>
+                  <div class="small text-muted">${formattedDate}</div>
+                </div>
+
               </div>
+
+              <!-- Order Items List -->
+              <div class="py-3 border-bottom">
+                <div class="d-flex flex-wrap gap-3">
+                  ${(order.items || []).map(i => `
+                    <div class="d-flex align-items-center gap-2 small bg-light px-3 py-2 rounded-pill border">
+                      <span class="badge bg-danger rounded-pill">${i.quantity}x</span>
+                      <span class="fw-semibold text-dark">${i.name}</span>
+                      <span class="text-muted">₹${i.price * i.quantity}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Order Footer & Action -->
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pt-3">
+                <div class="d-flex align-items-center gap-4">
+                  <div>
+                    <small class="text-muted d-block">Grand Total</small>
+                    <span class="fw-bold text-danger fs-5">₹${order.grandTotal}</span>
+                  </div>
+                  <div>
+                    <small class="text-muted d-block">Payment Mode</small>
+                    <span class="badge bg-light text-dark border small">${order.paymentMethod || 'UPI'}</span>
+                  </div>
+                  <div>
+                    <small class="text-muted d-block">Deliver To</small>
+                    <span class="small text-dark text-truncate d-inline-block" style="max-width: 200px;">${order.deliveryAddress}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <a href="./order-tracking.html?orderId=${order.orderId || order.id}" class="btn ${isLive ? 'btn-danger shadow' : 'btn-outline-danger'} btn-sm rounded-pill px-4 py-2 fw-bold">
+                    <i class="bi ${isLive ? 'bi-broadcast' : 'bi-map'} me-1"></i> ${isLive ? 'Live Track Order' : 'View Tracking & Route'}
+                  </a>
+                  <a href="./restaurant-details.html?id=${order.restaurantId}" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold">
+                    <i class="bi bi-arrow-repeat me-1"></i> Reorder
+                  </a>
+                </div>
+
+              </div>
+
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
+
     });
   </script>
 </body>
