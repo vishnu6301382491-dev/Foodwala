@@ -326,11 +326,37 @@ const FoodWalaApp = (function () {
 
   // --- AUTH MODULE (NO DEFAULT USER) ---
   const Auth = {
+    // API endpoint base URL (supports local dev server, cloud backend, or relative API)
+    apiBaseUrl: window.FOODWALA_API_URL || '',
+
+    // Client-side dev OTP cache for seamless local testing if backend API is unreachable
+    _clientDevOtpStore: new Map(),
+
+    normalizePhone: function (rawPhone) {
+      if (!rawPhone || typeof rawPhone !== 'string') return null;
+      let digits = rawPhone.replace(/[\s\-\(\)]/g, '');
+      if (digits.startsWith('+91')) {
+        digits = digits.substring(3);
+      } else if (digits.startsWith('91') && digits.length === 12) {
+        digits = digits.substring(2);
+      } else if (digits.startsWith('0') && digits.length === 11) {
+        digits = digits.substring(1);
+      }
+      if (/^[6-9]\d{9}$/.test(digits)) {
+        return '+91' + digits;
+      }
+      return null;
+    },
+
     getCurrentUser: function () {
       // Returns null if no authenticated user exists or user object is malformed
       const user = getStorage(STORAGE_KEYS.CURRENT_USER, null);
-      if (user && typeof user === 'object' && user.name && String(user.name).trim().length > 0 && user.email && String(user.email).trim().length > 0) {
-        return user;
+      if (user && typeof user === 'object' && user.name && String(user.name).trim().length > 0) {
+        const hasEmail = user.email && String(user.email).trim().length > 0;
+        const hasPhone = user.phone && String(user.phone).trim().length > 0;
+        if (hasEmail || hasPhone) {
+          return user;
+        }
       }
       return null;
     },
@@ -354,6 +380,200 @@ const FoodWalaApp = (function () {
       return true;
     },
 
+    sendOtp: async function (rawPhone) {
+      const normalized = this.normalizePhone(rawPhone);
+      if (!normalized) {
+        return {
+          success: false,
+          error: 'INVALID_PHONE',
+          message: 'Please enter a valid 10-digit mobile number.'
+        };
+      }
+
+      // Try Backend API First
+      try {
+        const endpoint = (this.apiBaseUrl ? this.apiBaseUrl : '') + '/api/auth/send-otp';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: normalized })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.devOtp) {
+            this._clientDevOtpStore.set(normalized, { otp: data.devOtp, expiresAt: Date.now() + 300000 });
+          }
+          return data;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          return {
+            success: false,
+            error: errData.error || 'API_ERROR',
+            message: errData.message || 'Unable to send OTP right now. Please try again.'
+          };
+        }
+      } catch (e) {
+        // Fallback Client Dev Mode (Allows testing on pure static servers/GitHub Pages without live Node server)
+        console.info('[FoodWala Auth] API unreachable, using client development OTP mode.');
+        const devOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const existing = this._clientDevOtpStore.get(normalized);
+        const now = Date.now();
+
+        if (existing && (now - existing.lastSentAt) < 30000) {
+          const waitSec = Math.ceil((30000 - (now - existing.lastSentAt)) / 1000);
+          return {
+            success: false,
+            error: 'TOO_MANY_REQUESTS',
+            message: `Please wait ${waitSec}s before requesting a new OTP.`
+          };
+        }
+
+        this._clientDevOtpStore.set(normalized, {
+          otp: devOtp,
+          expiresAt: now + (5 * 60 * 1000),
+          attempts: 0,
+          lastSentAt: now
+        });
+
+        console.log(`\n==================================================`);
+        console.log(`[FoodWala Client DEV OTP]`);
+        console.log(`Recipient: ${normalized}`);
+        console.log(`OTP Code : ${devOtp}`);
+        console.log(`==================================================\n`);
+
+        return {
+          success: true,
+          message: 'OTP sent successfully.',
+          phone: normalized,
+          expiresIn: 300,
+          devOtp: devOtp
+        };
+      }
+    },
+
+    verifyOtp: async function (rawPhone, otp) {
+      const normalized = this.normalizePhone(rawPhone);
+      if (!normalized) {
+        return { success: false, error: 'INVALID_PHONE', message: 'Please enter a valid 10-digit mobile number.' };
+      }
+
+      const cleanOtp = (otp || '').trim();
+      if (cleanOtp.length !== 6) {
+        return { success: false, error: 'INVALID_OTP_FORMAT', message: 'Please enter the 6-digit verification code.' };
+      }
+
+      // Try Backend API First
+      try {
+        const endpoint = (this.apiBaseUrl ? this.apiBaseUrl : '') + '/api/auth/verify-otp';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: normalized, otp: cleanOtp })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.isNewUser && data.user) {
+            setStorage(STORAGE_KEYS.CURRENT_USER, data.user);
+            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+            updateUserNavUI();
+          }
+          return data;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          return {
+            success: false,
+            error: errData.error || 'VERIFY_FAILED',
+            message: errData.message || 'Incorrect OTP. Please check and try again.'
+          };
+        }
+      } catch (e) {
+        // Fallback Client Dev Mode verification
+        const record = this._clientDevOtpStore.get(normalized);
+        if (!record || Date.now() > record.expiresAt) {
+          return { success: false, error: 'OTP_EXPIRED', message: 'OTP expired. Please request a new OTP.' };
+        }
+
+        if (record.attempts >= 5) {
+          this._clientDevOtpStore.delete(normalized);
+          return { success: false, error: 'TOO_MANY_ATTEMPTS', message: 'Too many attempts. Please request a new OTP.' };
+        }
+
+        if (record.otp !== cleanOtp) {
+          record.attempts += 1;
+          return { success: false, error: 'INCORRECT_OTP', message: 'Incorrect OTP. Please check and try again.' };
+        }
+
+        this._clientDevOtpStore.delete(normalized);
+
+        // Check if user already exists in storage or registered users
+        const existingUsers = getStorage('foodwala_registered_users', []);
+        const matched = existingUsers.find(u => u.phone === normalized);
+
+        if (matched) {
+          setStorage(STORAGE_KEYS.CURRENT_USER, matched);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: matched }));
+          updateUserNavUI();
+          return { success: true, isNewUser: false, user: matched };
+        } else {
+          return { success: true, isNewUser: true, phone: normalized };
+        }
+      }
+    },
+
+    registerWithMobile: function (rawPhone, name, email, address) {
+      const normalized = this.normalizePhone(rawPhone);
+      if (!normalized) return null;
+
+      const cleanName = (name || '').trim() || 'Food Lover';
+      const cleanEmail = (email && email.trim()) ? email.trim().toLowerCase() : null;
+
+      const newUser = {
+        userId: Date.now(),
+        name: cleanName,
+        phone: normalized,
+        email: cleanEmail,
+        role: 'CUSTOMER',
+        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        addresses: address ? [
+          {
+            id: 'addr_' + Date.now(),
+            userId: Date.now(),
+            label: 'Home',
+            type: 'Home',
+            fullName: cleanName,
+            phone: normalized,
+            houseNo: '',
+            street: address,
+            area: 'Bengaluru',
+            city: 'Bengaluru',
+            state: 'Karnataka',
+            pincode: '560001',
+            latitude: 12.9716,
+            longitude: 77.5946,
+            addressLine: address + ', Bengaluru, Karnataka - 560001',
+            isDefault: true
+          }
+        ] : []
+      };
+
+      // Save to registered users pool
+      const registered = getStorage('foodwala_registered_users', []);
+      const idx = registered.findIndex(u => u.phone === normalized || (cleanEmail && u.email === cleanEmail));
+      if (idx > -1) {
+        registered[idx] = { ...registered[idx], ...newUser };
+      } else {
+        registered.push(newUser);
+      }
+      setStorage('foodwala_registered_users', registered);
+
+      setStorage(STORAGE_KEYS.CURRENT_USER, newUser);
+      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
+      updateUserNavUI();
+      return newUser;
+    },
+
     login: function (email, password) {
       if (!email || !email.trim()) return null;
       const cleanEmail = email.trim().toLowerCase();
@@ -363,7 +583,7 @@ const FoodWalaApp = (function () {
         userId: Date.now(),
         name: namePart,
         email: cleanEmail,
-        phone: '+91 98765 00000',
+        phone: null,
         role: 'CUSTOMER',
         memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
         addresses: []
@@ -382,7 +602,7 @@ const FoodWalaApp = (function () {
           userId: 101,
           name: 'Rahul Sharma',
           email: 'customer@foodwala.com',
-          phone: '+91 98765 43210',
+          phone: '+919876543210',
           role: 'CUSTOMER',
           memberSince: 'March 2024',
           addresses: [
@@ -392,7 +612,7 @@ const FoodWalaApp = (function () {
               label: 'Home',
               type: 'Home',
               fullName: 'Rahul Sharma',
-              phone: '+91 98765 43210',
+              phone: '+919876543210',
               houseNo: 'Flat 402, Sunshine Heights',
               street: '5th Block, 80ft Road',
               area: 'Koramangala',
@@ -410,7 +630,7 @@ const FoodWalaApp = (function () {
           userId: 102,
           name: 'Vidyarthi Bhavan Manager',
           email: 'vidyarthi@foodwala.com',
-          phone: '+91 80266 77588',
+          phone: '+918026677588',
           role: 'RESTAURANT_ADMIN',
           memberSince: 'January 2024',
           addresses: []
@@ -419,7 +639,7 @@ const FoodWalaApp = (function () {
           userId: 103,
           name: 'Ramesh Kumar',
           email: 'partner@foodwala.com',
-          phone: '+91 91234 56789',
+          phone: '+919123456789',
           role: 'DELIVERY_PARTNER',
           memberSince: 'June 2024',
           vehicle: 'Royal Enfield (KA 01 AB 1234)',
@@ -922,7 +1142,7 @@ const FoodWalaApp = (function () {
           <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 py-2" aria-labelledby="userDropdownBtn" style="min-width: 220px;">
             <li class="px-3 py-2 border-bottom">
               <div class="fw-bold text-dark">${user.name}</div>
-              <small class="text-muted">${user.email}</small>
+              <small class="text-muted">${user.email || user.phone || ''}</small>
             </li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./profile.html"><i class="bi bi-person text-primary"></i> <span>My Profile</span></a></li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./addresses.html"><i class="bi bi-geo-alt text-danger"></i> <span>My Addresses</span></a></li>

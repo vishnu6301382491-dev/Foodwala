@@ -14,3 +14,16 @@ tmp/
 *.log
 sources.txt
 FoodWala_Eclipse_Project/
+
+# Environment Variables & Secrets (NEVER COMMIT)
+.env
+*.env
+.env.*
+!.env.example
+server/.env
+
+# Node Dependencies
+node_modules/
+server/node_modules/
+package-lock.json
+npm-debug.log*

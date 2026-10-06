@@ -341,8 +341,8 @@
         document.getElementById('sidebar-user-name').textContent = u.name || 'User Account';
         document.getElementById('sidebar-user-role').textContent = u.role || 'Customer';
         document.getElementById('profile-name').textContent = u.name || '-';
-        document.getElementById('profile-email').textContent = u.email || '-';
-        document.getElementById('profile-phone').textContent = u.phone || '-';
+        document.getElementById('profile-email').innerHTML = (u.email && u.email.trim()) ? u.email : '<span class="text-muted fst-italic">Not added</span>';
+        document.getElementById('profile-phone').innerHTML = (u.phone && u.phone.trim()) ? u.phone : '<span class="text-muted fst-italic">Not added</span>';
         document.getElementById('profile-membersince').textContent = u.memberSince || '2026';
 
         const orders = FoodWalaApp.Orders.getAllOrders();
@@ -362,10 +362,12 @@
         e.preventDefault();
         const newName = document.getElementById('edit-name').value.trim();
         const newPhone = document.getElementById('edit-phone').value.trim();
+        const newEmail = document.getElementById('edit-email').value.trim();
 
         FoodWalaApp.Auth.updateProfile({
           name: newName,
-          phone: newPhone
+          phone: newPhone,
+          email: newEmail ? newEmail : null
         });
 
         const modalEl = document.getElementById('editProfileModal');

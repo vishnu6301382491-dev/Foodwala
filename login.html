@@ -108,37 +108,161 @@
             <p class="text-muted small">Sign in to track orders, save addresses, and get offers.</p>
           </div>
 
-          <!-- 1-Click Fast Demo Login Buttons -->
-          <div class="bg-light p-3 rounded-4 mb-4">
-            <small class="text-muted fw-bold text-uppercase d-block mb-2 text-center" style="font-size:0.75rem;"><i class="bi bi-lightning-charge-fill text-warning"></i> Optional 1-Click Demo Logins</small>
-            <div class="d-grid gap-2">
-              <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="customer">
-                <i class="bi bi-person-circle text-primary me-2"></i><strong>Customer</strong>: Rahul Sharma
-              </button>
-              <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="restaurant">
-                <i class="bi bi-shop text-danger me-2"></i><strong>Restaurant Manager</strong>: Vidyarthi Bhavan
-              </button>
-              <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="partner">
-                <i class="bi bi-bicycle text-success me-2"></i><strong>Delivery Partner</strong>: Ramesh Kumar
-              </button>
+          <!-- Top Login Mode Switcher Pills -->
+          <div class="d-flex bg-light p-1 rounded-pill mb-4 border" role="tablist">
+            <button class="btn btn-sm flex-fill rounded-pill fw-bold active js-login-tab-btn" id="tab-email-btn" type="button">
+              <i class="bi bi-envelope me-1"></i> Email Login
+            </button>
+            <button class="btn btn-sm flex-fill rounded-pill fw-bold text-muted js-login-tab-btn" id="tab-mobile-btn" type="button">
+              <i class="bi bi-phone me-1"></i> Mobile OTP
+            </button>
+          </div>
+
+          <!-- ================= SECTION 1: EMAIL LOGIN ================= -->
+          <div id="email-login-section">
+            <!-- 1-Click Fast Demo Login Buttons -->
+            <div class="bg-light p-3 rounded-4 mb-4 border">
+              <small class="text-muted fw-bold text-uppercase d-block mb-2 text-center" style="font-size:0.75rem;">
+                <i class="bi bi-lightning-charge-fill text-warning"></i> Optional 1-Click Demo Logins
+              </small>
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="customer">
+                  <i class="bi bi-person-circle text-primary me-2"></i><strong>Customer</strong>: Rahul Sharma
+                </button>
+                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="restaurant">
+                  <i class="bi bi-shop text-danger me-2"></i><strong>Restaurant Manager</strong>: Vidyarthi Bhavan
+                </button>
+                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="partner">
+                  <i class="bi bi-bicycle text-success me-2"></i><strong>Delivery Partner</strong>: Ramesh Kumar
+                </button>
+              </div>
+            </div>
+
+            <form id="login-form">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Email Address</label>
+                <input type="email" id="email-input" class="form-control rounded-3" placeholder="name@example.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Password</label>
+                <input type="password" id="password-input" class="form-control rounded-3" placeholder="••••••••" required>
+              </div>
+              <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Sign In</button>
+            </form>
+
+            <div class="text-center small text-muted">
+              Don't have an account? <a href="./register.html" class="text-danger fw-bold text-decoration-none">Create Account</a>
             </div>
           </div>
 
-          <form id="login-form">
-            <div class="mb-3">
-              <label class="form-label small fw-semibold">Email Address</label>
-              <input type="email" id="email-input" class="form-control rounded-3" placeholder="name@example.com" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label small fw-semibold">Password</label>
-              <input type="password" id="password-input" class="form-control rounded-3" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Sign In</button>
-          </form>
+          <!-- ================= SECTION 2: MOBILE OTP LOGIN ================= -->
+          <div id="mobile-otp-section" style="display: none;">
+            
+            <!-- Step A: Enter Phone Number -->
+            <div id="otp-step-phone">
+              <div class="text-center mb-3">
+                <h5 class="fw-bold text-dark mb-1">Login with Mobile</h5>
+                <p class="text-muted small">We'll send a 6-digit verification code to your number.</p>
+              </div>
 
-          <div class="text-center small text-muted">
-            Don't have an account? <a href="./register.html" class="text-danger fw-bold text-decoration-none">Create Account</a>
+              <form id="mobile-phone-form">
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Mobile Number</label>
+                  <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-light fw-bold border-end-0 text-dark px-3">+91</span>
+                    <input type="tel" id="mobile-number-input" class="form-control border-start-0 fs-6 fw-bold" placeholder="10-digit mobile number" maxlength="14" autocomplete="tel" required>
+                  </div>
+                  <div id="phone-error-msg" class="text-danger small mt-2 fw-semibold" style="display: none;"></div>
+                </div>
+
+                <button type="submit" id="send-otp-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mt-3 d-flex align-items-center justify-content-center gap-2">
+                  <span>Send OTP</span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </form>
+
+              <div class="text-center small text-muted mt-4">
+                By continuing, you agree to FoodWala's <a href="#" class="text-decoration-none text-muted">Terms</a> & <a href="#" class="text-decoration-none text-muted">Privacy Policy</a>.
+              </div>
+            </div>
+
+            <!-- Step B: Verify 6-digit OTP -->
+            <div id="otp-step-verify" style="display: none;">
+              <button type="button" class="btn btn-link link-dark text-decoration-none p-0 mb-3 small fw-bold d-inline-flex align-items-center" id="back-to-phone-btn">
+                <i class="bi bi-arrow-left me-1"></i> Change mobile number
+              </button>
+
+              <div class="text-center mb-3">
+                <h5 class="fw-bold text-dark mb-1">Enter OTP</h5>
+                <p class="text-muted small mb-0">OTP sent to: <strong class="text-dark" id="display-otp-phone">+91 XXXXX XXXXX</strong></p>
+              </div>
+
+              <form id="otp-verify-form">
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between gap-2 my-3" id="otp-boxes-container">
+                    <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-box-1" autocomplete="one-time-code" required>
+                    <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-box-2" required>
+                    <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-box-3" required>
+                    <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-box-4" required>
+                    <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-box-5" required>
+                    <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp-box-6" required>
+                  </div>
+                  <div id="otp-error-msg" class="text-danger small text-center mb-2 fw-semibold" style="display: none;"></div>
+                </div>
+
+                <button type="submit" id="verify-otp-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2">
+                  <span>Verify OTP</span>
+                  <i class="bi bi-shield-check"></i>
+                </button>
+              </form>
+
+              <div class="text-center small">
+                <span class="text-muted">Didn't receive OTP?</span>
+                <div id="resend-timer-wrapper" class="mt-1">
+                  <span class="text-muted">Resend available in <strong id="resend-countdown" class="text-danger">30</strong> seconds</span>
+                </div>
+                <button type="button" id="resend-otp-btn" class="btn btn-link text-danger fw-bold p-0 text-decoration-none mt-1" style="display: none;">
+                  <i class="bi bi-arrow-repeat me-1"></i> Resend OTP
+                </button>
+              </div>
+            </div>
+
+            <!-- Step C: New User Complete Profile -->
+            <div id="otp-step-register" style="display: none;">
+              <div class="text-center mb-3">
+                <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center p-2 mb-2" style="width: 44px; height: 44px;">
+                  <i class="bi bi-check2-circle fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">Welcome to FoodWala!</h5>
+                <p class="text-muted small">Let's create your account.</p>
+              </div>
+
+              <form id="mobile-register-form">
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Mobile Number</label>
+                  <input type="text" id="reg-mobile-display" class="form-control rounded-3 bg-light fw-bold text-muted" readonly>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Full Name *</label>
+                  <input type="text" id="reg-mobile-name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Email Address (Optional)</label>
+                  <input type="email" id="reg-mobile-email" class="form-control rounded-3" placeholder="name@example.com">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Delivery Area in Bengaluru (Optional)</label>
+                  <input type="text" id="reg-mobile-address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru">
+                </div>
+
+                <button type="submit" id="complete-reg-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mt-2">
+                  Create Account
+                </button>
+              </form>
+            </div>
+
           </div>
+
         </div>
       </div>
     </div>
@@ -238,7 +362,31 @@
         }, 400);
       }
 
-      // Demo login buttons
+      // --- Tab Switching: Email Login vs Mobile OTP ---
+      const tabEmailBtn = document.getElementById('tab-email-btn');
+      const tabMobileBtn = document.getElementById('tab-mobile-btn');
+      const emailSection = document.getElementById('email-login-section');
+      const mobileSection = document.getElementById('mobile-otp-section');
+
+      tabEmailBtn.addEventListener('click', () => {
+        tabEmailBtn.classList.add('active', 'btn-light');
+        tabEmailBtn.classList.remove('text-muted');
+        tabMobileBtn.classList.remove('active', 'btn-light');
+        tabMobileBtn.classList.add('text-muted');
+        emailSection.style.display = 'block';
+        mobileSection.style.display = 'none';
+      });
+
+      tabMobileBtn.addEventListener('click', () => {
+        tabMobileBtn.classList.add('active', 'btn-light');
+        tabMobileBtn.classList.remove('text-muted');
+        tabEmailBtn.classList.remove('active', 'btn-light');
+        tabEmailBtn.classList.add('text-muted');
+        mobileSection.style.display = 'block';
+        emailSection.style.display = 'none';
+      });
+
+      // --- Demo login buttons ---
       document.querySelectorAll('.js-demo-login').forEach(btn => {
         btn.addEventListener('click', () => {
           const role = btn.getAttribute('data-role');
@@ -248,7 +396,7 @@
         });
       });
 
-      // Email/password form submission
+      // --- Email/password form submission ---
       document.getElementById('login-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('email-input').value.trim();
@@ -260,6 +408,210 @@
           handlePostLoginNavigation();
         }
       });
+
+      // ===================================================
+      // MOBILE OTP LOGIN FLOW
+      // ===================================================
+      let activeMobilePhone = '';
+      let resendTimerInterval = null;
+
+      const stepPhone = document.getElementById('otp-step-phone');
+      const stepVerify = document.getElementById('otp-step-verify');
+      const stepRegister = document.getElementById('otp-step-register');
+
+      const phoneInput = document.getElementById('mobile-number-input');
+      const phoneError = document.getElementById('phone-error-msg');
+      const sendOtpBtn = document.getElementById('send-otp-btn');
+
+      const displayPhoneEl = document.getElementById('display-otp-phone');
+      const otpBoxes = document.querySelectorAll('.otp-box');
+      const otpError = document.getElementById('otp-error-msg');
+      const verifyOtpBtn = document.getElementById('verify-otp-btn');
+      const backToPhoneBtn = document.getElementById('back-to-phone-btn');
+      const resendTimerWrap = document.getElementById('resend-timer-wrapper');
+      const resendCountdown = document.getElementById('resend-countdown');
+      const resendOtpBtn = document.getElementById('resend-otp-btn');
+
+      // 1. Send OTP
+      document.getElementById('mobile-phone-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        phoneError.style.display = 'none';
+
+        const rawPhone = phoneInput.value.trim();
+        const normalized = FoodWalaApp.Auth.normalizePhone(rawPhone);
+
+        if (!normalized) {
+          phoneError.textContent = 'Please enter a valid 10-digit mobile number.';
+          phoneError.style.display = 'block';
+          return;
+        }
+
+        sendOtpBtn.disabled = true;
+        sendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP...';
+
+        const res = await FoodWalaApp.Auth.sendOtp(normalized);
+
+        sendOtpBtn.disabled = false;
+        sendOtpBtn.innerHTML = '<span>Send OTP</span> <i class="bi bi-arrow-right"></i>';
+
+        if (res.success) {
+          activeMobilePhone = normalized;
+          const masked = normalized.length >= 10 ? normalized.slice(0, 3) + ' ' + normalized.slice(3, 8) + ' ' + normalized.slice(8) : normalized;
+          displayPhoneEl.textContent = masked;
+
+          stepPhone.style.display = 'none';
+          stepVerify.style.display = 'block';
+          stepRegister.style.display = 'none';
+
+          clearOtpBoxes();
+          otpBoxes[0].focus();
+          startResendCountdown(30);
+          FoodWalaApp.showToast('OTP sent successfully!', 'success');
+        } else {
+          phoneError.textContent = res.message || 'Unable to send OTP right now. Please try again.';
+          phoneError.style.display = 'block';
+        }
+      });
+
+      // 2. 6-Box OTP Input Management (Auto advance, backspace, paste)
+      function clearOtpBoxes() {
+        otpBoxes.forEach(box => box.value = '');
+        otpError.style.display = 'none';
+      }
+
+      otpBoxes.forEach((box, index) => {
+        box.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/[^0-9]/g, '');
+          e.target.value = val ? val.slice(-1) : '';
+
+          if (val && index < otpBoxes.length - 1) {
+            otpBoxes[index + 1].focus();
+          }
+        });
+
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !box.value && index > 0) {
+            otpBoxes[index - 1].focus();
+          }
+        });
+
+        box.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+          if (pasted) {
+            pasted.split('').forEach((digit, i) => {
+              if (otpBoxes[i]) otpBoxes[i].value = digit;
+            });
+            const lastIdx = Math.min(pasted.length, otpBoxes.length - 1);
+            otpBoxes[lastIdx].focus();
+          }
+        });
+      });
+
+      // 3. Verify OTP
+      document.getElementById('otp-verify-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        otpError.style.display = 'none';
+
+        let enteredOtp = '';
+        otpBoxes.forEach(b => enteredOtp += b.value.trim());
+
+        if (enteredOtp.length !== 6) {
+          otpError.textContent = 'Please enter the full 6-digit verification code.';
+          otpError.style.display = 'block';
+          return;
+        }
+
+        verifyOtpBtn.disabled = true;
+        verifyOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verifying...';
+
+        const res = await FoodWalaApp.Auth.verifyOtp(activeMobilePhone, enteredOtp);
+
+        verifyOtpBtn.disabled = false;
+        verifyOtpBtn.innerHTML = '<span>Verify OTP</span> <i class="bi bi-shield-check"></i>';
+
+        if (res.success) {
+          if (res.isNewUser) {
+            // New user -> show profile setup
+            stepVerify.style.display = 'none';
+            stepRegister.style.display = 'block';
+            document.getElementById('reg-mobile-display').value = activeMobilePhone;
+            FoodWalaApp.showToast('Mobile verified! Please set up your name.', 'info');
+          } else {
+            // Existing user -> logged in
+            FoodWalaApp.showToast(`Welcome back, ${res.user.name}!`, 'success');
+            handlePostLoginNavigation();
+          }
+        } else {
+          otpError.textContent = res.message || 'Incorrect OTP. Please check and try again.';
+          otpError.style.display = 'block';
+        }
+      });
+
+      // 4. Complete Registration (New Mobile User)
+      document.getElementById('mobile-register-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('reg-mobile-name').value.trim();
+        const email = document.getElementById('reg-mobile-email').value.trim();
+        const address = document.getElementById('reg-mobile-address').value.trim();
+
+        if (!name) {
+          FoodWalaApp.showToast('Please enter your full name.', 'warning');
+          return;
+        }
+
+        const newUser = FoodWalaApp.Auth.registerWithMobile(activeMobilePhone, name, email, address);
+        FoodWalaApp.showToast(`Welcome to FoodWala, ${newUser.name}!`, 'success');
+        handlePostLoginNavigation();
+      });
+
+      // 5. Back to Phone Number
+      backToPhoneBtn.addEventListener('click', () => {
+        stepVerify.style.display = 'none';
+        stepPhone.style.display = 'block';
+        stepRegister.style.display = 'none';
+        if (resendTimerInterval) clearInterval(resendTimerInterval);
+      });
+
+      // 6. Resend Countdown Timer
+      function startResendCountdown(seconds = 30) {
+        if (resendTimerInterval) clearInterval(resendTimerInterval);
+        let remaining = seconds;
+        resendTimerWrap.style.display = 'block';
+        resendOtpBtn.style.display = 'none';
+        resendCountdown.textContent = remaining;
+
+        resendTimerInterval = setInterval(() => {
+          remaining -= 1;
+          resendCountdown.textContent = remaining;
+          if (remaining <= 0) {
+            clearInterval(resendTimerInterval);
+            resendTimerWrap.style.display = 'none';
+            resendOtpBtn.style.display = 'inline-block';
+          }
+        }, 1000);
+      }
+
+      resendOtpBtn.addEventListener('click', async () => {
+        resendOtpBtn.disabled = true;
+        resendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Resending...';
+
+        const res = await FoodWalaApp.Auth.sendOtp(activeMobilePhone);
+
+        resendOtpBtn.disabled = false;
+        resendOtpBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resend OTP';
+
+        if (res.success) {
+          clearOtpBoxes();
+          otpBoxes[0].focus();
+          startResendCountdown(30);
+          FoodWalaApp.showToast('New OTP sent successfully!', 'success');
+        } else {
+          otpError.textContent = res.message || 'Unable to resend OTP. Please wait before trying again.';
+          otpError.style.display = 'block';
+        }
+      });
+
     });
   </script>
 </body>
