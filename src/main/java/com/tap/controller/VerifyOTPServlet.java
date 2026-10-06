@@ -135,6 +135,7 @@ public class VerifyOTPServlet extends HttpServlet {
 
         if (user != null) {
             session.setAttribute("currentUser", user);
+            session.setAttribute("loggedInUser", user);
             out.print("{\"success\": true, \"isNewUser\": false, \"message\": \"Mobile number verified successfully.\", \"token\": \"" + token + "\", \"user\": {\"userId\": " + user.getUserId() + ", \"name\": \"" + (user.getName() != null ? user.getName().replace("\"", "\\\"") : "") + "\", \"phone\": \"" + normalized + "\", \"email\": \"" + (user.getEmail() != null ? user.getEmail().replace("\"", "\\\"") : "") + "\"}}");
         } else {
             out.print("{\"success\": true, \"isNewUser\": true, \"phone\": \"" + normalized + "\", \"message\": \"Mobile number verified successfully. Please complete your profile.\"}");
