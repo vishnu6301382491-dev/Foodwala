@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Shopping Cart — FoodWala</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="bg-light">
+
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-3 text-dark text-decoration-none" href="./index.html">
+        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; box-shadow: 0 4px 10px rgba(255, 75, 75, 0.35);">
+          <i class="bi bi-fire fs-4"></i>
+        </div>
+        <span>Food<span class="text-danger">Wala</span></span>
+      </a>
+
+      <!-- Location Selector Pill -->
+      <div class="d-none d-md-flex align-items-center ms-3 me-auto">
+        <button type="button" class="btn btn-light border d-flex align-items-center gap-2 px-3 py-2 rounded-pill location-btn" data-bs-toggle="modal" data-bs-target="#locationModal" title="Change Location">
+          <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+          <div class="text-start" id="navbar-location-display">
+            <span class="fw-bold text-dark d-inline-block">Koramangala</span>
+            <small class="text-muted d-block" style="font-size: 0.75rem;">5th Block, Bengaluru</small>
+          </div>
+          <i class="bi bi-chevron-down text-muted ms-1 small"></i>
+        </button>
+      </div>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3 my-2 my-lg-0">
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./restaurants.html">
+              <i class="bi bi-search text-danger"></i> Explore Restaurants
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 d-flex align-items-center gap-1" href="./orders.html">
+              <i class="bi bi-bag-check text-primary"></i> My Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-danger position-relative rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 shadow-sm text-white" href="./cart.html">
+              <i class="bi bi-cart3 fs-5"></i>
+              <span>Cart</span>
+              <span class="badge bg-white text-danger rounded-pill fw-bold js-cart-count" style="display:none;">0</span>
+            </a>
+          </li>
+          <li class="nav-item" id="navbar-user-slot">
+            <div class="d-flex align-items-center gap-2">
+              <a href="./login.html" class="btn btn-outline-dark btn-sm px-3 py-2 rounded-pill fw-semibold">Sign In</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Location Picker Modal -->
+  <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-danger text-white p-4">
+          <h5 class="modal-title fw-bold" id="locationModalLabel"><i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Area in Bengaluru</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" style="max-height: 420px; overflow-y: auto;">
+          <div class="list-group list-group-flush" id="location-options-list">
+            <!-- Populated via FoodWalaApp.Location -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="container py-4">
+    <h2 class="fw-extrabold text-dark mb-4"><i class="bi bi-bag-check text-danger me-2"></i>Your Order Cart</h2>
+
+    <div id="cart-content-row" class="row g-4">
+      <!-- Cart Items Left Column -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="bg-danger text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                <i class="bi bi-shop fs-5"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold text-dark mb-0" id="cart-restaurant-name">Restaurant Name</h5>
+                <small class="text-muted" id="cart-restaurant-address">Bengaluru</small>
+              </div>
+            </div>
+            <button class="btn btn-outline-danger btn-sm rounded-pill px-3" id="clear-cart-btn"><i class="bi bi-trash3 me-1"></i>Clear</button>
+          </div>
+
+          <div id="cart-items-list" class="d-flex flex-column gap-3">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Cooking Instructions -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+          <label class="form-label fw-bold text-dark small mb-2"><i class="bi bi-chat-left-text me-1 text-danger"></i>Cooking or Delivery Note (Optional)</label>
+          <input type="text" id="order-note-input" class="form-control border shadow-none rounded-3" placeholder="e.g. Less spicy, keep extra napkins, ring doorbell...">
+        </div>
+      </div>
+
+      <!-- Bill Details Right Column -->
+      <div class="col-lg-4">
+        <!-- Coupon Card -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+          <label class="form-label fw-bold text-dark small mb-2"><i class="bi bi-ticket-perforated-fill me-1 text-warning"></i>Apply FoodWala Coupon</label>
+          <div class="input-group">
+            <input type="text" id="coupon-code-input" class="form-control border uppercase fw-bold" placeholder="FOODWALA50">
+            <button class="btn btn-danger fw-bold" type="button" id="apply-coupon-btn">Apply</button>
+          </div>
+          <div id="applied-coupon-badge" class="mt-2" style="display:none;"></div>
+          <div class="form-text small text-muted mt-2">Available: <code class="text-danger">FOODWALA50</code>, <code class="text-danger">WELCOME</code></div>
+        </div>
+
+        <!-- Bill Breakdown Card -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+          <h5 class="fw-bold text-dark mb-3">Bill Details</h5>
+          
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>Item Total</span>
+            <span class="text-dark fw-semibold" id="bill-item-total">₹0</span>
+          </div>
+
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>Delivery Partner Fee</span>
+            <span class="text-dark fw-semibold" id="bill-delivery-fee">₹0</span>
+          </div>
+
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>Platform Fee</span>
+            <span class="text-dark fw-semibold" id="bill-platform-fee">₹5</span>
+          </div>
+
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>GST & Restaurant Charges (5%)</span>
+            <span class="text-dark fw-semibold" id="bill-gst">₹0</span>
+          </div>
+
+          <div id="bill-discount-row" class="d-flex justify-content-between text-success small mb-2" style="display:none;">
+            <span>Coupon Discount</span>
+            <span class="fw-bold" id="bill-discount">-₹0</span>
+          </div>
+
+          <hr class="my-3">
+
+          <div class="d-flex justify-content-between fs-5 fw-bold text-dark mb-4">
+            <span>To Pay</span>
+            <span class="text-danger" id="bill-grand-total">₹0</span>
+          </div>
+
+          <a href="./checkout.html" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+            <span>Proceed to Checkout</span>
+            <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty Cart State -->
+    <div id="empty-cart-state" class="text-center py-5 my-5" style="display:none;">
+      <div class="bg-white rounded-circle p-4 d-inline-flex shadow-sm mb-3">
+        <i class="bi bi-cart-x text-danger display-3"></i>
+      </div>
+      <h3 class="fw-bold text-dark">Your cart is empty</h3>
+      <p class="text-muted">Good food is always just a few clicks away! Browse Bengaluru restaurants.</p>
+      <a href="./restaurants.html" class="btn btn-danger rounded-pill px-4 py-2 mt-2 fw-semibold">
+        <i class="bi bi-shop me-1"></i> Browse Restaurants
+      </a>
+    </div>
+  </div>
+
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-fire fs-5"></i>
+            </div>
+            <span class="fw-bold fs-4 text-white">Food<span class="text-danger">Wala</span></span>
+          </div>
+          <p class="text-muted small">Bengaluru's premier food discovery & delivery platform. Explore 100+ iconic restaurants, authentic cuisines, typo-tolerant smart search, and lightning-fast local delivery.</p>
+          <div class="d-flex gap-3 text-secondary fs-5 mt-3">
+            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="text-white-50 text-decoration-none"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+          <h6 class="fw-bold text-white mb-3">Popular Cuisines</h6>
+          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
+            <li><a href="./restaurants.html?cuisine=Biryani" class="text-muted text-decoration-none hover-white">Biryani</a></li>
+            <li><a href="./restaurants.html?cuisine=South+Indian" class="text-muted text-decoration-none hover-white">South Indian Dosa</a></li>
+            <li><a href="./restaurants.html?cuisine=North+Indian" class="text-muted text-decoration-none hover-white">North Indian Curry</a></li>
+            <li><a href="./restaurants.html?cuisine=Chinese" class="text-muted text-decoration-none hover-white">Chinese & Momos</a></li>
+            <li><a href="./restaurants.html?cuisine=Italian" class="text-muted text-decoration-none hover-white">Woodfired Pizza</a></li>
+            <li><a href="./restaurants.html?cuisine=Desserts" class="text-muted text-decoration-none hover-white">Ice Creams & Sweets</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+          <h6 class="fw-bold text-white mb-3">Bengaluru Hubs</h6>
+          <ul class="list-unstyled small text-muted d-flex flex-column gap-2">
+            <li><a href="./restaurants.html?area=Koramangala" class="text-muted text-decoration-none hover-white">Koramangala</a></li>
+            <li><a href="./restaurants.html?area=Indiranagar" class="text-muted text-decoration-none hover-white">Indiranagar</a></li>
+            <li><a href="./restaurants.html?area=Whitefield" class="text-muted text-decoration-none hover-white">Whitefield</a></li>
+            <li><a href="./restaurants.html?area=MG+Road" class="text-muted text-decoration-none hover-white">MG Road / Brigade</a></li>
+            <li><a href="./restaurants.html?area=Malleshwaram" class="text-muted text-decoration-none hover-white">Malleshwaram</a></li>
+            <li><a href="./restaurants.html?area=HSR+Layout" class="text-muted text-decoration-none hover-white">HSR Layout</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+          <div class="bg-secondary bg-opacity-25 p-4 rounded-4">
+            <h6 class="fw-bold text-white mb-2"><i class="bi bi-github me-2 text-danger"></i>GitHub Pages Interactive Demo</h6>
+            <p class="text-white-50 small mb-3">This live frontend is powered by HTML5, CSS3, localStorage, and client-side smart fuzzy search over 105 real Bengaluru restaurants and 756 menu items.</p>
+            <div class="badge bg-success py-2 px-3 fw-semibold"><i class="bi bi-check-circle me-1"></i> Full Local Tomcat + Java Servlet Backend Available in Repo</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-secondary my-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
+        <div>&copy; 2026 FoodWala Delivery Technologies Pvt. Ltd. All rights reserved.</div>
+        <div class="d-flex gap-3 mt-2 mt-md-0">
+          <a href="./restaurants.html" class="text-muted text-decoration-none">Restaurants</a>
+          <a href="./orders.html" class="text-muted text-decoration-none">Track Order</a>
+          <a href="./cart.html" class="text-muted text-decoration-none">Cart</a>
+          <a href="https://github.com/vishnu6301382491-dev/Foodwala" target="_blank" class="text-muted text-decoration-none"><i class="bi bi-github"></i> Repository</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./js/foodwala-data.js"></script>
+  <script src="./js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cartRow = document.getElementById('cart-content-row');
+      const emptyCart = document.getElementById('empty-cart-state');
+      const itemsList = document.getElementById('cart-items-list');
+      const restName = document.getElementById('cart-restaurant-name');
+      const restAddress = document.getElementById('cart-restaurant-address');
+      const clearBtn = document.getElementById('clear-cart-btn');
+      const couponInput = document.getElementById('coupon-code-input');
+      const applyCouponBtn = document.getElementById('apply-coupon-btn');
+      const couponBadge = document.getElementById('applied-coupon-badge');
+
+      function renderCart() {
+        const cart = FoodWalaApp.Cart.getCart();
+        const totals = FoodWalaApp.Cart.getBillTotals();
+
+        if (!cart.items || cart.items.length === 0) {
+          cartRow.style.display = 'none';
+          emptyCart.style.display = 'block';
+          return;
+        }
+
+        cartRow.style.display = 'flex';
+        emptyCart.style.display = 'none';
+
+        restName.textContent = cart.restaurantName || 'Bengaluru Restaurant';
+        restAddress.textContent = cart.restaurantAddress || 'Bengaluru';
+
+        itemsList.innerHTML = cart.items.map(item => `
+          <div class="row align-items-center g-2 pb-3 border-bottom last-border-0">
+            <div class="col-6 col-md-7">
+              <div class="d-flex align-items-center gap-2">
+                <span class="veg-badge ${item.isVeg ? 'veg-badge-veg' : 'veg-badge-nonveg'}"></span>
+                <span class="fw-bold text-dark">${item.name}</span>
+              </div>
+              <small class="text-muted">₹${item.price.toFixed(0)} each</small>
+            </div>
+            <div class="col-3 col-md-2 text-center">
+              <div class="btn-group shadow-sm rounded-pill overflow-hidden border">
+                <button class="btn btn-sm btn-light text-danger fw-bold px-2 js-cart-minus" data-menu-id="${item.menuId}">-</button>
+                <span class="btn btn-sm btn-white fw-bold px-2 text-dark">${item.quantity}</span>
+                <button class="btn btn-sm btn-danger text-white fw-bold px-2 js-cart-plus" data-menu-id="${item.menuId}">+</button>
+              </div>
+            </div>
+            <div class="col-3 col-md-3 text-end">
+              <span class="fw-bold text-dark">₹${(item.price * item.quantity).toFixed(0)}</span>
+            </div>
+          </div>
+        `).join('');
+
+        // Bill details
+        document.getElementById('bill-item-total').textContent = `₹${totals.itemTotal}`;
+        document.getElementById('bill-delivery-fee').innerHTML = totals.deliveryFee === 0 ? '<span class="text-success fw-bold">FREE</span>' : `₹${totals.deliveryFee}`;
+        document.getElementById('bill-platform-fee').textContent = `₹${totals.platformFee}`;
+        document.getElementById('bill-gst').textContent = `₹${totals.gst}`;
+
+        const discountRow = document.getElementById('bill-discount-row');
+        if (totals.discount > 0) {
+          discountRow.style.display = 'flex';
+          document.getElementById('bill-discount').textContent = `-₹${totals.discount}`;
+        } else {
+          discountRow.style.display = 'none';
+        }
+
+        document.getElementById('bill-grand-total').textContent = `₹${totals.grandTotal}`;
+
+        // Coupon Badge
+        if (totals.coupon) {
+          couponBadge.innerHTML = `
+            <div class="alert alert-success py-1 px-2 d-flex align-items-center justify-content-between mb-0 small">
+              <span><i class="bi bi-check-circle-fill me-1"></i> Coupon <strong>${totals.coupon.code}</strong> applied!</span>
+              <button class="btn-close btn-sm" id="remove-coupon-btn"></button>
+            </div>
+          `;
+          couponBadge.style.display = 'block';
+          document.getElementById('remove-coupon-btn').addEventListener('click', () => {
+            FoodWalaApp.Cart.removeCoupon();
+            renderCart();
+          });
+        } else {
+          couponBadge.style.display = 'none';
+        }
+
+        bindCartEvents();
+      }
+
+      function bindCartEvents() {
+        document.querySelectorAll('.js-cart-plus').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const menuId = parseInt(btn.getAttribute('data-menu-id'));
+            FoodWalaApp.Cart.updateQuantity(menuId, 1);
+            renderCart();
+          });
+        });
+
+        document.querySelectorAll('.js-cart-minus').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const menuId = parseInt(btn.getAttribute('data-menu-id'));
+            FoodWalaApp.Cart.updateQuantity(menuId, -1);
+            renderCart();
+          });
+        });
+      }
+
+      applyCouponBtn.addEventListener('click', () => {
+        const code = couponInput.value.trim();
+        const res = FoodWalaApp.Cart.applyCoupon(code);
+        if (res.success) {
+          FoodWalaApp.showToast(res.message);
+          renderCart();
+        } else {
+          FoodWalaApp.showToast(res.message, 'error');
+        }
+      });
+
+      clearBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear your cart?')) {
+          FoodWalaApp.Cart.clearCart();
+          renderCart();
+        }
+      });
+
+      renderCart();
+    });
+  </script>
+</body>
+</html>
