@@ -61,21 +61,22 @@ const usersStore = [
 
 const sessionsStore = new Map();
 
-function normalizePhone(rawPhone) {
+function normalizeIndianPhone(rawPhone) {
   if (!rawPhone || typeof rawPhone !== 'string') return null;
-  let digits = rawPhone.replace(/[\s\-\(\)]/g, '');
-  if (digits.startsWith('+91')) {
-    digits = digits.substring(3);
-  } else if (digits.startsWith('91') && digits.length === 12) {
-    digits = digits.substring(2);
-  } else if (digits.startsWith('0') && digits.length === 11) {
-    digits = digits.substring(1);
+  const digits = rawPhone.replace(/\D/g, '');
+  if (digits.startsWith('91') && digits.length === 12 && /^[6-9]/.test(digits.substring(2))) {
+    return '+' + digits;
   }
-  if (/^[6-9]\d{9}$/.test(digits)) {
+  if (digits.startsWith('0') && digits.length === 11 && /^[6-9]/.test(digits.substring(1))) {
+    return '+91' + digits.substring(1);
+  }
+  if (digits.length === 10 && /^[6-9]/.test(digits)) {
     return '+91' + digits;
   }
   return null;
 }
+
+const normalizePhone = normalizeIndianPhone;
 
 function hashOtp(phone, otp) {
   return crypto.createHmac('sha256', HASH_SECRET).update(phone + ':' + otp).digest('hex');

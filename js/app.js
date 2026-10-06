@@ -326,26 +326,42 @@ const FoodWalaApp = (function () {
 
   // --- AUTH MODULE (NO DEFAULT USER) ---
   const Auth = {
-    // API endpoint base URL (supports local dev server, cloud backend, or relative API)
-    apiBaseUrl: window.FOODWALA_API_URL || '',
-
-    // Client-side dev OTP cache for seamless local testing if backend API is unreachable
+    // Client-side dev OTP cache for seamless local testing or static hosting
     _clientDevOtpStore: new Map(),
 
-    normalizePhone: function (rawPhone) {
-      if (!rawPhone || typeof rawPhone !== 'string') return null;
-      let digits = rawPhone.replace(/[\s\-\(\)]/g, '');
-      if (digits.startsWith('+91')) {
-        digits = digits.substring(3);
-      } else if (digits.startsWith('91') && digits.length === 12) {
-        digits = digits.substring(2);
-      } else if (digits.startsWith('0') && digits.length === 11) {
-        digits = digits.substring(1);
+    // Resolve API Base URL (Window override -> Localhost -> Empty for relative / static)
+    getApiBaseUrl: function () {
+      if (typeof window !== 'undefined' && window.FOODWALA_API_URL) {
+        return window.FOODWALA_API_URL.replace(/\/+$/, '');
       }
-      if (/^[6-9]\d{9}$/.test(digits)) {
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        return 'http://localhost:5000';
+      }
+      return '';
+    },
+
+    get apiBaseUrl() {
+      return this.getApiBaseUrl();
+    },
+
+    // Normalize Indian phone numbers to E.164 (+91XXXXXXXXXX)
+    normalizeIndianPhone: function (rawPhone) {
+      if (!rawPhone || typeof rawPhone !== 'string') return null;
+      const digits = rawPhone.replace(/\D/g, '');
+      if (digits.startsWith('91') && digits.length === 12 && /^[6-9]/.test(digits.substring(2))) {
+        return '+' + digits;
+      }
+      if (digits.startsWith('0') && digits.length === 11 && /^[6-9]/.test(digits.substring(1))) {
+        return '+91' + digits.substring(1);
+      }
+      if (digits.length === 10 && /^[6-9]/.test(digits)) {
         return '+91' + digits;
       }
       return null;
+    },
+
+    normalizePhone: function (rawPhone) {
+      return this.normalizeIndianPhone(rawPhone);
     },
 
     getCurrentUser: function () {
@@ -381,144 +397,200 @@ const FoodWalaApp = (function () {
     },
 
     sendOtp: async function (rawPhone) {
-      const normalized = this.normalizePhone(rawPhone);
+      const normalized = this.normalizeIndianPhone(rawPhone);
       if (!normalized) {
         return {
           success: false,
           error: 'INVALID_PHONE',
-          message: 'Please enter a valid 10-digit mobile number.'
+          message: 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.'
         };
       }
 
-      // Try Backend API First
+      const apiBase = this.getApiBaseUrl();
+      const endpoint = (apiBase ? apiBase : '') + '/api/auth/send-otp';
+
+      console.log('[FoodWala OTP] Sending OTP...');
+      console.log('[FoodWala OTP] API:', endpoint);
+      console.log('[FoodWala OTP] Phone:', normalized);
+
       try {
-        const endpoint = (this.apiBaseUrl ? this.apiBaseUrl : '') + '/api/auth/send-otp';
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone: normalized })
         });
 
+        console.log('[FoodWala OTP] Response status:', res.status);
+
         if (res.ok) {
           const data = await res.json();
+          console.log('[FoodWala OTP] Response:', { ...data, devOtp: data.devOtp ? '******' : undefined });
           if (data.devOtp) {
-            this._clientDevOtpStore.set(normalized, { otp: data.devOtp, expiresAt: Date.now() + 300000 });
+            this._clientDevOtpStore.set(normalized, { otp: data.devOtp, expiresAt: Date.now() + 300000, lastSentAt: Date.now(), attempts: 0 });
           }
           return data;
+        } else if (res.status === 404) {
+          // Static host (e.g. GitHub Pages) where relative /api/ route returns 404
+          console.warn('[FoodWala OTP] API endpoint returned 404 (Static/GitHub Pages hosting). Engaging Client Development Mode.');
+          return this._handleClientDevSendOtp(normalized);
         } else {
           const errData = await res.json().catch(() => ({}));
+          console.error('[FoodWala OTP] API Error response:', errData);
+          let message = errData.message;
+          if (!message) {
+            if (res.status === 400) message = 'Invalid mobile number or request format.';
+            else if (res.status === 429) message = 'Too many OTP requests. Please wait 30 seconds.';
+            else if (res.status === 500) message = 'Unable to send OTP. Please try again later.';
+            else message = 'Unable to send OTP right now. Please try again.';
+          }
           return {
             success: false,
             error: errData.error || 'API_ERROR',
-            message: errData.message || 'Unable to send OTP right now. Please try again.'
+            message: message,
+            cooldownRemaining: errData.cooldownRemaining
           };
         }
       } catch (e) {
-        // Fallback Client Dev Mode (Allows testing on pure static servers/GitHub Pages without live Node server)
-        console.info('[FoodWala Auth] API unreachable, using client development OTP mode.');
-        const devOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        const existing = this._clientDevOtpStore.get(normalized);
-        const now = Date.now();
-
-        if (existing && (now - existing.lastSentAt) < 30000) {
-          const waitSec = Math.ceil((30000 - (now - existing.lastSentAt)) / 1000);
-          return {
-            success: false,
-            error: 'TOO_MANY_REQUESTS',
-            message: `Please wait ${waitSec}s before requesting a new OTP.`
-          };
-        }
-
-        this._clientDevOtpStore.set(normalized, {
-          otp: devOtp,
-          expiresAt: now + (5 * 60 * 1000),
-          attempts: 0,
-          lastSentAt: now
-        });
-
-        console.log(`\n==================================================`);
-        console.log(`[FoodWala Client DEV OTP]`);
-        console.log(`Recipient: ${normalized}`);
-        console.log(`OTP Code : ${devOtp}`);
-        console.log(`==================================================\n`);
-
-        return {
-          success: true,
-          message: 'OTP sent successfully.',
-          phone: normalized,
-          expiresIn: 300,
-          devOtp: devOtp
-        };
+        console.warn('[FoodWala OTP] Backend API unreachable (' + e.message + '). Engaging Client Development Mode.');
+        return this._handleClientDevSendOtp(normalized);
       }
     },
 
+    _handleClientDevSendOtp: function (normalized) {
+      const now = Date.now();
+      const existing = this._clientDevOtpStore.get(normalized);
+      if (existing && (now - existing.lastSentAt) < 30000) {
+        const waitSec = Math.ceil((30000 - (now - existing.lastSentAt)) / 1000);
+        return {
+          success: false,
+          error: 'TOO_MANY_REQUESTS',
+          message: `Please wait ${waitSec}s before requesting a new OTP.`,
+          cooldownRemaining: waitSec
+        };
+      }
+
+      // Generate 6-digit random test OTP
+      const devOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      this._clientDevOtpStore.set(normalized, {
+        otp: devOtp,
+        expiresAt: now + (5 * 60 * 1000),
+        attempts: 0,
+        lastSentAt: now
+      });
+
+      console.log(`\n==================================================`);
+      console.log(`[FoodWala Client DEV OTP]`);
+      console.log(`Recipient: ${normalized}`);
+      console.log(`OTP Code : ${devOtp}`);
+      console.log(`Valid for: 5 minutes (Use this code in the UI)`);
+      console.log(`==================================================\n`);
+
+      return {
+        success: true,
+        message: 'OTP sent successfully. (Dev mode: OTP logged to console)',
+        phone: normalized,
+        expiresIn: 300,
+        devOtp: devOtp
+      };
+    },
+
     verifyOtp: async function (rawPhone, otp) {
-      const normalized = this.normalizePhone(rawPhone);
+      const normalized = this.normalizeIndianPhone(rawPhone);
       if (!normalized) {
         return { success: false, error: 'INVALID_PHONE', message: 'Please enter a valid 10-digit mobile number.' };
       }
 
       const cleanOtp = (otp || '').trim();
-      if (cleanOtp.length !== 6) {
+      if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
         return { success: false, error: 'INVALID_OTP_FORMAT', message: 'Please enter the 6-digit verification code.' };
       }
 
-      // Try Backend API First
+      const apiBase = this.getApiBaseUrl();
+      const endpoint = (apiBase ? apiBase : '') + '/api/auth/verify-otp';
+
+      console.log('[FoodWala OTP] Verifying OTP...');
+      console.log('[FoodWala OTP] API:', endpoint);
+      console.log('[FoodWala OTP] Phone:', normalized);
+
       try {
-        const endpoint = (this.apiBaseUrl ? this.apiBaseUrl : '') + '/api/auth/verify-otp';
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone: normalized, otp: cleanOtp })
         });
 
+        console.log('[FoodWala OTP] Verify Response status:', res.status);
+
         if (res.ok) {
           const data = await res.json();
+          console.log('[FoodWala OTP] Verify Response: OK, isNewUser:', data.isNewUser);
           if (!data.isNewUser && data.user) {
             setStorage(STORAGE_KEYS.CURRENT_USER, data.user);
             window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
             updateUserNavUI();
           }
           return data;
+        } else if (res.status === 404) {
+          console.warn('[FoodWala OTP] Verify endpoint returned 404. Using Client Development Mode verification.');
+          return this._handleClientDevVerifyOtp(normalized, cleanOtp);
         } else {
           const errData = await res.json().catch(() => ({}));
+          console.error('[FoodWala OTP] Verify Error:', errData);
+          let message = errData.message;
+          if (!message) {
+            if (res.status === 400) message = 'Incorrect OTP or OTP expired. Please try again.';
+            else if (res.status === 401) message = 'Incorrect OTP. Please check and try again.';
+            else if (res.status === 429) message = 'Too many attempts. Please request a new OTP.';
+            else message = 'Verification failed. Please try again.';
+          }
           return {
             success: false,
             error: errData.error || 'VERIFY_FAILED',
-            message: errData.message || 'Incorrect OTP. Please check and try again.'
+            message: message,
+            remainingAttempts: errData.attemptsRemaining || errData.remainingAttempts
           };
         }
       } catch (e) {
-        // Fallback Client Dev Mode verification
-        const record = this._clientDevOtpStore.get(normalized);
-        if (!record || Date.now() > record.expiresAt) {
-          return { success: false, error: 'OTP_EXPIRED', message: 'OTP expired. Please request a new OTP.' };
-        }
+        console.warn('[FoodWala OTP] Verify API unreachable. Using Client Development Mode verification.');
+        return this._handleClientDevVerifyOtp(normalized, cleanOtp);
+      }
+    },
 
-        if (record.attempts >= 5) {
-          this._clientDevOtpStore.delete(normalized);
-          return { success: false, error: 'TOO_MANY_ATTEMPTS', message: 'Too many attempts. Please request a new OTP.' };
-        }
+    _handleClientDevVerifyOtp: function (normalized, cleanOtp) {
+      const record = this._clientDevOtpStore.get(normalized);
+      if (!record || Date.now() > record.expiresAt) {
+        return { success: false, error: 'OTP_EXPIRED', message: 'OTP expired. Please request a new OTP.' };
+      }
 
-        if (record.otp !== cleanOtp) {
-          record.attempts += 1;
-          return { success: false, error: 'INCORRECT_OTP', message: 'Incorrect OTP. Please check and try again.' };
-        }
-
+      if (record.attempts >= 5) {
         this._clientDevOtpStore.delete(normalized);
+        return { success: false, error: 'TOO_MANY_ATTEMPTS', message: 'Too many incorrect attempts. Please request a new OTP.' };
+      }
 
-        // Check if user already exists in storage or registered users
-        const existingUsers = getStorage('foodwala_registered_users', []);
-        const matched = existingUsers.find(u => u.phone === normalized);
+      if (record.otp !== cleanOtp) {
+        record.attempts += 1;
+        const remaining = 5 - record.attempts;
+        return {
+          success: false,
+          error: 'INCORRECT_OTP',
+          message: `Incorrect OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
+        };
+      }
 
-        if (matched) {
-          setStorage(STORAGE_KEYS.CURRENT_USER, matched);
-          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: matched }));
-          updateUserNavUI();
-          return { success: true, isNewUser: false, user: matched };
-        } else {
-          return { success: true, isNewUser: true, phone: normalized };
-        }
+      // OTP is valid!
+      this._clientDevOtpStore.delete(normalized);
+
+      // Check if user already exists in storage or registered users
+      const existingUsers = getStorage('foodwala_registered_users', []);
+      const matched = existingUsers.find(u => u.phone === normalized);
+
+      if (matched) {
+        setStorage(STORAGE_KEYS.CURRENT_USER, matched);
+        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: matched }));
+        updateUserNavUI();
+        return { success: true, isNewUser: false, user: matched };
+      } else {
+        return { success: true, isNewUser: true, phone: normalized };
       }
     },
 
