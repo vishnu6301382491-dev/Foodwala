@@ -97,19 +97,28 @@ public class SMSService {
         }
     }
 
+    private static String sanitize(String val) {
+        if (val == null) return null;
+        val = val.trim();
+        if ((val.startsWith("\"") && val.endsWith("\"")) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.substring(1, val.length() - 1).trim();
+        }
+        return val.isEmpty() ? null : val;
+    }
+
     public String getConfig(String key) {
         // 1. System property (e.g. -DSMS_PROVIDER=fast2sms)
         String val = System.getProperty(key);
-        if (val != null && !val.isBlank()) return val.trim();
+        if (val != null && !val.isBlank()) return sanitize(val);
 
         // 2. Environment variable
         val = System.getenv(key);
-        if (val != null && !val.isBlank()) return val.trim();
+        if (val != null && !val.isBlank()) return sanitize(val);
 
         // 3. Properties file (Reload to support live updates)
         loadPropertiesFile();
         val = fileConfig.getProperty(key);
-        if (val != null && !val.isBlank()) return val.trim();
+        if (val != null && !val.isBlank()) return sanitize(val);
 
         return null;
     }
@@ -190,8 +199,8 @@ public class SMSService {
      */
     private SMSResult sendFast2SMS(String phone, String otp) throws Exception {
         String apiKey = getConfig("FAST2SMS_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            String err = "Fast2SMS API Key missing. Ensure FAST2SMS_API_KEY is set in sms.properties or environment variable.";
+        if (apiKey == null || apiKey.isBlank() || apiKey.contains("YOUR_FAST2SMS_API_KEY_HERE")) {
+            String err = "Fast2SMS API Key missing. Please replace 'YOUR_FAST2SMS_API_KEY_HERE' in sms.properties with your real key from https://www.fast2sms.com/dev/api";
             System.err.println("[FoodWala OTP] " + err);
             return SMSResult.failure("fast2sms", err, 401);
         }
@@ -362,8 +371,8 @@ public class SMSService {
      */
     private SMSResult send2Factor(String phone, String otp) throws Exception {
         String apiKey = getConfig("TWO_FACTOR_API_KEY");
-        if (apiKey == null || apiKey.isBlank()) {
-            String err = "2Factor API Key missing. Ensure TWO_FACTOR_API_KEY is configured in sms.properties.";
+        if (apiKey == null || apiKey.isBlank() || apiKey.contains("YOUR_")) {
+            String err = "2Factor API Key missing. Please set TWO_FACTOR_API_KEY in sms.properties.";
             System.err.println("[FoodWala OTP] " + err);
             return SMSResult.failure("2factor", err, 401);
         }
@@ -374,9 +383,11 @@ public class SMSService {
         System.out.println("[FoodWala OTP] Calling SMS provider: 2Factor (To: " + cleanPhone + ")");
 
         HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(12)).build();
+
+        // 1. Try 2Factor with custom template name / default route
         String uri = "https://2factor.in/API/V1/" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8)
                 + "/SMS/" + URLEncoder.encode(cleanPhone, StandardCharsets.UTF_8)
-                + "/" + URLEncoder.encode(otp, StandardCharsets.UTF_8) + "/FOODWALA";
+                + "/" + URLEncoder.encode(otp, StandardCharsets.UTF_8);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
@@ -388,20 +399,46 @@ public class SMSService {
         int status = response.statusCode();
         String responseBody = response.body();
 
-        System.out.println("[FoodWala OTP] Provider response status: " + status);
-        System.out.println("[FoodWala OTP] Provider raw response: " + responseBody);
+        System.out.println("[FoodWala OTP] 2Factor response status: " + status);
+        System.out.println("[FoodWala OTP] 2Factor raw response: " + responseBody);
 
         if (status == 200 && responseBody != null && responseBody.contains("\"Status\":\"Success\"")) {
             String details = extractJsonValue(responseBody, "Details");
             System.out.println("[FoodWala OTP] SMS provider message: 2Factor Session ID: " + details);
             System.out.println("[FoodWala OTP] OTP delivery successful -> Real SMS dispatched to mobile!");
             return SMSResult.success("2factor", details);
-        } else {
-            String details = extractJsonValue(responseBody, "Details");
-            String fullErr = "2Factor SMS failed: " + (details != null ? details : responseBody);
-            System.err.println("[FoodWala OTP] SMS delivery FAILED. Status: " + status + ", Error: " + fullErr);
-            return SMSResult.failure("2factor", fullErr, status != 200 ? status : 400);
         }
+
+        // 2. Try with OTP1 template if default returned template mismatch
+        String uriFallback = "https://2factor.in/API/V1/" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8)
+                + "/SMS/" + URLEncoder.encode(cleanPhone, StandardCharsets.UTF_8)
+                + "/" + URLEncoder.encode(otp, StandardCharsets.UTF_8) + "/OTP1";
+
+        HttpRequest fbRequest = HttpRequest.newBuilder()
+                .uri(URI.create(uriFallback))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        HttpResponse<String> fbResponse = client.send(fbRequest, HttpResponse.BodyHandlers.ofString());
+        int fbStatus = fbResponse.statusCode();
+        String fbResponseBody = fbResponse.body();
+
+        System.out.println("[FoodWala OTP] 2Factor fallback response status: " + fbStatus);
+        System.out.println("[FoodWala OTP] 2Factor fallback raw response: " + fbResponseBody);
+
+        if (fbStatus == 200 && fbResponseBody != null && fbResponseBody.contains("\"Status\":\"Success\"")) {
+            String details = extractJsonValue(fbResponseBody, "Details");
+            System.out.println("[FoodWala OTP] SMS provider message: 2Factor Session ID: " + details);
+            System.out.println("[FoodWala OTP] OTP delivery successful -> Real SMS dispatched to mobile!");
+            return SMSResult.success("2factor", details);
+        }
+
+        String details = extractJsonValue(responseBody, "Details");
+        if (details == null || details.isBlank()) details = extractJsonValue(fbResponseBody, "Details");
+        String fullErr = "2Factor Error: " + (details != null ? details : responseBody);
+        System.err.println("[FoodWala OTP] SMS delivery FAILED. Status: " + status + ", Error: " + fullErr);
+        return SMSResult.failure("2factor", fullErr, status != 200 ? status : 400);
     }
 
     /**
