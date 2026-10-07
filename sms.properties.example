@@ -1,34 +1,25 @@
-# ==============================================================================
-# FoodWala SMS Provider Configuration (Java EE / Tomcat)
-# ==============================================================================
-# Copy this file to 'sms.properties' in your classpath or project root
-# DO NOT COMMIT YOUR LIVE CREDENTIALS TO PUBLIC GIT REPOSITORIES
-# ==============================================================================
+# ===================================================================
+# FoodWala SMS Gateway Configuration Example
+# Copy this file to 'sms.properties' and insert your Fast2SMS API key.
+# ===================================================================
 
-# OTP Operation Mode
-# Set to 'true' for local development (Prints OTP to Tomcat console, no SMS cost)
-# Set to 'false' in production for real live SMS delivery to user mobile phones
-OTP_DEV_MODE=true
+# Set OTP_DEV_MODE=false for real SMS delivery to user mobile numbers
+# Set OTP_DEV_MODE=true to print OTP to Tomcat console
+OTP_DEV_MODE=false
+SMS_PROVIDER=fast2sms
 
-# Active SMS Provider Selection
-# Options: 'console', 'twilio', '2factor', 'msg91'
-SMS_PROVIDER=console
+# -------------------------------------------------------------------
+# Fast2SMS API Authorization Key
+# Obtain for FREE at: https://www.fast2sms.com/dev/api
+# -------------------------------------------------------------------
+FAST2SMS_API_KEY=YOUR_FAST2SMS_API_KEY_HERE
 
-# ------------------------------------------------------------------------------
-# Provider 1: Twilio Configuration (Global / US / International)
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------
+# Other supported providers (Optional):
+# -------------------------------------------------------------------
+TWO_FACTOR_API_KEY=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=
-
-# ------------------------------------------------------------------------------
-# Provider 2: 2Factor India Configuration (Recommended for Indian Numbers)
-# Free transactional OTP API for +91 numbers: https://2factor.in
-# ------------------------------------------------------------------------------
-TWO_FACTOR_API_KEY=
-
-# ------------------------------------------------------------------------------
-# Provider 3: MSG91 Configuration (India)
-# ------------------------------------------------------------------------------
 MSG91_AUTH_KEY=
 MSG91_TEMPLATE_ID=

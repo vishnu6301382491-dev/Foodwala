@@ -80,6 +80,8 @@ public class TestOTPAuthentication {
 
         // 4. SMSService Console Dev Mode
         total++;
+        System.setProperty("SMS_PROVIDER", "console");
+        System.setProperty("OTP_DEV_MODE", "true");
         SMSResult devRes = SMSService.getInstance().sendOtp(phone, "123456");
         if (devRes.success && devRes.isDevMode && "console".equalsIgnoreCase(devRes.provider)) {
             System.out.println("PASS: SMSService console mode successfully logs OTP without pretending real SMS was sent");
@@ -88,8 +90,22 @@ public class TestOTPAuthentication {
             System.err.println("FAIL: SMSService dev mode failed");
         }
 
-        // 5. SMSService Twilio missing credentials rejection
+        // 5. SMSService Fast2SMS with invalid API key (live API call)
         total++;
+        System.setProperty("SMS_PROVIDER", "fast2sms");
+        System.setProperty("OTP_DEV_MODE", "false");
+        System.setProperty("FAST2SMS_API_KEY", "INVALID_TEST_KEY_FOR_VERIFICATION");
+        SMSResult fast2smsFail = SMSService.getInstance().sendOtp(phone, "123456");
+        if (!fast2smsFail.success && fast2smsFail.errorMessage != null && fast2smsFail.errorMessage.contains("Fast2SMS Error")) {
+            System.out.println("PASS: SMSService correctly rejects invalid Fast2SMS key with live gateway response and success=false");
+            passed++;
+        } else {
+            System.err.println("FAIL: SMSService did not properly reject invalid Fast2SMS key -> success=" + fast2smsFail.success);
+        }
+
+        // 6. SMSService Twilio missing credentials rejection
+        total++;
+        System.clearProperty("FAST2SMS_API_KEY");
         System.setProperty("SMS_PROVIDER", "twilio");
         System.setProperty("OTP_DEV_MODE", "false");
         SMSResult twilioFail = SMSService.getInstance().sendOtp(phone, "123456");
@@ -100,7 +116,7 @@ public class TestOTPAuthentication {
             System.err.println("FAIL: SMSService did not properly reject unconfigured Twilio -> success=" + twilioFail.success + ", msg=" + twilioFail.errorMessage);
         }
 
-        // 6. SMSService 2Factor missing credentials rejection
+        // 7. SMSService 2Factor missing credentials rejection
         total++;
         System.setProperty("SMS_PROVIDER", "2factor");
         System.setProperty("OTP_DEV_MODE", "false");
@@ -115,6 +131,7 @@ public class TestOTPAuthentication {
         // Reset System properties back
         System.clearProperty("SMS_PROVIDER");
         System.clearProperty("OTP_DEV_MODE");
+        System.clearProperty("FAST2SMS_API_KEY");
 
         System.out.println("==================================================");
         System.out.println("RESULTS: " + passed + "/" + total + " PASSED");

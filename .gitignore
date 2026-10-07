@@ -21,6 +21,9 @@ FoodWala_Eclipse_Project/
 .env.*
 !.env.example
 server/.env
+sms.properties
+src/main/webapp/WEB-INF/classes/sms.properties
+!sms.properties.example
 
 # Node Dependencies
 node_modules/
