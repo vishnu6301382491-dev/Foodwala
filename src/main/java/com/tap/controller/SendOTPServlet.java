@@ -169,6 +169,10 @@ public class SendOTPServlet extends HttpServlet {
             .append("\"expiresIn\": 300,")
             .append("\"message\": \"").append(userMsg).append("\"");
 
+        if (smsResult.isDevMode) {
+            json.append(", \"devOtp\": \"").append(otp).append("\"");
+        }
+
         if (smsResult.messageId != null) {
             json.append(", \"messageId\": \"").append(smsResult.messageId).append("\"");
         }
