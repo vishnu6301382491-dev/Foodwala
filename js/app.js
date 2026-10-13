@@ -675,25 +675,78 @@ const FoodWalaApp = (function () {
       return newUser;
     },
 
-    login: function (email, password) {
-      if (!email || !email.trim()) return null;
-      const cleanEmail = email.trim().toLowerCase();
-      const namePart = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      
-      const user = {
-        userId: Date.now(),
-        name: namePart,
-        email: cleanEmail,
-        phone: null,
-        role: 'CUSTOMER',
-        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        addresses: []
-      };
+    login: async function (identifier, password) {
+      if (!identifier || !identifier.trim() || !password) {
+        return { success: false, message: 'Please enter your email/mobile number and password.' };
+      }
+      const cleanIdentifier = identifier.trim();
+      const apiBase = this.getApiBaseUrl();
 
-      setStorage(STORAGE_KEYS.CURRENT_USER, user);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
-      updateUserNavUI();
-      return user;
+      // Check if running on GitHub Pages without configured public Java Backend
+      if (apiBase === null) {
+        console.warn('[FoodWala Auth] Java Backend is not configured for remote static hosting.');
+        const namePart = cleanIdentifier.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const user = {
+          userId: Date.now(),
+          name: namePart,
+          email: cleanIdentifier.includes('@') ? cleanIdentifier.toLowerCase() : null,
+          phone: !cleanIdentifier.includes('@') ? cleanIdentifier : null,
+          role: 'CUSTOMER',
+          memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          addresses: []
+        };
+        setStorage(STORAGE_KEYS.CURRENT_USER, user);
+        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+        updateUserNavUI();
+        return { success: true, user: user };
+      }
+
+      const endpoint = apiBase.replace(/\/+$/, '') + '/api/auth/login';
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ identifier: cleanIdentifier, password: password })
+        });
+
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (e) {}
+
+        if (res.ok && data.success && data.user) {
+          // Store safe user data without credentials
+          const safeUser = {
+            userId: data.user.userId,
+            name: data.user.name || data.user.username,
+            username: data.user.username,
+            email: data.user.email,
+            phone: data.user.phone,
+            role: data.user.role || 'CUSTOMER',
+            memberSince: data.user.memberSince || 'Active Member',
+            addresses: data.user.addresses || []
+          };
+          setStorage(STORAGE_KEYS.CURRENT_USER, safeUser);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: safeUser }));
+          updateUserNavUI();
+          return { success: true, user: safeUser };
+        } else {
+          return {
+            success: false,
+            message: data.message || 'Invalid email/mobile number or password.'
+          };
+        }
+      } catch (err) {
+        console.error('[FoodWala Auth] Login request failed:', err);
+        return {
+          success: false,
+          message: 'Unable to connect to FoodWala authentication server. Please check your connection or Tomcat server.'
+        };
+      }
     },
 
     loginAsDemo: function (roleType) {
@@ -776,40 +829,133 @@ const FoodWalaApp = (function () {
       return user;
     },
 
-    register: function (name, email, phone, password, addressText) {
+    register: async function (name, email, phone, password, addressText, confirmPassword) {
+      const cleanName = (name || '').trim();
       const cleanEmail = (email || '').trim().toLowerCase();
-      const newUser = {
-        userId: Date.now(),
-        name: name || 'Food Lover',
-        email: cleanEmail,
-        phone: phone || '+91 98765 00000',
-        role: 'CUSTOMER',
-        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        addresses: addressText ? [
-          {
-            id: 'addr_' + Date.now(),
-            userId: Date.now(),
-            label: 'Home',
-            type: 'Home',
-            fullName: name || 'Food Lover',
-            phone: phone || '+91 98765 00000',
-            houseNo: '',
-            street: addressText,
-            area: 'Bengaluru',
-            city: 'Bengaluru',
-            state: 'Karnataka',
-            pincode: '560001',
-            latitude: 12.9716,
-            longitude: 77.5946,
-            addressLine: addressText + ', Bengaluru, Karnataka - 560001',
-            isDefault: true
-          }
-        ] : []
-      };
-      setStorage(STORAGE_KEYS.CURRENT_USER, newUser);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
-      updateUserNavUI();
-      return newUser;
+      const cleanPhone = (phone || '').trim();
+
+      if (!cleanName || !cleanEmail || !password) {
+        return { success: false, message: 'Name, email and password are required.' };
+      }
+
+      if (confirmPassword && password !== confirmPassword) {
+        return { success: false, message: 'Passwords do not match.' };
+      }
+
+      if (password.length < 8) {
+        return { success: false, message: 'Password must be at least 8 characters long.' };
+      }
+
+      const apiBase = this.getApiBaseUrl();
+
+      // Check if running on GitHub Pages without configured public Java Backend
+      if (apiBase === null) {
+        console.warn('[FoodWala Auth] Java Backend is not configured for remote static hosting.');
+        const newUser = {
+          userId: Date.now(),
+          name: cleanName || 'Food Lover',
+          email: cleanEmail,
+          phone: cleanPhone || '+91 98765 00000',
+          role: 'CUSTOMER',
+          memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          addresses: addressText ? [
+            {
+              id: 'addr_' + Date.now(),
+              userId: Date.now(),
+              label: 'Home',
+              type: 'Home',
+              fullName: cleanName || 'Food Lover',
+              phone: cleanPhone || '+91 98765 00000',
+              houseNo: '',
+              street: addressText,
+              area: 'Bengaluru',
+              city: 'Bengaluru',
+              state: 'Karnataka',
+              pincode: '560001',
+              latitude: 12.9716,
+              longitude: 77.5946,
+              addressLine: addressText + ', Bengaluru, Karnataka - 560001',
+              isDefault: true
+            }
+          ] : []
+        };
+        setStorage(STORAGE_KEYS.CURRENT_USER, newUser);
+        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
+        updateUserNavUI();
+        return { success: true, user: newUser };
+      }
+
+      const endpoint = apiBase.replace(/\/+$/, '') + '/api/auth/register';
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            username: cleanName,
+            email: cleanEmail,
+            phone: cleanPhone,
+            password: password,
+            confirmPassword: confirmPassword || password,
+            address: addressText || ''
+          })
+        });
+
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (e) {}
+
+        if (res.ok && data.success && data.user) {
+          const safeUser = {
+            userId: data.user.userId,
+            name: data.user.name || data.user.username,
+            username: data.user.username,
+            email: data.user.email,
+            phone: data.user.phone,
+            role: data.user.role || 'CUSTOMER',
+            memberSince: 'Active Member',
+            addresses: addressText ? [
+              {
+                id: 'addr_' + Date.now(),
+                userId: data.user.userId,
+                label: 'Home',
+                type: 'Home',
+                fullName: cleanName,
+                phone: cleanPhone,
+                houseNo: '',
+                street: addressText,
+                area: 'Bengaluru',
+                city: 'Bengaluru',
+                state: 'Karnataka',
+                pincode: '560001',
+                latitude: 12.9716,
+                longitude: 77.5946,
+                addressLine: addressText + ', Bengaluru, Karnataka - 560001',
+                isDefault: true
+              }
+            ] : []
+          };
+          setStorage(STORAGE_KEYS.CURRENT_USER, safeUser);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: safeUser }));
+          updateUserNavUI();
+          return { success: true, user: safeUser };
+        } else {
+          return {
+            success: false,
+            message: data.message || 'Registration failed. Please check your details.'
+          };
+        }
+      } catch (err) {
+        console.error('[FoodWala Auth] Register request failed:', err);
+        return {
+          success: false,
+          message: 'Unable to connect to FoodWala server. Please check your connection or Tomcat server.'
+        };
+      }
     },
 
     addAddress: function (addressObj) {

@@ -138,16 +138,29 @@
               </div>
             </div>
 
+            <div id="login-error-msg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;" role="alert"></div>
+
             <form id="login-form">
               <div class="mb-3">
-                <label class="form-label small fw-semibold">Email Address</label>
-                <input type="email" id="email-input" class="form-control rounded-3" placeholder="name@example.com" required>
+                <label class="form-label small fw-semibold" for="email-input">Email Address or Mobile Number</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill"></i></span>
+                  <input type="text" id="email-input" class="form-control rounded-end-3" placeholder="name@example.com or 9876543210" autocomplete="username" required>
+                </div>
               </div>
               <div class="mb-3">
-                <label class="form-label small fw-semibold">Password</label>
-                <input type="password" id="password-input" class="form-control rounded-3" placeholder="••••••••" required>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label small fw-semibold mb-0" for="password-input">Password</label>
+                </div>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                  <input type="password" id="password-input" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+                  <button class="btn btn-outline-secondary" type="button" id="toggle-login-password" title="Show/Hide Password">
+                    <i class="bi bi-eye" id="toggle-login-password-icon"></i>
+                  </button>
+                </div>
               </div>
-              <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Sign In</button>
+              <button type="submit" id="login-submit-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Sign In</button>
             </form>
 
             <div class="text-center small text-muted">
@@ -396,16 +409,55 @@
         });
       });
 
+      // --- Password Toggle ---
+      const toggleLoginPwdBtn = document.getElementById('toggle-login-password');
+      const loginPwdInput = document.getElementById('password-input');
+      const toggleLoginPwdIcon = document.getElementById('toggle-login-password-icon');
+      if (toggleLoginPwdBtn && loginPwdInput) {
+        toggleLoginPwdBtn.addEventListener('click', () => {
+          const isPassword = loginPwdInput.type === 'password';
+          loginPwdInput.type = isPassword ? 'text' : 'password';
+          toggleLoginPwdIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
       // --- Email/password form submission ---
-      document.getElementById('login-form').addEventListener('submit', (e) => {
+      const loginForm = document.getElementById('login-form');
+      const loginSubmitBtn = document.getElementById('login-submit-btn');
+      const loginErrorMsg = document.getElementById('login-error-msg');
+
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('email-input').value.trim();
+        loginErrorMsg.style.display = 'none';
+
+        const identifier = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value;
 
-        if (email) {
-          const user = FoodWalaApp.Auth.login(email, password);
-          FoodWalaApp.showToast(`Welcome back, ${user.name}!`, 'success');
-          handlePostLoginNavigation();
+        if (!identifier || !password) {
+          loginErrorMsg.textContent = 'Please enter your email/mobile and password.';
+          loginErrorMsg.style.display = 'block';
+          return;
+        }
+
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing In...';
+
+        try {
+          const res = await FoodWalaApp.Auth.login(identifier, password);
+          if (res.success && res.user) {
+            FoodWalaApp.showToast(`Welcome back, ${res.user.name}!`, 'success');
+            handlePostLoginNavigation();
+          } else {
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.innerHTML = 'Sign In';
+            loginErrorMsg.textContent = res.message || 'Invalid email/mobile number or password.';
+            loginErrorMsg.style.display = 'block';
+          }
+        } catch (err) {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.innerHTML = 'Sign In';
+          loginErrorMsg.textContent = 'Sign in failed. Please try again.';
+          loginErrorMsg.style.display = 'block';
         }
       });
 

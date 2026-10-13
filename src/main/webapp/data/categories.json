@@ -1,0 +1,2914 @@
+[
+  {
+  "categoryId": 1,
+  "restaurantId": 1,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 2,
+  "restaurantId": 1,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 3,
+  "restaurantId": 2,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 4,
+  "restaurantId": 2,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 5,
+  "restaurantId": 2,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 6,
+  "restaurantId": 3,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 7,
+  "restaurantId": 3,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 8,
+  "restaurantId": 4,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 9,
+  "restaurantId": 4,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 10,
+  "restaurantId": 5,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 11,
+  "restaurantId": 5,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 12,
+  "restaurantId": 6,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 13,
+  "restaurantId": 6,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 14,
+  "restaurantId": 7,
+  "name": "Main Course",
+  "description": "Main Course specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 15,
+  "restaurantId": 8,
+  "name": "Main Course",
+  "description": "Main Course specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 16,
+  "restaurantId": 1,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 17,
+  "restaurantId": 1,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 18,
+  "restaurantId": 2,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 19,
+  "restaurantId": 3,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 20,
+  "restaurantId": 3,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 21,
+  "restaurantId": 3,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 22,
+  "restaurantId": 3,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 23,
+  "restaurantId": 4,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 24,
+  "restaurantId": 4,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 25,
+  "restaurantId": 5,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 26,
+  "restaurantId": 5,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 27,
+  "restaurantId": 5,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 28,
+  "restaurantId": 6,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 29,
+  "restaurantId": 6,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 30,
+  "restaurantId": 7,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 31,
+  "restaurantId": 7,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 32,
+  "restaurantId": 7,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 33,
+  "restaurantId": 7,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 34,
+  "restaurantId": 8,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 35,
+  "restaurantId": 8,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 36,
+  "restaurantId": 8,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 37,
+  "restaurantId": 8,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 38,
+  "restaurantId": 9,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 39,
+  "restaurantId": 9,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 40,
+  "restaurantId": 9,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 41,
+  "restaurantId": 9,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 42,
+  "restaurantId": 10,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 43,
+  "restaurantId": 10,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 44,
+  "restaurantId": 10,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 45,
+  "restaurantId": 10,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 46,
+  "restaurantId": 11,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 47,
+  "restaurantId": 11,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 48,
+  "restaurantId": 11,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 49,
+  "restaurantId": 11,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 50,
+  "restaurantId": 12,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 51,
+  "restaurantId": 12,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 52,
+  "restaurantId": 12,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 53,
+  "restaurantId": 12,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 54,
+  "restaurantId": 13,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 55,
+  "restaurantId": 13,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 56,
+  "restaurantId": 13,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 57,
+  "restaurantId": 13,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 58,
+  "restaurantId": 14,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 59,
+  "restaurantId": 14,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 60,
+  "restaurantId": 14,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 61,
+  "restaurantId": 14,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 62,
+  "restaurantId": 15,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 63,
+  "restaurantId": 15,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 64,
+  "restaurantId": 15,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 65,
+  "restaurantId": 15,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 66,
+  "restaurantId": 16,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 67,
+  "restaurantId": 16,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 68,
+  "restaurantId": 16,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 69,
+  "restaurantId": 16,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 70,
+  "restaurantId": 17,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 71,
+  "restaurantId": 17,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 72,
+  "restaurantId": 17,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 73,
+  "restaurantId": 17,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 74,
+  "restaurantId": 18,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 75,
+  "restaurantId": 18,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 76,
+  "restaurantId": 18,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 77,
+  "restaurantId": 18,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 78,
+  "restaurantId": 19,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 79,
+  "restaurantId": 19,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 80,
+  "restaurantId": 19,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 81,
+  "restaurantId": 20,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 82,
+  "restaurantId": 20,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 83,
+  "restaurantId": 20,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 84,
+  "restaurantId": 20,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 85,
+  "restaurantId": 21,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 86,
+  "restaurantId": 21,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 87,
+  "restaurantId": 21,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 88,
+  "restaurantId": 21,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 89,
+  "restaurantId": 22,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 90,
+  "restaurantId": 22,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 91,
+  "restaurantId": 22,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 92,
+  "restaurantId": 22,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 93,
+  "restaurantId": 23,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 94,
+  "restaurantId": 23,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 95,
+  "restaurantId": 23,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 96,
+  "restaurantId": 23,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 97,
+  "restaurantId": 24,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 98,
+  "restaurantId": 24,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 99,
+  "restaurantId": 24,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 100,
+  "restaurantId": 24,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 101,
+  "restaurantId": 25,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 102,
+  "restaurantId": 25,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 103,
+  "restaurantId": 25,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 104,
+  "restaurantId": 25,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 105,
+  "restaurantId": 26,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 106,
+  "restaurantId": 26,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 107,
+  "restaurantId": 26,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 108,
+  "restaurantId": 26,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 109,
+  "restaurantId": 27,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 110,
+  "restaurantId": 27,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 111,
+  "restaurantId": 27,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 112,
+  "restaurantId": 28,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 113,
+  "restaurantId": 28,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 114,
+  "restaurantId": 28,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 115,
+  "restaurantId": 28,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 116,
+  "restaurantId": 29,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 117,
+  "restaurantId": 29,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 118,
+  "restaurantId": 29,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 119,
+  "restaurantId": 30,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 120,
+  "restaurantId": 30,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 121,
+  "restaurantId": 30,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 122,
+  "restaurantId": 30,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 123,
+  "restaurantId": 31,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 124,
+  "restaurantId": 31,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 125,
+  "restaurantId": 31,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 126,
+  "restaurantId": 31,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 127,
+  "restaurantId": 32,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 128,
+  "restaurantId": 32,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 129,
+  "restaurantId": 32,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 130,
+  "restaurantId": 32,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 131,
+  "restaurantId": 33,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 132,
+  "restaurantId": 33,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 133,
+  "restaurantId": 33,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 134,
+  "restaurantId": 34,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 135,
+  "restaurantId": 34,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 136,
+  "restaurantId": 34,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 137,
+  "restaurantId": 34,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 138,
+  "restaurantId": 35,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 139,
+  "restaurantId": 35,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 140,
+  "restaurantId": 35,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 141,
+  "restaurantId": 35,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 142,
+  "restaurantId": 36,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 143,
+  "restaurantId": 36,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 144,
+  "restaurantId": 36,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 145,
+  "restaurantId": 36,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 146,
+  "restaurantId": 37,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 147,
+  "restaurantId": 37,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 148,
+  "restaurantId": 37,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 149,
+  "restaurantId": 37,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 150,
+  "restaurantId": 38,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 151,
+  "restaurantId": 38,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 152,
+  "restaurantId": 38,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 153,
+  "restaurantId": 38,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 154,
+  "restaurantId": 39,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 155,
+  "restaurantId": 39,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 156,
+  "restaurantId": 39,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 157,
+  "restaurantId": 39,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 158,
+  "restaurantId": 40,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 159,
+  "restaurantId": 40,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 160,
+  "restaurantId": 40,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 161,
+  "restaurantId": 40,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 162,
+  "restaurantId": 41,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 163,
+  "restaurantId": 41,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 164,
+  "restaurantId": 41,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 165,
+  "restaurantId": 41,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 166,
+  "restaurantId": 42,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 167,
+  "restaurantId": 42,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 168,
+  "restaurantId": 42,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 169,
+  "restaurantId": 42,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 170,
+  "restaurantId": 43,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 171,
+  "restaurantId": 43,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 172,
+  "restaurantId": 43,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 173,
+  "restaurantId": 43,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 174,
+  "restaurantId": 44,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 175,
+  "restaurantId": 44,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 176,
+  "restaurantId": 44,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 177,
+  "restaurantId": 44,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 178,
+  "restaurantId": 45,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 179,
+  "restaurantId": 45,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 180,
+  "restaurantId": 45,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 181,
+  "restaurantId": 45,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 182,
+  "restaurantId": 46,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 183,
+  "restaurantId": 46,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 184,
+  "restaurantId": 46,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 185,
+  "restaurantId": 46,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 186,
+  "restaurantId": 47,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 187,
+  "restaurantId": 47,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 188,
+  "restaurantId": 47,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 189,
+  "restaurantId": 47,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 190,
+  "restaurantId": 48,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 191,
+  "restaurantId": 48,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 192,
+  "restaurantId": 48,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 193,
+  "restaurantId": 48,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 194,
+  "restaurantId": 49,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 195,
+  "restaurantId": 49,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 196,
+  "restaurantId": 49,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 197,
+  "restaurantId": 50,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 198,
+  "restaurantId": 50,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 199,
+  "restaurantId": 50,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 200,
+  "restaurantId": 50,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 201,
+  "restaurantId": 51,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 202,
+  "restaurantId": 51,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 203,
+  "restaurantId": 51,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 204,
+  "restaurantId": 51,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 205,
+  "restaurantId": 52,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 206,
+  "restaurantId": 52,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 207,
+  "restaurantId": 52,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 208,
+  "restaurantId": 52,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 209,
+  "restaurantId": 53,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 210,
+  "restaurantId": 53,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 211,
+  "restaurantId": 53,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 212,
+  "restaurantId": 53,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 213,
+  "restaurantId": 54,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 214,
+  "restaurantId": 54,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 215,
+  "restaurantId": 54,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 216,
+  "restaurantId": 54,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 217,
+  "restaurantId": 55,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 218,
+  "restaurantId": 55,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 219,
+  "restaurantId": 55,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 220,
+  "restaurantId": 55,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 221,
+  "restaurantId": 56,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 222,
+  "restaurantId": 56,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 223,
+  "restaurantId": 56,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 224,
+  "restaurantId": 56,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 225,
+  "restaurantId": 57,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 226,
+  "restaurantId": 57,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 227,
+  "restaurantId": 57,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 228,
+  "restaurantId": 57,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 229,
+  "restaurantId": 58,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 230,
+  "restaurantId": 58,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 231,
+  "restaurantId": 58,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 232,
+  "restaurantId": 58,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 233,
+  "restaurantId": 59,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 234,
+  "restaurantId": 59,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 235,
+  "restaurantId": 59,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 236,
+  "restaurantId": 59,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 237,
+  "restaurantId": 60,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 238,
+  "restaurantId": 60,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 239,
+  "restaurantId": 60,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 240,
+  "restaurantId": 60,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 241,
+  "restaurantId": 61,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 242,
+  "restaurantId": 61,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 243,
+  "restaurantId": 61,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 244,
+  "restaurantId": 61,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 245,
+  "restaurantId": 62,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 246,
+  "restaurantId": 62,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 247,
+  "restaurantId": 62,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 248,
+  "restaurantId": 62,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 249,
+  "restaurantId": 63,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 250,
+  "restaurantId": 63,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 251,
+  "restaurantId": 63,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 252,
+  "restaurantId": 63,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 253,
+  "restaurantId": 64,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 254,
+  "restaurantId": 64,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 255,
+  "restaurantId": 64,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 256,
+  "restaurantId": 64,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 257,
+  "restaurantId": 65,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 258,
+  "restaurantId": 65,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 259,
+  "restaurantId": 65,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 260,
+  "restaurantId": 65,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 261,
+  "restaurantId": 66,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 262,
+  "restaurantId": 66,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 263,
+  "restaurantId": 66,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 264,
+  "restaurantId": 66,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 265,
+  "restaurantId": 67,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 266,
+  "restaurantId": 67,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 267,
+  "restaurantId": 67,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 268,
+  "restaurantId": 67,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 269,
+  "restaurantId": 68,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 270,
+  "restaurantId": 68,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 271,
+  "restaurantId": 68,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 272,
+  "restaurantId": 68,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 273,
+  "restaurantId": 69,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 274,
+  "restaurantId": 69,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 275,
+  "restaurantId": 69,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 276,
+  "restaurantId": 70,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 277,
+  "restaurantId": 70,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 278,
+  "restaurantId": 70,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 279,
+  "restaurantId": 70,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 280,
+  "restaurantId": 71,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 281,
+  "restaurantId": 71,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 282,
+  "restaurantId": 71,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 283,
+  "restaurantId": 72,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 284,
+  "restaurantId": 72,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 285,
+  "restaurantId": 72,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 286,
+  "restaurantId": 72,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 287,
+  "restaurantId": 73,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 288,
+  "restaurantId": 73,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 289,
+  "restaurantId": 73,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 290,
+  "restaurantId": 73,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 291,
+  "restaurantId": 74,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 292,
+  "restaurantId": 74,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 293,
+  "restaurantId": 74,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 294,
+  "restaurantId": 74,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 295,
+  "restaurantId": 75,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 296,
+  "restaurantId": 75,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 297,
+  "restaurantId": 75,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 298,
+  "restaurantId": 75,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 299,
+  "restaurantId": 76,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 300,
+  "restaurantId": 76,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 301,
+  "restaurantId": 76,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 302,
+  "restaurantId": 76,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 303,
+  "restaurantId": 77,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 304,
+  "restaurantId": 77,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 305,
+  "restaurantId": 77,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 306,
+  "restaurantId": 77,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 307,
+  "restaurantId": 78,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 308,
+  "restaurantId": 78,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 309,
+  "restaurantId": 78,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 310,
+  "restaurantId": 78,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 311,
+  "restaurantId": 79,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 312,
+  "restaurantId": 79,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 313,
+  "restaurantId": 79,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 314,
+  "restaurantId": 79,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 315,
+  "restaurantId": 80,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 316,
+  "restaurantId": 80,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 317,
+  "restaurantId": 80,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 318,
+  "restaurantId": 80,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 319,
+  "restaurantId": 81,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 320,
+  "restaurantId": 81,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 321,
+  "restaurantId": 81,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 322,
+  "restaurantId": 81,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 323,
+  "restaurantId": 82,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 324,
+  "restaurantId": 82,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 325,
+  "restaurantId": 82,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 326,
+  "restaurantId": 82,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 327,
+  "restaurantId": 83,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 328,
+  "restaurantId": 83,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 329,
+  "restaurantId": 83,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 330,
+  "restaurantId": 83,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 331,
+  "restaurantId": 84,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 332,
+  "restaurantId": 84,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 333,
+  "restaurantId": 84,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 334,
+  "restaurantId": 84,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 335,
+  "restaurantId": 85,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 336,
+  "restaurantId": 85,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 337,
+  "restaurantId": 85,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 338,
+  "restaurantId": 85,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 339,
+  "restaurantId": 86,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 340,
+  "restaurantId": 86,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 341,
+  "restaurantId": 86,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 342,
+  "restaurantId": 86,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 343,
+  "restaurantId": 87,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 344,
+  "restaurantId": 87,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 345,
+  "restaurantId": 87,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 346,
+  "restaurantId": 87,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 347,
+  "restaurantId": 88,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 348,
+  "restaurantId": 88,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 349,
+  "restaurantId": 88,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 350,
+  "restaurantId": 88,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 351,
+  "restaurantId": 89,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 352,
+  "restaurantId": 89,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 353,
+  "restaurantId": 89,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 354,
+  "restaurantId": 89,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 355,
+  "restaurantId": 90,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 356,
+  "restaurantId": 90,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 357,
+  "restaurantId": 90,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 358,
+  "restaurantId": 90,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 359,
+  "restaurantId": 91,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 360,
+  "restaurantId": 91,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 361,
+  "restaurantId": 91,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 362,
+  "restaurantId": 91,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 363,
+  "restaurantId": 92,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 364,
+  "restaurantId": 92,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 365,
+  "restaurantId": 92,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 366,
+  "restaurantId": 93,
+  "name": "Biryani Specials",
+  "description": "Biryani Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 367,
+  "restaurantId": 93,
+  "name": "Starters & Appetizers",
+  "description": "Starters & Appetizers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 368,
+  "restaurantId": 93,
+  "name": "Curries & Gravies",
+  "description": "Curries & Gravies specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 369,
+  "restaurantId": 93,
+  "name": "Breads & Rice",
+  "description": "Breads & Rice specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 370,
+  "restaurantId": 94,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 371,
+  "restaurantId": 94,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 372,
+  "restaurantId": 94,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 373,
+  "restaurantId": 94,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 374,
+  "restaurantId": 95,
+  "name": "Signature Sundaes",
+  "description": "Signature Sundaes specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 375,
+  "restaurantId": 95,
+  "name": "Cakes & Pastries",
+  "description": "Cakes & Pastries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 376,
+  "restaurantId": 95,
+  "name": "Shakes & Beverages",
+  "description": "Shakes & Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 377,
+  "restaurantId": 96,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 378,
+  "restaurantId": 96,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 379,
+  "restaurantId": 96,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 380,
+  "restaurantId": 96,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 381,
+  "restaurantId": 97,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 382,
+  "restaurantId": 97,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 383,
+  "restaurantId": 97,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 384,
+  "restaurantId": 97,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 385,
+  "restaurantId": 98,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 386,
+  "restaurantId": 98,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 387,
+  "restaurantId": 98,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 388,
+  "restaurantId": 98,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 389,
+  "restaurantId": 99,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 390,
+  "restaurantId": 99,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 391,
+  "restaurantId": 99,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 392,
+  "restaurantId": 99,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 393,
+  "restaurantId": 100,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 394,
+  "restaurantId": 100,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 395,
+  "restaurantId": 100,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 396,
+  "restaurantId": 100,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 397,
+  "restaurantId": 101,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 398,
+  "restaurantId": 101,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 399,
+  "restaurantId": 101,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 400,
+  "restaurantId": 101,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 401,
+  "restaurantId": 102,
+  "name": "Starters & Kebabs",
+  "description": "Starters & Kebabs specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 402,
+  "restaurantId": 102,
+  "name": "Main Course Curries",
+  "description": "Main Course Curries specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 403,
+  "restaurantId": 102,
+  "name": "Rice & Noodles",
+  "description": "Rice & Noodles specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 404,
+  "restaurantId": 102,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 405,
+  "restaurantId": 103,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 406,
+  "restaurantId": 103,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 407,
+  "restaurantId": 103,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 408,
+  "restaurantId": 103,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 409,
+  "restaurantId": 104,
+  "name": "Gourmet Burgers",
+  "description": "Gourmet Burgers specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 410,
+  "restaurantId": 104,
+  "name": "Wood-Fired Pizzas",
+  "description": "Wood-Fired Pizzas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 411,
+  "restaurantId": 104,
+  "name": "Sides & Starters",
+  "description": "Sides & Starters specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 412,
+  "restaurantId": 104,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 413,
+  "restaurantId": 105,
+  "name": "Breakfast Specials",
+  "description": "Breakfast Specials specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 414,
+  "restaurantId": 105,
+  "name": "Crispy Dosas",
+  "description": "Crispy Dosas specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 415,
+  "restaurantId": 105,
+  "name": "Snacks & Sweets",
+  "description": "Snacks & Sweets specials",
+  "displayOrder": 1
+},
+  {
+  "categoryId": 416,
+  "restaurantId": 105,
+  "name": "Beverages",
+  "description": "Beverages specials",
+  "displayOrder": 1
+}
+]

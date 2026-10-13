@@ -3,6 +3,7 @@ build/
 bin/
 target/
 *.class
+src/main/webapp/WEB-INF/classes/
 
 # Eclipse workspace metadata
 .metadata/

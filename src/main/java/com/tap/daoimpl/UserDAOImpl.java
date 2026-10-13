@@ -110,6 +110,59 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public int updatePassword(int userId, String newPasswordHash) {
+        String sql = "UPDATE `user` SET password=? WHERE user_id=?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, newPasswordHash);
+            ps.setInt(2, userId);
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public boolean emailExists(String email) {
+        if (email == null || email.isBlank()) return false;
+        String sql = "SELECT 1 FROM `user` WHERE LOWER(email) = LOWER(?) LIMIT 1";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, email.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean phoneExists(String phone) {
+        if (phone == null || phone.isBlank()) return false;
+        String clean = phone.replaceAll("[^0-9]", "");
+        String raw10 = clean.length() >= 10 ? clean.substring(clean.length() - 10) : clean;
+        String withPlus91 = "+91" + raw10;
+        String with91 = "91" + raw10;
+        String sql = "SELECT 1 FROM `user` WHERE phone = ? OR phone = ? OR phone = ? OR phone = ? LIMIT 1";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, phone.trim());
+            ps.setString(2, withPlus91);
+            ps.setString(3, with91);
+            ps.setString(4, raw10);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
     public int deleteUser(int userId) {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(DELETE_QUERY)) {

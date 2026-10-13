@@ -187,22 +187,25 @@
                     </div>
                 </div>
 
-                <form action="<%=request.getContextPath()%>/login" method="post" id="email-login-form">
+                <form action="<%=request.getContextPath()%>/login" method="post" id="email-login-form" onsubmit="handleEmailLoginSubmit(event)">
                     <% if (!redirectParam.isBlank()) { %>
                         <input type="hidden" name="redirect" value="<%=redirectParam%>">
                     <% } %>
                     <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" name="email" id="email-input" class="form-control" placeholder="you@example.com" required>
+                        <label class="form-label">Email or Mobile Phone Number</label>
+                        <input type="text" name="email" id="email-input" class="form-control" placeholder="you@example.com or 10-digit mobile" required autocomplete="username">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Password</label>
-                        <input type="password" name="password" id="password-input" class="form-control" placeholder="••••••••" required>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="password" name="password" id="password-input" class="form-control" placeholder="••••••••" required autocomplete="current-password" style="padding-right: 42px; width: 100%;">
+                            <button type="button" onclick="toggleLoginPassword(this)" title="Show/Hide Password" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); line-height: 1;">👁️</button>
+                        </div>
                     </div>
 
                     <div style="margin: 24px 0 16px;">
-                        <button type="submit" class="btn btn-block" style="padding: 13px; font-size: 16px;">
+                        <button type="submit" id="email-login-submit-btn" class="btn btn-block" style="padding: 13px; font-size: 16px;">
                             Sign In →
                         </button>
                     </div>
@@ -314,6 +317,25 @@
                 secOtp.style.display = 'none';
                 secEmail.style.display = 'block';
             }
+        function toggleLoginPassword(btn) {
+            const input = document.getElementById('password-input');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function handleEmailLoginSubmit(e) {
+            const btn = document.getElementById('email-login-submit-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Signing In...';
+            }
+            return true;
         }
 
         function fillDemoLogin(email, password) {

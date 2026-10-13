@@ -108,28 +108,47 @@
             <p class="text-muted small">Create an account for personalized food delivery across Bengaluru.</p>
           </div>
 
+          <div id="register-error-msg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;" role="alert"></div>
+
           <form id="register-form">
             <div class="mb-3">
-              <label class="form-label small fw-semibold">Full Name *</label>
+              <label class="form-label small fw-semibold" for="reg-name">Full Name *</label>
               <input type="text" id="reg-name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" required>
             </div>
             <div class="mb-3">
-              <label class="form-label small fw-semibold">Email Address *</label>
+              <label class="form-label small fw-semibold" for="reg-email">Email Address *</label>
               <input type="email" id="reg-email" class="form-control rounded-3" placeholder="vishnu@example.com" required>
             </div>
             <div class="mb-3">
-              <label class="form-label small fw-semibold">Mobile Phone Number *</label>
-              <input type="text" id="reg-phone" class="form-control rounded-3" placeholder="+91 98765 43210" required>
+              <label class="form-label small fw-semibold" for="reg-phone">Mobile Phone Number *</label>
+              <input type="tel" id="reg-phone" class="form-control rounded-3" placeholder="+91 98765 43210" required>
             </div>
             <div class="mb-3">
-              <label class="form-label small fw-semibold">Delivery Address (Optional)</label>
+              <label class="form-label small fw-semibold" for="reg-address">Delivery Address (Optional)</label>
               <input type="text" id="reg-address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru">
             </div>
             <div class="mb-3">
-              <label class="form-label small fw-semibold">Password *</label>
-              <input type="password" id="reg-password" class="form-control rounded-3" placeholder="••••••••" required>
+              <label class="form-label small fw-semibold" for="reg-password">Password *</label>
+              <div class="input-group">
+                <input type="password" id="reg-password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-reg-password" title="Show/Hide Password">
+                  <i class="bi bi-eye" id="toggle-reg-password-icon"></i>
+                </button>
+              </div>
+              <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
+                <i class="bi bi-info-circle me-1"></i>Must be at least 8 characters with letters and numbers.
+              </small>
             </div>
-            <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Create Account</button>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-confirm-password">Confirm Password *</label>
+              <div class="input-group">
+                <input type="password" id="reg-confirm-password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-reg-confirm-password" title="Show/Hide Password">
+                  <i class="bi bi-eye" id="toggle-reg-confirm-password-icon"></i>
+                </button>
+              </div>
+            </div>
+            <button type="submit" id="register-submit-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Create Account</button>
           </form>
 
           <div class="text-center small text-muted">
@@ -225,23 +244,94 @@
         loginLink.href = `./login.html?redirect=${encodeURIComponent(redirectTarget)}`;
       }
 
-      document.getElementById('register-form').addEventListener('submit', (e) => {
+      // --- Password Show/Hide Toggles ---
+      const toggleRegPwd = document.getElementById('toggle-reg-password');
+      const regPwd = document.getElementById('reg-password');
+      const toggleRegPwdIcon = document.getElementById('toggle-reg-password-icon');
+      if (toggleRegPwd && regPwd) {
+        toggleRegPwd.addEventListener('click', () => {
+          const isPwd = regPwd.type === 'password';
+          regPwd.type = isPwd ? 'text' : 'password';
+          toggleRegPwdIcon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
+      const toggleRegConfirmPwd = document.getElementById('toggle-reg-confirm-password');
+      const regConfirmPwd = document.getElementById('reg-confirm-password');
+      const toggleRegConfirmPwdIcon = document.getElementById('toggle-reg-confirm-password-icon');
+      if (toggleRegConfirmPwd && regConfirmPwd) {
+        toggleRegConfirmPwd.addEventListener('click', () => {
+          const isPwd = regConfirmPwd.type === 'password';
+          regConfirmPwd.type = isPwd ? 'text' : 'password';
+          toggleRegConfirmPwdIcon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
+      const regForm = document.getElementById('register-form');
+      const regSubmitBtn = document.getElementById('register-submit-btn');
+      const regErrorMsg = document.getElementById('register-error-msg');
+
+      regForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        regErrorMsg.style.display = 'none';
+
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim();
         const phone = document.getElementById('reg-phone').value.trim();
         const address = document.getElementById('reg-address').value.trim();
         const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-confirm-password').value;
 
-        if (name && email) {
-          FoodWalaApp.Auth.register(name, email, phone, password, address);
-          FoodWalaApp.showToast(`Welcome to FoodWala, ${name}!`, 'success');
-          try {
-            localStorage.removeItem('foodwala_post_login_redirect');
-          } catch (e) {}
-          setTimeout(() => {
-            window.location.href = redirectTarget;
-          }, 400);
+        // Validation: required fields
+        if (!name || !email || !password) {
+          regErrorMsg.textContent = 'Name, email and password are required.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        // Validation: password confirmation
+        if (password !== confirmPassword) {
+          regErrorMsg.textContent = 'Passwords do not match. Please verify your confirm password.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        // Validation: password policy (8-128 chars, at least one letter and one number)
+        if (password.length < 8 || password.length > 128) {
+          regErrorMsg.textContent = 'Password must be between 8 and 128 characters long.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+        if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+          regErrorMsg.textContent = 'Password must contain at least one letter and at least one number.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        regSubmitBtn.disabled = true;
+        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating Account...';
+
+        try {
+          const res = await FoodWalaApp.Auth.register(name, email, phone, password, address, confirmPassword);
+          if (res.success && res.user) {
+            FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
+            try {
+              localStorage.removeItem('foodwala_post_login_redirect');
+            } catch (err) {}
+            setTimeout(() => {
+              window.location.href = redirectTarget;
+            }, 500);
+          } else {
+            regSubmitBtn.disabled = false;
+            regSubmitBtn.innerHTML = 'Create Account';
+            regErrorMsg.textContent = res.message || 'Registration failed. Please try again.';
+            regErrorMsg.style.display = 'block';
+          }
+        } catch (err) {
+          regSubmitBtn.disabled = false;
+          regSubmitBtn.innerHTML = 'Create Account';
+          regErrorMsg.textContent = 'Unable to complete registration. Please check your connection.';
+          regErrorMsg.style.display = 'block';
         }
       });
     });

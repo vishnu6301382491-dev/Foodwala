@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | FoodWala</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-danger fs-4 text-decoration-none" href="./index.html">
+        <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+          <i class="bi bi-bag-heart-fill fs-5"></i>
+        </div>
+        <span>Food<span class="text-dark">Wala</span></span>
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <!-- Location Picker Button (No fake default) -->
+        <div class="d-flex align-items-center ms-lg-4 my-2 my-lg-0">
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2 border" data-bs-toggle="modal" data-bs-target="#locationModal" title="Select Delivery Location">
+            <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+            <div class="text-start lh-1" id="navbar-location-display">
+              <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Select Location</span>
+              <small class="text-muted d-block" style="font-size: 0.75rem;">Click to set location</small>
+            </div>
+            <i class="bi bi-chevron-down text-muted ms-1 small"></i>
+          </button>
+        </div>
+
+        <ul class="navbar-nav ms-auto align-items-center gap-lg-3 my-2 my-lg-0">
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./index.html">
+              <i class="bi bi-house-door me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./restaurants.html">
+              <i class="bi bi-shop me-1"></i> Restaurants
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold px-2 text-dark" href="./orders.html">
+              <i class="bi bi-bag-check me-1"></i> Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 position-relative d-flex align-items-center gap-2" href="./cart.html">
+              <i class="bi bi-cart3 fs-6"></i>
+              <span class="fw-bold">Cart</span>
+              <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
+            </a>
+          </li>
+          <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
+          <li class="nav-item ms-lg-2" id="navbar-user-slot">
+            <div class="d-flex align-items-center gap-2">
+              <a href="./login.html" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill fw-semibold d-flex align-items-center gap-1">
+                <i class="bi bi-person"></i>
+                <span>Login</span>
+              </a>
+              <a href="./register.html" class="btn btn-danger btn-sm px-3 py-2 rounded-pill fw-semibold">Sign Up</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Location Selection Modal -->
+  <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="locationModalLabel">
+            <i class="bi bi-geo-alt-fill me-2"></i>Select Delivery Location
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" id="location-options-list">
+          <!-- Populated by FoodWalaApp.bindLocationModalEvents() -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="container my-5 flex-grow-1">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white">
+          <div class="text-center mb-4">
+            <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 54px; height: 54px;">
+              <i class="bi bi-person-plus-fill fs-3"></i>
+            </div>
+            <h3 class="fw-bold text-dark">Join FoodWala</h3>
+            <p class="text-muted small">Create an account for personalized food delivery across Bengaluru.</p>
+          </div>
+
+          <div id="register-error-msg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;" role="alert"></div>
+
+          <form id="register-form">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-name">Full Name *</label>
+              <input type="text" id="reg-name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-email">Email Address *</label>
+              <input type="email" id="reg-email" class="form-control rounded-3" placeholder="vishnu@example.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-phone">Mobile Phone Number *</label>
+              <input type="tel" id="reg-phone" class="form-control rounded-3" placeholder="+91 98765 43210" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-address">Delivery Address (Optional)</label>
+              <input type="text" id="reg-address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-password">Password *</label>
+              <div class="input-group">
+                <input type="password" id="reg-password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-reg-password" title="Show/Hide Password">
+                  <i class="bi bi-eye" id="toggle-reg-password-icon"></i>
+                </button>
+              </div>
+              <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
+                <i class="bi bi-info-circle me-1"></i>Must be at least 8 characters with letters and numbers.
+              </small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" for="reg-confirm-password">Confirm Password *</label>
+              <div class="input-group">
+                <input type="password" id="reg-confirm-password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-reg-confirm-password" title="Show/Hide Password">
+                  <i class="bi bi-eye" id="toggle-reg-confirm-password-icon"></i>
+                </button>
+              </div>
+            </div>
+            <button type="submit" id="register-submit-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Create Account</button>
+          </form>
+
+          <div class="text-center small text-muted">
+            Already have an account? <a href="./login.html" class="text-danger fw-bold text-decoration-none">Sign In</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-dark text-light pt-5 pb-4 mt-auto border-top border-secondary">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+              <i class="bi bi-bag-heart-fill fs-5"></i>
+            </div>
+            <h4 class="text-white fw-bold mb-0">Food<span class="text-danger">Wala</span></h4>
+          </div>
+          <p class="text-muted small mb-3">Bengaluru's premier authentic food discovery and hyper-fast delivery network. Bringing 105+ iconic restaurants and 750+ delicacies straight to your doorstep.</p>
+          <div class="d-flex gap-3 fs-5">
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="text-secondary hover-danger"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Quick Links</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+            <li><a href="./index.html" class="text-muted text-decoration-none hover-light">Home</a></li>
+            <li><a href="./restaurants.html" class="text-muted text-decoration-none hover-light">All Restaurants</a></li>
+            <li><a href="./orders.html" class="text-muted text-decoration-none hover-light">My Orders</a></li>
+            <li><a href="./cart.html" class="text-muted text-decoration-none hover-light">Cart</a></li>
+            <li><a href="./profile.html" class="text-muted text-decoration-none hover-light">User Profile</a></li>
+            <li><a href="./addresses.html" class="text-muted text-decoration-none hover-light">Saved Addresses</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Top Bengaluru Areas</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2 mb-0 text-muted">
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Koramangala & HSR</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Indiranagar & MG Road</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Whitefield & Marathahalli</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Malleshwaram & Rajajinagar</li>
+            <li><i class="bi bi-geo-alt text-danger me-1"></i> Jayanagar & Basavanagudi</li>
+          </ul>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <h6 class="text-uppercase fw-bold text-white mb-3">Secure Payments</h6>
+          <p class="text-muted small mb-2">100% Secure Checkout powered by Razorpay Test Sandbox and UPI.</p>
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+            <span class="badge bg-secondary p-2"><i class="bi bi-credit-card me-1"></i> Cards</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-qr-code me-1"></i> UPI</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-bank me-1"></i> NetBanking</span>
+            <span class="badge bg-secondary p-2"><i class="bi bi-cash-stack me-1"></i> Cash On Delivery</span>
+          </div>
+          <small class="text-secondary d-block">Razorpay Public Test Key: <code class="text-light">rzp_test_TjiZvLxLbxKe38</code></small>
+        </div>
+      </div>
+
+      <hr class="border-secondary my-4">
+
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-muted">
+        <div>&copy; 2026 FoodWala Inc. All rights reserved. Built with Java Servlets, JSP & Modern Web Architecture.</div>
+        <div class="mt-2 mt-md-0">
+          <span>Bengaluru, Karnataka &bull; 105 Real Restaurants &bull; 756 Menu Items</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Core FoodWala JS -->
+  <script src="./js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRedirect = urlParams.get('redirect');
+      const storedRedirect = localStorage.getItem('foodwala_post_login_redirect');
+      const redirectTarget = urlRedirect || storedRedirect || './index.html';
+
+      // Propagate redirect parameter to login link if present
+      const loginLink = document.querySelector('a[href="./login.html"]');
+      if (loginLink && redirectTarget && redirectTarget !== './index.html') {
+        loginLink.href = `./login.html?redirect=${encodeURIComponent(redirectTarget)}`;
+      }
+
+      // --- Password Show/Hide Toggles ---
+      const toggleRegPwd = document.getElementById('toggle-reg-password');
+      const regPwd = document.getElementById('reg-password');
+      const toggleRegPwdIcon = document.getElementById('toggle-reg-password-icon');
+      if (toggleRegPwd && regPwd) {
+        toggleRegPwd.addEventListener('click', () => {
+          const isPwd = regPwd.type === 'password';
+          regPwd.type = isPwd ? 'text' : 'password';
+          toggleRegPwdIcon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
+      const toggleRegConfirmPwd = document.getElementById('toggle-reg-confirm-password');
+      const regConfirmPwd = document.getElementById('reg-confirm-password');
+      const toggleRegConfirmPwdIcon = document.getElementById('toggle-reg-confirm-password-icon');
+      if (toggleRegConfirmPwd && regConfirmPwd) {
+        toggleRegConfirmPwd.addEventListener('click', () => {
+          const isPwd = regConfirmPwd.type === 'password';
+          regConfirmPwd.type = isPwd ? 'text' : 'password';
+          toggleRegConfirmPwdIcon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
+      const regForm = document.getElementById('register-form');
+      const regSubmitBtn = document.getElementById('register-submit-btn');
+      const regErrorMsg = document.getElementById('register-error-msg');
+
+      regForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        regErrorMsg.style.display = 'none';
+
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+        const address = document.getElementById('reg-address').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-confirm-password').value;
+
+        // Validation: required fields
+        if (!name || !email || !password) {
+          regErrorMsg.textContent = 'Name, email and password are required.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        // Validation: password confirmation
+        if (password !== confirmPassword) {
+          regErrorMsg.textContent = 'Passwords do not match. Please verify your confirm password.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        // Validation: password policy (8-128 chars, at least one letter and one number)
+        if (password.length < 8 || password.length > 128) {
+          regErrorMsg.textContent = 'Password must be between 8 and 128 characters long.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+        if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+          regErrorMsg.textContent = 'Password must contain at least one letter and at least one number.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        regSubmitBtn.disabled = true;
+        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating Account...';
+
+        try {
+          const res = await FoodWalaApp.Auth.register(name, email, phone, password, address, confirmPassword);
+          if (res.success && res.user) {
+            FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
+            try {
+              localStorage.removeItem('foodwala_post_login_redirect');
+            } catch (err) {}
+            setTimeout(() => {
+              window.location.href = redirectTarget;
+            }, 500);
+          } else {
+            regSubmitBtn.disabled = false;
+            regSubmitBtn.innerHTML = 'Create Account';
+            regErrorMsg.textContent = res.message || 'Registration failed. Please try again.';
+            regErrorMsg.style.display = 'block';
+          }
+        } catch (err) {
+          regSubmitBtn.disabled = false;
+          regSubmitBtn.innerHTML = 'Create Account';
+          regErrorMsg.textContent = 'Unable to complete registration. Please check your connection.';
+          regErrorMsg.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

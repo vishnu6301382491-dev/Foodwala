@@ -9,4 +9,7 @@ public interface UserDAO {
     User getUserByPhone(String phone);
     int updateUser(User user);
     int deleteUser(int userId);
+    int updatePassword(int userId, String newPasswordHash);
+    boolean emailExists(String email);
+    boolean phoneExists(String phone);
 }

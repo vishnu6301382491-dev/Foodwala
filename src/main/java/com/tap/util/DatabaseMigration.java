@@ -118,12 +118,12 @@ public class DatabaseMigration {
             addColumnIfNotExists(st, "payment", "razorpay_payment_id", "VARCHAR(100) NULL");
             addColumnIfNotExists(st, "payment", "razorpay_signature", "VARCHAR(255) NULL");
 
-            // 8. Seed sample roles & accounts
-            // Password '123456' hash: 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+            // 8. Seed sample roles & accounts with Argon2id hash
+            String demoArgon2Hash = PasswordUtil.hash("123456");
             st.executeUpdate("INSERT IGNORE INTO `user` (user_id, username, password, email, phone, address, role) VALUES " +
-                "(3, 'Rahul (Partner)', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'rahul.delivery@foodwala.com', '9876543220', 'Basavanagudi, Bengaluru', 'DELIVERY_PARTNER')," +
-                "(4, 'Vidyarthi Bhavan Staff', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'vb.admin@foodwala.com', '9876543221', 'Gandhi Bazaar, Basavanagudi, Bengaluru', 'RESTAURANT')," +
-                "(5, 'Admin', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'admin@foodwala.com', '9876543222', 'Bengaluru Central', 'ADMIN')");
+                "(3, 'Rahul (Partner)', '" + demoArgon2Hash + "', 'rahul.delivery@foodwala.com', '9876543220', 'Basavanagudi, Bengaluru', 'DELIVERY_PARTNER')," +
+                "(4, 'Vidyarthi Bhavan Staff', '" + demoArgon2Hash + "', 'vb.admin@foodwala.com', '9876543221', 'Gandhi Bazaar, Basavanagudi, Bengaluru', 'RESTAURANT')," +
+                "(5, 'Admin', '" + demoArgon2Hash + "', 'admin@foodwala.com', '9876543222', 'Bengaluru Central', 'ADMIN')");
 
             st.executeUpdate("INSERT IGNORE INTO delivery_partner (partner_id, user_id, name, phone, vehicle_number, current_lat, current_lng, accuracy, is_available) VALUES " +
                 "(1, 3, 'Rahul', '9876543220', 'KA-05-EJ-1234', 12.9416, 77.5750, 8.5, TRUE)");
