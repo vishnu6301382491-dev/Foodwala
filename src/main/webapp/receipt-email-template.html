@@ -8,12 +8,12 @@
     ========================================================================
     FOODWALA — READY-TO-PASTE EMAILJS TEMPLATE
     ========================================================================
-    In EmailJS Dashboard > Email Templates > Create New Template:
+    In EmailJS Dashboard > Email Templates > Edit Template:
     1. Template Name: "FoodWala Order Receipt"
     2. Subject: "FoodWala Receipt for Order {{order_id}} — {{restaurant}}"
     3. From Name: "FoodWala"
     4. From Email: "foodwalapp@gmail.com"
-    5. To Email: "{{to_email}}"
+    5. To Email: "{{to_email}}" (CRITICAL: Must be {{to_email}}, do NOT hardcode foodwalapp@gmail.com!)
     6. Reply-To: "foodwalapp@gmail.com"
     7. Switch to "HTML" tab in the EmailJS editor and paste the code below!
     ========================================================================
@@ -193,6 +193,12 @@
         <p class="subtext">
           Your order has been confirmed and the kitchen has begun preparing your authentic Bengaluru delicacies! Here is your official order receipt.
         </p>
+
+        {{#admin_note}}
+        <div style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px 14px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+          <strong>ADMIN COPY:</strong> {{admin_note}}
+        </div>
+        {{/admin_note}}
 
         <!-- Order Summary Card -->
         <table width="100%" cellpadding="0" cellspacing="0" class="info-box">

@@ -382,12 +382,6 @@
         });
       }
 
-      // Check if order confirmation receipt has been sent via EmailJS; if not, trigger it once
-      if (order && !order.emailSent && window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
-        const authUser = FoodWalaApp.Auth ? FoodWalaApp.Auth.getCurrentUser() : null;
-        window.FoodWalaEmail.sendReceiptEmail(order, authUser);
-      }
-
       // 2. Render Order Header Details
       document.getElementById('order-id-badge').textContent = `Order #${order.orderId || order.id}`;
       document.getElementById('order-rest-name').textContent = order.restaurantName || 'Bengaluru Restaurant';

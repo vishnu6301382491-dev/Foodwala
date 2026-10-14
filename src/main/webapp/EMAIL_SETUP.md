@@ -28,31 +28,37 @@ This guide explains how to connect **EmailJS** to send automated, professional o
 
 ## Step 3: Create the Email Receipt Template
 1. In the left sidebar, click **Email Templates**.
-2. Click **Create New Template**.
+2. Click **Create New Template** (or edit your existing template `template_fs6ee5x`).
 3. Configure the email template settings on the right panel:
    - **Template Name**: `FoodWala Order Receipt`
    - **Subject**: `FoodWala Receipt for Order {{order_id}} — {{restaurant}}`
    - **From Name**: `FoodWala`
    - **From Email**: `foodwalapp@gmail.com`
-   - **To Email**: `{{to_email}}`
+   - **To Email**: `{{to_email}}`  ⚠️ **CRITICAL REQUIREMENT**: Must be set to `{{to_email}}`! Do NOT hardcode `foodwalapp@gmail.com` here. The system dynamically sets `to_email` to the customer's email for the customer copy, and to `foodwalapp@gmail.com` for the admin copy. If hardcoded, all emails will only go to admin!
    - **Reply-To**: `foodwalapp@gmail.com`
 4. In the main email editor window, switch to the **HTML** tab.
 5. Open [`receipt-email-template.html`](./receipt-email-template.html) in this project, copy the entire HTML content, and paste it into the editor.
 6. Click **Save** in the top right.
-7. Note down your **Template ID** (e.g., `template_foodwala` or `template_xyz5678`).
+7. Note down your **Template ID** (e.g., `template_fs6ee5x`).
 
 ### Template Variables Used:
 | Variable | Description | Example |
 | :--- | :--- | :--- |
-| `{{to_email}}` | Customer's email address | `customer@gmail.com` |
+| `{{to_email}}` | Recipient email address (**Must match "To Email" in settings**) | `customer@gmail.com` / `foodwalapp@gmail.com` |
 | `{{customer_name}}` | Name of the recipient | `Vishnu` |
 | `{{order_id}}` | Unique FoodWala Order ID | `#FW-20854` |
 | `{{restaurant}}` | Ordered restaurant name | `Meghana Foods` |
 | `{{items}}` | Formatted multi-line items list | `1. 2x Chicken Biryani — Rs. 640` |
 | `{{total}}` | Final order grand total with Rs. | `Rs. 677.00` |
-| `{{payment_mode}}` | Payment method used | `Razorpay (Test Sandbox)` / `UPI` |
+| `{{payment_mode}}` | Payment method used | `Razorpay (Test Sandbox)` / `UPI Instant` |
 | `{{order_date}}` | Formatted date and time | `15 Oct 2026, 12:45 AM` |
 | `{{address}}` | Complete delivery address | `Flat 402, Green Glen Layout, Bengaluru` |
+| `{{admin_note}}` | Admin notification tag (empty for customer, populated for admin copy) | `Copy of customer receipt (customer: user@gmail.com)` |
+
+### Dual Receipt Delivery Architecture:
+Every confirmed order triggers two distinct dispatches:
+1. **Customer Copy**: Sent to the email entered during checkout (`order.customerEmail`). Tracked by `order.customerEmailSent`. If customer email is invalid, the customer copy is aborted without falling back to admin.
+2. **Admin Copy**: Dispatched to `foodwalapp@gmail.com` with `admin_note`. Tracked by `order.adminEmailSent`. If the admin copy fails, it is logged to the console only, and does not show an error toast to the customer.
 
 ---
 
