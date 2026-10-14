@@ -63,18 +63,19 @@ This guide explains how to connect **EmailJS** to send automated, professional o
 ---
 
 ## Step 5: Paste Your 3 Keys into `js/emailService.js`
-Open [`js/emailService.js`](./js/emailService.js) and update the `EMAILJS_CONFIG` object around line 15:
+Open [`js/emailService.js`](./js/emailService.js). Your active configuration is:
 
 ```javascript
   const EMAILJS_CONFIG = {
-    SERVICE_ID: 'service_abc1234',       // Paste your EmailJS Service ID here
-    TEMPLATE_ID: 'template_xyz5678',     // Paste your EmailJS Template ID here
-    PUBLIC_KEY: 'y0uR_PubL1c_k3y_abc123',// Paste your EmailJS Public Key here
-    SENDER_EMAIL: 'foodwalapp@gmail.com'
+    SERVICE_ID: 'service_s6chkik',       // EmailJS Gmail Service ID
+    TEMPLATE_ID: 'template_fs6ee5x',     // EmailJS Receipt Template ID
+    PUBLIC_KEY: 'wE9osxGnQVfki9oIW',     // EmailJS Browser Public Key
+    SENDER_EMAIL: 'foodwalapp@gmail.com' // Verified sender email
   };
 ```
 
-Save the file and commit/push to GitHub.
+> [!SECURITY]
+> **Important Security Rule**: Do **not** commit or expose your **Private Key** in client-side code or public GitHub repositories. In EmailJS, the browser SDK only needs the `PUBLIC_KEY`. The Private Key is reserved for private, server-side backend operations.
 
 ---
 

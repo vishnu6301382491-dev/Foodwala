@@ -12,9 +12,9 @@
    * NOTE: Never enter your raw Gmail password! EmailJS uses secure API tokens.
    * ======================================================================= */
   const EMAILJS_CONFIG = {
-    SERVICE_ID: 'YOUR_SERVICE_ID',       // e.g. 'service_foodwala'
-    TEMPLATE_ID: 'YOUR_TEMPLATE_ID',     // e.g. 'template_order_receipt'
-    PUBLIC_KEY: 'YOUR_PUBLIC_KEY',       // e.g. 'y0uR_PubL1c_k3y'
+    SERVICE_ID: 'service_s6chkik',       // EmailJS Gmail Service ID
+    TEMPLATE_ID: 'template_fs6ee5x',     // EmailJS Receipt Template ID
+    PUBLIC_KEY: 'wE9osxGnQVfki9oIW',     // EmailJS Browser Public Key
     SENDER_EMAIL: 'foodwalapp@gmail.com' // Verified sender email
   };
 
