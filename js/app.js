@@ -95,46 +95,71 @@ const FoodWalaApp = (function () {
   cleanupObsoleteDemoData();
 
   // --- ASYNC DATA LOADER ---
+  const RESTAURANTS_CACHE_KEY = 'foodwala_restaurants_cache_v2';
+
+  // Helper to optimize external Unsplash image URLs to modern WebP format and small dimensions
+  function optimizeImageUrl(url, width = 400) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('images.unsplash.com')) {
+      if (!url.includes('auto=format')) {
+        const sep = url.includes('?') ? '&' : '?';
+        return `${url}${sep}auto=format&fit=crop&w=${width}&q=75`;
+      }
+    }
+    return url;
+  }
+
+  // --- FAST CACHED DATA LOADER ---
+  async function loadRestaurants() {
+    if (restaurantsCache.length > 0) return restaurantsCache;
+
+    // 1. Check sessionStorage / localStorage for instant 0ms retrieval
+    try {
+      const cached = sessionStorage.getItem(RESTAURANTS_CACHE_KEY) || localStorage.getItem(RESTAURANTS_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          restaurantsCache = parsed;
+          return restaurantsCache;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Fallback to seed or global data if already loaded
+    if (window.FOODWALA_FEATURED_8 && Array.isArray(window.FOODWALA_FEATURED_8)) {
+      restaurantsCache = window.FOODWALA_FEATURED_8;
+    } else if (window.FOODWALA_RESTAURANTS && Array.isArray(window.FOODWALA_RESTAURANTS)) {
+      restaurantsCache = window.FOODWALA_RESTAURANTS;
+    }
+
+    // 3. Fetch restaurants.json
+    try {
+      const restRes = await fetch('./data/restaurants.json');
+      if (restRes.ok) {
+        restaurantsCache = await restRes.json();
+        try {
+          sessionStorage.setItem(RESTAURANTS_CACHE_KEY, JSON.stringify(restaurantsCache));
+        } catch (e) {}
+      }
+    } catch (e) {}
+
+    return restaurantsCache;
+  }
+
   function loadData() {
     if (dataReadyPromise) return dataReadyPromise;
 
     dataReadyPromise = new Promise(async (resolve) => {
-      try {
-        const restRes = await fetch('./data/restaurants.json');
-        if (restRes.ok) {
-          restaurantsCache = await restRes.json();
-        }
-      } catch (e) {
-        if (window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
-          restaurantsCache = window.FOODWALA_RESTAURANTS;
-        }
-      }
+      // Load restaurants first (from cache or fast fetch)
+      await loadRestaurants();
 
-      try {
-        const menuRes = await fetch('./data/menu-items.json');
-        if (menuRes.ok) {
-          menuItemsCache = await menuRes.json();
-        }
-      } catch (e) {
-        if (window.FOODWALA_MENUS && window.FOODWALA_MENUS.length > 0) {
-          menuItemsCache = window.FOODWALA_MENUS;
-        }
-      }
-
+      // Parallel fetch for categories (small file)
       try {
         const catRes = await fetch('./data/categories.json');
-        if (catRes.ok) {
-          categoriesCache = await catRes.json();
-        }
+        if (catRes.ok) categoriesCache = await catRes.json();
       } catch (e) {}
 
-      if (restaurantsCache.length === 0 && window.FOODWALA_RESTAURANTS) {
-        restaurantsCache = window.FOODWALA_RESTAURANTS;
-      }
-      if (menuItemsCache.length === 0 && window.FOODWALA_MENUS) {
-        menuItemsCache = window.FOODWALA_MENUS;
-      }
-
+      // Fire dataLoaded event immediately so restaurants can render
       window.dispatchEvent(new CustomEvent('foodwala:dataLoaded', {
         detail: {
           restaurantsCount: restaurantsCache.length,
@@ -142,11 +167,28 @@ const FoodWalaApp = (function () {
         }
       }));
 
+      // Resolve immediately for UI rendering
       resolve({
         restaurants: restaurantsCache,
         menuItems: menuItemsCache,
         categories: categoriesCache
       });
+
+      // Lazily load full 756 menu-items in the background without blocking page render
+      if (menuItemsCache.length === 0) {
+        setTimeout(async () => {
+          try {
+            const menuRes = await fetch('./data/menu-items.json');
+            if (menuRes.ok) {
+              menuItemsCache = await menuRes.json();
+            }
+          } catch (e) {
+            if (window.FOODWALA_MENUS && window.FOODWALA_MENUS.length > 0) {
+              menuItemsCache = window.FOODWALA_MENUS;
+            }
+          }
+        }, 100);
+      }
     });
 
     return dataReadyPromise;
@@ -251,29 +293,23 @@ const FoodWalaApp = (function () {
             accuracy: accuracy
           });
 
+          // Instantly match to closest Bengaluru Hub to avoid slow/failing external reverse-geocoders
           let shortName = "Current Location";
           let fullAddress = `Live GPS Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
 
-          // Reverse Geocoding with OpenStreetMap Nominatim
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
-              headers: { 'Accept': 'application/json' }
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data && data.address) {
-                const addr = data.address;
-                const neighborhood = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.city_district || addr.locality || addr.village || addr.town || addr.city;
-                if (neighborhood) {
-                  shortName = neighborhood;
-                }
-                if (data.display_name) {
-                  fullAddress = data.display_name;
-                }
-              }
+          let closestHub = null;
+          let minDistance = Infinity;
+          for (const hub of BENGALURU_LOCATIONS) {
+            const dist = Math.hypot(hub.lat - lat, hub.lng - lng);
+            if (dist < minDistance) {
+              minDistance = dist;
+              closestHub = hub;
             }
-          } catch (e) {
-            console.warn("[FoodWala] Reverse geocode lookup error (using coordinates):", e);
+          }
+
+          if (closestHub && minDistance < 0.15) {
+            shortName = closestHub.shortName;
+            fullAddress = `${closestHub.name} (Near ${closestHub.landmark})`;
           }
 
           const locationState = {
@@ -1433,8 +1469,8 @@ const FoodWalaApp = (function () {
       `;
     } else {
       locSlot.innerHTML = `
-        <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Select Location</span>
-        <small class="text-muted d-block text-truncate" style="max-width: 180px;">Click to set delivery area</small>
+        <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 140px;">Bengaluru</span>
+        <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">Delivery Hub (Select)</small>
       `;
     }
   }
@@ -1592,6 +1628,8 @@ const FoodWalaApp = (function () {
     BENGALURU_LOCATIONS,
     AVAILABLE_COUPONS,
     loadData,
+    loadRestaurants,
+    optimizeImageUrl,
     getRestaurants: () => restaurantsCache,
     getMenuItems: () => menuItemsCache,
     getCategories: () => categoriesCache,

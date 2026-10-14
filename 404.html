@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting... | FoodWala</title>
+  <script>
+    (function() {
+      var pathname = window.location.pathname;
+      var search = window.location.search || '';
+      var hash = window.location.hash || '';
+
+      var segments = pathname.split('/').filter(Boolean);
+      var lastSegment = segments.length > 0 ? segments[segments.length - 1] : '';
+
+      var routeMap = {
+        'menu': './restaurant-details.html',
+        'menu.html': './restaurant-details.html',
+        'home': './index.html',
+        'home.html': './index.html',
+        'order-track': './order-tracking.html',
+        'order-track.html': './order-tracking.html',
+        'order-confirmation': './orders.html',
+        'order-confirmation.html': './orders.html'
+      };
+
+      var cleanRoute = lastSegment.toLowerCase();
+      if (routeMap[cleanRoute]) {
+        window.location.replace(routeMap[cleanRoute] + search + hash);
+        return;
+      }
+
+      var standardPages = ['index', 'restaurants', 'restaurant-details', 'cart', 'checkout', 'orders', 'order-tracking', 'login', 'register', 'profile', 'addresses'];
+      if (standardPages.indexOf(cleanRoute) !== -1) {
+        window.location.replace('./' + cleanRoute + '.html' + search + hash);
+        return;
+      }
+
+      setTimeout(function() {
+        window.location.replace('./index.html');
+      }, 1500);
+    })();
+  </script>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 60px 20px; background-color: #f8f9fa;">
+  <h2 style="color: #dc3545; font-weight: bold;">Redirecting you to FoodWala...</h2>
+  <p style="color: #6c757d;">If you are not redirected automatically, <a href="./index.html" style="color: #dc3545; font-weight: bold; text-decoration: none;">click here to go home &rarr;</a></p>
+</body>
+</html>
