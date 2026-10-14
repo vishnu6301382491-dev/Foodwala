@@ -170,10 +170,29 @@
           </div>
         </div>
 
-        <!-- 3. Payment Method Selection Card -->
+        <!-- 3. Customer Contact & Email Receipt Card -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+          <h5 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+            <span class="badge bg-danger rounded-circle p-2">3</span> Contact & Email Receipt
+          </h5>
+          <p class="text-muted small mb-3">Your order status, live delivery updates, and tax invoice receipt will be sent here.</p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="checkout-customer-name">Full Name</label>
+              <input type="text" class="form-control rounded-3" id="checkout-customer-name" placeholder="Your name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold" for="checkout-customer-email">Email Address for Receipt <span class="text-danger">*</span></label>
+              <input type="email" class="form-control rounded-3" id="checkout-customer-email" placeholder="name@example.com" required>
+              <div class="form-text small text-muted">Receipt will be emailed from foodwalapp@gmail.com</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Payment Method Selection Card -->
         <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
           <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-            <span class="badge bg-primary rounded-circle p-2">3</span> Payment Method
+            <span class="badge bg-primary rounded-circle p-2">4</span> Payment Method
           </h5>
           
           <div class="d-flex flex-column gap-3" id="payment-methods-container">
@@ -432,6 +451,12 @@
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
   <script src="./js/app.js"></script>
+  <!-- jsPDF & Receipt Service -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./js/receiptService.js"></script>
+  <!-- EmailJS Browser SDK & Email Service -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="./js/emailService.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -733,10 +758,36 @@
         FoodWalaApp.showToast('Delivery address saved & selected!', 'success');
       });
 
-      // 6. Payment Execution & Razorpay Integration
+      // 6. Prefill Customer Name & Email
+      const emailInput = document.getElementById('checkout-customer-email');
+      const nameInput = document.getElementById('checkout-customer-name');
+      if (currentUser) {
+        if (nameInput && !nameInput.value) nameInput.value = currentUser.name || '';
+        if (emailInput && !emailInput.value) emailInput.value = currentUser.email || '';
+      }
+
+      // 7. Payment Execution & Razorpay Integration with Double-Click Lock
       const placeOrderBtn = document.getElementById('place-order-btn');
+      let isPlacingOrder = false;
+      const originalBtnHtml = placeOrderBtn.innerHTML;
+
+      function setPlacingOrderState(loading) {
+        isPlacingOrder = loading;
+        placeOrderBtn.disabled = loading;
+        if (loading) {
+          placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Placing Order...';
+        } else {
+          placeOrderBtn.innerHTML = originalBtnHtml;
+        }
+      }
 
       placeOrderBtn.addEventListener('click', () => {
+        // Prevent double submit
+        if (isPlacingOrder) {
+          console.warn('[FoodWala] Order submission in progress, ignoring extra click.');
+          return;
+        }
+
         if (!activeDeliveryLocation || !activeDeliveryLocation.address) {
           FoodWalaApp.showToast('Please select or add a delivery address to proceed.', 'error');
           const modalEl = new bootstrap.Modal(document.getElementById('addAddressModal'));
@@ -744,7 +795,22 @@
           return;
         }
 
-        const currentUser = FoodWalaApp.Auth.getCurrentUser();
+        // Validate recipient email
+        const emailVal = emailInput ? emailInput.value.trim() : (currentUser ? currentUser.email : '');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailVal || !emailRegex.test(emailVal)) {
+          FoodWalaApp.showToast('Please enter a valid email address to receive your order receipt.', 'error');
+          if (emailInput) emailInput.focus();
+          return;
+        }
+
+        const nameVal = nameInput && nameInput.value.trim() ? nameInput.value.trim() : (currentUser ? currentUser.name : 'Customer');
+
+        // Pre-generate unique Order ID once
+        const pregeneratedOrderId = 'FW-' + Math.floor(10000 + Math.random() * 90000);
+
+        setPlacingOrderState(true);
+
         const selectedPayMethod = document.querySelector('input[name="paymentMethodRadio"]:checked').value;
         const totals = FoodWalaApp.Cart.getBillTotals();
         const amountInPaise = Math.round(totals.grandTotal * 100);
@@ -755,25 +821,29 @@
             amount: amountInPaise,
             currency: "INR",
             name: "FoodWala Bengaluru",
-            description: `Order for ${cart.restaurantName}`,
+            description: `Order #${pregeneratedOrderId} - ${cart.restaurantName}`,
             image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200",
             prefill: {
-              name: currentUser ? currentUser.name : 'Customer',
-              email: currentUser ? currentUser.email : 'customer@example.com',
+              name: nameVal,
+              email: emailVal,
               contact: currentUser ? currentUser.phone : '+91 98765 43210'
             },
             notes: {
+              order_id: pregeneratedOrderId,
               address: activeDeliveryLocation.address,
               restaurant: cart.restaurantName
             },
             theme: {
-              color: "#ff5200"
+              color: "#dc3545"
             },
             handler: function (response) {
               console.log('[FoodWala] Razorpay Payment Success:', response);
               
               const newOrder = FoodWalaApp.Orders.placeOrder({
-                name: currentUser ? currentUser.name : 'Customer',
+                id: pregeneratedOrderId,
+                orderId: pregeneratedOrderId,
+                name: nameVal,
+                customerEmail: emailVal,
                 phone: currentUser ? currentUser.phone : '+91 98765 43210',
                 address: activeDeliveryLocation.address,
                 latitude: activeDeliveryLocation.lat,
@@ -786,13 +856,19 @@
                 instructions: document.getElementById('delivery-custom-notes').value
               });
 
+              // Dispatch email receipt via EmailJS exactly ONCE
+              if (window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
+                window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+              }
+
               FoodWalaApp.showToast('Payment successful! Confirming your order...', 'success');
               setTimeout(() => {
                 window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
-              }, 800);
+              }, 600);
             },
             modal: {
               ondismiss: function () {
+                setPlacingOrderState(false);
                 FoodWalaApp.showToast('Payment was cancelled.', 'warning');
               }
             }
@@ -803,20 +879,22 @@
             rzp.open();
           } catch (err) {
             console.error('Razorpay SDK init error:', err);
-            confirmOrderOffline(activeDeliveryLocation, 'Razorpay Online');
+            confirmOrderOffline(activeDeliveryLocation, 'Razorpay Online', pregeneratedOrderId, nameVal, emailVal);
           }
 
         } else if (selectedPayMethod === 'Cash on Delivery') {
-          confirmOrderOffline(activeDeliveryLocation, 'Cash on Delivery');
+          confirmOrderOffline(activeDeliveryLocation, 'Cash on Delivery', pregeneratedOrderId, nameVal, emailVal);
         } else {
-          confirmOrderOffline(activeDeliveryLocation, 'UPI Instant');
+          confirmOrderOffline(activeDeliveryLocation, 'UPI Instant', pregeneratedOrderId, nameVal, emailVal);
         }
       });
 
-      function confirmOrderOffline(locationObj, paymentName) {
-        const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      function confirmOrderOffline(locationObj, paymentName, orderId, nameVal, emailVal) {
         const newOrder = FoodWalaApp.Orders.placeOrder({
-          name: currentUser ? currentUser.name : 'Customer',
+          id: orderId,
+          orderId: orderId,
+          name: nameVal,
+          customerEmail: emailVal,
           phone: currentUser ? currentUser.phone : '+91 98765 43210',
           address: locationObj.address,
           latitude: locationObj.lat,
@@ -828,13 +906,16 @@
           instructions: document.getElementById('delivery-custom-notes').value
         });
 
+        // Dispatch email receipt via EmailJS exactly ONCE
+        if (window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
+          window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+        }
+
         FoodWalaApp.showToast(`Order placed successfully via ${paymentName}!`, 'success');
         setTimeout(() => {
           window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
-        }, 800);
-      }
-
-    });
+        }, 600);
+      });
   </script>
 </body>
 </html>

@@ -191,6 +191,9 @@
   <!-- Core FoodWala JS (Minified) -->
   <script src="./js/ui.js" defer></script>
   <script src="./js/app.min.js" defer></script>
+  <!-- jsPDF & Receipt Service -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="./js/receiptService.js" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -203,7 +206,13 @@
         return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
       }
 
+      // Run one-time deduplication cleanup on load
+      if (window.FoodWalaApp && FoodWalaApp.Orders && FoodWalaApp.Orders.deduplicateOrders) {
+        FoodWalaApp.Orders.deduplicateOrders();
+      }
+
       function renderOrdersList() {
+        container.innerHTML = '';
         const orders = FoodWalaApp.Orders.getAllOrders();
 
         if (!orders || orders.length === 0) {
@@ -310,6 +319,9 @@
                         <i class="bi bi-star-fill text-warning me-1"></i> Rate Order
                       </button>
                     `}
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-semibold js-download-receipt-btn" data-order-id="${order.orderId || order.id}">
+                      <i class="bi bi-download me-1"></i> Download Receipt
+                    </button>
                     <a href="./restaurant-details.html?id=${order.restaurantId}" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold">
                       <i class="bi bi-arrow-repeat me-1"></i> Reorder
                     </a>
@@ -333,6 +345,20 @@
             btn.classList.remove('btn-outline-warning', 'text-dark');
             btn.classList.add('btn-light', 'text-success', 'border');
             btn.disabled = true;
+          });
+        });
+
+        // Attach Download Receipt listeners
+        container.querySelectorAll('.js-download-receipt-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const orderId = btn.getAttribute('data-order-id');
+            const targetOrder = FoodWalaApp.Orders.getOrderById(orderId);
+            if (targetOrder && window.FoodWalaReceipt && typeof window.FoodWalaReceipt.downloadReceipt === 'function') {
+              window.FoodWalaReceipt.downloadReceipt(targetOrder);
+            } else {
+              FoodWalaApp.showToast('Could not load receipt for order #' + orderId, 'error');
+            }
           });
         });
       }

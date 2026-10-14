@@ -581,8 +581,20 @@ const BACKEND_URL = "";
     },
 
     saveOrder: async function (order) {
-      const orders = getLocal(STORAGE_KEYS.ORDERS, []);
-      orders.unshift(order);
+      if (!order) return order;
+      const targetId = String(order.id || order.orderId || '').trim();
+      const rawOrders = getLocal(STORAGE_KEYS.ORDERS, []);
+      const orders = Array.isArray(rawOrders) ? [...rawOrders] : [];
+      if (targetId) {
+        const idx = orders.findIndex(o => (o && String(o.id || o.orderId || '').trim() === targetId));
+        if (idx > -1) {
+          orders[idx] = Object.assign({}, orders[idx], order, { id: targetId, orderId: targetId });
+        } else {
+          orders.unshift(Object.assign({}, order, { id: targetId, orderId: targetId }));
+        }
+      } else {
+        orders.unshift(order);
+      }
       setLocal(STORAGE_KEYS.ORDERS, orders);
 
       const currentUser = this.getCurrentUser();

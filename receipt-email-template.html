@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodWala Order Confirmation & Receipt</title>
+  <!--
+    ========================================================================
+    FOODWALA — READY-TO-PASTE EMAILJS TEMPLATE
+    ========================================================================
+    In EmailJS Dashboard > Email Templates > Create New Template:
+    1. Template Name: "FoodWala Order Receipt"
+    2. Subject: "FoodWala Receipt for Order {{order_id}} — {{restaurant}}"
+    3. From Name: "FoodWala"
+    4. From Email: "foodwalapp@gmail.com"
+    5. To Email: "{{to_email}}"
+    6. Reply-To: "foodwalapp@gmail.com"
+    7. Switch to "HTML" tab in the EmailJS editor and paste the code below!
+    ========================================================================
+  -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #212529;
+      -webkit-font-smoothing: antialiased;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f8f9fa;
+      padding: 24px 0;
+    }
+    .main-card {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .header-banner {
+      background-color: #dc3545;
+      padding: 28px 24px;
+      text-align: center;
+      color: #ffffff;
+    }
+    .brand-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0 0 4px 0;
+      color: #ffffff;
+    }
+    .brand-sub {
+      font-size: 13px;
+      color: #ffe5e7;
+      margin: 0;
+    }
+    .content-body {
+      padding: 28px 24px;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 700;
+      color: #212529;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .subtext {
+      font-size: 14px;
+      color: #6c757d;
+      margin-top: 0;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .info-box {
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #eef0f2;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid #eef0f2;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      color: #6c757d;
+      font-weight: 500;
+    }
+    .info-val {
+      color: #212529;
+      font-weight: 700;
+      text-align: right;
+    }
+    .items-container {
+      background-color: #ffffff;
+      border: 1px solid #eef0f2;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #dc3545;
+      margin: 0 0 12px 0;
+    }
+    .items-text {
+      font-family: inherit;
+      font-size: 13.5px;
+      line-height: 1.8;
+      color: #343a40;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .total-box {
+      background-color: #fff5f5;
+      border: 1px solid #ffd6d9;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .total-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #495057;
+    }
+    .total-amount {
+      font-size: 22px;
+      font-weight: 800;
+      color: #dc3545;
+    }
+    .cta-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background-color: #dc3545;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 20px;
+      border-radius: 30px;
+      box-sizing: border-box;
+      margin-bottom: 24px;
+    }
+    .footer {
+      background-color: #f1f3f5;
+      padding: 20px 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #6c757d;
+      line-height: 1.6;
+    }
+    .footer a {
+      color: #dc3545;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <div class="main-card">
+      
+      <!-- Top Brand Banner -->
+      <div class="header-banner">
+        <h1 class="brand-title">FoodWala</h1>
+        <p class="brand-sub">Bengaluru's Authentic Food Discovery & Delivery</p>
+      </div>
+
+      <!-- Main Content -->
+      <div class="content-body">
+        
+        <h2 class="greeting">Hi {{customer_name}},</h2>
+        <p class="subtext">
+          Your order has been confirmed and the kitchen has begun preparing your authentic Bengaluru delicacies! Here is your official order receipt.
+        </p>
+
+        <!-- Order Summary Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" class="info-box">
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #6c757d; border-bottom: 1px solid #eef0f2;">Order ID:</td>
+            <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #dc3545; text-align: right; border-bottom: 1px solid #eef0f2;">{{order_id}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #6c757d; border-bottom: 1px solid #eef0f2;">Date & Time:</td>
+            <td style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #212529; text-align: right; border-bottom: 1px solid #eef0f2;">{{order_date}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #6c757d; border-bottom: 1px solid #eef0f2;">Restaurant:</td>
+            <td style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #212529; text-align: right; border-bottom: 1px solid #eef0f2;">{{restaurant}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #6c757d; border-bottom: 1px solid #eef0f2;">Payment Mode:</td>
+            <td style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #212529; text-align: right; border-bottom: 1px solid #eef0f2;">{{payment_mode}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; font-size: 13px; color: #6c757d;">Deliver To:</td>
+            <td style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #212529; text-align: right;">{{address}}</td>
+          </tr>
+        </table>
+
+        <!-- Items Ordered -->
+        <div class="items-container">
+          <h3 class="section-title">Items Ordered</h3>
+          <pre class="items-text">{{items}}</pre>
+        </div>
+
+        <!-- Grand Total Banner -->
+        <table width="100%" cellpadding="0" cellspacing="0" class="total-box">
+          <tr>
+            <td class="total-title">Grand Total Paid (incl. taxes & fees)</td>
+            <td class="total-amount" align="right">{{total}}</td>
+          </tr>
+        </table>
+
+        <!-- Live Track Button -->
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="center">
+              <a href="https://vishnu6301382491-dev.github.io/Foodwala/orders.html" class="cta-btn" target="_blank">
+                Track Live Order on FoodWala
+              </a>
+            </td>
+          </tr>
+        </table>
+
+        <p style="font-size: 12px; color: #868e96; text-align: center; margin: 0;">
+          Estimated delivery in 25–30 minutes across Bengaluru.
+        </p>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p style="margin: 0 0 6px 0;">This email was sent to <strong>{{to_email}}</strong> from FoodWala Bengaluru.</p>
+        <p style="margin: 0 0 6px 0;">Questions? Reach us at <a href="mailto:foodwalapp@gmail.com">foodwalapp@gmail.com</a></p>
+        <p style="margin: 0; font-size: 11px; color: #adb5bd;">&copy; 2026 FoodWala Inc. Bengaluru, Karnataka, India. All rights reserved.</p>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1290,8 +1290,57 @@ const FoodWalaApp = (function () {
     }
   };
 
+  // Deduplicate orders by orderId/id, keeping the most progressed status and complete data
+  function deduplicateOrdersList(ordersArray) {
+    if (!Array.isArray(ordersArray)) return [];
+    const map = new Map();
+    const statusPriority = {
+      'Delivered': 4,
+      'DELIVERED': 4,
+      'ON THE WAY': 3,
+      'ON_THE_WAY': 3,
+      'On the way': 3,
+      'Food is being Prepared': 2,
+      'PREPARING': 2,
+      'IN_PROGRESS': 1,
+      'Order Placed': 0
+    };
+
+    for (const order of ordersArray) {
+      if (!order || typeof order !== 'object') continue;
+      const id = String(order.orderId || order.id || '').trim();
+      if (!id) continue;
+
+      if (!map.has(id)) {
+        map.set(id, Object.assign({}, order, { orderId: id, id: id }));
+      } else {
+        const existing = map.get(id);
+        const existingPri = statusPriority[existing.status] || 0;
+        const currentPri = statusPriority[order.status] || 0;
+
+        const merged = Object.assign({}, existing, order, { orderId: id, id: id });
+        if (currentPri > existingPri) {
+          merged.status = order.status;
+          if (order.deliveredAt) merged.deliveredAt = order.deliveredAt;
+        } else {
+          merged.status = existing.status;
+          if (existing.deliveredAt) merged.deliveredAt = existing.deliveredAt;
+        }
+        merged.emailSent = Boolean(existing.emailSent || order.emailSent);
+        map.set(id, merged);
+      }
+    }
+    return Array.from(map.values());
+  }
+
   // --- ORDERS & LIVE TRACKING MODULE ---
   const Orders = {
+    deduplicateOrders: function () {
+      const rawOrders = getStorage(STORAGE_KEYS.ORDERS, []);
+      const deduped = deduplicateOrdersList(rawOrders);
+      setStorage(STORAGE_KEYS.ORDERS, deduped);
+      return deduped;
+    },
     getOrderStatus: function (order) {
       if (!order) return { status: 'UNKNOWN', label: 'Unknown', isLive: false };
 
@@ -1362,22 +1411,33 @@ const FoodWalaApp = (function () {
       }
     },
     getAllOrders: function () {
-      return getStorage(STORAGE_KEYS.ORDERS, []);
+      const rawOrders = getStorage(STORAGE_KEYS.ORDERS, []);
+      const deduped = deduplicateOrdersList(rawOrders);
+      if (Array.isArray(rawOrders) && deduped.length !== rawOrders.length) {
+        setStorage(STORAGE_KEYS.ORDERS, deduped);
+      }
+      return deduped;
     },
     getOrderById: function (orderId) {
+      if (!orderId) return null;
+      const strId = String(orderId).trim();
       const orders = this.getAllOrders();
-      return orders.find(o => (o.orderId === orderId || o.id === orderId)) || null;
+      return orders.find(o => (String(o.orderId || o.id || '').trim() === strId)) || null;
     },
     saveOrder: function (order) {
+      if (!order) return order;
+      const targetId = String(order.orderId || order.id || '').trim();
+      if (!targetId) return order;
+
       const orders = this.getAllOrders();
-      const idx = orders.findIndex(o => (o.orderId === order.orderId || o.id === order.id));
+      const idx = orders.findIndex(o => (String(o.orderId || o.id || '').trim() === targetId));
       if (idx > -1) {
-        orders[idx] = order;
+        orders[idx] = Object.assign({}, orders[idx], order, { orderId: targetId, id: targetId });
       } else {
-        orders.unshift(order);
+        orders.unshift(Object.assign({}, order, { orderId: targetId, id: targetId }));
       }
       setStorage(STORAGE_KEYS.ORDERS, orders);
-      return order;
+      return orders[idx > -1 ? idx : 0];
     },
     placeOrder: function (orderDetails) {
       const orders = this.getAllOrders();
@@ -1386,8 +1446,16 @@ const FoodWalaApp = (function () {
       const user = Auth.getCurrentUser();
       const loc = Location.getCurrentLocation();
 
-      const newId = 'FW-' + Math.floor(10000 + Math.random() * 90000);
-      
+      // Ensure single order ID generated once
+      const newId = orderDetails.orderId || orderDetails.id || ('FW-' + Math.floor(10000 + Math.random() * 90000));
+
+      // Guard: Skip if order with this ID already placed
+      const existingIdx = orders.findIndex(o => (String(o.orderId || o.id || '').trim() === String(newId).trim()));
+      if (existingIdx > -1) {
+        console.warn('[FoodWala] Order ' + newId + ' already exists, returning existing instance.');
+        return orders[existingIdx];
+      }
+
       // Resolve restaurant coordinates
       let restLat = 12.9352, restLng = 77.6245;
       const matchedRest = restaurantsCache.find(r => (r.id === cart.restaurantId || r.restaurantId === cart.restaurantId));
@@ -1399,6 +1467,8 @@ const FoodWalaApp = (function () {
       // Resolve customer delivery coordinates
       let destLat = orderDetails.latitude || orderDetails.lat || (loc ? loc.latitude : 12.9308);
       let destLng = orderDetails.longitude || orderDetails.lng || (loc ? loc.longitude : 77.6210);
+
+      const customerEmail = orderDetails.customerEmail || orderDetails.email || (user ? user.email : 'customer@example.com');
 
       const newOrder = {
         id: newId,
@@ -1418,7 +1488,7 @@ const FoodWalaApp = (function () {
         deliveryLocation: { lat: destLat, lng: destLng },
         customerName: orderDetails.name || (user ? user.name : 'Guest Customer'),
         customerPhone: orderDetails.phone || (user ? user.phone : '+91 98765 43210'),
-        customerEmail: user ? user.email : 'guest@foodwala.com',
+        customerEmail: customerEmail,
         deliveryInstructions: orderDetails.instructions || '',
         items: JSON.parse(JSON.stringify(cart.items)),
         itemTotal: totals.itemTotal,
@@ -1435,6 +1505,7 @@ const FoodWalaApp = (function () {
         status: 'IN_PROGRESS',
         progressPercentage: 15,
         estimatedMinutes: 28,
+        emailSent: false,
         deliveryPartner: {
           name: 'Ramesh Kumar',
           phone: '+91 91234 56789',

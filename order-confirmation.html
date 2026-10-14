@@ -242,6 +242,9 @@
           </div>
 
           <div class="d-grid gap-2">
+            <button type="button" class="btn btn-danger btn-sm rounded-pill py-2 fw-semibold" id="tracking-download-receipt-btn">
+              <i class="bi bi-download me-1"></i> Download Tax Receipt (PDF)
+            </button>
             <a href="./orders.html" class="btn btn-outline-dark btn-sm rounded-pill py-2">
               <i class="bi bi-arrow-left me-1"></i> Back to My Orders
             </a>
@@ -333,6 +336,12 @@
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
   <script src="./js/app.js"></script>
+  <!-- jsPDF & Receipt Service -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./js/receiptService.js"></script>
+  <!-- EmailJS Browser SDK & Email Service -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="./js/emailService.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -359,6 +368,24 @@
           window.location.href = './restaurants.html';
         }, 1200);
         return;
+      }
+
+      // Wire up Download Receipt Button
+      const dlBtn = document.getElementById('tracking-download-receipt-btn');
+      if (dlBtn) {
+        dlBtn.addEventListener('click', () => {
+          if (order && window.FoodWalaReceipt && typeof window.FoodWalaReceipt.downloadReceipt === 'function') {
+            window.FoodWalaReceipt.downloadReceipt(order);
+          } else {
+            FoodWalaApp.showToast('Unable to generate receipt at this time.', 'error');
+          }
+        });
+      }
+
+      // Check if order confirmation receipt has been sent via EmailJS; if not, trigger it once
+      if (order && !order.emailSent && !order.emailAttempted && window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
+        const authUser = FoodWalaApp.Auth.getCurrentUser();
+        window.FoodWalaEmail.sendReceiptEmail(order, authUser);
       }
 
       // 2. Render Order Header Details
