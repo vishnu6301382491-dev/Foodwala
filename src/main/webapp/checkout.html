@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | FoodWala Bengaluru</title>
   <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
   <!-- Razorpay Checkout Official SDK -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/ui.css">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
@@ -325,22 +328,13 @@
                 <input type="text" class="form-control rounded-3" id="modal-street" placeholder="e.g. 5th Block, 80ft Road" required>
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label small fw-bold text-dark">Area in Bengaluru *</label>
-                <select class="form-select rounded-3" id="modal-area" required>
-                  <option value="Koramangala">Koramangala</option>
-                  <option value="Indiranagar">Indiranagar</option>
-                  <option value="Whitefield">Whitefield</option>
-                  <option value="HSR Layout">HSR Layout</option>
-                  <option value="Malleshwaram">Malleshwaram</option>
-                  <option value="Jayanagar">Jayanagar</option>
-                  <option value="Electronic City">Electronic City</option>
-                  <option value="JP Nagar">JP Nagar</option>
-                  <option value="Bellandur">Bellandur</option>
-                  <option value="Marathahalli">Marathahalli</option>
-                  <option value="Basavanagudi">Basavanagudi</option>
-                  <option value="Rajajinagar">Rajajinagar</option>
-                </select>
+              <div class="col-md-6 position-relative">
+                <label class="form-label small fw-bold text-dark" for="modal-area">Area in Bengaluru *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-geo-alt text-danger"></i></span>
+                  <input type="text" class="form-control rounded-end-3" id="modal-area" placeholder="Type area (e.g. Koramangala, Whitefield)" autocomplete="off" required>
+                </div>
+                <div id="modal-area-dropdown"></div>
               </div>
 
               <div class="col-md-6">
@@ -432,8 +426,11 @@
   </footer>
 
   <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
+  <script src="./js/ui.js" defer></script>
+  <script src="./js/api.js" defer></script>
+  <script src="./js/areas.js" defer></script>
   <script src="./js/app.js"></script>
 
   <script>

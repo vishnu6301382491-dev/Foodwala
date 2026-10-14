@@ -1,0 +1,225 @@
+/* FoodWala Premium Modern UI: Modals & Toasts */
+
+.foodwala-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.foodwala-modal-backdrop.show {
+  opacity: 1;
+}
+
+.foodwala-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  max-width: 420px;
+  width: 100%;
+  padding: 28px 24px 24px;
+  text-align: center;
+  transform: scale(0.92);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  outline: none;
+}
+
+.foodwala-modal-backdrop.show .foodwala-modal-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.foodwala-modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: linear-gradient(135deg, #ffedd5 0%, #fee2e2 100%);
+  color: #dc2626;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.16);
+}
+
+.foodwala-modal-icon.danger {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+}
+
+.foodwala-modal-icon.warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #ffedd5 100%);
+  color: #d97706;
+}
+
+.foodwala-modal-icon.info {
+  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+  color: #0284c7;
+}
+
+.foodwala-modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.foodwala-modal-message {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.foodwala-modal-message b,
+.foodwala-modal-message strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.foodwala-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .foodwala-modal-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+}
+
+.foodwala-btn-confirm {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  flex: 1;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.foodwala-btn-confirm:hover,
+.foodwala-btn-confirm:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+  color: #ffffff;
+  outline: none;
+}
+
+.foodwala-btn-confirm.danger {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.foodwala-btn-cancel {
+  background: #ffffff;
+  color: #64748b;
+  border: 1.5px solid #cbd5e1;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 1;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.foodwala-btn-cancel:hover,
+.foodwala-btn-cancel:focus-visible {
+  background: #f8fafc;
+  color: #1e293b;
+  border-color: #94a3b8;
+  outline: none;
+}
+
+/* Toast System */
+.foodwala-toast-shelf {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 11000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  width: calc(100% - 40px);
+  pointer-events: none;
+}
+
+.foodwala-toast-item {
+  pointer-events: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px 18px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1e293b;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.foodwala-toast-item.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.foodwala-toast-item.hide {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+.foodwala-toast-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.foodwala-toast-item.success .foodwala-toast-icon {
+  color: #16a34a;
+}
+
+.foodwala-toast-item.error .foodwala-toast-icon {
+  color: #dc2626;
+}
+
+.foodwala-toast-item.warning .foodwala-toast-icon {
+  color: #ea580c;
+}
+
+.foodwala-toast-item.info .foodwala-toast-icon {
+  color: #0284c7;
+}
+
+.foodwala-toast-msg {
+  flex-grow: 1;
+  line-height: 1.4;
+}

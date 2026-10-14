@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu | FoodWala</title>
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
   <link rel="dns-prefetch" href="https://images.unsplash.com">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="./assets/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
   <link rel="stylesheet" href="./css/style.min.css">
+  <link rel="stylesheet" href="./css/ui.css">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100 pb-5">
 
@@ -237,8 +238,11 @@
   </footer>
 
   <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js" defer></script>
   <!-- Core FoodWala JS (Minified) -->
+  <script src="./js/ui.js" defer></script>
+  <script src="./js/api.js" defer></script>
+  <script src="./js/areas.js" defer></script>
   <script src="./js/app.min.js" defer></script>
 
   <script>
@@ -252,8 +256,12 @@
       const restaurant = restaurants.find(r => (r.id === restId || r.restaurantId === restId)) || restaurants[0];
 
       if (!restaurant) {
-        alert('Restaurant not found.');
-        window.location.href = './restaurants.html';
+        if (typeof window.showToast === 'function') {
+          window.showToast('Restaurant not found. Redirecting to restaurants...', 'error');
+        }
+        setTimeout(() => {
+          window.location.href = './restaurants.html';
+        }, 1200);
         return;
       }
 
@@ -338,14 +346,18 @@
 
         // Bind Stepper Buttons
         grid.querySelectorAll('.js-add-item-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
+          btn.addEventListener('click', async () => {
             const id = parseInt(btn.getAttribute('data-id'));
             const target = menuItems.find(m => (m.id === id || m.menuId === id));
             if (target) {
-              FoodWalaApp.Cart.addItem(target, restaurant);
-              FoodWalaApp.showToast(`Added ${target.name} to cart!`);
-              renderMenu();
-              updateFloatingCart();
+              const added = await FoodWalaApp.Cart.addItem(target, restaurant);
+              if (added !== false) {
+                if (typeof window.showToast === 'function') {
+                  window.showToast(`Added ${target.name} to cart!`, 'success');
+                }
+                renderMenu();
+                updateFloatingCart();
+              }
             }
           });
         });

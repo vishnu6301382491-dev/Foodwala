@@ -434,6 +434,10 @@ const FoodWalaApp = (function () {
     },
 
     getCurrentUser: function () {
+      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.getCurrentUser === "function") {
+        const apiUser = window.FoodWalaApi.getCurrentUser();
+        if (apiUser) return apiUser;
+      }
       // Returns null if no authenticated user exists or user object is malformed
       const user = getStorage(STORAGE_KEYS.CURRENT_USER, null);
       if (user && typeof user === 'object' && user.name && String(user.name).trim().length > 0) {
@@ -466,6 +470,9 @@ const FoodWalaApp = (function () {
     },
 
     sendOtp: async function (rawPhone) {
+      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.sendOtp === "function") {
+        return await window.FoodWalaApi.sendOtp(rawPhone);
+      }
       const normalized = this.normalizeIndianPhone(rawPhone);
       if (!normalized) {
         return {
@@ -564,6 +571,9 @@ const FoodWalaApp = (function () {
     },
 
     verifyOtp: async function (rawPhone, otp) {
+      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.verifyOtp === "function") {
+        return await window.FoodWalaApi.verifyOtp(rawPhone, otp);
+      }
       const normalized = this.normalizeIndianPhone(rawPhone);
       if (!normalized) {
         return { success: false, error: 'INVALID_PHONE', message: 'Please enter a valid 10-digit mobile number.' };
@@ -712,6 +722,9 @@ const FoodWalaApp = (function () {
     },
 
     login: async function (identifier, password) {
+      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.loginEmail === "function") {
+        return await window.FoodWalaApi.loginEmail(identifier, password);
+      }
       if (!identifier || !identifier.trim() || !password) {
         return { success: false, message: 'Please enter your email/mobile number and password.' };
       }
@@ -845,7 +858,10 @@ const FoodWalaApp = (function () {
       return user;
     },
 
-    logout: function () {
+    logout: async function () {
+      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.logout === "function") {
+        await window.FoodWalaApi.logout();
+      }
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
       updateUserNavUI();
@@ -866,6 +882,16 @@ const FoodWalaApp = (function () {
     },
 
     register: async function (name, email, phone, password, addressText, confirmPassword) {
+      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.signup === "function") {
+        return await window.FoodWalaApi.signup({
+          name: name,
+          email: email,
+          phone: phone,
+          password: password,
+          address: addressText,
+          confirmPassword: confirmPassword
+        });
+      }
       const cleanName = (name || '').trim();
       const cleanEmail = (email || '').trim().toLowerCase();
       const cleanPhone = (phone || '').trim();
@@ -1104,12 +1130,23 @@ const FoodWalaApp = (function () {
       const found = cart.items.find(i => i.menuId === menuId || i.id === menuId);
       return found ? found.quantity : 0;
     },
-    addItem: function (item, restaurant) {
+    addItem: async function (item, restaurant) {
       let cart = this.getCart();
       const rId = item.restaurantId || restaurant.restaurantId || restaurant.id;
 
       if (cart.items && cart.items.length > 0 && cart.restaurantId && cart.restaurantId !== rId) {
-        if (!confirm(`Your cart already contains items from "${cart.restaurantName}". Reset cart to order from "${restaurant.name}"?`)) {
+        let confirmed = true;
+        if (typeof window.showConfirm === 'function') {
+          confirmed = await window.showConfirm({
+            title: 'Start a new cart?',
+            message: `Your cart has items from <b>${cart.restaurantName}</b>. Clear it to order from <b>${restaurant.name}</b>?`,
+            confirmText: 'Yes, clear cart',
+            cancelText: 'Keep my cart',
+            icon: 'bi-cart-x-fill',
+            type: 'danger'
+          });
+        }
+        if (!confirmed) {
           return false;
         }
         cart = {
@@ -1255,6 +1292,75 @@ const FoodWalaApp = (function () {
 
   // --- ORDERS & LIVE TRACKING MODULE ---
   const Orders = {
+    getOrderStatus: function (order) {
+      if (!order) return { status: 'UNKNOWN', label: 'Unknown', isLive: false };
+
+      const curr = String(order.status || '').toUpperCase();
+      if (curr === 'DELIVERED' || curr === 'CANCELLED') {
+        return {
+          status: curr,
+          label: curr === 'DELIVERED' ? 'Delivered' : 'Cancelled',
+          isLive: false,
+          deliveredAt: order.deliveredAt || order.createdAt
+        };
+      }
+
+      // Parse timestamp
+      let createdMs = Date.now();
+      if (typeof order.createdAtMs === 'number' && !isNaN(order.createdAtMs)) {
+        createdMs = order.createdAtMs;
+      } else if (typeof order.createdAt === 'number') {
+        createdMs = order.createdAt;
+      } else if (typeof order.createdAt === 'string') {
+        const parsed = Date.parse(order.createdAt);
+        if (!isNaN(parsed)) {
+          createdMs = parsed;
+        } else {
+          const cleaned = order.createdAt.replace(/,/g, '');
+          const altParsed = Date.parse(cleaned);
+          if (!isNaN(altParsed)) {
+            createdMs = altParsed;
+          } else {
+            createdMs = Date.now() - 3600000;
+          }
+        }
+      }
+
+      const etaMin = order.estimatedMinutes || order.etaMinutes || 28;
+      const elapsedMin = (Date.now() - createdMs) / (60 * 1000);
+
+      if (elapsedMin >= etaMin) {
+        const deliveredTime = order.deliveredAt || new Date(createdMs + etaMin * 60 * 1000).toISOString();
+        if (order.status !== 'Delivered') {
+          order.status = 'Delivered';
+          order.deliveredAt = deliveredTime;
+          Orders.saveOrder(order);
+          if (typeof window !== "undefined" && window.FoodWalaApi && window.FoodWalaApi.saveOrder) {
+            window.FoodWalaApi.saveOrder(order);
+          }
+        }
+        return {
+          status: 'DELIVERED',
+          label: 'Delivered',
+          isLive: false,
+          deliveredAt: deliveredTime
+        };
+      } else if (elapsedMin >= 2) {
+        return {
+          status: 'ON_THE_WAY',
+          label: 'ON THE WAY',
+          isLive: true,
+          remainingMinutes: Math.max(1, Math.round(etaMin - elapsedMin))
+        };
+      } else {
+        return {
+          status: 'PREPARING',
+          label: 'Food is being Prepared',
+          isLive: true,
+          remainingMinutes: Math.max(1, Math.round(etaMin - elapsedMin))
+        };
+      }
+    },
     getAllOrders: function () {
       return getStorage(STORAGE_KEYS.ORDERS, []);
     },
@@ -1299,6 +1405,8 @@ const FoodWalaApp = (function () {
         orderId: newId,
         userId: user ? user.userId : null,
         createdAt: new Date().toISOString(),
+        createdAtMs: Date.now(),
+        etaMinutes: 28,
         restaurantId: cart.restaurantId,
         restaurantName: cart.restaurantName || 'Bengaluru Restaurant',
         restaurantAddress: cart.restaurantAddress || 'Bengaluru',
@@ -1345,6 +1453,9 @@ const FoodWalaApp = (function () {
 
       orders.unshift(newOrder);
       setStorage(STORAGE_KEYS.ORDERS, orders);
+      if (typeof window !== "undefined" && window.FoodWalaApi && window.FoodWalaApi.saveOrder) {
+        window.FoodWalaApi.saveOrder(newOrder);
+      }
       Cart.clearCart();
       return newOrder;
     }
@@ -1646,3 +1757,6 @@ const FoodWalaApp = (function () {
 })();
 
 window.FoodWalaApp = FoodWalaApp;
+if (typeof window !== "undefined") {
+  window.getOrderStatus = function (o) { return FoodWalaApp.Orders.getOrderStatus(o); };
+}
