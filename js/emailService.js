@@ -7,14 +7,12 @@
   'use strict';
 
   /* =======================================================================
-   * 📧 EMAILJS CONFIGURATION (Replace placeholder values below)
-   * Refer to EMAIL_SETUP.md for step-by-step instructions.
-   * NOTE: Never enter your raw Gmail password! EmailJS uses secure API tokens.
+   * 📧 EMAILJS CONFIGURATION (All Real, Active Keys)
    * ======================================================================= */
   const EMAILJS_CONFIG = {
-    SERVICE_ID: 'service_s6chkik',       // EmailJS Gmail Service ID
-    TEMPLATE_ID: 'template_fs6ee5x',     // EmailJS Receipt Template ID
-    PUBLIC_KEY: 'wE9osxGnQVfki9oIW',     // EmailJS Browser Public Key
+    SERVICE_ID: 'service_s6chkik',       // EmailJS Service ID (Active)
+    TEMPLATE_ID: 'template_fs6ee5x',     // EmailJS Receipt Template ID (Active)
+    PUBLIC_KEY: 'wE9osxGnQVfki9oIW',     // EmailJS Browser Public Key (Active)
     SENDER_EMAIL: 'foodwalapp@gmail.com' // Verified sender email
   };
 
@@ -23,23 +21,38 @@
   // Helper: check if EmailJS credentials have been supplied by developer
   function isEmailJsConfigured() {
     return Boolean(
-      EMAILJS_CONFIG.SERVICE_ID && !EMAILJS_CONFIG.SERVICE_ID.includes('YOUR_') &&
-      EMAILJS_CONFIG.TEMPLATE_ID && !EMAILJS_CONFIG.TEMPLATE_ID.includes('YOUR_') &&
-      EMAILJS_CONFIG.PUBLIC_KEY && !EMAILJS_CONFIG.PUBLIC_KEY.includes('YOUR_')
+      EMAILJS_CONFIG.SERVICE_ID &&
+      EMAILJS_CONFIG.SERVICE_ID.trim() !== '' &&
+      !EMAILJS_CONFIG.SERVICE_ID.includes('YOUR_') &&
+      EMAILJS_CONFIG.TEMPLATE_ID &&
+      EMAILJS_CONFIG.TEMPLATE_ID.trim() !== '' &&
+      !EMAILJS_CONFIG.TEMPLATE_ID.includes('YOUR_') &&
+      EMAILJS_CONFIG.PUBLIC_KEY &&
+      EMAILJS_CONFIG.PUBLIC_KEY.trim() !== '' &&
+      !EMAILJS_CONFIG.PUBLIC_KEY.includes('YOUR_')
     );
   }
 
   // Helper: load EmailJS SDK dynamically if not yet attached to window
   function ensureEmailJsLoaded() {
     return new Promise((resolve, reject) => {
-      if (window.emailjs) {
+      if (window.emailjs && typeof window.emailjs.send === 'function') {
         return resolve(window.emailjs);
       }
 
-      let existing = document.querySelector(`script[src="${EMAILJS_CDN}"]`);
+      let existing = document.querySelector('script[src*="emailjs"]');
       if (existing) {
-        existing.addEventListener('load', () => resolve(window.emailjs));
+        if (window.emailjs && typeof window.emailjs.send === 'function') {
+          return resolve(window.emailjs);
+        }
+        existing.addEventListener('load', () => {
+          if (window.emailjs) resolve(window.emailjs);
+          else reject(new Error('EmailJS script loaded but window.emailjs is missing.'));
+        });
         existing.addEventListener('error', (e) => reject(e));
+        setTimeout(() => {
+          if (window.emailjs && typeof window.emailjs.send === 'function') resolve(window.emailjs);
+        }, 150);
         return;
       }
 
@@ -86,22 +99,23 @@
   }
 
   /**
-   * Sends an order receipt to the customer's email address exactly ONCE.
-   * Tracks an `emailSent` flag on the order object in localStorage.
+   * Sends an order receipt to the customer's email address.
+   * Tracks `emailSent` flag on the order object in localStorage ONLY upon HTTP status 200.
    * 
    * @param {Object} order - FoodWala order object
    * @param {Object} [user] - Logged-in user or customer profile
+   * @param {boolean} [forceResend=false] - If true, bypasses existing emailSent flag (for Resend button)
    * @returns {Promise<Object>} Status of the email dispatch
    */
-  async function sendReceiptEmail(order, user) {
+  async function sendReceiptEmail(order, user, forceResend = false) {
     if (!order) {
       console.warn('[FoodWala EmailService] No order provided.');
       return { success: false, reason: 'NO_ORDER' };
     }
 
-    // 1. Guard against duplicate sending (Run exactly ONCE per order)
-    if (order.emailSent === true) {
-      console.log(`[FoodWala EmailService] Receipt already sent for order #${order.orderId || order.id}. Skipping.`);
+    // 1. Guard against duplicate sending unless forceResend is explicitly requested
+    if (order.emailSent === true && !forceResend) {
+      console.log(`[FoodWala EmailService] Receipt already successfully sent for order #${order.orderId || order.id}. Skipping.`);
       return { success: true, alreadySent: true };
     }
 
@@ -109,12 +123,11 @@
     let recipientEmail = '';
     if (order.customerEmail && order.customerEmail.includes('@') && !order.customerEmail.includes('example.com')) {
       recipientEmail = order.customerEmail.trim();
+    } else if (order.email && order.email.includes('@') && !order.email.includes('example.com')) {
+      recipientEmail = order.email.trim();
     } else if (user && user.email && user.email.includes('@')) {
       recipientEmail = user.email.trim();
-    } else if (order.email && order.email.includes('@')) {
-      recipientEmail = order.email.trim();
     } else {
-      // Check FoodWalaAuth current user
       try {
         const authUser = window.FoodWalaApp && window.FoodWalaApp.Auth && window.FoodWalaApp.Auth.getCurrentUser();
         if (authUser && authUser.email && authUser.email.includes('@')) {
@@ -125,82 +138,111 @@
 
     if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
       console.warn('[FoodWala EmailService] Recipient email is missing or invalid:', recipientEmail);
+      if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+        window.FoodWalaApp.showToast('Order confirmed. Receipt email could not be sent.', 'warning');
+      }
       return { success: false, reason: 'INVALID_EMAIL' };
     }
 
     const orderId = String(order.orderId || order.id || 'FW-ORDER').replace(/^#/, '');
-    const customerName = order.customerName || (user ? user.name : 'Valued Customer');
-    const restaurant = order.restaurantName || 'Bengaluru Restaurant';
+    const customerName = order.name || order.customerName || (user ? user.name : 'Valued Customer');
+    const restaurant = order.restaurantName || (order.restaurant ? order.restaurant.name : 'Bengaluru Restaurant');
     const totalAmount = 'Rs. ' + (Number(order.grandTotal) || 0).toFixed(2);
     const paymentMode = order.paymentMethod || 'UPI Instant';
     const orderDate = formatOrderDate(order.createdAtMs || order.createdAt);
-    const address = order.deliveryAddress || (order.address || 'Bengaluru, Karnataka');
+    const address = order.deliveryAddress || order.address || 'Bengaluru, Karnataka';
     const itemsFormatted = formatItemsText(order.items);
 
-    // 3. Check if EmailJS keys have been configured
+    // Template variables matching EmailJS template exactly:
+    // to_email, customer_name, order_id, restaurant, items, total, payment_mode, order_date, address
+    const templateParams = {
+      to_email: recipientEmail,
+      customer_name: customerName,
+      order_id: `#${orderId}`,
+      restaurant: restaurant,
+      items: itemsFormatted,
+      total: totalAmount,
+      payment_mode: paymentMode,
+      order_date: orderDate,
+      address: address
+    };
+
+    // 3. Verify EmailJS configuration
     if (!isEmailJsConfigured()) {
-      console.warn('[FoodWala EmailService] EmailJS keys are not yet configured. See EMAIL_SETUP.md.');
-      // Mark as emailSent: true so we do not spam user with warning toasts on subsequent visits/refreshes
-      order.emailSent = true;
-      order.emailAttempted = true;
-      if (window.FoodWalaApp && window.FoodWalaApp.Orders) {
-        window.FoodWalaApp.Orders.saveOrder(order);
-      }
-      if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
-        window.FoodWalaApp.showToast('Order confirmed. Receipt email could not be sent (EmailJS not yet configured).', 'warning');
+      console.error('[FoodWala EmailService] EmailJS keys are not properly configured.');
+      order.emailSent = false;
+      if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+        window.FoodWalaApp.showToast('Order confirmed. Receipt email could not be sent.', 'warning');
       }
       return { success: false, reason: 'NOT_CONFIGURED' };
     }
 
-    // 4. Dispatch email via EmailJS browser SDK
+    // 4. Dispatch real email via EmailJS Browser SDK
     try {
       const emailjs = await ensureEmailJsLoaded();
+
+      // Initialize EmailJS with real public key
       emailjs.init({ publicKey: EMAILJS_CONFIG.PUBLIC_KEY });
 
-      const templateParams = {
-        to_email: recipientEmail,
-        customer_name: customerName,
-        order_id: `#${orderId}`,
-        restaurant: restaurant,
-        items: itemsFormatted,
-        total: totalAmount,
-        payment_mode: paymentMode,
-        order_date: orderDate,
-        address: address,
-        from_name: 'FoodWala'
-      };
+      console.log(`[FoodWala EmailService] Dispatching real receipt for order #${orderId} to ${recipientEmail} via EmailJS...`, templateParams);
 
-      console.log(`[FoodWala EmailService] Dispatching receipt for #${orderId} to ${recipientEmail}...`);
-      await emailjs.send(
+      const response = await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
         EMAILJS_CONFIG.PUBLIC_KEY
       );
 
-      console.log(`[FoodWala EmailService] Receipt successfully emailed to ${recipientEmail}!`);
-      
-      // Mark order as sent & save
-      order.emailSent = true;
-      if (window.FoodWalaApp && window.FoodWalaApp.Orders) {
-        window.FoodWalaApp.Orders.saveOrder(order);
-      }
+      // Log full response (status and text)
+      console.log('[FoodWala EmailService] EmailJS send response:', {
+        status: response ? response.status : null,
+        text: response ? response.text : null,
+        response: response
+      });
 
-      if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
-        window.FoodWalaApp.showToast(`Receipt sent to ${recipientEmail}`, 'success');
-      }
+      // Strict check: Success ONLY when response status is 200
+      if (response && response.status === 200) {
+        console.log(`[FoodWala EmailService] Receipt successfully emailed to ${recipientEmail}! Status: 200 (${response.text})`);
 
-      return { success: true, email: recipientEmail };
+        // Set emailSent flag ONLY after confirmed successful send
+        order.emailSent = true;
+        order.emailSentAt = new Date().toISOString();
+        if (window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.saveOrder === 'function') {
+          window.FoodWalaApp.Orders.saveOrder(order);
+        }
+
+        if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+          window.FoodWalaApp.showToast(`Receipt sent to ${recipientEmail}`, 'success');
+        }
+
+        return { success: true, email: recipientEmail, status: 200, response: response };
+      } else {
+        console.error('[FoodWala EmailService] EmailJS returned unexpected response:', response);
+        order.emailSent = false;
+        if (window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.saveOrder === 'function') {
+          window.FoodWalaApp.Orders.saveOrder(order);
+        }
+
+        if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+          window.FoodWalaApp.showToast('Order confirmed. Receipt email could not be sent.', 'warning');
+        }
+
+        return { success: false, reason: 'NON_200_STATUS', response: response };
+      }
     } catch (err) {
-      console.error('[FoodWala EmailService] Error sending receipt email:', err);
-      // Even if email delivery fails, the order has succeeded
+      // Log full error details on failure
+      console.error('[FoodWala EmailService] Error sending receipt email via EmailJS:', {
+        status: err && err.status ? err.status : 'N/A',
+        text: err && err.text ? err.text : (err && err.message ? err.message : String(err)),
+        error: err
+      });
+
       order.emailSent = false;
-      order.emailAttempted = true;
-      if (window.FoodWalaApp && window.FoodWalaApp.Orders) {
+      if (window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.saveOrder === 'function') {
         window.FoodWalaApp.Orders.saveOrder(order);
       }
 
-      if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
+      if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
         window.FoodWalaApp.showToast('Order confirmed. Receipt email could not be sent.', 'warning');
       }
 

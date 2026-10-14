@@ -194,6 +194,9 @@
   <!-- jsPDF & Receipt Service -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   <script src="./js/receiptService.js" defer></script>
+  <!-- EmailJS Browser SDK & Email Service -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+  <script src="./js/emailService.js" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -322,6 +325,9 @@
                     <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-semibold js-download-receipt-btn" data-order-id="${order.orderId || order.id}">
                       <i class="bi bi-download me-1"></i> Download Receipt
                     </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-semibold js-resend-receipt-btn" data-order-id="${order.orderId || order.id}">
+                      <i class="bi bi-envelope me-1"></i> Resend Receipt
+                    </button>
                     <a href="./restaurant-details.html?id=${order.restaurantId}" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold">
                       <i class="bi bi-arrow-repeat me-1"></i> Reorder
                     </a>
@@ -358,6 +364,54 @@
               window.FoodWalaReceipt.downloadReceipt(targetOrder);
             } else {
               FoodWalaApp.showToast('Could not load receipt for order #' + orderId, 'error');
+            }
+          });
+        });
+
+        // Attach Resend Receipt listeners
+        container.querySelectorAll('.js-resend-receipt-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const orderId = btn.getAttribute('data-order-id');
+            const targetOrder = FoodWalaApp.Orders.getOrderById(orderId);
+            if (!targetOrder) {
+              if (window.FoodWalaApp && FoodWalaApp.showToast) {
+                FoodWalaApp.showToast('Order not found.', 'error');
+              }
+              return;
+            }
+
+            if (!window.FoodWalaEmail || typeof window.FoodWalaEmail.sendReceiptEmail !== 'function') {
+              if (window.FoodWalaApp && FoodWalaApp.showToast) {
+                FoodWalaApp.showToast('Email service is loading, please try again.', 'warning');
+              }
+              return;
+            }
+
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sending...';
+            btn.disabled = true;
+
+            try {
+              const res = await window.FoodWalaEmail.sendReceiptEmail(targetOrder, null, true);
+              if (res && res.success && res.status === 200) {
+                btn.innerHTML = '<i class="bi bi-check2-circle text-success me-1"></i> Sent!';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-light', 'text-success', 'border');
+                setTimeout(() => {
+                  btn.innerHTML = origHtml;
+                  btn.classList.remove('btn-light', 'text-success', 'border');
+                  btn.classList.add('btn-outline-secondary');
+                  btn.disabled = false;
+                }, 4000);
+              } else {
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+              }
+            } catch (err) {
+              console.error('[Orders] Failed to resend receipt:', err);
+              btn.innerHTML = origHtml;
+              btn.disabled = false;
             }
           });
         });

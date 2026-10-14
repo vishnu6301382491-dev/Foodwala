@@ -956,7 +956,7 @@
               theme: {
                 color: "#dc3545"
               },
-              handler: function (response) {
+              handler: async function (response) {
                 console.log('[FoodWala] Razorpay Payment Success:', response);
                 
                 const newOrder = FoodWalaApp.Orders.placeOrder({
@@ -976,15 +976,19 @@
                   instructions: deliveryInstructions
                 });
 
-                // Dispatch email receipt via EmailJS exactly ONCE
+                // Dispatch email receipt via EmailJS (awaited so network request completes before navigation)
                 if (window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
-                  window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+                  try {
+                    await window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+                  } catch (e) {
+                    console.error('[FoodWala Checkout] Error dispatching email receipt:', e);
+                  }
                 }
 
                 FoodWalaApp.showToast('Payment successful! Confirming your order...', 'success');
                 setTimeout(() => {
                   window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
-                }, 600);
+                }, 400);
               },
               modal: {
                 ondismiss: function () {
@@ -1015,7 +1019,7 @@
         });
       }
 
-      function confirmOrderOffline(locationObj, paymentName, orderId, nameVal, emailVal, deliveryInstructions) {
+      async function confirmOrderOffline(locationObj, paymentName, orderId, nameVal, emailVal, deliveryInstructions) {
         const newOrder = FoodWalaApp.Orders.placeOrder({
           id: orderId,
           orderId: orderId,
@@ -1032,15 +1036,19 @@
           instructions: deliveryInstructions
         });
 
-        // Dispatch email receipt via EmailJS exactly ONCE
+        // Dispatch email receipt via EmailJS (awaited so network request completes before navigation)
         if (window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
-          window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+          try {
+            await window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+          } catch (e) {
+            console.error('[FoodWala Checkout] Error dispatching email receipt:', e);
+          }
         }
 
         FoodWalaApp.showToast(`Order placed successfully via ${paymentName}!`, 'success');
         setTimeout(() => {
           window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
-        }, 600);
+        }, 400);
       }
 
     });

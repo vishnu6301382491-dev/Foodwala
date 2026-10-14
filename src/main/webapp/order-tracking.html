@@ -383,8 +383,8 @@
       }
 
       // Check if order confirmation receipt has been sent via EmailJS; if not, trigger it once
-      if (order && !order.emailSent && !order.emailAttempted && window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
-        const authUser = FoodWalaApp.Auth.getCurrentUser();
+      if (order && !order.emailSent && window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
+        const authUser = FoodWalaApp.Auth ? FoodWalaApp.Auth.getCurrentUser() : null;
         window.FoodWalaEmail.sendReceiptEmail(order, authUser);
       }
 
