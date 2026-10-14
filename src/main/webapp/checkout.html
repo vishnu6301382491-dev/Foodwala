@@ -447,9 +447,9 @@
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
-  <script src="./js/ui.js" defer></script>
-  <script src="./js/api.js" defer></script>
-  <script src="./js/areas.js" defer></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/areas.js"></script>
   <script src="./js/app.js"></script>
   <!-- jsPDF & Receipt Service -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -460,187 +460,262 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // 0. Top-Level Checkout Protection: Require Authenticated FoodWala User
-      const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      console.log('[FoodWala Checkout] Initializing checkout page...');
+
+      // --- SECTION 0: Top-Level Authentication & Profile Resolution ---
+      const currentUser = (window.FoodWalaApp && FoodWalaApp.Auth) ? FoodWalaApp.Auth.getCurrentUser() : null;
       if (!currentUser) {
         try {
           localStorage.setItem('foodwala_post_login_redirect', './checkout.html');
         } catch (e) {}
-        FoodWalaApp.showToast('Please sign in to proceed with checkout.', 'warning');
+        if (window.FoodWalaApp && FoodWalaApp.showToast) {
+          FoodWalaApp.showToast('Please sign in to proceed with checkout.', 'warning');
+        }
         setTimeout(() => {
           window.location.replace('./login.html?redirect=./checkout.html');
         }, 300);
         return;
       }
 
-      const cart = FoodWalaApp.Cart.getCart();
-
-      // 1. Validate Cart Items
-      if (!cart.items || cart.items.length === 0) {
-        FoodWalaApp.showToast('Your cart is empty. Please add items from a restaurant.', 'warning');
+      // --- SECTION 1: Cart Validation & Restaurant Resolution ---
+      let cart = FoodWalaApp.Cart.getCart();
+      if (!cart || !cart.items || cart.items.length === 0) {
+        if (window.FoodWalaApp && FoodWalaApp.showToast) {
+          FoodWalaApp.showToast('Your cart is empty. Please add items from a restaurant.', 'warning');
+        }
         setTimeout(() => {
-          window.location.replace('./restaurants.html');
+          window.location.replace('./cart.html');
         }, 400);
         return;
       }
 
-      await FoodWalaApp.loadData();
-
-      // 2. Render Restaurant Details in Summary
-      document.getElementById('checkout-rest-name').textContent = cart.restaurantName || 'Bengaluru Restaurant';
-      document.getElementById('checkout-rest-addr').textContent = cart.restaurantAddress || 'Bengaluru';
-      if (cart.restaurantImage) {
-        document.getElementById('checkout-rest-img').src = cart.restaurantImage;
+      try {
+        if (window.FoodWalaApp && FoodWalaApp.loadData) {
+          await FoodWalaApp.loadData();
+        }
+      } catch (err) {
+        console.warn('[FoodWala Checkout] Data preloading completed with warning:', err);
       }
 
-      // 3. Render Cart Items
-      function renderItemsAndTotals() {
-        const itemsList = document.getElementById('checkout-items-list');
-        itemsList.innerHTML = cart.items.map(i => `
-          <div class="d-flex justify-content-between align-items-center py-1">
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-light text-dark border px-2 py-1">${i.quantity}x</span>
-              <span class="text-truncate fw-semibold small text-dark" style="max-width: 170px;">${i.name}</span>
-            </div>
-            <span class="small fw-bold text-dark">₹${i.price * i.quantity}</span>
-          </div>
-        `).join('');
-
-        const totals = FoodWalaApp.Cart.getBillTotals();
-        document.getElementById('bill-item-total').textContent = `₹${totals.itemTotal}`;
-        document.getElementById('bill-delivery-fee').textContent = totals.deliveryFee === 0 ? 'FREE' : `₹${totals.deliveryFee}`;
-        document.getElementById('bill-platform-fee').textContent = `₹${totals.platformFee}`;
-        document.getElementById('bill-gst').textContent = `₹${totals.gst}`;
-        
-        const discRow = document.getElementById('bill-discount-row');
-        if (totals.discount > 0) {
-          discRow.style.display = 'flex';
-          document.getElementById('bill-discount').textContent = `-₹${totals.discount}`;
-        } else {
-          discRow.style.display = 'none';
+      // Resolve real restaurant name and address if generic or missing
+      try {
+        const allRestaurants = (window.FoodWalaApp && FoodWalaApp.getRestaurants) ? FoodWalaApp.getRestaurants() : [];
+        const rId = cart.restaurantId || (cart.items[0] && cart.items[0].restaurantId);
+        const matched = allRestaurants.find(r => r.id === rId || r.restaurantId === rId);
+        if (matched) {
+          if (!cart.restaurantName || cart.restaurantName === 'Bengaluru Restaurant') {
+            cart.restaurantName = matched.name;
+          }
+          if (!cart.restaurantAddress || cart.restaurantAddress === 'Bengaluru') {
+            cart.restaurantAddress = matched.address || matched.area || 'Bengaluru';
+          }
+          if (!cart.restaurantImage) {
+            cart.restaurantImage = matched.imagePath || matched.image;
+          }
         }
 
-        document.getElementById('bill-grand-total').textContent = `₹${totals.grandTotal}`;
-        document.getElementById('btn-pay-amount').textContent = `₹${totals.grandTotal}`;
+        const nameEl = document.getElementById('checkout-rest-name');
+        const addrEl = document.getElementById('checkout-rest-addr');
+        const imgEl = document.getElementById('checkout-rest-img');
+        if (nameEl) nameEl.textContent = cart.restaurantName || 'Bengaluru Restaurant';
+        if (addrEl) addrEl.textContent = cart.restaurantAddress || 'Bengaluru';
+        if (imgEl && cart.restaurantImage) imgEl.src = cart.restaurantImage;
+      } catch (err) {
+        console.error('[FoodWala Checkout] Error rendering restaurant header:', err);
+      }
+
+      // --- SECTION 2: Cart Items & Bill Totals Breakdown ---
+      function renderItemsAndTotals() {
+        try {
+          const currentCart = FoodWalaApp.Cart.getCart();
+          const itemsList = document.getElementById('checkout-items-list');
+          if (itemsList && currentCart.items) {
+            itemsList.innerHTML = currentCart.items.map(i => `
+              <div class="d-flex justify-content-between align-items-center py-1">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-light text-dark border px-2 py-1">${i.quantity}x</span>
+                  <span class="text-truncate fw-semibold small text-dark" style="max-width: 170px;">${i.name}</span>
+                </div>
+                <span class="small fw-bold text-dark">₹${i.price * i.quantity}</span>
+              </div>
+            `).join('');
+          }
+
+          const totals = FoodWalaApp.Cart.getBillTotals();
+          const itemTotalEl = document.getElementById('bill-item-total');
+          const delFeeEl = document.getElementById('bill-delivery-fee');
+          const platFeeEl = document.getElementById('bill-platform-fee');
+          const gstEl = document.getElementById('bill-gst');
+          const discRow = document.getElementById('bill-discount-row');
+          const discValEl = document.getElementById('bill-discount');
+          const grandTotalEl = document.getElementById('bill-grand-total');
+          const payBtnAmountEl = document.getElementById('btn-pay-amount');
+
+          if (itemTotalEl) itemTotalEl.textContent = `₹${totals.itemTotal}`;
+          if (delFeeEl) delFeeEl.textContent = totals.deliveryFee === 0 ? 'FREE' : `₹${totals.deliveryFee}`;
+          if (platFeeEl) platFeeEl.textContent = `₹${totals.platformFee}`;
+          if (gstEl) gstEl.textContent = `₹${totals.gst}`;
+
+          if (discRow && discValEl) {
+            if (totals.discount > 0) {
+              discRow.style.display = 'flex';
+              discValEl.textContent = `-₹${totals.discount}`;
+            } else {
+              discRow.style.display = 'none';
+            }
+          }
+
+          if (grandTotalEl) grandTotalEl.textContent = `₹${totals.grandTotal}`;
+          if (payBtnAmountEl) payBtnAmountEl.textContent = `₹${totals.grandTotal}`;
+        } catch (err) {
+          console.error('[FoodWala Checkout] Error calculating bill totals:', err);
+        }
       }
 
       renderItemsAndTotals();
 
-      // 4. Coupon Handling
-      document.getElementById('checkout-apply-coupon-btn').addEventListener('click', () => {
-        const code = document.getElementById('checkout-coupon-input').value;
-        const res = FoodWalaApp.Cart.applyCoupon(code);
-        const msgEl = document.getElementById('checkout-coupon-msg');
-        if (res.success) {
-          msgEl.className = 'small text-success fw-bold';
-          msgEl.textContent = res.message;
-          FoodWalaApp.showToast(res.message, 'success');
-        } else {
-          msgEl.className = 'small text-danger';
-          msgEl.textContent = res.message;
-          FoodWalaApp.showToast(res.message, 'warning');
-        }
-        renderItemsAndTotals();
-      });
+      // --- SECTION 3: Coupon Application (FOODWALA50, WELCOME) ---
+      try {
+        const couponInput = document.getElementById('checkout-coupon-input');
+        const couponBtn = document.getElementById('checkout-apply-coupon-btn');
+        const couponMsg = document.getElementById('checkout-coupon-msg');
 
-      // 5. Active Delivery Target Resolution
-      let activeDeliveryLocation = null; // { address, lat, lng, type }
+        // Check if coupon was already applied on cart.html
+        const existingCoupon = FoodWalaApp.Cart.getAppliedCoupon();
+        if (existingCoupon && couponInput && couponMsg) {
+          couponInput.value = existingCoupon.code;
+          couponMsg.className = 'small text-success fw-bold';
+          couponMsg.textContent = `Coupon ${existingCoupon.code} applied! (${existingCoupon.desc || 'Discount included'})`;
+        }
+
+        if (couponBtn && couponInput) {
+          couponBtn.addEventListener('click', () => {
+            const code = couponInput.value.trim();
+            if (!code) {
+              if (couponMsg) {
+                couponMsg.className = 'small text-danger';
+                couponMsg.textContent = 'Please enter a coupon code (e.g. FOODWALA50 or WELCOME)';
+              }
+              return;
+            }
+            const res = FoodWalaApp.Cart.applyCoupon(code);
+            if (couponMsg) {
+              if (res.success) {
+                couponMsg.className = 'small text-success fw-bold';
+                couponMsg.textContent = res.message;
+                FoodWalaApp.showToast(res.message, 'success');
+              } else {
+                couponMsg.className = 'small text-danger';
+                couponMsg.textContent = res.message;
+                FoodWalaApp.showToast(res.message, 'warning');
+              }
+            }
+            renderItemsAndTotals();
+          });
+        }
+      } catch (err) {
+        console.error('[FoodWala Checkout] Error initializing coupon handler:', err);
+      }
+
+      // --- SECTION 4: Active Delivery Target Resolution & Address Management ---
+      let activeDeliveryLocation = null;
 
       function renderAddressCards() {
-        const currentUser = FoodWalaApp.Auth.getCurrentUser();
-        const addresses = (currentUser && currentUser.addresses) ? currentUser.addresses : [];
-        const appLocation = FoodWalaApp.Location.getCurrentLocation();
-        const container = document.getElementById('saved-addresses-grid');
+        try {
+          const userObj = FoodWalaApp.Auth.getCurrentUser();
+          const addresses = (userObj && userObj.addresses) ? userObj.addresses : [];
+          const appLocation = FoodWalaApp.Location.getCurrentLocation();
+          const container = document.getElementById('saved-addresses-grid');
+          if (!container) return;
 
-        let cardsHtml = '';
+          let cardsHtml = '';
 
-        // If active GPS or manual location exists
-        if (appLocation && appLocation.latitude && appLocation.longitude) {
-          const isGpsActive = (!activeDeliveryLocation || activeDeliveryLocation.type === 'GPS' || activeDeliveryLocation.type === 'AppLocation');
-          if (isGpsActive) {
-            activeDeliveryLocation = {
-              address: appLocation.address || 'Live Location',
-              lat: appLocation.latitude,
-              lng: appLocation.longitude,
-              type: appLocation.source === 'gps' ? 'Live GPS Location' : 'Current Location'
-            };
+          // If active GPS or manual location exists
+          if (appLocation && appLocation.latitude && appLocation.longitude) {
+            const isGpsActive = (!activeDeliveryLocation || activeDeliveryLocation.type === 'GPS' || activeDeliveryLocation.type === 'AppLocation');
+            if (isGpsActive) {
+              activeDeliveryLocation = {
+                address: appLocation.address || 'Live Location',
+                lat: appLocation.latitude,
+                lng: appLocation.longitude,
+                type: appLocation.source === 'gps' ? 'Live GPS Location' : 'Current Location'
+              };
+            }
+
+            cardsHtml += `
+              <div class="col-md-6">
+                <div class="address-card ${isGpsActive ? 'selected' : ''}" id="gps-delivery-card" style="cursor: pointer;">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="address-type-badge address-type-home">
+                      <i class="bi bi-crosshair text-danger me-1"></i> ${appLocation.source === 'gps' ? 'Live GPS' : 'Selected Location'}
+                    </span>
+                    <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="gps" ${isGpsActive ? 'checked' : ''}>
+                  </div>
+                  <div class="fw-bold text-dark text-truncate">${appLocation.shortName || 'Current Location'}</div>
+                  <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
+                    ${appLocation.address}
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+                    <small class="text-success fw-semibold"><i class="bi bi-geo-alt"></i> ${appLocation.accuracy ? `Accuracy ~${appLocation.accuracy}m` : 'Accurate Coordinates'}</small>
+                    <span class="badge bg-danger-subtle text-danger border small">Active</span>
+                  </div>
+                </div>
+              </div>
+            `;
           }
 
-          cardsHtml += `
-            <div class="col-md-6">
-              <div class="address-card ${isGpsActive ? 'selected' : ''}" id="gps-delivery-card">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="address-type-badge address-type-home">
-                    <i class="bi bi-crosshair text-danger me-1"></i> ${appLocation.source === 'gps' ? 'Live GPS' : 'Selected Location'}
-                  </span>
-                  <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="gps" ${isGpsActive ? 'checked' : ''}>
-                </div>
-                <div class="fw-bold text-dark text-truncate">${appLocation.shortName || 'Current Location'}</div>
-                <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
-                  ${appLocation.address}
-                </p>
-                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
-                  <small class="text-success fw-semibold"><i class="bi bi-geo-alt"></i> ${appLocation.accuracy ? `Accuracy ~${appLocation.accuracy}m` : 'Accurate Coordinates'}</small>
-                  <span class="badge bg-danger-subtle text-danger border small">Active</span>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-
-        // Render saved user addresses
-        addresses.forEach(addr => {
-          const isSelected = activeDeliveryLocation && activeDeliveryLocation.id === addr.id;
-          cardsHtml += `
-            <div class="col-md-6">
-              <div class="address-card ${isSelected ? 'selected' : ''}" data-address-id="${addr.id}">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="address-type-badge address-type-${(addr.type || 'home').toLowerCase()}">
-                    <i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : 'bi-house-door'} me-1"></i> ${addr.type || 'Home'}
-                  </span>
-                  <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="${addr.id}" ${isSelected ? 'checked' : ''}>
-                </div>
-                <div class="fw-bold text-dark text-truncate">${addr.fullName || (currentUser ? currentUser.name : 'Customer')}</div>
-                <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
-                  ${addr.addressLine}
-                </p>
-                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
-                  <small class="text-muted"><i class="bi bi-telephone me-1"></i> ${addr.phone || ''}</small>
-                  ${addr.isDefault ? '<span class="badge bg-light text-success border small">Default</span>' : ''}
+          // Render saved user addresses
+          addresses.forEach(addr => {
+            const isSelected = activeDeliveryLocation && activeDeliveryLocation.id === addr.id;
+            cardsHtml += `
+              <div class="col-md-6">
+                <div class="address-card ${isSelected ? 'selected' : ''}" data-address-id="${addr.id}" style="cursor: pointer;">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="address-type-badge address-type-${(addr.type || 'home').toLowerCase()}">
+                      <i class="bi ${addr.type === 'Work' ? 'bi-briefcase' : 'bi-house-door'} me-1"></i> ${addr.type || 'Home'}
+                    </span>
+                    <input type="radio" class="form-check-input mt-0" name="selectedAddrRadio" value="${addr.id}" ${isSelected ? 'checked' : ''}>
+                  </div>
+                  <div class="fw-bold text-dark text-truncate">${addr.fullName || (userObj ? userObj.name : 'Customer')}</div>
+                  <p class="small text-muted mb-1 lh-sm mt-1" style="min-height: 38px;">
+                    ${addr.addressLine}
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+                    <small class="text-muted"><i class="bi bi-telephone me-1"></i> ${addr.phone || ''}</small>
+                    ${addr.isDefault ? '<span class="badge bg-light text-success border small">Default</span>' : ''}
+                  </div>
                 </div>
               </div>
-            </div>
-          `;
-        });
+            `;
+          });
 
-        if (!cardsHtml) {
-          container.innerHTML = `
-            <div class="col-12 text-center py-4 text-muted bg-light rounded-4 border">
-              <i class="bi bi-geo-alt fs-1 text-danger d-block mb-2"></i>
-              <p class="mb-3">No delivery address selected. Use your live GPS or add an address to continue.</p>
-              <div class="d-flex justify-content-center gap-2">
-                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold" id="empty-use-gps-btn">
-                  <i class="bi bi-crosshair me-1"></i> Use Current Location (GPS)
-                </button>
-                <button type="button" class="btn btn-danger btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                  + Add Address
-                </button>
+          if (!cardsHtml) {
+            container.innerHTML = `
+              <div class="col-12 text-center py-4 text-muted bg-light rounded-4 border">
+                <i class="bi bi-geo-alt fs-1 text-danger d-block mb-2"></i>
+                <p class="mb-3">No delivery address selected. Use your live GPS or add an address to continue.</p>
+                <div class="d-flex justify-content-center gap-2">
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-bold" id="empty-use-gps-btn">
+                    <i class="bi bi-crosshair me-1"></i> Use Current Location (GPS)
+                  </button>
+                  <button type="button" class="btn btn-danger btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                    + Add Address
+                  </button>
+                </div>
               </div>
-            </div>
-          `;
+            `;
 
-          const emptyGps = document.getElementById('empty-use-gps-btn');
-          if (emptyGps) emptyGps.addEventListener('click', triggerGpsDetection);
-          return;
-        }
+            const emptyGps = document.getElementById('empty-use-gps-btn');
+            if (emptyGps) emptyGps.addEventListener('click', triggerGpsDetection);
+            return;
+          }
 
-        container.innerHTML = cardsHtml;
+          container.innerHTML = cardsHtml;
 
-        // Bind GPS card click
-        const gpsCard = document.getElementById('gps-delivery-card');
-        if (gpsCard) {
-          gpsCard.addEventListener('click', () => {
-            if (appLocation) {
+          // Bind GPS card click
+          const gpsCard = document.getElementById('gps-delivery-card');
+          if (gpsCard && appLocation) {
+            gpsCard.addEventListener('click', () => {
               activeDeliveryLocation = {
                 address: appLocation.address,
                 lat: appLocation.latitude,
@@ -648,27 +723,29 @@
                 type: 'GPS'
               };
               renderAddressCards();
-            }
-          });
-        }
+            });
+          }
 
-        // Bind address card clicks
-        container.querySelectorAll('.address-card[data-address-id]').forEach(card => {
-          card.addEventListener('click', () => {
-            const addrId = card.getAttribute('data-address-id');
-            const target = addresses.find(a => a.id === addrId);
-            if (target) {
-              activeDeliveryLocation = {
-                id: target.id,
-                address: target.addressLine,
-                lat: target.latitude || 12.9716,
-                lng: target.longitude || 77.5946,
-                type: target.type
-              };
-              renderAddressCards();
-            }
+          // Bind saved address card clicks
+          container.querySelectorAll('.address-card[data-address-id]').forEach(card => {
+            card.addEventListener('click', () => {
+              const addrId = card.getAttribute('data-address-id');
+              const target = addresses.find(a => a.id === addrId);
+              if (target) {
+                activeDeliveryLocation = {
+                  id: target.id,
+                  address: target.addressLine,
+                  lat: target.latitude || 12.9716,
+                  lng: target.longitude || 77.5946,
+                  type: target.type
+                };
+                renderAddressCards();
+              }
+            });
           });
-        });
+        } catch (err) {
+          console.error('[FoodWala Checkout] Error rendering address cards:', err);
+        }
       }
 
       function triggerGpsDetection() {
@@ -678,87 +755,109 @@
           btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Detecting...';
         }
 
-        FoodWalaApp.Location.detectCurrentLocation(
-          (loc) => {
-            if (btn) {
-              btn.disabled = false;
-              btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
+        if (window.FoodWalaApp && FoodWalaApp.Location && FoodWalaApp.Location.detectCurrentLocation) {
+          FoodWalaApp.Location.detectCurrentLocation(
+            (loc) => {
+              if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
+              }
+              activeDeliveryLocation = {
+                address: loc.address,
+                lat: loc.latitude,
+                lng: loc.longitude,
+                type: 'GPS'
+              };
+              renderAddressCards();
+              FoodWalaApp.showToast(`GPS location detected: ${loc.shortName}!`, 'success');
+            },
+            (errMsg) => {
+              if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
+              }
+              FoodWalaApp.showToast(errMsg, 'warning');
             }
-            activeDeliveryLocation = {
-              address: loc.address,
-              lat: loc.latitude,
-              lng: loc.longitude,
-              type: 'GPS'
-            };
-            renderAddressCards();
-            FoodWalaApp.showToast(`GPS location detected: ${loc.shortName}!`, 'success');
-          },
-          (errMsg) => {
-            if (btn) {
-              btn.disabled = false;
-              btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
-            }
-            FoodWalaApp.showToast(errMsg, 'warning');
+          );
+        } else {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-crosshair me-1"></i> Use Live GPS';
           }
-        );
+          FoodWalaApp.showToast('Geolocation is not supported in this browser.', 'warning');
+        }
       }
 
-      document.getElementById('checkout-use-gps-btn').addEventListener('click', triggerGpsDetection);
+      const topGpsBtn = document.getElementById('checkout-use-gps-btn');
+      if (topGpsBtn) {
+        topGpsBtn.addEventListener('click', triggerGpsDetection);
+      }
 
       renderAddressCards();
 
-      // Form: Add Address
-      document.getElementById('add-address-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const type = document.querySelector('input[name="modalAddrType"]:checked').value;
-        const houseNo = document.getElementById('modal-houseNo').value.trim();
-        const street = document.getElementById('modal-street').value.trim();
-        const area = document.getElementById('modal-area').value;
-        const pincode = document.getElementById('modal-pincode').value.trim();
-        const landmark = document.getElementById('modal-landmark').value.trim();
+      // Form: Add Address Modal
+      const addAddrForm = document.getElementById('add-address-form');
+      if (addAddrForm) {
+        addAddrForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          try {
+            const typeInput = document.querySelector('input[name="modalAddrType"]:checked');
+            const type = typeInput ? typeInput.value : 'Home';
+            const houseNo = (document.getElementById('modal-houseNo').value || '').trim();
+            const street = (document.getElementById('modal-street').value || '').trim();
+            const area = document.getElementById('modal-area').value;
+            const pincode = (document.getElementById('modal-pincode').value || '').trim();
+            const landmark = (document.getElementById('modal-landmark').value || '').trim();
 
-        const currentUser = FoodWalaApp.Auth.getCurrentUser();
-        const fullAddrText = `${houseNo}, ${street}, ${area}, Bengaluru, Karnataka - ${pincode}`;
+            const userObj = FoodWalaApp.Auth.getCurrentUser();
+            const fullAddrText = `${houseNo}, ${street}, ${area}, Bengaluru, Karnataka - ${pincode}`;
 
-        if (currentUser) {
-          const newAddr = FoodWalaApp.Auth.addAddress({
-            type,
-            houseNo,
-            street,
-            area,
-            city: 'Bengaluru',
-            state: 'Karnataka',
-            pincode,
-            landmark,
-            isDefault: true
-          });
-          activeDeliveryLocation = {
-            id: newAddr.id,
-            address: newAddr.addressLine,
-            lat: newAddr.latitude,
-            lng: newAddr.longitude,
-            type: newAddr.type
-          };
-        } else {
-          // Guest manual address
-          activeDeliveryLocation = {
-            address: fullAddrText,
-            lat: 12.9716,
-            lng: 77.5946,
-            type: type
-          };
-          FoodWalaApp.Location.setCustomAddressLocation(fullAddrText, area);
-        }
+            if (userObj) {
+              const newAddr = FoodWalaApp.Auth.addAddress({
+                type,
+                houseNo,
+                street,
+                area,
+                city: 'Bengaluru',
+                state: 'Karnataka',
+                pincode,
+                landmark,
+                isDefault: true
+              });
+              activeDeliveryLocation = {
+                id: newAddr.id,
+                address: newAddr.addressLine,
+                lat: newAddr.latitude,
+                lng: newAddr.longitude,
+                type: newAddr.type
+              };
+            } else {
+              activeDeliveryLocation = {
+                address: fullAddrText,
+                lat: 12.9716,
+                lng: 77.5946,
+                type: type
+              };
+              if (FoodWalaApp.Location && FoodWalaApp.Location.setCustomAddressLocation) {
+                FoodWalaApp.Location.setCustomAddressLocation(fullAddrText, area);
+              }
+            }
 
-        const modalEl = document.getElementById('addAddressModal');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
+            const modalEl = document.getElementById('addAddressModal');
+            if (modalEl && window.bootstrap && bootstrap.Modal) {
+              const modal = bootstrap.Modal.getInstance(modalEl);
+              if (modal) modal.hide();
+            }
 
-        renderAddressCards();
-        FoodWalaApp.showToast('Delivery address saved & selected!', 'success');
-      });
+            renderAddressCards();
+            FoodWalaApp.showToast('Delivery address saved & selected!', 'success');
+          } catch (err) {
+            console.error('[FoodWala Checkout] Error adding address:', err);
+          }
+        });
+      }
 
-      // 6. Prefill Customer Name & Email
+      // --- SECTION 5: Customer Contact & Email Receipt Fields ---
       const emailInput = document.getElementById('checkout-customer-email');
       const nameInput = document.getElementById('checkout-customer-name');
       if (currentUser) {
@@ -766,130 +865,157 @@
         if (emailInput && !emailInput.value) emailInput.value = currentUser.email || '';
       }
 
-      // 7. Payment Execution & Razorpay Integration with Double-Click Lock
+      // Collect delivery note checkboxes & custom text
+      function getDeliveryInstructions() {
+        const parts = [];
+        const contactless = document.getElementById('instr-contactless');
+        const nocall = document.getElementById('instr-nocall');
+        const customNotes = document.getElementById('delivery-custom-notes');
+
+        if (contactless && contactless.checked) parts.push('Leave at door / Contactless delivery');
+        if (nocall && nocall.checked) parts.push('Do not ring doorbell');
+        if (customNotes && customNotes.value.trim()) parts.push(customNotes.value.trim());
+
+        return parts.join(' | ');
+      }
+
+      // --- SECTION 6: Payment Execution & Razorpay Integration with Double-Click Lock ---
       const placeOrderBtn = document.getElementById('place-order-btn');
       let isPlacingOrder = false;
-      const originalBtnHtml = placeOrderBtn.innerHTML;
+      const originalBtnHtml = placeOrderBtn ? placeOrderBtn.innerHTML : 'Proceed to Pay';
 
       function setPlacingOrderState(loading) {
+        if (!placeOrderBtn) return;
         isPlacingOrder = loading;
         placeOrderBtn.disabled = loading;
         if (loading) {
-          placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Placing Order...';
+          placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing Order...';
         } else {
           placeOrderBtn.innerHTML = originalBtnHtml;
         }
       }
 
-      placeOrderBtn.addEventListener('click', () => {
-        // Prevent double submit
-        if (isPlacingOrder) {
-          console.warn('[FoodWala] Order submission in progress, ignoring extra click.');
-          return;
-        }
-
-        if (!activeDeliveryLocation || !activeDeliveryLocation.address) {
-          FoodWalaApp.showToast('Please select or add a delivery address to proceed.', 'error');
-          const modalEl = new bootstrap.Modal(document.getElementById('addAddressModal'));
-          modalEl.show();
-          return;
-        }
-
-        // Validate recipient email
-        const emailVal = emailInput ? emailInput.value.trim() : (currentUser ? currentUser.email : '');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailVal || !emailRegex.test(emailVal)) {
-          FoodWalaApp.showToast('Please enter a valid email address to receive your order receipt.', 'error');
-          if (emailInput) emailInput.focus();
-          return;
-        }
-
-        const nameVal = nameInput && nameInput.value.trim() ? nameInput.value.trim() : (currentUser ? currentUser.name : 'Customer');
-
-        // Pre-generate unique Order ID once
-        const pregeneratedOrderId = 'FW-' + Math.floor(10000 + Math.random() * 90000);
-
-        setPlacingOrderState(true);
-
-        const selectedPayMethod = document.querySelector('input[name="paymentMethodRadio"]:checked').value;
-        const totals = FoodWalaApp.Cart.getBillTotals();
-        const amountInPaise = Math.round(totals.grandTotal * 100);
-
-        if (selectedPayMethod === 'Razorpay') {
-          const options = {
-            key: "rzp_test_TjiZvLxLbxKe38", // Razorpay Public Test Key ID
-            amount: amountInPaise,
-            currency: "INR",
-            name: "FoodWala Bengaluru",
-            description: `Order #${pregeneratedOrderId} - ${cart.restaurantName}`,
-            image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200",
-            prefill: {
-              name: nameVal,
-              email: emailVal,
-              contact: currentUser ? currentUser.phone : '+91 98765 43210'
-            },
-            notes: {
-              order_id: pregeneratedOrderId,
-              address: activeDeliveryLocation.address,
-              restaurant: cart.restaurantName
-            },
-            theme: {
-              color: "#dc3545"
-            },
-            handler: function (response) {
-              console.log('[FoodWala] Razorpay Payment Success:', response);
-              
-              const newOrder = FoodWalaApp.Orders.placeOrder({
-                id: pregeneratedOrderId,
-                orderId: pregeneratedOrderId,
-                name: nameVal,
-                customerEmail: emailVal,
-                phone: currentUser ? currentUser.phone : '+91 98765 43210',
-                address: activeDeliveryLocation.address,
-                latitude: activeDeliveryLocation.lat,
-                longitude: activeDeliveryLocation.lng,
-                lat: activeDeliveryLocation.lat,
-                lng: activeDeliveryLocation.lng,
-                paymentMethod: 'Razorpay (Test Sandbox)',
-                paymentStatus: 'PAID',
-                razorpayPaymentId: response.razorpay_payment_id || 'pay_test_' + Date.now(),
-                instructions: document.getElementById('delivery-custom-notes').value
-              });
-
-              // Dispatch email receipt via EmailJS exactly ONCE
-              if (window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
-                window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
-              }
-
-              FoodWalaApp.showToast('Payment successful! Confirming your order...', 'success');
-              setTimeout(() => {
-                window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
-              }, 600);
-            },
-            modal: {
-              ondismiss: function () {
-                setPlacingOrderState(false);
-                FoodWalaApp.showToast('Payment was cancelled.', 'warning');
-              }
-            }
-          };
-
-          try {
-            const rzp = new Razorpay(options);
-            rzp.open();
-          } catch (err) {
-            console.error('Razorpay SDK init error:', err);
-            confirmOrderOffline(activeDeliveryLocation, 'Razorpay Online', pregeneratedOrderId, nameVal, emailVal);
+      if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('click', () => {
+          // Double-click lock
+          if (isPlacingOrder) {
+            console.warn('[FoodWala] Order submission in progress, ignoring extra click.');
+            return;
           }
 
-        } else if (selectedPayMethod === 'Cash on Delivery') {
-          confirmOrderOffline(activeDeliveryLocation, 'Cash on Delivery', pregeneratedOrderId, nameVal, emailVal);
-        } else {
-          confirmOrderOffline(activeDeliveryLocation, 'UPI Instant', pregeneratedOrderId, nameVal, emailVal);
-        }
-      });
+          if (!activeDeliveryLocation || !activeDeliveryLocation.address) {
+            FoodWalaApp.showToast('Please select or add a delivery address to proceed.', 'error');
+            const modalEl = document.getElementById('addAddressModal');
+            if (modalEl && window.bootstrap && bootstrap.Modal) {
+              const modalInstance = new bootstrap.Modal(modalEl);
+              modalInstance.show();
+            }
+            return;
+          }
 
-      function confirmOrderOffline(locationObj, paymentName, orderId, nameVal, emailVal) {
+          // Validate recipient email
+          const emailVal = emailInput ? emailInput.value.trim() : (currentUser ? currentUser.email : '');
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailVal || !emailRegex.test(emailVal)) {
+            FoodWalaApp.showToast('Please enter a valid email address to receive your order receipt.', 'error');
+            if (emailInput) emailInput.focus();
+            return;
+          }
+
+          const nameVal = nameInput && nameInput.value.trim() ? nameInput.value.trim() : (currentUser ? currentUser.name : 'Customer');
+
+          // Generate single unique Order ID once
+          const pregeneratedOrderId = 'FW-' + Math.floor(10000 + Math.random() * 90000);
+          const deliveryInstructions = getDeliveryInstructions();
+
+          setPlacingOrderState(true);
+
+          const selectedPayMethodRadio = document.querySelector('input[name="paymentMethodRadio"]:checked');
+          const selectedPayMethod = selectedPayMethodRadio ? selectedPayMethodRadio.value : 'Razorpay';
+          const totals = FoodWalaApp.Cart.getBillTotals();
+          const amountInPaise = Math.round(totals.grandTotal * 100);
+
+          if (selectedPayMethod === 'Razorpay') {
+            const options = {
+              key: "rzp_test_TjiZvLxLbxKe38", // Razorpay Public Test Key ID
+              amount: amountInPaise,
+              currency: "INR",
+              name: "FoodWala Bengaluru",
+              description: `Order #${pregeneratedOrderId} - ${cart.restaurantName}`,
+              image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200",
+              prefill: {
+                name: nameVal,
+                email: emailVal,
+                contact: currentUser ? currentUser.phone : '+91 98765 43210'
+              },
+              notes: {
+                order_id: pregeneratedOrderId,
+                address: activeDeliveryLocation.address,
+                restaurant: cart.restaurantName
+              },
+              theme: {
+                color: "#dc3545"
+              },
+              handler: function (response) {
+                console.log('[FoodWala] Razorpay Payment Success:', response);
+                
+                const newOrder = FoodWalaApp.Orders.placeOrder({
+                  id: pregeneratedOrderId,
+                  orderId: pregeneratedOrderId,
+                  name: nameVal,
+                  customerEmail: emailVal,
+                  phone: currentUser ? currentUser.phone : '+91 98765 43210',
+                  address: activeDeliveryLocation.address,
+                  latitude: activeDeliveryLocation.lat,
+                  longitude: activeDeliveryLocation.lng,
+                  lat: activeDeliveryLocation.lat,
+                  lng: activeDeliveryLocation.lng,
+                  paymentMethod: 'Razorpay (Test Sandbox)',
+                  paymentStatus: 'PAID',
+                  razorpayPaymentId: response.razorpay_payment_id || 'pay_test_' + Date.now(),
+                  instructions: deliveryInstructions
+                });
+
+                // Dispatch email receipt via EmailJS exactly ONCE
+                if (window.FoodWalaEmail && typeof window.FoodWalaEmail.sendReceiptEmail === 'function') {
+                  window.FoodWalaEmail.sendReceiptEmail(newOrder, currentUser);
+                }
+
+                FoodWalaApp.showToast('Payment successful! Confirming your order...', 'success');
+                setTimeout(() => {
+                  window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
+                }, 600);
+              },
+              modal: {
+                ondismiss: function () {
+                  setPlacingOrderState(false);
+                  FoodWalaApp.showToast('Payment was cancelled.', 'warning');
+                }
+              }
+            };
+
+            try {
+              if (typeof Razorpay !== 'undefined') {
+                const rzp = new Razorpay(options);
+                rzp.open();
+              } else {
+                console.warn('[FoodWala] Razorpay SDK unavailable, falling back to online simulator.');
+                confirmOrderOffline(activeDeliveryLocation, 'Razorpay Online', pregeneratedOrderId, nameVal, emailVal, deliveryInstructions);
+              }
+            } catch (err) {
+              console.error('[FoodWala] Razorpay SDK init error:', err);
+              confirmOrderOffline(activeDeliveryLocation, 'Razorpay Online', pregeneratedOrderId, nameVal, emailVal, deliveryInstructions);
+            }
+
+          } else if (selectedPayMethod === 'Cash on Delivery') {
+            confirmOrderOffline(activeDeliveryLocation, 'Cash on Delivery', pregeneratedOrderId, nameVal, emailVal, deliveryInstructions);
+          } else {
+            confirmOrderOffline(activeDeliveryLocation, 'UPI Instant', pregeneratedOrderId, nameVal, emailVal, deliveryInstructions);
+          }
+        });
+      }
+
+      function confirmOrderOffline(locationObj, paymentName, orderId, nameVal, emailVal, deliveryInstructions) {
         const newOrder = FoodWalaApp.Orders.placeOrder({
           id: orderId,
           orderId: orderId,
@@ -903,7 +1029,7 @@
           lng: locationObj.lng,
           paymentMethod: paymentName,
           paymentStatus: paymentName === 'Cash on Delivery' ? 'PENDING_COD' : 'PAID',
-          instructions: document.getElementById('delivery-custom-notes').value
+          instructions: deliveryInstructions
         });
 
         // Dispatch email receipt via EmailJS exactly ONCE
@@ -915,7 +1041,9 @@
         setTimeout(() => {
           window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
         }, 600);
-      });
+      }
+
+    });
   </script>
 </body>
 </html>
