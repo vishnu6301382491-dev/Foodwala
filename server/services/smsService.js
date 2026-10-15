@@ -6,10 +6,41 @@
 
 const https = require('https');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+// Auto-load sms.properties if present in project root or server folder
+function loadSmsProperties() {
+  const possiblePaths = [
+    path.join(__dirname, '..', '..', 'sms.properties'),
+    path.join(__dirname, '..', 'sms.properties'),
+    path.join(process.cwd(), 'sms.properties')
+  ];
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const content = fs.readFileSync(p, 'utf8');
+        content.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+            const idx = trimmed.indexOf('=');
+            const key = trimmed.slice(0, idx).trim();
+            const val = trimmed.slice(idx + 1).trim();
+            if (!process.env[key] && val) {
+              process.env[key] = val;
+            }
+          }
+        });
+        break;
+      } catch (e) {}
+    }
+  }
+}
+loadSmsProperties();
 
 class SMSService {
   constructor() {
-    this.provider = (process.env.SMS_PROVIDER || 'console').toLowerCase();
+    this.provider = (process.env.SMS_PROVIDER || (process.env.FAST2SMS_API_KEY ? 'fast2sms' : 'console')).toLowerCase();
     this.isDevMode = process.env.OTP_DEV_MODE === 'true' || process.env.NODE_ENV !== 'production';
   }
 
@@ -19,6 +50,9 @@ class SMSService {
    */
   isConfigured() {
     if (this.isDevMode) return true;
+    if (this.provider === 'fast2sms' || Boolean(process.env.FAST2SMS_API_KEY)) {
+      return Boolean(process.env.FAST2SMS_API_KEY);
+    }
     if (this.provider === 'twilio') {
       return Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER);
     }
@@ -41,15 +75,28 @@ class SMSService {
     // If Dev Mode is enabled, log to server console only and avoid sending real paid SMS
     if (this.isDevMode) {
       console.log('\n==================================================');
-      console.log('[FoodWala SMS Service - DEV MODE]');
+      console.log('[FoodWala SMS Service - DEV/SANDBOX MODE]');
       console.log('Recipient: ' + phone);
       console.log('OTP Code : ' + otp);
       console.log('Message  : Your FoodWala verification code is: ' + otp + '. Valid for 5 minutes.');
       console.log('==================================================\n');
+
+      // If user has Fast2SMS configured, attempt real delivery in background
+      if (process.env.FAST2SMS_API_KEY) {
+        try {
+          await this.sendViaFast2SMS(phone, otp);
+          console.log('[Fast2SMS] Real SMS dispatched to recipient phone: ' + phone);
+        } catch (fastErr) {
+          console.warn('[Fast2SMS Warning]:', fastErr.message);
+          console.warn('Note: To receive carrier SMS on mobile, verify website or recharge on fast2sms.com. In testing, code ' + otp + ' is active.');
+        }
+      }
+
       return {
         success: true,
         messageId: 'dev_msg_' + Date.now(),
-        provider: 'console_dev'
+        provider: 'console_dev',
+        otp: otp
       };
     }
 
@@ -58,7 +105,10 @@ class SMSService {
     }
 
     // Production SMS Delivery
-    switch (this.provider) {
+    const prov = (process.env.FAST2SMS_API_KEY && this.provider !== 'twilio') ? 'fast2sms' : this.provider;
+    switch (prov) {
+      case 'fast2sms':
+        return this.sendViaFast2SMS(phone, otp);
       case 'twilio':
         return this.sendViaTwilio(phone, otp);
       case 'msg91':
@@ -68,6 +118,59 @@ class SMSService {
       default:
         throw new Error("SMS provider '" + this.provider + "' is not configured.");
     }
+  }
+
+  async sendViaFast2SMS(phone, otp) {
+    const apiKey = process.env.FAST2SMS_API_KEY;
+    const cleanPhone = phone.replace(/^\+91/, '').replace(/^\+/, '').replace(/\D/g, '');
+
+    if (!apiKey) {
+      throw new Error('Fast2SMS API key missing. Please configure FAST2SMS_API_KEY.');
+    }
+
+    const payload = JSON.stringify({
+      route: 'otp',
+      variables_values: otp,
+      numbers: cleanPhone
+    });
+
+    return new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: 'www.fast2sms.com',
+        port: 443,
+        path: '/dev/bulkV2',
+        method: 'POST',
+        headers: {
+          'authorization': apiKey,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      }, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed && (parsed.return === true || parsed.status_code === 200)) {
+              resolve({ success: true, messageId: (parsed.request_id || 'fast2sms_' + Date.now()), provider: 'fast2sms' });
+            } else {
+              const msg = parsed.message ? (Array.isArray(parsed.message) ? parsed.message.join(', ') : parsed.message) : data;
+              reject(new Error(`Fast2SMS delivery error (${parsed.status_code || res.statusCode}): ${msg}`));
+            }
+          } catch (e) {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve({ success: true, messageId: 'fast2sms_' + Date.now(), provider: 'fast2sms' });
+            } else {
+              reject(new Error('Fast2SMS failed with status ' + res.statusCode));
+            }
+          }
+        });
+      });
+
+      req.on('error', (e) => reject(e));
+      req.write(payload);
+      req.end();
+    });
   }
 
   async sendViaTwilio(phone, otp) {

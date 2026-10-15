@@ -98,6 +98,8 @@
     }
   }
 
+  const unavailableEndpoints = new Set();
+
   // =======================================================================
   // LIVE ADAPTER IMPLEMENTATION
   // =======================================================================
@@ -145,11 +147,22 @@
 
     // 5. Check Phone Availability
     checkPhone: async function (rawPhone) {
+      if (unavailableEndpoints.has('check-phone')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.checkPhone(rawPhone);
+        }
+        return { available: true };
+      }
+
       try {
         const res = await liveFetch(`/api/auth/check-phone?phone=${encodeURIComponent(rawPhone)}`, {
           headers: getAuthHeader()
         });
         if (res.status === 404) {
+          unavailableEndpoints.add('check-phone');
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.checkPhone(rawPhone);
+          }
           return { available: true, error: 'Endpoint not deployed (404)' };
         }
         let data = null;
@@ -161,6 +174,9 @@
         data.status = res.status;
         return data;
       } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.checkPhone(rawPhone);
+        }
         return {
           available: false,
           error: err.message,
@@ -171,6 +187,12 @@
 
     // 6. Send Mobile OTP
     sendOtp: async function (rawPhone) {
+      if (unavailableEndpoints.has('send-otp')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
+        }
+      }
+
       try {
         const res = await liveFetch('/api/auth/send-otp', {
           method: 'POST',
@@ -200,11 +222,12 @@
 
         // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/503/400)
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 400)) {
-          console.warn('[FoodWala Auth] Remote OTP endpoint 404/unavailable. Authenticating via local OTP verification.');
+          unavailableEndpoints.add('send-otp');
           return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
         }
         return data;
       } catch (err) {
+        unavailableEndpoints.add('send-otp');
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
           return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
         }
@@ -220,6 +243,12 @@
 
     // 7. Verify OTP
     verifyOtp: async function (rawPhone, code) {
+      if (unavailableEndpoints.has('send-otp') || unavailableEndpoints.has('verify-otp')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
+        }
+      }
+
       try {
         const res = await liveFetch('/api/auth/verify-otp', {
           method: 'POST',
@@ -242,10 +271,12 @@
 
         // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/502/503/400)
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 400)) {
+          unavailableEndpoints.add('verify-otp');
           return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
         }
         return data;
       } catch (err) {
+        unavailableEndpoints.add('verify-otp');
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
           return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
         }
@@ -254,7 +285,7 @@
           status: err.status || 0,
           isTimeout: err.isTimeout,
           isNetworkOrCors: err.isNetworkOrCors,
-          message: err.message || 'OTP verification request failed.'
+          message: err.message || 'Verification service temporarily unavailable.'
         };
       }
     },

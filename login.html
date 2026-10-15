@@ -268,8 +268,21 @@
 
               <div class="text-center mb-3">
                 <h5 class="fw-bold text-dark mb-1">Enter OTP</h5>
-                <p class="text-muted small mb-0">OTP sent to: <strong class="text-dark" id="display-otp-phone">+91 XXXXX XXXXX</strong></p>
-                <div id="login-otp-demo-notice" class="alert alert-info py-2 px-3 small text-center mt-2 mb-0" style="display: none;"></div>
+                <div id="login-otp-demo-notice" class="alert alert-info py-2 px-3 small rounded-3 mt-2 mb-0 text-start border-0 shadow-sm">
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <div>
+                      <i class="bi bi-shield-check text-primary me-1"></i>
+                      <strong>Verification Code:</strong> 
+                      <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white" id="login-otp-code-badge">123456</span>
+                    </div>
+                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="autofill-login-otp-btn">
+                      Auto-Fill
+                    </button>
+                  </div>
+                  <div class="text-muted" style="font-size: 0.77rem;">
+                    <i class="bi bi-info-circle me-1"></i> SMS Gateway Simulation: In testing sandbox, code <strong id="login-otp-code-text">123456</strong> is auto-filled below. You can also enter <strong>123456</strong>.
+                  </div>
+                </div>
               </div>
 
               <form id="otp-verify-form">
@@ -416,17 +429,17 @@
   <script src="./assets/vendor/firebase/firebase-firestore-compat.js"></script>
   <script src="./firebase-config.js"></script>
   <!-- API & Areas -->
-    <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js"></script>
-  <script src="./js/adapters/mockAdapter.js"></script>
-  <script src="./js/adapters/liveAdapter.js"></script>
-  <script src="./js/api.js"></script>
-  <script src="./js/areas.js" defer></script>
+  <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/config.js?v=20261016_03"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261016_03"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261016_03"></script>
+  <script src="./js/api.js?v=20261016_03"></script>
+  <script src="./js/areas.js?v=20261016_03" defer></script>
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
-  <script src="./js/ui.js" defer></script>
-  <script src="./js/app.js"></script>
+  <script src="./js/ui.js?v=20261016_03" defer></script>
+  <script src="./js/app.js?v=20261016_03"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {

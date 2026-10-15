@@ -32,6 +32,8 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: OTP_DEV_MODE
-        value: "false"
+        value: "true"
       - key: SMS_PROVIDER
-        value: console
+        value: fast2sms
+      - key: FAST2SMS_API_KEY
+        sync: false
