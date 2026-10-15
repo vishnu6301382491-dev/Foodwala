@@ -1,47 +1,46 @@
+const bcrypt = require('bcryptjs');
 let argon2 = null;
 try {
   argon2 = require('@node-rs/argon2');
 } catch (e) {
-  console.warn('[Security] @node-rs/argon2 native binary could not be loaded, using PBKDF2 fallback:', e.message);
+  // Optional native module for verifying existing Argon2id records
 }
 const crypto = require('crypto');
 
 /**
- * Enterprise Password Hashing Utility using OWASP-recommended Argon2id.
- * Transparently verifies legacy SHA-256 hashes and indicates when re-hashing is needed.
+ * Enterprise Password Hashing Utility using bcrypt (12 rounds) as required by specifications.
+ * Transparently verifies legacy Argon2id, PBKDF2, SHA-256, and plaintext passwords,
+ * and automatically triggers upgrading to bcrypt (12 rounds) on successful authentication.
  */
 
-// Argon2id options matching Java PasswordUtil and OWASP recommendations
-const ARGON2_OPTIONS = {
-  memoryCost: 19456, // 19 MiB
-  timeCost: 3,       // 3 iterations
-  parallelism: 1,    // 1 lane
-  outputLen: 32      // 32-byte key length
-};
+const BCRYPT_SALT_ROUNDS = 12;
 
 /**
- * Hash a password using Argon2id (or PBKDF2 fallback if native module unavailable)
+ * Hash a password using bcrypt with 12 salt rounds
  */
 async function hashPassword(plainText) {
   if (!plainText || typeof plainText !== 'string') {
     throw new Error('Password must be a non-empty string');
   }
-  if (argon2 && typeof argon2.hash === 'function') {
-    return await argon2.hash(plainText, ARGON2_OPTIONS);
-  }
-  // Safe PBKDF2-SHA512 fallback
-  const salt = crypto.randomBytes(16).toString('hex');
-  const derived = crypto.pbkdf2Sync(plainText, salt, 100000, 32, 'sha512').toString('hex');
-  return `$pbkdf2$${salt}$${derived}`;
+  return await bcrypt.hash(plainText, BCRYPT_SALT_ROUNDS);
 }
 
 /**
- * Verify a password against stored Argon2id or legacy SHA-256 hash
+ * Verify a password against stored bcrypt, Argon2id, PBKDF2, or legacy SHA-256 hash
  */
 async function verifyPassword(plainText, storedHash) {
   if (!plainText || !storedHash) return false;
 
-  // Case 1: Standard Argon2id
+  // Case 1: Standard bcrypt ($2a$, $2b$, $2y$)
+  if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$')) {
+    try {
+      return await bcrypt.compare(plainText, storedHash);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Case 2: Legacy Argon2id
   if (storedHash.startsWith('$argon2id$')) {
     try {
       if (argon2 && typeof argon2.verify === 'function') {
@@ -52,7 +51,7 @@ async function verifyPassword(plainText, storedHash) {
     }
   }
 
-  // Case 1b: PBKDF2 Fallback
+  // Case 3: PBKDF2
   if (storedHash.startsWith('$pbkdf2$')) {
     try {
       const parts = storedHash.split('$');
@@ -65,7 +64,7 @@ async function verifyPassword(plainText, storedHash) {
     }
   }
 
-  // Case 2: Legacy SHA-256 (64 hex characters)
+  // Case 4: Legacy SHA-256 (64 hex characters)
   if (storedHash.length === 64 && /^[0-9a-fA-F]{64}$/.test(storedHash)) {
     const computed = crypto.createHash('sha256').update(plainText).digest('hex');
     const bufA = Buffer.from(computed.toLowerCase(), 'utf8');
@@ -73,18 +72,25 @@ async function verifyPassword(plainText, storedHash) {
     return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
   }
 
-  // Case 3: Plaintext fallback
-  const bufA = Buffer.from(plainText, 'utf8');
-  const bufB = Buffer.from(storedHash, 'utf8');
-  return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+  // Case 5: Plaintext legacy fallback (safe constant-time comparison)
+  try {
+    const bufA = Buffer.from(plainText, 'utf8');
+    const bufB = Buffer.from(storedHash, 'utf8');
+    if (bufA.length === bufB.length) {
+      return crypto.timingSafeEqual(bufA, bufB);
+    }
+  } catch (e) {}
+
+  return false;
 }
 
 /**
- * Check if the stored hash is legacy and should be upgraded to Argon2id
+ * Check if the stored hash is not modern bcrypt with 12 rounds and should be upgraded
  */
 function needsRehash(storedHash) {
   if (!storedHash || typeof storedHash !== 'string') return true;
-  return !storedHash.startsWith('$argon2id$');
+  // If it's already bcrypt with 12 rounds ($2b$12$ or $2a$12$), no upgrade needed
+  return !(storedHash.startsWith('$2b$12$') || storedHash.startsWith('$2a$12$'));
 }
 
 /**

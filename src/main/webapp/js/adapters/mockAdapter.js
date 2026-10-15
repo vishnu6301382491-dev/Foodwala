@@ -82,13 +82,13 @@
       users = [
         {
           userId: 1,
-          name: 'Rahul Sharma',
-          username: 'Rahul Sharma',
-          email: 'rahul@foodwala.com',
-          phone: '9876543210',
+          name: 'VISHNU',
+          username: 'VISHNU',
+          email: 'vishnuvardhanreddych45@gmail.com',
+          phone: '6301382491',
           role: 'customer',
-          passwordHash: mockHash('Password123'),
-          address: '5th Block, Koramangala, Bengaluru, Karnataka - 560095',
+          passwordHash: mockHash('Password@123'),
+          address: 'Bengaluru Central, Karnataka - 560001',
           memberSince: 'March 2026',
           failedAttempts: 0,
           lockedUntil: 0
@@ -465,13 +465,25 @@
       users.push(newUser);
       setLocal(STORAGE_KEYS.MOCK_USERS, users);
 
+      const safeUser = {
+        userId: newUser.userId,
+        name: newUser.name,
+        username: newUser.username,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        address: newUser.address,
+        addresses: [],
+        memberSince: newUser.memberSince
+      };
+
       const token = 'mock_jwt_token_' + Date.now();
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-      setLocal(STORAGE_KEYS.CURRENT_USER, newUser);
+      setLocal(STORAGE_KEYS.CURRENT_USER, safeUser);
       logLoginAttempt(cleanEmail, 'SUCCESS', 'Email Registration');
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
+      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: safeUser }));
 
-      return { success: true, user: newUser, token: token };
+      return { success: true, user: safeUser, token: token };
     },
 
     // 10. Login (Email or Phone + Password)
@@ -481,14 +493,15 @@
         return { success: false, message: 'Please enter your email or mobile number and password.' };
       }
 
-      const normalizedPhone = normalizePhone(cleanId);
-      const isPhone = normalizedPhone !== null;
-      const cleanEmail = !isPhone ? cleanId.toLowerCase() : null;
+      const isEmail = cleanId.includes('@');
+      const cleanEmail = isEmail ? cleanId.toLowerCase() : null;
+      const normalizedPhone = !isEmail ? normalizePhone(cleanId) : null;
 
       const users = initMockUsers();
       const userIndex = users.findIndex(u => {
-        if (normalizedPhone) return normalizePhone(u.phone) === normalizedPhone;
-        return (u.email || '').toLowerCase() === cleanEmail;
+        if (cleanEmail && (u.email || '').trim().toLowerCase() === cleanEmail) return true;
+        if (normalizedPhone && normalizePhone(u.phone) === normalizedPhone) return true;
+        return false;
       });
 
       // User not found -> Generic error to prevent enumeration
@@ -516,7 +529,8 @@
 
       // Verify password hash
       const inputHash = mockHash(password);
-      if (user.passwordHash !== inputHash) {
+      const isPassValid = (user.passwordHash === inputHash) || (user.passwordHash === password) || (user.password === password);
+      if (!isPassValid) {
         user.failedAttempts = (user.failedAttempts || 0) + 1;
 
         if (user.failedAttempts >= 5) {
@@ -551,13 +565,26 @@
       users[userIndex] = user;
       setLocal(STORAGE_KEYS.MOCK_USERS, users);
 
+      // Return clean user object WITHOUT password / passwordHash
+      const safeUser = {
+        userId: user.userId,
+        name: user.name,
+        username: user.username || user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role || 'customer',
+        address: user.address || '',
+        addresses: getLocal(`${STORAGE_KEYS.MOCK_ADDRESSES}_${user.userId}`, []),
+        memberSince: user.memberSince || 'March 2026'
+      };
+
       const token = 'mock_jwt_token_' + Date.now();
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-      setLocal(STORAGE_KEYS.CURRENT_USER, user);
+      setLocal(STORAGE_KEYS.CURRENT_USER, safeUser);
       logLoginAttempt(cleanId, 'SUCCESS', 'Password Login');
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: safeUser }));
 
-      return { success: true, user: user, token: token };
+      return { success: true, user: safeUser, token: token };
     },
 
     // 11. Change Password
@@ -781,6 +808,10 @@
 
     // 18. Orders
     placeOrder: async function (orderPayload) {
+      const currentUser = getLocal(STORAGE_KEYS.CURRENT_USER, null);
+      if (!currentUser) {
+        return { success: false, error: 'UNAUTHORIZED', message: 'Authentication required. Please sign in to place an order.' };
+      }
       const orders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
       const orderId = orderPayload.orderId || ('FW-' + Math.floor(10000 + Math.random() * 90000));
 
@@ -789,6 +820,10 @@
         orderId: orderId,
         id: orderId,
         displayId: `#${orderId}`,
+        userId: currentUser.userId,
+        customerName: currentUser.name || orderPayload.customerName,
+        customerEmail: currentUser.email || orderPayload.customerEmail,
+        customerPhone: currentUser.phone || orderPayload.customerPhone,
         orderDate: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         createdAtMs: Date.now(),
@@ -805,7 +840,19 @@
 
     getOrders: async function (userId, phone) {
       const orders = getLocal(STORAGE_KEYS.MOCK_ORDERS, getLocal('foodwala_orders', []));
-      return orders;
+      const currentUser = getLocal(STORAGE_KEYS.CURRENT_USER, null);
+      const effectiveId = userId || (currentUser ? currentUser.userId : null);
+      const effectivePhone = phone ? normalizePhone(phone) : (currentUser ? normalizePhone(currentUser.phone) : null);
+
+      if (!effectiveId && !effectivePhone) {
+        return [];
+      }
+
+      return orders.filter(o => {
+        if (effectiveId && (o.userId == effectiveId || (o.customer && o.customer.userId == effectiveId))) return true;
+        if (effectivePhone && o.customerPhone && normalizePhone(o.customerPhone) === effectivePhone) return true;
+        return false;
+      });
     },
 
     getOrderById: async function (orderId) {

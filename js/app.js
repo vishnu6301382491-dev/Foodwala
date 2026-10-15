@@ -1559,14 +1559,19 @@ const FoodWalaApp = (function () {
       let destLat = orderDetails.latitude || orderDetails.lat || (loc ? loc.latitude : 12.9308);
       let destLng = orderDetails.longitude || orderDetails.lng || (loc ? loc.longitude : 77.6210);
 
-      const customerEmail = orderDetails.customerEmail || orderDetails.email || (user ? user.email : 'customer@example.com');
-      const customerPhone = orderDetails.phone || (user ? user.phone : '9876543210');
-      const customerName = orderDetails.name || (user ? user.name : 'Customer');
+      if (!user) {
+        console.error('[FoodWala Orders] Order placement rejected: User is not authenticated.');
+        throw new Error('Authentication required. Please sign in to place an order.');
+      }
+
+      const customerEmail = orderDetails.customerEmail || orderDetails.email || user.email || '';
+      const customerPhone = orderDetails.phone || user.phone || '';
+      const customerName = orderDetails.name || user.name || 'Customer';
 
       // Database Payload for ACID Transaction
       const orderPayload = {
         restaurantId: cart.restaurantId || 1,
-        userId: user ? user.userId : 1,
+        userId: user.userId || user.id,
         items: (cart.items || []).map(it => ({
           menuId: it.menuId || it.id,
           name: it.name || it.itemName,

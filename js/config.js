@@ -14,16 +14,19 @@
   const BANNER_ID = 'foodwala-offline-demo-banner';
   const BANNER_TEXT = 'Demo mode: backend offline. Data is stored only in this browser.';
 
+  const isLocalHost = typeof window !== 'undefined' && window.location && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   window.FOODWALA_CONFIG = {
-    MODE: 'mock',
-    API_BASE_URL: 'https://foodwala-backend.onrender.com',
-    DEMO_MODE: true
+    MODE: isLocalHost ? 'live' : 'mock',
+    API_BASE_URL: isLocalHost ? 'http://localhost:5000' : 'https://foodwala-backend.onrender.com',
+    DEMO_MODE: !isLocalHost
   };
 
   // Default to demo mode while backend is unreachable
-  window.FOODWALA_IS_DEMO_MODE = true;
+  window.FOODWALA_IS_DEMO_MODE = !isLocalHost;
 
-  let isDemoMode = true;
+  let isDemoMode = !isLocalHost;
   let memoryHealthCache = null; // { isUp: boolean, timestamp: number }
   const statusListeners = [];
 
@@ -72,8 +75,8 @@
   async function checkBackend(forceRefresh = false) {
     const now = Date.now();
 
-    // 0. In mock mode, resolve offline status silently to avoid 404 network errors in browser console
-    if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock' && !window.FOODWALA_CONFIG.PROBE_BACKEND) {
+    // 0. In mock mode on remote host without forceRefresh, resolve offline status silently to avoid 404 network errors
+    if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock' && !window.FOODWALA_CONFIG.PROBE_BACKEND && !forceRefresh && !isLocalHost) {
       setMode(true);
       return false;
     }

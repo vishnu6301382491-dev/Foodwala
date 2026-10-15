@@ -493,9 +493,14 @@
               FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
               try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (err) {}
               setTimeout(() => { window.location.href = redirectTarget; }, 500);
-            } else if (res.status === 409 || res.code === 'PHONE_EXISTS') {
+            } else if (res.code === 'PHONE_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('phone'))) {
               if (regOtpModal) regOtpModal.hide();
               showDuplicatePhoneModal(pendingRegistrationData.phone);
+            } else if (res.code === 'EMAIL_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('email'))) {
+              regVerifyBtn.disabled = false;
+              regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
+              regOtpError.textContent = res.message || res.error || 'An account with this email address already exists. Please login.';
+              regOtpError.style.display = 'block';
             } else {
               regVerifyBtn.disabled = false;
               regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';

@@ -26,6 +26,7 @@ const path = require('path');
 const fs = require('fs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
 
 if (fs.existsSync(path.join(__dirname, '.env'))) {
   try {
@@ -42,6 +43,7 @@ const PORT = process.env.PORT || 5000;
 const APP_VERSION = require('./package.json').version || '1.0.0';
 const GIT_COMMIT = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'development';
 const HASH_SECRET = process.env.OTP_HASH_SECRET || crypto.randomBytes(32).toString('hex');
+const JWT_SECRET = process.env.JWT_SECRET || 'foodwala_secure_jwt_secret_2026_key_super_secret';
 const IS_DEV_MODE = process.env.OTP_DEV_MODE === 'true' || process.env.NODE_ENV !== 'production';
 
 // ---------------------------------------------------------------------------
@@ -166,6 +168,14 @@ async function authenticateUser(req, res, next) {
   if (authHeader) {
     token = authHeader.replace(/^Bearer\s+/i, '').trim();
     userId = activeSessions.get(token);
+    if (!userId && token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded && decoded.userId) {
+          userId = decoded.userId;
+        }
+      } catch (jwtErr) {}
+    }
   }
 
   // Fallback support for local sessions
@@ -431,9 +441,17 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
       );
     } catch (e) {}
 
-    // Generate Session Token
-    const token = 'fw_sess_' + crypto.randomBytes(32).toString('hex');
+    // Generate JWT and Session Token
+    const token = jwt.sign(
+      { userId: newUserId, email: cleanEmail, role: 'customer' },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     activeSessions.set(token, newUserId);
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Auth Debug] New user registered successfully: ${cleanEmail} (userId: ${newUserId})`);
+    }
 
     const userPayload = {
       userId: newUserId,
@@ -485,17 +503,23 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     const cleanEmail = rawId.toLowerCase();
     const normalizedPhone = normalizeIndianPhone(rawId);
 
-    // Look up user by email OR normalized phone using Prepared Statement
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[Auth Debug] Login request received for identifier: "${rawId}" (normalizedEmail: "${cleanEmail}", phone: "${normalizedPhone || 'N/A'}")`);
+    }
+
+    // Look up user by normalized email OR normalized phone using Prepared Statement
     const [users] = await db.execute(
       `SELECT user_id, username, email, phone, role, address, password_hash, 
               failed_attempts, locked_until, last_login 
        FROM user 
-       WHERE email = ? OR (phone = ? AND phone IS NOT NULL)`,
+       WHERE LOWER(email) = ? OR (phone = ? AND phone IS NOT NULL)`,
       [cleanEmail, normalizedPhone || 'NON_MATCHING_PHONE']
     );
 
     if (users.length === 0) {
-      // Record Failed Attempt in login_history with 0/null user
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Auth Debug] User not found for identifier: "${rawId}"`);
+      }
       return res.status(401).json({
         success: false,
         message: 'Invalid email/mobile number or password.'
@@ -521,7 +545,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       }
     }
 
-    // Verify Password (supports Argon2id, legacy SHA-256, plaintext)
+    // Verify Password (supports bcrypt, legacy Argon2id, SHA-256, plaintext)
     const isPasswordValid = await verifyPassword(password, user.password_hash);
 
     if (!isPasswordValid) {
@@ -550,16 +574,15 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
           message: 'Account has been locked for 15 minutes due to 5 consecutive failed login attempts.'
         });
       } else {
-        const remaining = 5 - newFailed;
         return res.status(401).json({
           success: false,
-          message: `Incorrect password. ${remaining} attempt(s) remaining before temporary lockout.`
+          message: 'Invalid email/mobile number or password.'
         });
       }
     }
 
     // Password verified!
-    // Check if password hash needs upgrade to Argon2id
+    // Transparently upgrade legacy hashes (Argon2id, SHA-256, plaintext) to bcrypt 12
     if (needsRehash(user.password_hash)) {
       try {
         const upgradedHash = await hashPassword(password);
@@ -567,7 +590,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
           'UPDATE user SET password_hash = ? WHERE user_id = ?',
           [upgradedHash, userId]
         );
-        console.log(`[Security] Upgraded legacy password hash to Argon2id for user ${userId} (${user.email})`);
+        console.log(`[Security] Upgraded legacy password hash to bcrypt 12 for user ${userId} (${user.email})`);
       } catch (hashErr) {
         console.warn('[Hash Upgrade Warning]:', hashErr.message);
       }
@@ -587,9 +610,27 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       );
     } catch (e) {}
 
-    // Generate Session Token
-    const token = 'fw_sess_' + crypto.randomBytes(32).toString('hex');
+    // Generate JWT and Session Token
+    const token = jwt.sign(
+      { userId: user.user_id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     activeSessions.set(token, userId);
+
+    // Fetch user's saved addresses
+    let addresses = [];
+    try {
+      const [addrRows] = await db.execute(
+        `SELECT address_id as id, full_name as fullName, phone, formatted_address as addressLine, 
+                street, area, city, state, pincode, address_type as type, is_default as isDefault 
+         FROM address 
+         WHERE user_id = ? 
+         ORDER BY is_default DESC, address_id DESC`,
+        [userId]
+      );
+      addresses = addrRows || [];
+    } catch (addrErr) {}
 
     const userPayload = {
       userId: user.user_id,
@@ -599,6 +640,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       phone: user.phone,
       role: (user.role || 'customer').toLowerCase(),
       address: user.address || '',
+      addresses: addresses,
       lastLogin: new Date().toISOString()
     };
 
@@ -1611,7 +1653,16 @@ app.post('/api/orders/place', async (req, res) => {
     const tax = parseFloat(taxes) || 0;
     const disc = parseFloat(discount) || 0;
     const cleanPhone = normalizeIndianPhone(customerPhone) || customerPhone || '9876543210';
-    const effectiveUserId = userId || (req.user ? req.user.user_id : 1);
+    const effectiveUserId = (req.user ? req.user.user_id : null) || (userId ? parseInt(userId, 10) : null);
+    if (!effectiveUserId) {
+      connection.release();
+      orderLocks.delete(lockKey);
+      return res.status(401).json({
+        success: false,
+        error: 'UNAUTHORIZED',
+        message: 'Authentication required. Please sign in to place an order.'
+      });
+    }
 
     // 4. Insert into fudwala.orders
     const [orderResult] = await connection.execute(
@@ -1812,10 +1863,20 @@ app.post('/api/orders/place', async (req, res) => {
  */
 app.get('/api/orders', async (req, res) => {
   try {
-    // If authenticated, get logged-in user's orders; or query by userId param / phone param
+    // If authenticated, get logged-in user's orders; admins may view any user's orders via query param
     let userId = req.user ? req.user.user_id : null;
-    if (!userId && req.query.userId) {
+    if (req.user && req.user.role === 'admin' && req.query.userId) {
       userId = parseInt(req.query.userId, 10);
+    } else if (!req.user && req.query.userId) {
+      userId = parseInt(req.query.userId, 10);
+    }
+
+    if (!userId && !req.query.phone) {
+      return res.status(401).json({
+        success: false,
+        error: 'UNAUTHORIZED',
+        message: 'Authentication required to view orders.'
+      });
     }
 
     let ordersQuery = `
@@ -1931,6 +1992,14 @@ app.get('/api/orders/:id', async (req, res) => {
     }
 
     const o = orders[0];
+    if (req.user && req.user.role !== 'admin' && o.user_id !== req.user.user_id) {
+      return res.status(403).json({
+        success: false,
+        error: 'FORBIDDEN',
+        message: 'Access denied. You can only view your own orders.'
+      });
+    }
+
     const [items] = await db.execute(
       'SELECT menu_id, quantity, item_total, item_name, price_at_order FROM order_item WHERE order_id = ?',
       [orderId]

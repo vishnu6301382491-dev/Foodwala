@@ -506,6 +506,14 @@
                   </div>
                 </div>
               `;
+            } else if (res.status === 401) {
+              loginErrorMsg.textContent = res.message || 'Invalid email/mobile number or password.';
+            } else if (res.status === 400) {
+              loginErrorMsg.textContent = res.message || 'Please check your email/mobile and password.';
+            } else if (res.status === 404) {
+              loginErrorMsg.textContent = 'Authentication service endpoint not found (404). Please contact support.';
+            } else if (res.status >= 500) {
+              loginErrorMsg.textContent = 'FoodWala server encountered an error. Please try again shortly.';
             } else {
               loginErrorMsg.textContent = res.message || 'Invalid email/mobile number or password.';
             }
@@ -514,7 +522,9 @@
         } catch (err) {
           loginSubmitBtn.disabled = true;
           loginSubmitBtn.innerHTML = 'Unavailable - Retry in 3s';
-          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          loginErrorMsg.textContent = 'Unable to connect to FoodWala server. Please try again.';
+          loginErrorMsg.style.display = 'block';
+          FoodWalaApp.showToast('Unable to connect to FoodWala server. Please try again.', 'error');
           setTimeout(() => {
             loginSubmitBtn.disabled = false;
             loginSubmitBtn.innerHTML = 'Sign In';

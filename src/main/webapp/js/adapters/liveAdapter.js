@@ -206,6 +206,7 @@
       });
       handleHttpErrors(res);
       const resData = await res.json();
+      resData.status = res.status;
       if (res.ok && resData.success && resData.user) {
         if (resData.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, resData.token);
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(resData.user));
@@ -217,10 +218,15 @@
     // 10. Login
     login: async function (identifier, password) {
       const cleanId = (identifier || '').trim();
-      const isPhone = /^[6-9]\d{9}$/.test(cleanId.replace(/\D/g, '')) || cleanId.startsWith('+91');
-      const payload = isPhone
-        ? { phone: cleanId.replace(/\D/g, '').slice(-10), password: password }
-        : { email: cleanId.toLowerCase(), password: password };
+      const digits = cleanId.replace(/\D/g, '');
+      const isPhone = !cleanId.includes('@') && (/^[6-9]\d{9}$/.test(digits) || (digits.length === 12 && digits.startsWith('91')) || (digits.length === 11 && digits.startsWith('0')));
+      
+      const payload = {
+        identifier: cleanId,
+        email: !isPhone ? cleanId.toLowerCase() : undefined,
+        phone: isPhone ? digits.slice(-10) : undefined,
+        password: password
+      };
 
       const res = await liveFetch('/api/auth/login', {
         method: 'POST',
@@ -229,6 +235,7 @@
       });
       handleHttpErrors(res);
       const data = await res.json();
+      data.status = res.status;
       if (res.ok && data.success && data.user) {
         if (data.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));

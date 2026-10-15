@@ -950,7 +950,7 @@
               prefill: {
                 name: nameVal,
                 email: emailVal,
-                contact: currentUser ? currentUser.phone : '+91 98765 43210'
+                contact: currentUser ? (currentUser.phone || '') : ''
               },
               notes: {
                 order_id: pregeneratedOrderId,
@@ -968,7 +968,7 @@
                   orderId: pregeneratedOrderId,
                   name: nameVal,
                   customerEmail: emailVal,
-                  phone: currentUser ? currentUser.phone : '+91 98765 43210',
+                  phone: currentUser ? (currentUser.phone || '') : '',
                   address: activeDeliveryLocation.address,
                   latitude: activeDeliveryLocation.lat,
                   longitude: activeDeliveryLocation.lng,
@@ -1029,7 +1029,7 @@
           orderId: orderId,
           name: nameVal,
           customerEmail: emailVal,
-          phone: currentUser ? currentUser.phone : '+91 98765 43210',
+          phone: currentUser ? (currentUser.phone || '') : '',
           address: locationObj.address,
           latitude: locationObj.lat,
           longitude: locationObj.lng,
