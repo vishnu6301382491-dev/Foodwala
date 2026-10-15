@@ -86,25 +86,61 @@
     return null;
   }
 
+  // Toast De-duplication and Red Error Styling
+  let lastToastMsg = '';
+  let lastToastTime = 0;
+
+  function showErrorToast(msg) {
+    if (typeof window === 'undefined' || !window.FoodWalaApp || typeof window.FoodWalaApp.showToast !== 'function') {
+      return;
+    }
+    const now = Date.now();
+    if (msg === lastToastMsg && (now - lastToastTime) < 5000) {
+      return; // Suppress duplicate toast within 5 seconds
+    }
+    lastToastMsg = msg;
+    lastToastTime = now;
+    window.FoodWalaApp.showToast(msg, 'danger');
+  }
+
+  // Silent server warm-up ping on page load
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      fetch(`${API_BASE_URL}/api/health`, { method: 'GET', mode: 'cors' })
+        .then(r => r.json())
+        .then(data => {
+          console.log('[FoodWalaApi] Silent warm-up ping completed. Server:', data.status, 'DB:', data.db);
+        })
+        .catch(err => {
+          console.info('[FoodWalaApi] Silent warm-up ping sent (server may be spinning up):', err.message);
+        });
+    }, 100);
+  }
+
   /**
    * Central fetch wrapper with automatic retry for Render free-tier cold starts.
-   * If a network failure / connection refused / 502/503 occurs, it notifies the user
-   * and automatically retries before failing.
+   * Auto-retries 3 times with a 3-second delay silently before displaying any error.
+   * Distinguishes failure types (network/CORS vs HTTP 5xx vs DB error).
    */
-  async function apiFetch(endpoint, options = {}, retries = 2, delayMs = 3000) {
+  async function apiFetch(endpoint, options = {}, retries = 3, delayMs = 3000) {
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     
     let lastError = null;
+    let lastRes = null;
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const res = await fetch(url, options);
+        lastRes = res;
 
-        // Render cold start can sometimes return 502 or 503 while the container boots up
-        if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < retries) {
-          console.warn(`[FoodWalaApi] Server waking up (${res.status}). Retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1}/${retries})`);
-          if (typeof window !== 'undefined' && window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
-            window.FoodWalaApp.showToast(SERVER_WAKE_UP_MSG, 'info');
-          }
+        // If response is successful or a standard client error (e.g. 400 bad phone, 401 unauth, 422, 423 locked), return immediately
+        if (res.ok || (res.status >= 400 && res.status < 500 && res.status !== 408)) {
+          return res;
+        }
+
+        // Render cold start or transient 502/503/504/500
+        if ((res.status === 502 || res.status === 503 || res.status === 504 || res.status === 500) && attempt < retries) {
+          console.info(`[FoodWalaApi] Server waking up / retrying (${res.status}). Attempt ${attempt + 1}/${retries}...`);
           await new Promise(r => setTimeout(r, delayMs));
           continue;
         }
@@ -112,19 +148,41 @@
         return res;
       } catch (err) {
         lastError = err;
-        console.warn(`[FoodWalaApi] Network attempt ${attempt + 1}/${retries + 1} failed:`, err.message);
+        console.info(`[FoodWalaApi] Attempt ${attempt + 1}/${retries + 1} failed:`, err.message);
         
         if (attempt < retries) {
-          console.info(`[FoodWalaApi] Server waking up. Retrying in ${delayMs / 1000}s...`);
-          if (typeof window !== 'undefined' && window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
-            window.FoodWalaApp.showToast(SERVER_WAKE_UP_MSG, 'info');
-          }
           await new Promise(r => setTimeout(r, delayMs));
         }
       }
     }
 
-    throw lastError || new Error(SERVER_WAKE_UP_MSG);
+    // All retries exhausted -> classify failure type accurately
+    let errorDetail = '';
+    if (lastError) {
+      errorDetail = 'Unable to connect to backend server. Server might be waking up or blocked by CORS.';
+    } else if (lastRes) {
+      if (lastRes.status === 404) {
+        errorDetail = 'Backend service is not running or endpoint not found on Render. Please verify Render service status.';
+      } else if (lastRes.status >= 500) {
+        errorDetail = 'Database or backend service unavailable. Please retry in a few moments.';
+      } else {
+        errorDetail = `Request failed with HTTP status ${lastRes.status}.`;
+      }
+    } else {
+      errorDetail = 'Unable to connect to backend server. Please retry in 30 seconds.';
+    }
+
+    const err = new Error(errorDetail);
+    err.status = lastRes ? lastRes.status : 0;
+    err.isNetworkOrCors = Boolean(lastError);
+    err.response = lastRes;
+
+    // Show single deduplicated red error toast only for interactive operations
+    if (!endpoint.includes('/api/health') && !endpoint.includes('/api/restaurants') && !endpoint.includes('/api/categories')) {
+      showErrorToast(errorDetail);
+    }
+
+    throw err;
   }
 
   const FoodWalaApi = {
@@ -448,7 +506,17 @@
         if (Array.isArray(data) && data.length > 0) return data;
         throw new Error('Empty restaurants array from API');
       } catch (e) {
-        console.warn('[FoodWalaApi] Backend waking up or unreachable, using fallback restaurants:', e.message);
+        console.warn('[FoodWalaApi] Backend API unreachable, falling back to local static dataset:', e.message);
+        try {
+          const fallbackRes = await fetch('./data/restaurants.json');
+          if (fallbackRes.ok) {
+            const list = await fallbackRes.json();
+            if (Array.isArray(list) && list.length > 0) return list;
+          }
+        } catch (err) {}
+        if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
+          return window.FOODWALA_RESTAURANTS;
+        }
         if (typeof window !== 'undefined' && window.FOODWALA_FEATURED_8) {
           return window.FOODWALA_FEATURED_8;
         }
@@ -457,32 +525,50 @@
     },
 
     getRestaurantMenu: async function (restaurantId) {
+      const rId = parseInt(restaurantId, 10);
       try {
-        const res = await apiFetch(`/api/restaurants/${restaurantId}/menu`);
+        const res = await apiFetch(`/api/restaurants/${rId}/menu`);
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        return await res.json();
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
       } catch (e) {
-        console.warn(`[FoodWalaApi] Failed to fetch menu for restaurant ${restaurantId}:`, e.message);
-        return [];
+        console.warn(`[FoodWalaApi] API menu unreachable for ${rId}, loading static items:`, e.message);
       }
+      try {
+        const fallbackRes = await fetch('./data/menu-items.json');
+        if (fallbackRes.ok) {
+          const allItems = await fallbackRes.json();
+          const matched = allItems.filter(m => (m.restaurantId === rId || m.restaurant_id === rId));
+          if (matched.length > 0) return matched;
+        }
+      } catch (err) {}
+      return [];
     },
 
     getCategories: async function () {
       try {
         const res = await apiFetch('/api/categories');
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        return await res.json();
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
       } catch (e) {
-        console.warn('[FoodWalaApi] Backend waking up, returning default categories:', e.message);
-        return [
-          { id: 1, name: 'South Indian' },
-          { id: 2, name: 'North Indian' },
-          { id: 3, name: 'Biryani' },
-          { id: 4, name: 'Burgers & Fast Food' },
-          { id: 5, name: 'Desserts & Sweets' },
-          { id: 6, name: 'Beverages' }
-        ];
+        console.warn('[FoodWalaApi] Backend API unreachable, loading static categories fallback:', e.message);
       }
+      try {
+        const fallbackRes = await fetch('./data/categories.json');
+        if (fallbackRes.ok) {
+          const list = await fallbackRes.json();
+          if (Array.isArray(list) && list.length > 0) return list;
+        }
+      } catch (err) {}
+      return [
+        { id: 1, name: 'South Indian' },
+        { id: 2, name: 'North Indian' },
+        { id: 3, name: 'Biryani' },
+        { id: 4, name: 'Burgers & Fast Food' },
+        { id: 5, name: 'Desserts & Sweets' },
+        { id: 6, name: 'Beverages' }
+      ];
     },
 
     // 11. Saved Addresses (fudwala.address)

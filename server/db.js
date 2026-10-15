@@ -34,6 +34,7 @@ const poolConfig = {
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000,
+  connectTimeout: 10000,
   dateStrings: true
 };
 

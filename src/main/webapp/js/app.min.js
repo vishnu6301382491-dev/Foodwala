@@ -117,7 +117,7 @@ const FoodWalaApp = (function () {
     if (window.FoodWalaApi && typeof window.FoodWalaApi.getRestaurants === 'function') {
       try {
         const dbRestaurants = await window.FoodWalaApi.getRestaurants();
-        if (Array.isArray(dbRestaurants) && dbRestaurants.length > 0) {
+        if (Array.isArray(dbRestaurants) && dbRestaurants.length >= 10) {
           restaurantsCache = dbRestaurants;
           try {
             sessionStorage.setItem(RESTAURANTS_CACHE_KEY, JSON.stringify(restaurantsCache));
@@ -134,23 +134,34 @@ const FoodWalaApp = (function () {
       const cached = sessionStorage.getItem(RESTAURANTS_CACHE_KEY) || localStorage.getItem(RESTAURANTS_CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length >= 10) {
           restaurantsCache = parsed;
           return restaurantsCache;
         }
       }
     } catch (e) {}
 
-    // 3. Fallback to static restaurants.json
+    // 3. Fallback to static restaurants.json (Full 105 Bengaluru restaurants)
     try {
       const restRes = await fetch('./data/restaurants.json');
       if (restRes.ok) {
-        restaurantsCache = await restRes.json();
-        try {
-          sessionStorage.setItem(RESTAURANTS_CACHE_KEY, JSON.stringify(restaurantsCache));
-        } catch (e) {}
+        const fullList = await restRes.json();
+        if (Array.isArray(fullList) && fullList.length > 0) {
+          restaurantsCache = fullList;
+          try {
+            sessionStorage.setItem(RESTAURANTS_CACHE_KEY, JSON.stringify(restaurantsCache));
+          } catch (e) {}
+          return restaurantsCache;
+        }
       }
     } catch (e) {}
+
+    // 4. Fallback to global window objects
+    if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
+      restaurantsCache = window.FOODWALA_RESTAURANTS;
+    } else if (typeof window !== 'undefined' && window.FOODWALA_FEATURED_8) {
+      restaurantsCache = window.FOODWALA_FEATURED_8;
+    }
 
     return restaurantsCache;
   }
@@ -1645,8 +1656,9 @@ const FoodWalaApp = (function () {
       document.body.appendChild(container);
     }
 
-    const bgClass = type === 'error' ? 'bg-danger text-white' : type === 'warning' ? 'bg-warning text-dark' : 'bg-success text-white';
-    const icon = type === 'error' ? 'bi-exclamation-triangle-fill' : type === 'warning' ? 'bi-exclamation-circle' : 'bi-check-circle-fill';
+    const isDanger = type === 'error' || type === 'danger';
+    const bgClass = isDanger ? 'bg-danger text-white' : type === 'warning' ? 'bg-warning text-dark' : type === 'info' ? 'bg-info text-dark' : 'bg-success text-white';
+    const icon = isDanger ? 'bi-exclamation-triangle-fill' : type === 'warning' ? 'bi-exclamation-circle' : type === 'info' ? 'bi-info-circle-fill' : 'bi-check-circle-fill';
 
     const toastEl = document.createElement('div');
     toastEl.className = `toast align-items-center ${bgClass} border-0 show shadow-lg mb-2`;

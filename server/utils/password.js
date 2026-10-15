@@ -1,4 +1,9 @@
-const { hash, verify } = require('@node-rs/argon2');
+let argon2 = null;
+try {
+  argon2 = require('@node-rs/argon2');
+} catch (e) {
+  console.warn('[Security] @node-rs/argon2 native binary could not be loaded, using PBKDF2 fallback:', e.message);
+}
 const crypto = require('crypto');
 
 /**
@@ -15,13 +20,19 @@ const ARGON2_OPTIONS = {
 };
 
 /**
- * Hash a password using Argon2id
+ * Hash a password using Argon2id (or PBKDF2 fallback if native module unavailable)
  */
 async function hashPassword(plainText) {
   if (!plainText || typeof plainText !== 'string') {
     throw new Error('Password must be a non-empty string');
   }
-  return await hash(plainText, ARGON2_OPTIONS);
+  if (argon2 && typeof argon2.hash === 'function') {
+    return await argon2.hash(plainText, ARGON2_OPTIONS);
+  }
+  // Safe PBKDF2-SHA512 fallback
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derived = crypto.pbkdf2Sync(plainText, salt, 100000, 32, 'sha512').toString('hex');
+  return `$pbkdf2$${salt}$${derived}`;
 }
 
 /**
@@ -33,7 +44,22 @@ async function verifyPassword(plainText, storedHash) {
   // Case 1: Standard Argon2id
   if (storedHash.startsWith('$argon2id$')) {
     try {
-      return await verify(storedHash, plainText);
+      if (argon2 && typeof argon2.verify === 'function') {
+        return await argon2.verify(storedHash, plainText);
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Case 1b: PBKDF2 Fallback
+  if (storedHash.startsWith('$pbkdf2$')) {
+    try {
+      const parts = storedHash.split('$');
+      const salt = parts[2];
+      const hashVal = parts[3];
+      const derived = crypto.pbkdf2Sync(plainText, salt, 100000, 32, 'sha512').toString('hex');
+      return crypto.timingSafeEqual(Buffer.from(derived, 'utf8'), Buffer.from(hashVal, 'utf8'));
     } catch (e) {
       return false;
     }
