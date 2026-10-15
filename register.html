@@ -293,12 +293,21 @@
         e.preventDefault();
         regErrorMsg.style.display = 'none';
 
-        if (window.FOODWALA_IS_DEMO_MODE) {
+        regSubmitBtn.disabled = true;
+        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
+
+        const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
+          ? await window.FoodWalaHealth.checkBackend()
+          : false;
+
+        if (!isOnline) {
+          regSubmitBtn.disabled = false;
+          regSubmitBtn.innerHTML = 'Create Account';
           FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-          regErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
-          regErrorMsg.style.display = 'block';
           return;
         }
+
+        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP...';
 
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim();

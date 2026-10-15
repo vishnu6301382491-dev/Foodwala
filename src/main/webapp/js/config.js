@@ -1,14 +1,16 @@
 /**
  * FoodWala Unified Application Configuration & Health Monitor (config.js)
  * 
- * Manages live backend health check (3-second timeout), automatic offline
- * demo mode switching, demo banners on target pages, and recovery polling.
+ * - NO backend calls on page load (prevents red console errors during browsing).
+ * - Shared checkBackend() with a 60-second memory + sessionStorage cache.
+ * - Single request per 60s window across the entire application.
+ * - Offline Demo Mode banner on target pages (login, register, checkout, orders).
  */
 (function (window) {
   'use strict';
 
   const HEALTH_TIMEOUT_MS = 3000;
-  const POLL_INTERVAL_MS = 15000;
+  const CACHE_TTL_MS = 60000; // 60 seconds
   const BANNER_ID = 'foodwala-offline-demo-banner';
   const BANNER_TEXT = 'Demo mode: backend offline. Data is stored only in this browser.';
 
@@ -18,10 +20,11 @@
     DEMO_MODE: true
   };
 
+  // Default to demo mode while backend is unreachable
   window.FOODWALA_IS_DEMO_MODE = true;
 
   let isDemoMode = true;
-  let pollTimer = null;
+  let memoryHealthCache = null; // { isUp: boolean, timestamp: number }
   const statusListeners = [];
 
   function getHealthUrl() {
@@ -29,25 +32,99 @@
     return base.replace(/\/+$/, '') + '/api/health';
   }
 
-  // Check health with strict 3-second timeout
-  async function checkHealth() {
-    if (typeof fetch === 'undefined') return false;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
-
-    try {
-      const res = await fetch(getHealthUrl(), {
-        method: 'GET',
-        mode: 'cors',
-        signal: controller.signal,
-        cache: 'no-cache'
-      });
-      clearTimeout(timeoutId);
-      return res.ok;
-    } catch (err) {
-      clearTimeout(timeoutId);
-      return false;
+  // Restore cached health status from sessionStorage on startup (ZERO network calls on page load)
+  function initFromCache() {
+    if (typeof sessionStorage !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('foodwala_backend_health');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const now = Date.now();
+          if (parsed && typeof parsed.isUp === 'boolean' && (now - parsed.timestamp < CACHE_TTL_MS)) {
+            memoryHealthCache = parsed;
+            isDemoMode = !parsed.isUp;
+            window.FOODWALA_IS_DEMO_MODE = isDemoMode;
+            if (window.FOODWALA_CONFIG) {
+              window.FOODWALA_CONFIG.MODE = isDemoMode ? 'mock' : 'live';
+              window.FOODWALA_CONFIG.DEMO_MODE = isDemoMode;
+            }
+            return;
+          }
+        }
+      } catch (e) {}
     }
+    // Default: offline demo mode
+    isDemoMode = true;
+    window.FOODWALA_IS_DEMO_MODE = true;
+    if (window.FOODWALA_CONFIG) {
+      window.FOODWALA_CONFIG.MODE = 'mock';
+      window.FOODWALA_CONFIG.DEMO_MODE = true;
+    }
+  }
+
+  /**
+   * One shared checkBackend() function:
+   * - Checks memory cache (< 60s)
+   * - Checks sessionStorage (< 60s)
+   * - Makes exactly ONE network call with 3s timeout only if cache expired
+   * - Never makes 3 or 5 calls
+   */
+  async function checkBackend(forceRefresh = false) {
+    const now = Date.now();
+
+    // 1. Check in-memory cache
+    if (!forceRefresh && memoryHealthCache && (now - memoryHealthCache.timestamp < CACHE_TTL_MS)) {
+      return memoryHealthCache.isUp;
+    }
+
+    // 2. Check sessionStorage
+    if (!forceRefresh && typeof sessionStorage !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('foodwala_backend_health');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed.isUp === 'boolean' && (now - parsed.timestamp < CACHE_TTL_MS)) {
+            memoryHealthCache = parsed;
+            setMode(!parsed.isUp);
+            return parsed.isUp;
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 3. Make ONE single request with 3s timeout
+    let isUp = false;
+    if (typeof fetch !== 'undefined') {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
+
+      try {
+        const res = await fetch(getHealthUrl(), {
+          method: 'GET',
+          mode: 'cors',
+          signal: controller.signal,
+          cache: 'no-cache'
+        });
+        clearTimeout(timeoutId);
+        isUp = res.ok;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        isUp = false;
+      }
+    }
+
+    // 4. Save to memory and sessionStorage
+    memoryHealthCache = { isUp, timestamp: Date.now() };
+    if (typeof sessionStorage !== 'undefined') {
+      try {
+        sessionStorage.setItem('foodwala_backend_health', JSON.stringify(memoryHealthCache));
+      } catch (e) {}
+    }
+
+    // 5. Update mode and notify UI
+    setMode(!isUp);
+
+    return isUp;
   }
 
   function setMode(demoActive) {
@@ -173,27 +250,9 @@
     }
   }
 
-  // Initial Health Check
-  async function initHealthCheck() {
-    const isOnline = await checkHealth();
-    setMode(!isOnline);
-
-    // Setup periodic polling to auto-recover as soon as backend comes online
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(async () => {
-      const online = await checkHealth();
-      if (online && isDemoMode) {
-        console.log('[FoodWala Health] Backend is UP! Switching back to live backend.');
-        setMode(false);
-      } else if (!online && !isDemoMode) {
-        console.log('[FoodWala Health] Backend is DOWN! Switching to offline demo mode.');
-        setMode(true);
-      }
-    }, POLL_INTERVAL_MS);
-  }
-
   window.FoodWalaHealth = {
-    checkHealth: checkHealth,
+    checkBackend: checkBackend,
+    checkHealth: checkBackend,
     isDemoMode: function () { return isDemoMode; },
     setMode: setMode,
     onStatusChange: function (fn) { statusListeners.push(fn); },
@@ -201,8 +260,8 @@
     removeBanner: removeBanner
   };
 
-  // Start health check immediately
-  initHealthCheck();
+  // Initialize from cache or default (NO network requests on page load)
+  initFromCache();
 
   // Attach DOMContentLoaded handler for banner placement once DOM elements exist
   if (typeof document !== 'undefined') {

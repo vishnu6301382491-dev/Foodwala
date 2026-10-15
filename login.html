@@ -460,13 +460,6 @@
         e.preventDefault();
         loginErrorMsg.style.display = 'none';
 
-        if (window.FOODWALA_IS_DEMO_MODE) {
-          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-          loginErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
-          loginErrorMsg.style.display = 'block';
-          return;
-        }
-
         const identifier = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value;
 
@@ -486,6 +479,19 @@
 
         loginSubmitBtn.disabled = true;
         loginSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing In...';
+
+        // Check backend status before calling live API (uses 60-second cached checkBackend)
+        const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
+          ? await window.FoodWalaHealth.checkBackend()
+          : false;
+
+        if (!isOnline) {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.innerHTML = 'Sign In';
+          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          // In offline demo mode, suppress duplicate inline red box to keep UI clean
+          return;
+        }
 
         try {
           const res = await FoodWalaApp.Auth.login(identifier, password);
@@ -516,8 +522,7 @@
         } catch (err) {
           loginSubmitBtn.disabled = false;
           loginSubmitBtn.innerHTML = 'Sign In';
-          loginErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
-          loginErrorMsg.style.display = 'block';
+          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
         }
       });
 
@@ -549,13 +554,6 @@
         e.preventDefault();
         phoneError.style.display = 'none';
 
-        if (window.FOODWALA_IS_DEMO_MODE) {
-          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-          phoneError.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
-          phoneError.style.display = 'block';
-          return;
-        }
-
         const rawPhone = phoneInput.value.trim();
         const normalized = FoodWalaApp.Auth.normalizePhone(rawPhone);
 
@@ -566,6 +564,19 @@
         }
 
         sendOtpBtn.disabled = true;
+        sendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
+
+        const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
+          ? await window.FoodWalaHealth.checkBackend()
+          : false;
+
+        if (!isOnline) {
+          sendOtpBtn.disabled = false;
+          sendOtpBtn.innerHTML = '<span>Send OTP</span> <i class="bi bi-arrow-right"></i>';
+          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          return;
+        }
+
         sendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP...';
 
         const res = await FoodWalaApp.Auth.sendOtp(normalized);
@@ -750,13 +761,6 @@
         forgotGetOtpBtn.addEventListener('click', async () => {
           forgotStep1Error.style.display = 'none';
 
-          if (window.FOODWALA_IS_DEMO_MODE) {
-            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-            forgotStep1Error.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
-            forgotStep1Error.style.display = 'block';
-            return;
-          }
-
           const identifier = document.getElementById('forgot-identifier').value.trim();
           if (!identifier) {
             forgotStep1Error.textContent = 'Please enter your registered email or mobile number.';
@@ -765,6 +769,19 @@
           }
 
           forgotGetOtpBtn.disabled = true;
+          forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
+
+          const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
+            ? await window.FoodWalaHealth.checkBackend()
+            : false;
+
+          if (!isOnline) {
+            forgotGetOtpBtn.disabled = false;
+            forgotGetOtpBtn.innerHTML = 'Get Verification Code';
+            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+            return;
+          }
+
           forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Generating Code...';
 
           try {
@@ -788,8 +805,7 @@
           } catch (err) {
             forgotGetOtpBtn.disabled = false;
             forgotGetOtpBtn.innerHTML = 'Get Verification Code';
-            forgotStep1Error.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
-            forgotStep1Error.style.display = 'block';
+            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
           }
         });
       }
@@ -827,6 +843,19 @@
           }
 
           forgotResetBtn.disabled = true;
+          forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
+
+          const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
+            ? await window.FoodWalaHealth.checkBackend()
+            : false;
+
+          if (!isOnline) {
+            forgotResetBtn.disabled = false;
+            forgotResetBtn.innerHTML = 'Reset Password';
+            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+            return;
+          }
+
           forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Resetting...';
 
           try {
@@ -855,8 +884,7 @@
           } catch (err) {
             forgotResetBtn.disabled = false;
             forgotResetBtn.innerHTML = 'Reset Password';
-            forgotStep2Error.textContent = 'Connection error. Please try again.';
-            forgotStep2Error.style.display = 'block';
+            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
           }
         });
       }

@@ -227,6 +227,9 @@
       }
 
       async function renderOrdersList() {
+        if (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function') {
+          await window.FoodWalaHealth.checkBackend();
+        }
         let orders = [];
         if (window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.fetchOrders === 'function') {
           orders = await FoodWalaApp.Orders.fetchOrders();
