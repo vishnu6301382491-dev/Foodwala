@@ -291,6 +291,7 @@
 
       regForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (regSubmitBtn.disabled) return;
         regErrorMsg.style.display = 'none';
 
         regSubmitBtn.disabled = true;
@@ -301,9 +302,13 @@
           : false;
 
         if (!isOnline) {
-          regSubmitBtn.disabled = false;
-          regSubmitBtn.innerHTML = 'Create Account';
+          regSubmitBtn.disabled = true;
+          regSubmitBtn.innerHTML = 'Unavailable - Retry in 3s';
           FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          setTimeout(() => {
+            regSubmitBtn.disabled = false;
+            regSubmitBtn.innerHTML = 'Create Account';
+          }, 3000);
           return;
         }
 
@@ -398,10 +403,13 @@
 
           showRegOtpModal(normalizedPhone);
         } catch (err) {
-          regSubmitBtn.disabled = false;
-          regSubmitBtn.innerHTML = 'Create Account';
-          regErrorMsg.textContent = 'Account service is temporarily unavailable. Please try again shortly.';
-          regErrorMsg.style.display = 'block';
+          regSubmitBtn.disabled = true;
+          regSubmitBtn.innerHTML = 'Unavailable - Retry in 3s';
+          FoodWalaApp.showToast('Account service is temporarily unavailable. Please try again shortly.', 'error');
+          setTimeout(() => {
+            regSubmitBtn.disabled = false;
+            regSubmitBtn.innerHTML = 'Create Account';
+          }, 3000);
         }
       });
 

@@ -6,7 +6,9 @@
 (function (window) {
   'use strict';
 
-  // 1. Toast Notification Shelf
+  // 1. Toast Notification Shelf & Active State Tracker
+  let activeToast = null; // { el: HTMLElement, timer: number, message: string }
+
   function getToastShelf() {
     let shelf = document.getElementById('foodwala-toast-shelf');
     if (!shelf) {
@@ -20,22 +22,84 @@
     return shelf;
   }
 
+  function dismissToast(el, immediate = false) {
+    if (!el) return;
+    if (activeToast && activeToast.el === el) {
+      clearTimeout(activeToast.timer);
+      activeToast = null;
+    }
+    if (immediate) {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    } else {
+      el.classList.remove('show');
+      el.classList.add('hide');
+      setTimeout(() => {
+        if (el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      }, 280);
+    }
+  }
+
+  /**
+   * Unified FoodWala Toast System:
+   * - De-duplicates by message (restarts 4-second timer if identical message is already visible)
+   * - At most 1 visible toast at a time (new message replaces current one)
+   * - 4-second auto-dismiss with animated slide out
+   * - Working close (X) button
+   */
   function showToast(message, type = 'success') {
-    if (!message) return;
+    if (!message) return null;
+    const cleanMsg = String(message).trim();
     const shelf = getToastShelf();
 
+    // 1. De-duplicate by message: if identical toast is already visible, restart timer
+    if (activeToast && activeToast.el && document.body.contains(activeToast.el)) {
+      if (activeToast.message === cleanMsg) {
+        clearTimeout(activeToast.timer);
+        activeToast.timer = setTimeout(() => {
+          dismissToast(activeToast ? activeToast.el : null);
+        }, 4000);
+
+        // Visual pulse feedback
+        activeToast.el.classList.remove('pulse');
+        void activeToast.el.offsetWidth; // trigger reflow
+        activeToast.el.classList.add('pulse');
+        return activeToast.el;
+      }
+
+      // 2. Allow at most 1 visible toast: a new different message replaces current
+      dismissToast(activeToast.el, true);
+    }
+
+    // Clear any orphaned elements in shelf
+    shelf.innerHTML = '';
+
     const toast = document.createElement('div');
-    toast.className = `foodwala-toast-item ${type}`;
+    const isDanger = type === 'error' || type === 'danger';
+    const normalizedType = isDanger ? 'error' : (type === 'warning' ? 'warning' : (type === 'info' ? 'info' : 'success'));
+    toast.className = `foodwala-toast-item ${normalizedType}`;
+    toast.setAttribute('role', 'alert');
 
     let iconClass = 'bi-check-circle-fill';
-    if (type === 'error' || type === 'danger') iconClass = 'bi-x-circle-fill';
-    else if (type === 'warning') iconClass = 'bi-exclamation-triangle-fill';
-    else if (type === 'info') iconClass = 'bi-info-circle-fill';
+    if (normalizedType === 'error') iconClass = 'bi-x-circle-fill';
+    else if (normalizedType === 'warning') iconClass = 'bi-exclamation-triangle-fill';
+    else if (normalizedType === 'info') iconClass = 'bi-info-circle-fill';
 
     toast.innerHTML = `
       <i class="bi ${iconClass} foodwala-toast-icon"></i>
-      <span class="foodwala-toast-msg">${message}</span>
+      <span class="foodwala-toast-msg">${cleanMsg}</span>
+      <button type="button" class="foodwala-toast-close" aria-label="Close" title="Dismiss">&times;</button>
     `;
+
+    // 3. Working close (X) button
+    const closeBtn = toast.querySelector('.foodwala-toast-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dismissToast(toast, false);
+      });
+    }
 
     shelf.appendChild(toast);
 
@@ -46,16 +110,18 @@
       });
     });
 
-    // Auto dismiss after 3 seconds
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.classList.add('hide');
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, 3000);
+    // 3. Auto dismiss after 4 seconds
+    const timer = setTimeout(() => {
+      dismissToast(toast, false);
+    }, 4000);
+
+    activeToast = {
+      el: toast,
+      timer: timer,
+      message: cleanMsg
+    };
+
+    return toast;
   }
 
   // 2. Accessible Confirm Modal

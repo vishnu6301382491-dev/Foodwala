@@ -1669,46 +1669,10 @@ const FoodWalaApp = (function () {
     }
   };
 
-  // Toast UI
+  // Toast UI - Delegates directly to the unified toast implementation in js/ui.js
   function showToast(message, type = 'success') {
-    let container = document.getElementById('foodwala-toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'foodwala-toast-container';
-      container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-      container.style.zIndex = '9999';
-      document.body.appendChild(container);
-    }
-
-    const isDanger = type === 'error' || type === 'danger';
-    const bgClass = isDanger ? 'bg-danger text-white' : type === 'warning' ? 'bg-warning text-dark' : type === 'info' ? 'bg-info text-dark' : 'bg-success text-white';
-    const icon = isDanger ? 'bi-exclamation-triangle-fill' : type === 'warning' ? 'bi-exclamation-circle' : type === 'info' ? 'bi-info-circle-fill' : 'bi-check-circle-fill';
-
-    const toastEl = document.createElement('div');
-    toastEl.className = `toast align-items-center ${bgClass} border-0 show shadow-lg mb-2`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.innerHTML = `
-      <div class="d-flex">
-        <div class="toast-body d-flex align-items-center gap-2">
-          <i class="bi ${icon} fs-5"></i>
-          <span>${message}</span>
-        </div>
-        <button type="button" class="btn-close ${type !== 'warning' ? 'btn-close-white' : ''} me-2 m-auto" data-bs-dismiss="toast"></button>
-      </div>
-    `;
-
-    container.appendChild(toastEl);
-    setTimeout(() => {
-      toastEl.classList.remove('show');
-      setTimeout(() => toastEl.remove(), 300);
-    }, 4000);
-
-    const closeBtn = toastEl.querySelector('.btn-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        toastEl.classList.remove('show');
-        setTimeout(() => toastEl.remove(), 300);
-      });
+    if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+      return window.showToast(message, type);
     }
   }
 

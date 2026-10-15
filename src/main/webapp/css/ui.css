@@ -223,3 +223,37 @@
   flex-grow: 1;
   line-height: 1.4;
 }
+
+.foodwala-toast-close {
+  background: transparent;
+  border: none;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0 4px;
+  margin-left: auto;
+  border-radius: 6px;
+  transition: color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.foodwala-toast-close:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(1.15);
+}
+
+.foodwala-toast-item.pulse {
+  animation: foodwalaToastPulse 0.25s ease;
+}
+
+@keyframes foodwalaToastPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
