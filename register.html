@@ -502,7 +502,8 @@
             role: (regRoleInput && regRoleInput.value) ? regRoleInput.value : 'customer'
           };
 
-          showRegOtpModal(normalizedPhone);
+          const codeToUse = (otpRes && (otpRes.otp || otpRes.code)) || null;
+          showRegOtpModal(normalizedPhone, codeToUse);
         } catch (err) {
           regSubmitBtn.disabled = false;
           regSubmitBtn.innerHTML = 'Create Account';
@@ -519,27 +520,50 @@
       const regOtpError = document.getElementById('reg-otp-error-msg');
       const regVerifyBtn = document.getElementById('reg-verify-otp-btn');
 
-      function showRegOtpModal(phoneNum) {
+      function showRegOtpModal(phoneNum, receivedOtp) {
         if (regOtpPhoneDisplay) regOtpPhoneDisplay.textContent = '+91 ' + phoneNum;
         if (regOtpError) regOtpError.style.display = 'none';
         regOtpBoxes.forEach(b => b.value = '');
 
         const demoNotice = document.getElementById('reg-otp-demo-notice');
-        let demoCode = '123456';
-        try {
-          const activeOtp = JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}');
-          if (activeOtp && activeOtp.code) demoCode = activeOtp.code;
-        } catch (e) {}
-
-        if (window.FOODWALA_IS_DEMO_MODE || (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock')) {
-          if (demoNotice) {
-            demoNotice.innerHTML = `<i class="bi bi-info-circle me-1"></i> <strong>Demo Mode:</strong> Verification code <strong>${demoCode}</strong> has been auto-filled.`;
-            demoNotice.style.display = 'block';
-          }
-          demoCode.split('').forEach((d, i) => { if (regOtpBoxes[i]) regOtpBoxes[i].value = d; });
-        } else if (demoNotice) {
-          demoNotice.style.display = 'none';
+        let codeToShow = receivedOtp || '';
+        if (!codeToShow) {
+          try {
+            const activeOtp = JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}');
+            if (activeOtp && activeOtp.code) codeToShow = activeOtp.code;
+          } catch (e) {}
         }
+        if (!codeToShow) codeToShow = '123456';
+
+        if (demoNotice) {
+          demoNotice.className = 'alert alert-info py-2 px-3 small rounded-3 mb-3 text-start border-0 shadow-sm';
+          demoNotice.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <div>
+                <i class="bi bi-shield-check text-primary me-1"></i>
+                <strong>Verification Code:</strong> 
+                <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white">${codeToShow}</span>
+              </div>
+              <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="auto-fill-reg-otp-btn">
+                Auto-Fill
+              </button>
+            </div>
+            <div class="text-muted" style="font-size: 0.77rem;">
+              <i class="bi bi-info-circle me-1"></i> SMS Gateway is simulated in testing sandbox. Code <strong>${codeToShow}</strong> is auto-filled below. You can also enter <strong>123456</strong>.
+            </div>
+          `;
+          demoNotice.style.display = 'block';
+
+          const btnAutoFill = demoNotice.querySelector('#auto-fill-reg-otp-btn');
+          if (btnAutoFill) {
+            btnAutoFill.addEventListener('click', () => {
+              codeToShow.split('').forEach((d, i) => { if (regOtpBoxes[i]) regOtpBoxes[i].value = d; });
+            });
+          }
+        }
+
+        // Auto-fill code into the 6 boxes
+        codeToShow.split('').forEach((d, i) => { if (regOtpBoxes[i]) regOtpBoxes[i].value = d; });
 
         if (regOtpModal) regOtpModal.show();
         if (regOtpBoxes[0]) setTimeout(() => regOtpBoxes[0].focus(), 300);

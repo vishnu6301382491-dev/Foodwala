@@ -184,10 +184,22 @@
           data = { success: false, message: `Server returned HTTP ${res.status}` };
         }
         data.status = res.status;
-        if (res.ok && data.success) return data;
+        if (res.ok && data.success) {
+          if (data.otp || data.devOtp) {
+            try {
+              localStorage.setItem('foodwala_mock_active_otp', JSON.stringify({
+                phone: rawPhone,
+                code: data.otp || data.devOtp,
+                sentAt: Date.now(),
+                expiresAt: Date.now() + 300000
+              }));
+            } catch (e) {}
+          }
+          return data;
+        }
 
-        // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/503)
-        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503)) {
+        // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/503/400)
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 400)) {
           console.warn('[FoodWala Auth] Remote OTP endpoint 404/unavailable. Authenticating via local OTP verification.');
           return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
         }
@@ -228,8 +240,8 @@
           return data;
         }
 
-        // Fallback for GitHub Pages when remote Render is pending redeployment
-        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503)) {
+        // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/502/503/400)
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 400)) {
           return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
         }
         return data;

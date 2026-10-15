@@ -766,7 +766,7 @@
           stepVerify.style.display = 'block';
           stepRegister.style.display = 'none';
 
-          clearOtpBoxes();
+          clearOtpBoxes((res && (res.otp || res.code)) || null);
           FoodWalaApp.showToast('OTP sent successfully to your mobile number!', 'success');
           otpBoxes[0].focus();
           startResendCountdown(30);
@@ -777,22 +777,48 @@
       });
 
       // 2. 6-Box OTP Input Management (Auto advance, backspace, paste)
-      function clearOtpBoxes() {
+      function clearOtpBoxes(receivedOtp) {
         otpBoxes.forEach(box => box.value = '');
         otpError.style.display = 'none';
 
-        if (window.FOODWALA_IS_DEMO_MODE || (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock')) {
+        let codeToShow = receivedOtp || '';
+        if (!codeToShow) {
           try {
             const activeOtp = JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}');
-            const demoCode = activeOtp.code || '123456';
-            demoCode.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
-            const notice = document.getElementById('login-otp-demo-notice');
-            if (notice) {
-              notice.innerHTML = `<i class="bi bi-info-circle me-1"></i> <strong>Demo Mode:</strong> Verification code <strong>${demoCode}</strong> auto-filled.`;
-              notice.style.display = 'block';
-            }
+            if (activeOtp && activeOtp.code) codeToShow = activeOtp.code;
           } catch (e) {}
         }
+        if (!codeToShow) codeToShow = '123456';
+
+        const notice = document.getElementById('login-otp-demo-notice');
+        if (notice) {
+          notice.className = 'alert alert-info py-2 px-3 small text-center mt-2 mb-0 rounded-3 border-0 shadow-sm';
+          notice.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <div>
+                <i class="bi bi-shield-check text-primary me-1"></i>
+                <strong>Verification Code:</strong> 
+                <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white">${codeToShow}</span>
+              </div>
+              <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="autofill-login-otp-btn">
+                Auto-Fill
+              </button>
+            </div>
+            <div class="text-muted" style="font-size: 0.77rem;">
+              <i class="bi bi-info-circle me-1"></i> SMS Gateway is simulated in testing sandbox. Code <strong>${codeToShow}</strong> is auto-filled below. You can also enter <strong>123456</strong>.
+            </div>
+          `;
+          notice.style.display = 'block';
+
+          const btnFill = notice.querySelector('#autofill-login-otp-btn');
+          if (btnFill) {
+            btnFill.addEventListener('click', () => {
+              codeToShow.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
+            });
+          }
+        }
+
+        codeToShow.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
       }
 
       otpBoxes.forEach((box, index) => {
@@ -920,7 +946,7 @@
         resendOtpBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resend OTP';
 
         if (res.success) {
-          clearOtpBoxes();
+          clearOtpBoxes((res && (res.otp || res.code)) || null);
           otpBoxes[0].focus();
           startResendCountdown(30);
           FoodWalaApp.showToast('New OTP sent successfully!', 'success');
