@@ -18,7 +18,7 @@ const baseUrl = (process.argv[2] || process.env.RENDER_SERVICE_URL || DEFAULT_UR
 const expectedCommit = process.argv[3] || process.env.EXPECTED_COMMIT || null;
 
 const POLL_INTERVAL_MS = 10000; // 10 seconds
-const MAX_ATTEMPTS = 30; // 30 * 10s = 5 minutes
+const MAX_ATTEMPTS = parseInt(process.env.MAX_ATTEMPTS, 10) || 30; // default 30 * 10s = 5 minutes
 
 function fetchHealth(urlStr) {
   return new Promise((resolve) => {
