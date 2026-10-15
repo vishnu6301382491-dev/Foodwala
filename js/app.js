@@ -1209,6 +1209,8 @@ const FoodWalaApp = (function () {
             icon: 'bi-cart-x-fill',
             type: 'danger'
           });
+        } else if (typeof window.confirm === 'function') {
+          confirmed = window.confirm(`Your cart has items from "${cart.restaurantName}". Clear it to order from "${restaurant.name}"?`);
         }
         if (!confirmed) {
           return false;
@@ -1294,7 +1296,10 @@ const FoodWalaApp = (function () {
       return getStorage(STORAGE_KEYS.COUPON, null);
     },
     applyCoupon: function (code) {
-      const cleanCode = (code || '').toUpperCase().trim();
+      if (!code || !code.trim()) {
+        return { success: false, message: 'Please enter a coupon code.' };
+      }
+      const cleanCode = code.toUpperCase().trim();
       const coupon = AVAILABLE_COUPONS[cleanCode];
       if (!coupon) {
         return { success: false, message: 'Invalid coupon code. Try FOODWALA50 or WELCOME.' };
@@ -1305,6 +1310,7 @@ const FoodWalaApp = (function () {
       }
       const couponObj = { code: cleanCode, ...coupon };
       setStorage(STORAGE_KEYS.COUPON, couponObj);
+      window.dispatchEvent(new CustomEvent('foodwala:cartChanged', { detail: this.getCart() }));
       return { success: true, message: `Coupon ${cleanCode} applied!`, coupon: couponObj };
     },
     removeCoupon: function () {
