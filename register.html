@@ -333,10 +333,14 @@
             setTimeout(() => {
               window.location.href = redirectTarget;
             }, 500);
+          } else if (res.status === 409 || res.code === 'PHONE_EXISTS') {
+            regSubmitBtn.disabled = false;
+            regSubmitBtn.innerHTML = 'Create Account';
+            showDuplicatePhoneModal(phone);
           } else {
             regSubmitBtn.disabled = false;
             regSubmitBtn.innerHTML = 'Create Account';
-            regErrorMsg.textContent = res.message || 'Registration failed. Please try again.';
+            regErrorMsg.textContent = res.error || res.message || 'Registration failed. Please try again.';
             regErrorMsg.style.display = 'block';
           }
         } catch (err) {
@@ -346,8 +350,89 @@
           regErrorMsg.style.display = 'block';
         }
       });
+
+      // --- Duplicate Phone Modal Logic ---
+      const dupModalEl = document.getElementById('duplicatePhoneModal');
+      const dupModal = dupModalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(dupModalEl) : null;
+      const dupPhoneSpan = document.getElementById('dup-modal-phone');
+      const dupDiffBtn = document.getElementById('dup-modal-diff-btn');
+      const dupLoginBtn = document.getElementById('dup-modal-login-btn');
+
+      function showDuplicatePhoneModal(phoneNum) {
+        if (dupPhoneSpan) {
+          dupPhoneSpan.textContent = phoneNum.startsWith('+91') ? phoneNum : '+91 ' + phoneNum;
+        }
+        if (dupLoginBtn) {
+          dupLoginBtn.href = `./login.html?redirect=${encodeURIComponent(redirectTarget)}`;
+        }
+        if (dupModal) {
+          dupModal.show();
+        } else {
+          alert('Phone number already registered. Please login or use a different number.');
+        }
+      }
+
+      if (dupDiffBtn) {
+        dupDiffBtn.addEventListener('click', () => {
+          const phoneInput = document.getElementById('reg-phone');
+          if (phoneInput) {
+            setTimeout(() => {
+              phoneInput.focus();
+              phoneInput.select();
+            }, 300);
+          }
+        });
+      }
+
+      // Pre-flight check on phone blur
+      const phoneInput = document.getElementById('reg-phone');
+      if (phoneInput) {
+        phoneInput.addEventListener('blur', async () => {
+          const val = phoneInput.value.trim();
+          if (val.length >= 10 && window.FoodWalaApi && typeof window.FoodWalaApi.checkPhone === 'function') {
+            const check = await window.FoodWalaApi.checkPhone(val);
+            if (check && check.available === false) {
+              showDuplicatePhoneModal(val);
+            }
+          }
+        });
+      }
     });
   </script>
+
+  <!-- Duplicate Phone Popup Modal -->
+  <div class="modal fade" id="duplicatePhoneModal" tabindex="-1" aria-labelledby="dupPhoneModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <div class="d-flex align-items-center gap-2">
+            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <i class="bi bi-telephone-x-fill fs-5"></i>
+            </div>
+            <h5 class="modal-title fw-bold text-dark" id="dupPhoneModalLabel">Number Already Registered</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-4">
+          <p class="text-secondary mb-2">
+            The mobile number <strong id="dup-modal-phone" class="text-dark">+91 98765 43210</strong> is already linked to an existing FoodWala account.
+          </p>
+          <p class="text-muted small mb-0">
+            Please log in with your existing account, or use a different phone number to create a new profile.
+          </p>
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 flex-fill fw-semibold" data-bs-dismiss="modal" id="dup-modal-diff-btn">
+            Use Different Number
+          </button>
+          <a href="./login.html" class="btn btn-danger rounded-pill px-4 py-2 flex-fill fw-bold shadow-sm text-center text-decoration-none" id="dup-modal-login-btn">
+            Go to Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <div id="recaptcha-container"></div>
 </body>
 </html>

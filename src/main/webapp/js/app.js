@@ -113,7 +113,23 @@ const FoodWalaApp = (function () {
   async function loadRestaurants() {
     if (restaurantsCache.length > 0) return restaurantsCache;
 
-    // 1. Check sessionStorage / localStorage for instant 0ms retrieval
+    // 1. Fetch from MySQL Backend (Single Source of Truth)
+    if (window.FoodWalaApi && typeof window.FoodWalaApi.getRestaurants === 'function') {
+      try {
+        const dbRestaurants = await window.FoodWalaApi.getRestaurants();
+        if (Array.isArray(dbRestaurants) && dbRestaurants.length > 0) {
+          restaurantsCache = dbRestaurants;
+          try {
+            sessionStorage.setItem(RESTAURANTS_CACHE_KEY, JSON.stringify(restaurantsCache));
+          } catch (e) {}
+          return restaurantsCache;
+        }
+      } catch (e) {
+        console.warn('[FoodWalaApp] Could not fetch restaurants from MySQL, trying fallback cache:', e);
+      }
+    }
+
+    // 2. Check sessionStorage / localStorage for instant 0ms retrieval
     try {
       const cached = sessionStorage.getItem(RESTAURANTS_CACHE_KEY) || localStorage.getItem(RESTAURANTS_CACHE_KEY);
       if (cached) {
@@ -125,14 +141,7 @@ const FoodWalaApp = (function () {
       }
     } catch (e) {}
 
-    // 2. Fallback to seed or global data if already loaded
-    if (window.FOODWALA_FEATURED_8 && Array.isArray(window.FOODWALA_FEATURED_8)) {
-      restaurantsCache = window.FOODWALA_FEATURED_8;
-    } else if (window.FOODWALA_RESTAURANTS && Array.isArray(window.FOODWALA_RESTAURANTS)) {
-      restaurantsCache = window.FOODWALA_RESTAURANTS;
-    }
-
-    // 3. Fetch restaurants.json
+    // 3. Fallback to static restaurants.json
     try {
       const restRes = await fetch('./data/restaurants.json');
       if (restRes.ok) {
@@ -153,11 +162,22 @@ const FoodWalaApp = (function () {
       // Load restaurants first (from cache or fast fetch)
       await loadRestaurants();
 
-      // Parallel fetch for categories (small file)
-      try {
-        const catRes = await fetch('./data/categories.json');
-        if (catRes.ok) categoriesCache = await catRes.json();
-      } catch (e) {}
+      // Parallel fetch for categories
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.getCategories === 'function') {
+        try {
+          const dbCats = await window.FoodWalaApi.getCategories();
+          if (Array.isArray(dbCats) && dbCats.length > 0) {
+            categoriesCache = dbCats;
+          }
+        } catch (e) {}
+      }
+
+      if (categoriesCache.length === 0) {
+        try {
+          const catRes = await fetch('./data/categories.json');
+          if (catRes.ok) categoriesCache = await catRes.json();
+        } catch (e) {}
+      }
 
       // Fire dataLoaded event immediately so restaurants can render
       window.dispatchEvent(new CustomEvent('foodwala:dataLoaded', {
@@ -174,7 +194,7 @@ const FoodWalaApp = (function () {
         categories: categoriesCache
       });
 
-      // Lazily load full 756 menu-items in the background without blocking page render
+      // Lazily load full menu items in the background if needed
       if (menuItemsCache.length === 0) {
         setTimeout(async () => {
           try {
@@ -195,11 +215,25 @@ const FoodWalaApp = (function () {
   }
 
   async function getRestaurantMenu(restaurantId) {
-    const id = parseInt(restaurantId);
+    const id = parseInt(restaurantId, 10);
     if (individualMenuCache.has(id)) {
       return individualMenuCache.get(id);
     }
 
+    // 1. Fetch from MySQL Backend via FoodWalaApi
+    if (window.FoodWalaApi && typeof window.FoodWalaApi.getRestaurantMenu === 'function') {
+      try {
+        const dbMenu = await window.FoodWalaApi.getRestaurantMenu(id);
+        if (Array.isArray(dbMenu) && dbMenu.length > 0) {
+          individualMenuCache.set(id, dbMenu);
+          return dbMenu;
+        }
+      } catch (e) {
+        console.warn(`[FoodWalaApp] Could not fetch menu for restaurant ${id} from MySQL:`, e);
+      }
+    }
+
+    // 2. Fallback to local files
     try {
       const res = await fetch(`./data/menus/${id}.json`);
       if (res.ok) {
@@ -1025,13 +1059,14 @@ const FoodWalaApp = (function () {
       if (!user) return null;
       if (!user.addresses) user.addresses = [];
 
-      const id = 'addr_' + Date.now();
+      const id = addressObj.id || addressObj.address_id || ('addr_' + Date.now());
       const isFirst = user.addresses.length === 0;
 
       const formattedLine = `${addressObj.houseNo ? addressObj.houseNo + ', ' : ''}${addressObj.street ? addressObj.street + ', ' : ''}${addressObj.area ? addressObj.area + ', ' : ''}${addressObj.city || 'Bengaluru'}, ${addressObj.state || 'Karnataka'} - ${addressObj.pincode || '560001'}`;
 
       const newAddr = {
         id: id,
+        address_id: id,
         userId: user.userId,
         label: addressObj.label || addressObj.type || 'Home',
         type: addressObj.type || 'Home',
@@ -1046,7 +1081,7 @@ const FoodWalaApp = (function () {
         pincode: addressObj.pincode || '560001',
         latitude: addressObj.latitude || addressObj.lat || 12.9716,
         longitude: addressObj.longitude || addressObj.lng || 77.5946,
-        addressLine: formattedLine,
+        addressLine: addressObj.addressLine || formattedLine,
         isDefault: addressObj.isDefault !== undefined ? addressObj.isDefault : isFirst
       };
 
@@ -1057,13 +1092,19 @@ const FoodWalaApp = (function () {
       user.addresses.push(newAddr);
       setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+
+      // MySQL Database write via FoodWalaApi
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.saveAddress === 'function') {
+        window.FoodWalaApi.saveAddress(newAddr).catch(e => console.warn('[Address Save Warning]:', e));
+      }
+
       return newAddr;
     },
 
     updateAddress: function (addressId, addressObj) {
       const user = this.getCurrentUser();
       if (!user || !user.addresses) return null;
-      const idx = user.addresses.findIndex(a => a.id === addressId);
+      const idx = user.addresses.findIndex(a => (String(a.id) === String(addressId) || String(a.address_id) === String(addressId)));
       if (idx === -1) return null;
 
       const formattedLine = `${addressObj.houseNo ? addressObj.houseNo + ', ' : ''}${addressObj.street ? addressObj.street + ', ' : ''}${addressObj.area ? addressObj.area + ', ' : ''}${addressObj.city || 'Bengaluru'}, ${addressObj.state || 'Karnataka'} - ${addressObj.pincode || '560001'}`;
@@ -1075,32 +1116,46 @@ const FoodWalaApp = (function () {
       user.addresses[idx] = {
         ...user.addresses[idx],
         ...addressObj,
-        addressLine: formattedLine
+        addressLine: addressObj.addressLine || formattedLine
       };
 
       setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.saveAddress === 'function') {
+        window.FoodWalaApi.saveAddress(user.addresses[idx]).catch(e => console.warn('[Address Update Warning]:', e));
+      }
+
       return user.addresses[idx];
     },
 
     deleteAddress: function (addressId) {
       const user = this.getCurrentUser();
       if (!user || !user.addresses) return false;
-      user.addresses = user.addresses.filter(a => a.id !== addressId);
+      user.addresses = user.addresses.filter(a => (String(a.id) !== String(addressId) && String(a.address_id) !== String(addressId)));
       if (user.addresses.length > 0 && !user.addresses.some(a => a.isDefault)) {
         user.addresses[0].isDefault = true;
       }
       setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.deleteAddress === 'function') {
+        window.FoodWalaApi.deleteAddress(addressId).catch(e => console.warn('[Address Delete Warning]:', e));
+      }
+
       return true;
     },
 
     setDefaultAddress: function (addressId) {
       const user = this.getCurrentUser();
       if (!user || !user.addresses) return;
-      user.addresses.forEach(a => a.isDefault = (a.id === addressId));
+      user.addresses.forEach(a => a.isDefault = (String(a.id) === String(addressId) || String(a.address_id) === String(addressId)));
       setStorage(STORAGE_KEYS.CURRENT_USER, user);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.setDefaultAddress === 'function') {
+        window.FoodWalaApi.setDefaultAddress(addressId).catch(e => console.warn('[Address Default Warning]:', e));
+      }
     }
   };
 
@@ -1418,6 +1473,21 @@ const FoodWalaApp = (function () {
       }
       return deduped;
     },
+    fetchOrders: async function () {
+      const user = Auth.getCurrentUser();
+      const userId = user ? user.userId : null;
+      const phone = user ? user.phone : null;
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.getOrders === 'function') {
+        try {
+          const dbOrders = await window.FoodWalaApi.getOrders(userId, phone);
+          if (Array.isArray(dbOrders) && dbOrders.length > 0) {
+            setStorage(STORAGE_KEYS.ORDERS, dbOrders);
+            return dbOrders;
+          }
+        } catch (e) {}
+      }
+      return this.getAllOrders();
+    },
     getOrderById: function (orderId) {
       if (!orderId) return null;
       const strId = String(orderId).trim();
@@ -1439,7 +1509,7 @@ const FoodWalaApp = (function () {
       setStorage(STORAGE_KEYS.ORDERS, orders);
       return orders[idx > -1 ? idx : 0];
     },
-    placeOrder: function (orderDetails) {
+    placeOrder: async function (orderDetails) {
       const orders = this.getAllOrders();
       const cart = Cart.getCart();
       const totals = Cart.getBillTotals();
@@ -1447,12 +1517,12 @@ const FoodWalaApp = (function () {
       const loc = Location.getCurrentLocation();
 
       // Ensure single order ID generated once
-      const newId = orderDetails.orderId || orderDetails.id || ('FW-' + Math.floor(10000 + Math.random() * 90000));
+      const clientOrderId = orderDetails.orderId || orderDetails.id || ('FW-' + Math.floor(10000 + Math.random() * 90000));
 
       // Guard: Skip if order with this ID already placed
-      const existingIdx = orders.findIndex(o => (String(o.orderId || o.id || '').trim() === String(newId).trim()));
+      const existingIdx = orders.findIndex(o => (String(o.orderId || o.id || '').trim() === String(clientOrderId).trim()));
       if (existingIdx > -1) {
-        console.warn('[FoodWala] Order ' + newId + ' already exists, returning existing instance.');
+        console.warn('[FoodWala] Order ' + clientOrderId + ' already exists, returning existing instance.');
         return orders[existingIdx];
       }
 
@@ -1469,28 +1539,74 @@ const FoodWalaApp = (function () {
       let destLng = orderDetails.longitude || orderDetails.lng || (loc ? loc.longitude : 77.6210);
 
       const customerEmail = orderDetails.customerEmail || orderDetails.email || (user ? user.email : 'customer@example.com');
+      const customerPhone = orderDetails.phone || (user ? user.phone : '9876543210');
+      const customerName = orderDetails.name || (user ? user.name : 'Customer');
 
+      // Database Payload for ACID Transaction
+      const orderPayload = {
+        restaurantId: cart.restaurantId || 1,
+        userId: user ? user.userId : 1,
+        items: (cart.items || []).map(it => ({
+          menuId: it.menuId || it.id,
+          name: it.name || it.itemName,
+          price: parseFloat(it.price) || 0,
+          quantity: parseInt(it.quantity || it.qty, 10) || 1
+        })),
+        itemTotal: totals.itemTotal,
+        deliveryFee: totals.deliveryFee,
+        taxes: totals.gst,
+        discount: totals.discount,
+        totalAmount: totals.grandTotal,
+        paymentMode: orderDetails.paymentMethod || 'Razorpay',
+        paymentStatus: (orderDetails.paymentMethod === 'Cash on Delivery') ? 'PENDING' : 'SUCCESS',
+        customerName: customerName,
+        customerPhone: customerPhone,
+        customerEmail: customerEmail,
+        deliveryAddress: orderDetails.address || (loc ? loc.address : 'Bengaluru Delivery Address'),
+        deliveryLat: destLat,
+        deliveryLng: destLng,
+        deliveryInstructions: orderDetails.instructions || '',
+        razorpayOrderId: orderDetails.razorpayOrderId || null,
+        razorpayPaymentId: orderDetails.razorpayPaymentId || null,
+        couponCode: totals.coupon ? totals.coupon.code : null,
+        idempotencyKey: clientOrderId
+      };
+
+      let dbOrder = null;
+      if (window.FoodWalaApi && typeof window.FoodWalaApi.placeOrder === 'function') {
+        try {
+          const apiRes = await window.FoodWalaApi.placeOrder(orderPayload);
+          if (apiRes && apiRes.success && apiRes.order) {
+            dbOrder = apiRes.order;
+          }
+        } catch (e) {
+          console.warn('[Orders.placeOrder] Backend call failed, using local fallback:', e);
+        }
+      }
+
+      const confirmedId = dbOrder ? (dbOrder.orderId || dbOrder.id) : clientOrderId;
       const newOrder = {
-        id: newId,
-        orderId: newId,
+        id: confirmedId,
+        orderId: confirmedId,
+        displayId: `#FW-${confirmedId}`,
         userId: user ? user.userId : null,
-        createdAt: new Date().toISOString(),
+        createdAt: dbOrder ? dbOrder.orderDate : new Date().toISOString(),
         createdAtMs: Date.now(),
         etaMinutes: 28,
         restaurantId: cart.restaurantId,
-        restaurantName: cart.restaurantName || 'Bengaluru Restaurant',
-        restaurantAddress: cart.restaurantAddress || 'Bengaluru',
+        restaurantName: (dbOrder && dbOrder.restaurantName) || cart.restaurantName || 'Bengaluru Restaurant',
+        restaurantAddress: (dbOrder && dbOrder.restaurantAddress) || cart.restaurantAddress || 'Bengaluru',
         restaurantImage: cart.restaurantImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500',
         restaurantLocation: { lat: restLat, lng: restLng },
-        deliveryAddress: orderDetails.address || (loc ? loc.address : 'Bengaluru Delivery Address'),
+        deliveryAddress: orderPayload.deliveryAddress,
         deliveryLatitude: destLat,
         deliveryLongitude: destLng,
         deliveryLocation: { lat: destLat, lng: destLng },
-        customerName: orderDetails.name || (user ? user.name : 'Guest Customer'),
-        customerPhone: orderDetails.phone || (user ? user.phone : '+91 98765 43210'),
+        customerName: customerName,
+        customerPhone: customerPhone,
         customerEmail: customerEmail,
         deliveryInstructions: orderDetails.instructions || '',
-        items: JSON.parse(JSON.stringify(cart.items)),
+        items: JSON.parse(JSON.stringify(cart.items || [])),
         itemTotal: totals.itemTotal,
         deliveryFee: totals.deliveryFee,
         platformFee: totals.platformFee,
@@ -1500,9 +1616,10 @@ const FoodWalaApp = (function () {
         grandTotal: totals.grandTotal,
         paymentStatus: orderDetails.paymentStatus || (orderDetails.paymentMethod === 'Cash on Delivery' ? 'PENDING_COD' : 'PAID'),
         paymentMethod: orderDetails.paymentMethod || 'UPI Instant',
+        transactionId: (dbOrder && dbOrder.transactionId) || orderDetails.razorpayPaymentId || `FW-${confirmedId}`,
         razorpayOrderId: orderDetails.razorpayOrderId || null,
         razorpayPaymentId: orderDetails.razorpayPaymentId || null,
-        status: 'IN_PROGRESS',
+        status: dbOrder ? dbOrder.status : 'IN_PROGRESS',
         progressPercentage: 15,
         estimatedMinutes: 28,
         emailSent: false,
@@ -1524,9 +1641,6 @@ const FoodWalaApp = (function () {
 
       orders.unshift(newOrder);
       setStorage(STORAGE_KEYS.ORDERS, orders);
-      if (typeof window !== "undefined" && window.FoodWalaApi && window.FoodWalaApi.saveOrder) {
-        window.FoodWalaApi.saveOrder(newOrder);
-      }
       Cart.clearCart();
       return newOrder;
     }

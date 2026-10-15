@@ -959,7 +959,7 @@
               handler: async function (response) {
                 console.log('[FoodWala] Razorpay Payment Success:', response);
                 
-                const newOrder = FoodWalaApp.Orders.placeOrder({
+                const newOrder = await FoodWalaApp.Orders.placeOrder({
                   id: pregeneratedOrderId,
                   orderId: pregeneratedOrderId,
                   name: nameVal,
@@ -1020,7 +1020,7 @@
       }
 
       async function confirmOrderOffline(locationObj, paymentName, orderId, nameVal, emailVal, deliveryInstructions) {
-        const newOrder = FoodWalaApp.Orders.placeOrder({
+        const newOrder = await FoodWalaApp.Orders.placeOrder({
           id: orderId,
           orderId: orderId,
           name: nameVal,

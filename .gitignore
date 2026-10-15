@@ -5,29 +5,56 @@ target/
 *.class
 src/main/webapp/WEB-INF/classes/
 
-# Eclipse workspace metadata
+# Eclipse workspace metadata & IDE files
 .metadata/
 .recommenders/
 tmp/
 *.tmp
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Logs & temporary files
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 sources.txt
 FoodWala_Eclipse_Project/
+scan-secrets.js
 
-# Environment Variables & Secrets (NEVER COMMIT)
+# Environment Variables & Secrets (CRITICAL: NEVER COMMIT TO PUBLIC GITHUB)
 .env
 *.env
 .env.*
-!.env.example
 server/.env
 sms.properties
 src/main/webapp/WEB-INF/classes/sms.properties
+!server/.env.example
 !sms.properties.example
+
+# Database Backups & Dumps (Only migrations.sql is tracked)
+fudwala_backup.sql
+*.sql.gz
+*.sql.bak
+dump*.sql
+backup*.sql
+*backup*.sql
 
 # Node Dependencies
 node_modules/
 server/node_modules/
 package-lock.json
-npm-debug.log*

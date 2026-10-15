@@ -154,6 +154,7 @@
               <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <label class="form-label small fw-semibold mb-0" for="password-input">Password</label>
+                  <a href="#" class="small text-danger text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot Password?</a>
                 </div>
                 <div class="input-group">
                   <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
@@ -462,7 +463,22 @@
           } else {
             loginSubmitBtn.disabled = false;
             loginSubmitBtn.innerHTML = 'Sign In';
-            loginErrorMsg.textContent = res.message || 'Invalid email/mobile number or password.';
+            if (res.status === 423 || res.locked) {
+              loginErrorMsg.innerHTML = `
+                <div class="d-flex align-items-start gap-2">
+                  <i class="bi bi-shield-lock-fill fs-5 text-danger"></i>
+                  <div>
+                    <div class="fw-bold">Account Locked</div>
+                    <div>${res.message || 'Account is temporarily locked due to 5 failed login attempts.'}</div>
+                    <div class="mt-2">
+                      <a href="#" class="btn btn-sm btn-outline-danger rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Reset Password Now</a>
+                    </div>
+                  </div>
+                </div>
+              `;
+            } else {
+              loginErrorMsg.textContent = res.message || 'Invalid email/mobile number or password.';
+            }
             loginErrorMsg.style.display = 'block';
           }
         } catch (err) {
@@ -681,8 +697,189 @@
         }
       });
 
+      // ===================================================
+      // FORGOT PASSWORD FLOW
+      // ===================================================
+      let activeResetToken = '';
+      const forgotModalEl = document.getElementById('forgotPasswordModal');
+      const forgotStep1 = document.getElementById('forgot-step-1');
+      const forgotStep2 = document.getElementById('forgot-step-2');
+      const forgotStep1Error = document.getElementById('forgot-step1-error');
+      const forgotStep2Error = document.getElementById('forgot-step2-error');
+      const forgotStep2Info = document.getElementById('forgot-step2-info');
+      const forgotGetOtpBtn = document.getElementById('forgot-get-otp-btn');
+      const forgotResetBtn = document.getElementById('forgot-reset-btn');
+      const forgotBackBtn = document.getElementById('forgot-back-btn');
+
+      if (forgotGetOtpBtn) {
+        forgotGetOtpBtn.addEventListener('click', async () => {
+          forgotStep1Error.style.display = 'none';
+          const identifier = document.getElementById('forgot-identifier').value.trim();
+          if (!identifier) {
+            forgotStep1Error.textContent = 'Please enter your registered email or mobile number.';
+            forgotStep1Error.style.display = 'block';
+            return;
+          }
+
+          forgotGetOtpBtn.disabled = true;
+          forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Generating Code...';
+
+          try {
+            const res = await FoodWalaApi.forgotPassword(identifier);
+            forgotGetOtpBtn.disabled = false;
+            forgotGetOtpBtn.innerHTML = 'Get Verification Code';
+
+            if (res.success && res.resetToken) {
+              activeResetToken = res.resetToken;
+              forgotStep1.style.display = 'none';
+              forgotStep2.style.display = 'block';
+
+              const phoneOrEmail = res.user ? (res.user.phone || res.user.email) : identifier;
+              forgotStep2Info.innerHTML = `Verification code generated for <strong>${phoneOrEmail}</strong> (Valid for 15 minutes).${res.otp ? `<br><small class="text-success fw-bold">Test OTP: ${res.otp}</small>` : ''}`;
+              
+              const otpInput = document.getElementById('forgot-otp');
+              if (otpInput && res.otp) otpInput.value = res.otp;
+            } else {
+              forgotStep1Error.textContent = res.message || 'No account found with this email or mobile number.';
+              forgotStep1Error.style.display = 'block';
+            }
+          } catch (err) {
+            forgotGetOtpBtn.disabled = false;
+            forgotGetOtpBtn.innerHTML = 'Get Verification Code';
+            forgotStep1Error.textContent = 'Connection error. Please try again.';
+            forgotStep1Error.style.display = 'block';
+          }
+        });
+      }
+
+      if (forgotBackBtn) {
+        forgotBackBtn.addEventListener('click', () => {
+          forgotStep2.style.display = 'none';
+          forgotStep1.style.display = 'block';
+        });
+      }
+
+      if (forgotResetBtn) {
+        forgotResetBtn.addEventListener('click', async () => {
+          forgotStep2Error.style.display = 'none';
+          const otp = document.getElementById('forgot-otp').value.trim();
+          const newPwd = document.getElementById('forgot-new-pwd').value;
+          const confirmPwd = document.getElementById('forgot-confirm-pwd').value;
+
+          if (!otp || otp.length !== 6) {
+            forgotStep2Error.textContent = 'Please enter the 6-digit verification code.';
+            forgotStep2Error.style.display = 'block';
+            return;
+          }
+
+          if (newPwd !== confirmPwd) {
+            forgotStep2Error.textContent = 'New passwords do not match.';
+            forgotStep2Error.style.display = 'block';
+            return;
+          }
+
+          if (newPwd.length < 8) {
+            forgotStep2Error.textContent = 'Password must be at least 8 characters long.';
+            forgotStep2Error.style.display = 'block';
+            return;
+          }
+
+          forgotResetBtn.disabled = true;
+          forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Resetting...';
+
+          try {
+            const res = await FoodWalaApi.resetPassword(activeResetToken, otp, newPwd, confirmPwd);
+            forgotResetBtn.disabled = false;
+            forgotResetBtn.innerHTML = 'Reset Password';
+
+            if (res.success) {
+              const modal = bootstrap.Modal.getInstance(forgotModalEl);
+              if (modal) modal.hide();
+              FoodWalaApp.showToast('Password reset successfully! Please sign in with your new password.', 'success');
+              
+              // Reset steps
+              forgotStep2.style.display = 'none';
+              forgotStep1.style.display = 'block';
+              document.getElementById('password-input').value = '';
+              document.getElementById('password-input').focus();
+            } else {
+              forgotStep2Error.textContent = res.message || 'Password reset failed.';
+              forgotStep2Error.style.display = 'block';
+            }
+          } catch (err) {
+            forgotResetBtn.disabled = false;
+            forgotResetBtn.innerHTML = 'Reset Password';
+            forgotStep2Error.textContent = 'Connection error. Please try again.';
+            forgotStep2Error.style.display = 'block';
+          }
+        });
+      }
+
     });
   </script>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-dark text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="forgotPasswordModalLabel">
+            <i class="bi bi-shield-lock me-2 text-danger"></i>Forgot Password
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <!-- Step 1: Request Reset Code -->
+        <div id="forgot-step-1" class="p-3">
+          <div class="modal-body">
+            <p class="text-muted small mb-3">Enter your registered email address or mobile number. We will generate a verification code with 15-minute validity.</p>
+            <div id="forgot-step1-error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;"></div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Email or Mobile Number</label>
+              <input type="text" class="form-control rounded-3" id="forgot-identifier" placeholder="e.g. name@example.com or 9876543210" required>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" id="forgot-get-otp-btn" class="btn btn-danger rounded-pill px-4 fw-bold">Get Verification Code</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Enter OTP & Set New Password -->
+        <div id="forgot-step-2" class="p-3" style="display: none;">
+          <div class="modal-body">
+            <div class="alert alert-info py-2 px-3 small rounded-3 mb-3" id="forgot-step2-info">
+              Verification code generated. Please set your new password below.
+            </div>
+            <div id="forgot-step2-error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;"></div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">6-Digit Verification Code *</label>
+              <input type="text" class="form-control rounded-3 fw-bold" id="forgot-otp" placeholder="123456" maxlength="6" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">New Password *</label>
+              <input type="password" class="form-control rounded-3" id="forgot-new-pwd" placeholder="••••••••" required>
+              <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
+                <i class="bi bi-info-circle me-1"></i>Must be at least 8 characters with letters and numbers.
+              </small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-dark">Confirm New Password *</label>
+              <input type="password" class="form-control rounded-3" id="forgot-confirm-pwd" placeholder="••••••••" required>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+            <button type="button" class="btn btn-link text-muted small p-0 text-decoration-none" id="forgot-back-btn">
+              <i class="bi bi-arrow-left me-1"></i> Back
+            </button>
+            <button type="button" id="forgot-reset-btn" class="btn btn-danger rounded-pill px-4 fw-bold">Reset Password</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 <div id="recaptcha-container"></div>
 </body>
 </html>

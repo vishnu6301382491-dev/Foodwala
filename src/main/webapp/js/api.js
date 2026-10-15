@@ -1,27 +1,45 @@
 /**
- * FoodWala - Unified Authentication & Data API (api.js)
+ * FoodWala - Unified Data & Authentication API (api.js)
  * 
- * Architecture:
- * - When BACKEND_URL is set: connects to Java Servlets (CORS + credentials).
- * - When BACKEND_URL is empty: runs in serverless mode using Firebase Web SDK + Firestore,
- *   with localStorage / sessionStorage as instant local cache and seamless sandbox fallback.
+ * Single Source of Truth: MySQL Backend (fudwala)
+ * All operations interact with the backend API using prepared statements.
+ * LocalStorage is strictly restricted to active user session token and UI preferences.
  */
-
-// Java Backend URL: Set to your public Tomcat/Java backend, or leave empty "" for serverless mode
-const BACKEND_URL = "";
 
 (function (window) {
   'use strict';
 
+  // =======================================================================
+  // BACKEND API CONFIGURATION
+  // - Localhost / 127.0.0.1: Uses http://localhost:5000
+  // - GitHub Pages (github.io): Uses hosted cloud backend (Render / Railway)
+  // =======================================================================
+  
+  // PLACEHOLDER FOR HOSTED BACKEND URL (HTTPS)
+  // After deploying your server/ directory to Render or Railway, paste your live backend URL here:
+  // e.g., 'https://foodwala-backend.onrender.com'
+  const HOSTED_BACKEND_URL = 'https://foodwala-backend-api.onrender.com'; // <-- REPLACE_WITH_HOSTED_BACKEND_URL
+
+  const API_BASE_URL = (function () {
+    if (typeof window !== 'undefined') {
+      if (window.FOODWALA_BACKEND_URL) return window.FOODWALA_BACKEND_URL;
+      const host = window.location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:5000';
+      }
+      return HOSTED_BACKEND_URL;
+    }
+    return 'http://localhost:5000';
+  })();
+
+  const BACKEND_URL = API_BASE_URL;
+
   const STORAGE_KEYS = {
     CURRENT_USER: 'foodwala_current_user',
-    REGISTERED_USERS: 'foodwala_registered_users',
-    ORDERS: 'foodwala_orders',
-    ADDRESSES: 'foodwala_addresses',
+    AUTH_TOKEN: 'foodwala_auth_token',
     PENDING_OTP: 'foodwala_pending_otp'
   };
 
-  // Helper to read localStorage safely
   function getLocal(key, defaultVal) {
     try {
       const item = localStorage.getItem(key);
@@ -31,109 +49,42 @@ const BACKEND_URL = "";
     }
   }
 
-  // Helper to write localStorage safely
   function setLocal(key, val) {
     try {
       localStorage.setItem(key, JSON.stringify(val));
     } catch (e) {}
   }
 
-  // Normalize Indian mobile numbers: 10 digits starting with 6, 7, 8, 9
+  function getAuthHeader() {
+    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    const user = getLocal(STORAGE_KEYS.CURRENT_USER, null);
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = 'Bearer ' + token;
+    }
+    if (user && (user.userId || user.user_id)) {
+      headers['X-User-Id'] = String(user.userId || user.user_id);
+    }
+    return headers;
+  }
+
+  // Normalize Indian mobile numbers: 10 digits
   function normalizeIndianPhone(rawPhone) {
     if (!rawPhone || typeof rawPhone !== 'string') return null;
     const digits = rawPhone.replace(/\D/g, '');
     if (digits.startsWith('91') && digits.length === 12 && /^[6-9]/.test(digits.substring(2))) {
-      return '+91' + digits.substring(2);
+      return digits.substring(2);
     }
     if (digits.startsWith('0') && digits.length === 11 && /^[6-9]/.test(digits.substring(1))) {
-      return '+91' + digits.substring(1);
+      return digits.substring(1);
     }
     if (digits.length === 10 && /^[6-9]/.test(digits)) {
-      return '+91' + digits;
+      return digits;
     }
     return null;
-  }
-
-  // Friendly error formatter
-  function formatAuthError(err) {
-    if (!err) return 'An unexpected error occurred. Please try again.';
-    const code = err.code || '';
-    if (code === 'auth/invalid-phone-number') return 'Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.';
-    if (code === 'auth/missing-phone-number') return 'Mobile number is required.';
-    if (code === 'auth/quota-exceeded' || code === 'auth/too-many-requests') return 'Too many attempts. Please wait 30 seconds before trying again.';
-    if (code === 'auth/invalid-verification-code' || code === 'auth/code-expired') return 'Incorrect or expired verification code. Please check and try again.';
-    if (code === 'auth/user-not-found') return 'No account found with this email. Please check your credentials or create an account.';
-    if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') return 'Incorrect email or password. Please try again.';
-    if (code === 'auth/email-already-in-use') return 'An account with this email address already exists. Please sign in instead.';
-    if (code === 'auth/weak-password') return 'Password must be at least 8 characters long.';
-    if (code === 'auth/network-request-failed') return 'Network error. Please check your internet connection.';
-    return err.message || 'Authentication request failed. Please try again.';
-  }
-
-  // Ensure invisible recaptcha container exists
-  function ensureRecaptchaContainer() {
-    let container = document.getElementById('recaptcha-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'recaptcha-container';
-      container.style.display = 'none';
-      document.body.appendChild(container);
-    }
-    return container;
-  }
-
-  // Lazy initialize Firebase if configured
-  let firebaseInitialized = false;
-  let authInstance = null;
-  let firestoreInstance = null;
-
-  function initFirebaseIfAvailable() {
-    if (firebaseInitialized) return true;
-    if (typeof window.firebase !== 'undefined' && window.FOODWALA_FIREBASE_CONFIG && window.FOODWALA_FIREBASE_CONFIGURED) {
-      try {
-        if (!firebase.apps || !firebase.apps.length) {
-          firebase.initializeApp(window.FOODWALA_FIREBASE_CONFIG);
-        }
-        authInstance = firebase.auth();
-        firestoreInstance = firebase.firestore();
-        firebaseInitialized = true;
-
-        // Sync header on auth state change
-        authInstance.onAuthStateChanged(async (fbUser) => {
-          if (fbUser) {
-            let profile = getLocal(STORAGE_KEYS.CURRENT_USER, null);
-            if (!profile || profile.uid !== fbUser.uid) {
-              profile = {
-                uid: fbUser.uid,
-                userId: fbUser.uid,
-                name: fbUser.displayName || (fbUser.phoneNumber ? 'Food Lover (' + fbUser.phoneNumber.slice(-4) + ')' : 'Food Lover'),
-                email: fbUser.email || '',
-                phone: fbUser.phoneNumber || '',
-                role: 'CUSTOMER',
-                memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-              };
-            }
-            // Fetch Firestore profile if available
-            try {
-              const doc = await firestoreInstance.collection('users').doc(fbUser.uid).get();
-              if (doc.exists) {
-                profile = Object.assign({}, profile, doc.data());
-              }
-            } catch (e) {}
-            setLocal(STORAGE_KEYS.CURRENT_USER, profile);
-            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: profile }));
-            if (typeof window.FoodWalaApp !== 'undefined' && window.FoodWalaApp.updateNavUI) {
-              window.FoodWalaApp.updateNavUI();
-            }
-          }
-        });
-        return true;
-      } catch (e) {
-        console.warn('[FoodWala Api] Firebase initialization failed, falling back to sandbox mode:', e);
-        return false;
-      }
-    }
-    return false;
   }
 
   const FoodWalaApi = {
@@ -141,6 +92,10 @@ const BACKEND_URL = "";
 
     normalizePhone: function (phone) {
       return normalizeIndianPhone(phone);
+    },
+
+    getAuthToken: function () {
+      return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || '';
     },
 
     getCurrentUser: function () {
@@ -151,7 +106,21 @@ const BACKEND_URL = "";
       return null;
     },
 
-    // 1. Send OTP
+    // 1. Check Phone Availability
+    checkPhone: async function (rawPhone) {
+      const normalized = normalizeIndianPhone(rawPhone);
+      if (!normalized) {
+        return { available: false, error: 'Please enter a valid 10-digit mobile number.' };
+      }
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/check-phone?phone=${encodeURIComponent(normalized)}`);
+        return await res.json();
+      } catch (e) {
+        return { available: true, error: null };
+      }
+    },
+
+    // 2. Send Mobile OTP
     sendOtp: async function (rawPhone) {
       const normalized = normalizeIndianPhone(rawPhone);
       if (!normalized) {
@@ -162,74 +131,24 @@ const BACKEND_URL = "";
         };
       }
 
-      // Path A: Java Servlet Backend
-      if (BACKEND_URL && BACKEND_URL.trim().length > 0) {
-        try {
-          const res = await fetch(BACKEND_URL.replace(/\/+$/, '') + '/api/auth/send-otp', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ phone: normalized })
-          });
-          return await res.json();
-        } catch (err) {
-          return {
-            success: false,
-            error: 'NETWORK_ERROR',
-            message: 'Unable to connect to Java backend server. Please verify network connection.'
-          };
-        }
-      }
-
-      // Path B: Firebase Auth with Phone Provider
-      if (initFirebaseIfAvailable()) {
-        try {
-          ensureRecaptchaContainer();
-          if (!window.foodwala_recaptchaVerifier) {
-            window.foodwala_recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-              size: 'invisible'
-            });
-          }
-          const confirmationResult = await authInstance.signInWithPhoneNumber(normalized, window.foodwala_recaptchaVerifier);
-          window.foodwala_confirmationResult = confirmationResult;
-          return {
-            success: true,
-            phone: normalized,
-            message: `Verification code sent to ${normalized}.`
-          };
-        } catch (fbErr) {
-          console.warn('[FoodWala Api] Firebase Phone Auth encountered an issue:', fbErr);
-          // If recaptcha expired or failed, reset verifier
-          if (window.foodwala_recaptchaVerifier) {
-            try { window.foodwala_recaptchaVerifier.clear(); } catch (e) {}
-            window.foodwala_recaptchaVerifier = null;
-          }
-        }
-      }
-
-      // Path C: Serverless Sandbox / Offline Mode (Works out-of-the-box on GitHub Pages)
-      // Generates instant demo OTP with realistic 30s countdown
-      const isTestNumber = normalized === '+919876543210' || normalized === '+919999999999';
-      const devOtp = isTestNumber ? '123456' : String(Math.floor(100000 + Math.random() * 900000));
-      
       try {
-        sessionStorage.setItem(STORAGE_KEYS.PENDING_OTP, JSON.stringify({
-          phone: normalized,
-          otp: devOtp,
-          expiresAt: Date.now() + 5 * 60 * 1000
-        }));
-      } catch (e) {}
-
-      return {
-        success: true,
-        phone: normalized,
-        isDevMode: true,
-        devOtp: devOtp,
-        message: isTestNumber ? 'OTP sent! Test code is 123456.' : `OTP sent to ${normalized}. Use test code ${devOtp}.`
-      };
+        const res = await fetch(`${BACKEND_URL}/api/auth/send-otp`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ phone: normalized })
+        });
+        const data = await res.json();
+        return data;
+      } catch (err) {
+        return {
+          success: false,
+          error: 'NETWORK_ERROR',
+          message: 'Unable to connect to FoodWala server. Please check your connection.'
+        };
+      }
     },
 
-    // 2. Verify OTP
+    // 3. Verify OTP
     verifyOtp: async function (rawPhone, code) {
       const normalized = normalizeIndianPhone(rawPhone);
       if (!normalized) {
@@ -241,198 +160,47 @@ const BACKEND_URL = "";
         return { success: false, error: 'INVALID_CODE', message: 'Please enter the 6-digit verification code.' };
       }
 
-      // Path A: Java Servlet Backend
-      if (BACKEND_URL && BACKEND_URL.trim().length > 0) {
-        try {
-          const res = await fetch(BACKEND_URL.replace(/\/+$/, '') + '/api/auth/verify-otp', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ phone: normalized, otp: cleanCode })
-          });
-          const data = await res.json();
-          if (data.success && data.user) {
-            setLocal(STORAGE_KEYS.CURRENT_USER, data.user);
-            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
-          }
-          return data;
-        } catch (err) {
-          return { success: false, error: 'NETWORK_ERROR', message: 'Failed to connect to authentication server.' };
-        }
-      }
-
-      // Path B: Firebase Auth confirmation
-      if (window.foodwala_confirmationResult) {
-        try {
-          const result = await window.foodwala_confirmationResult.confirm(cleanCode);
-          const fbUser = result.user;
-          const isNewUser = result.additionalUserInfo ? result.additionalUserInfo.isNewUser : false;
-
-          let profile = {
-            uid: fbUser.uid,
-            userId: fbUser.uid,
-            name: fbUser.displayName || 'Food Lover (' + normalized.slice(-4) + ')',
-            phone: normalized,
-            email: fbUser.email || '',
-            role: 'CUSTOMER',
-            memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-            addresses: []
-          };
-
-          if (firestoreInstance) {
-            const userDoc = await firestoreInstance.collection('users').doc(fbUser.uid).get();
-            if (userDoc.exists) {
-              profile = Object.assign({}, profile, userDoc.data());
-            } else {
-              await firestoreInstance.collection('users').doc(fbUser.uid).set(profile, { merge: true });
-            }
-          }
-
-          setLocal(STORAGE_KEYS.CURRENT_USER, profile);
-          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: profile }));
-          return { success: true, user: profile, isNewUser: isNewUser };
-        } catch (fbErr) {
-          return { success: false, error: fbErr.code, message: formatAuthError(fbErr) };
-        }
-      }
-
-      // Path C: Serverless Sandbox Verification
-      let pendingData = null;
       try {
-        const stored = sessionStorage.getItem(STORAGE_KEYS.PENDING_OTP);
-        if (stored) pendingData = JSON.parse(stored);
-      } catch (e) {}
-
-      const isValidCode = (cleanCode === '123456') || (pendingData && pendingData.phone === normalized && pendingData.otp === cleanCode);
-
-      if (!isValidCode) {
-        return {
-          success: false,
-          error: 'INCORRECT_OTP',
-          message: 'Incorrect OTP. Use test code 123456 or check the code sent to your phone.'
-        };
+        const res = await fetch(`${BACKEND_URL}/api/auth/verify-otp`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ phone: normalized, otp: cleanCode })
+        });
+        const data = await res.json();
+        if (data.success && data.user && data.token) {
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+          setLocal(STORAGE_KEYS.CURRENT_USER, data.user);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+        }
+        return data;
+      } catch (err) {
+        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to connect to authentication server.' };
       }
-
-      // Check if user already exists
-      const regUsers = getLocal(STORAGE_KEYS.REGISTERED_USERS, []);
-      let existingUser = regUsers.find(u => u.phone === normalized);
-
-      if (existingUser) {
-        setLocal(STORAGE_KEYS.CURRENT_USER, existingUser);
-        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: existingUser }));
-        return { success: true, user: existingUser, isNewUser: false };
-      }
-
-      // New user registration step
-      const newUser = {
-        uid: 'user_' + Date.now(),
-        userId: 'user_' + Date.now(),
-        name: 'Food Lover (' + normalized.slice(-4) + ')',
-        phone: normalized,
-        email: '',
-        role: 'CUSTOMER',
-        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        addresses: []
-      };
-
-      regUsers.push(newUser);
-      setLocal(STORAGE_KEYS.REGISTERED_USERS, regUsers);
-      setLocal(STORAGE_KEYS.CURRENT_USER, newUser);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
-
-      return { success: true, user: newUser, isNewUser: true };
     },
 
-    // 3. Login with Email and Password
-    loginEmail: async function (email, password) {
-      const cleanEmail = (email || '').trim().toLowerCase();
-      if (!cleanEmail || !password) {
-        return { success: false, message: 'Please enter your email and password.' };
-      }
-
-      // Path A: Java Servlet Backend
-      if (BACKEND_URL && BACKEND_URL.trim().length > 0) {
-        try {
-          const res = await fetch(BACKEND_URL.replace(/\/+$/, '') + '/api/auth/login', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ identifier: cleanEmail, password: password })
-          });
-          const data = await res.json();
-          if (data.success && data.user) {
-            setLocal(STORAGE_KEYS.CURRENT_USER, data.user);
-            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
-          }
-          return data;
-        } catch (err) {
-          return { success: false, message: 'Unable to connect to authentication server.' };
+    // 4. Register Mobile Profile
+    registerMobile: async function (data) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/register-mobile`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify(data)
+        });
+        const resData = await res.json();
+        if (resData.success && resData.user && resData.token) {
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, resData.token);
+          setLocal(STORAGE_KEYS.CURRENT_USER, resData.user);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: resData.user }));
         }
+        return resData;
+      } catch (err) {
+        return { success: false, message: 'Registration failed. Please check connection.' };
       }
-
-      // Path B: Firebase Auth
-      if (initFirebaseIfAvailable()) {
-        try {
-          const cred = await authInstance.signInWithEmailAndPassword(cleanEmail, password);
-          const fbUser = cred.user;
-          let profile = {
-            uid: fbUser.uid,
-            userId: fbUser.uid,
-            name: fbUser.displayName || cleanEmail.split('@')[0],
-            email: fbUser.email,
-            phone: fbUser.phoneNumber || '',
-            role: 'CUSTOMER',
-            memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-            addresses: []
-          };
-
-          if (firestoreInstance) {
-            const doc = await firestoreInstance.collection('users').doc(fbUser.uid).get();
-            if (doc.exists) {
-              profile = Object.assign({}, profile, doc.data());
-            }
-          }
-
-          setLocal(STORAGE_KEYS.CURRENT_USER, profile);
-          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: profile }));
-          return { success: true, user: profile };
-        } catch (fbErr) {
-          return { success: false, message: formatAuthError(fbErr) };
-        }
-      }
-
-      // Path C: Serverless Sandbox Email Login
-      const regUsers = getLocal(STORAGE_KEYS.REGISTERED_USERS, []);
-      let matched = regUsers.find(u => u.email && u.email.toLowerCase() === cleanEmail);
-
-      if (!matched) {
-        // Create demo account automatically if password is at least 8 characters
-        if (password.length < 8) {
-          return { success: false, message: 'Password must be at least 8 characters long.' };
-        }
-        const namePart = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        matched = {
-          uid: 'user_' + Date.now(),
-          userId: 'user_' + Date.now(),
-          name: namePart,
-          email: cleanEmail,
-          phone: '+91 98765 43210',
-          role: 'CUSTOMER',
-          memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          addresses: []
-        };
-        regUsers.push(matched);
-        setLocal(STORAGE_KEYS.REGISTERED_USERS, regUsers);
-      }
-
-      setLocal(STORAGE_KEYS.CURRENT_USER, matched);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: matched }));
-      return { success: true, user: matched };
     },
 
-    // 4. Sign Up / Register
+    // 5. User Sign Up (Register)
     signup: async function (data) {
-      const cleanName = (data.name || '').trim();
+      const cleanName = (data.name || data.username || '').trim();
       const cleanEmail = (data.email || '').trim().toLowerCase();
       const cleanPhone = normalizeIndianPhone(data.phone || '');
       const password = data.password || '';
@@ -449,117 +217,159 @@ const BACKEND_URL = "";
         return { success: false, message: 'Password must be at least 8 characters long.' };
       }
 
-      // Path A: Java Servlet Backend
-      if (BACKEND_URL && BACKEND_URL.trim().length > 0) {
-        try {
-          const res = await fetch(BACKEND_URL.replace(/\/+$/, '') + '/api/auth/register', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({
-              username: cleanName,
-              email: cleanEmail,
-              phone: cleanPhone || '',
-              password: password,
-              confirmPassword: data.confirmPassword || password,
-              address: data.address || ''
-            })
-          });
-          const resData = await res.json();
-          if (resData.success && resData.user) {
-            setLocal(STORAGE_KEYS.CURRENT_USER, resData.user);
-            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: resData.user }));
-          }
-          return resData;
-        } catch (err) {
-          return { success: false, message: 'Unable to connect to registration server.' };
-        }
-      }
-
-      // Path B: Firebase Auth
-      if (initFirebaseIfAvailable()) {
-        try {
-          const cred = await authInstance.createUserWithEmailAndPassword(cleanEmail, password);
-          const fbUser = cred.user;
-          await fbUser.updateProfile({ displayName: cleanName });
-
-          const newProfile = {
-            uid: fbUser.uid,
-            userId: fbUser.uid,
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            username: cleanName,
             name: cleanName,
             email: cleanEmail,
             phone: cleanPhone || '',
-            role: 'CUSTOMER',
-            memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-            addresses: data.address ? [{
-              id: 'addr_' + Date.now(),
-              label: 'Home',
-              addressLine: data.address,
-              isDefault: true
-            }] : []
+            password: password,
+            confirmPassword: data.confirmPassword || password,
+            address: data.address || ''
+          })
+        });
+
+        const resData = await res.json();
+
+        // Check for duplicate phone or duplicate email (HTTP 409)
+        if (res.status === 409 || resData.code === 'PHONE_EXISTS' || resData.code === 'EMAIL_EXISTS') {
+          return {
+            success: false,
+            status: 409,
+            code: resData.code,
+            phone: resData.phone || cleanPhone,
+            email: resData.email || cleanEmail,
+            error: resData.error || resData.message || 'Account already exists. Please login.',
+            message: resData.error || resData.message || 'Account already exists. Please login.'
           };
-
-          if (firestoreInstance) {
-            await firestoreInstance.collection('users').doc(fbUser.uid).set(newProfile, { merge: true });
-          }
-
-          setLocal(STORAGE_KEYS.CURRENT_USER, newProfile);
-          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newProfile }));
-          return { success: true, user: newProfile };
-        } catch (fbErr) {
-          return { success: false, message: formatAuthError(fbErr) };
         }
+
+        if (res.ok && resData.success && resData.user) {
+          if (resData.token) {
+            localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, resData.token);
+          }
+          setLocal(STORAGE_KEYS.CURRENT_USER, resData.user);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: resData.user }));
+        }
+
+        return resData;
+
+      } catch (err) {
+        return {
+          success: false,
+          error: 'SERVER_UNAVAILABLE',
+          message: 'Unable to connect to database server. Please ensure the FoodWala backend is running.'
+        };
       }
-
-      // Path C: Serverless Sandbox Register
-      const regUsers = getLocal(STORAGE_KEYS.REGISTERED_USERS, []);
-      const existing = regUsers.find(u => u.email && u.email.toLowerCase() === cleanEmail);
-      if (existing) {
-        return { success: false, message: 'An account with this email already exists. Please sign in.' };
-      }
-
-      const newUser = {
-        uid: 'user_' + Date.now(),
-        userId: 'user_' + Date.now(),
-        name: cleanName,
-        email: cleanEmail,
-        phone: cleanPhone || '+91 98765 43210',
-        role: 'CUSTOMER',
-        memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        addresses: data.address ? [{
-          id: 'addr_' + Date.now(),
-          label: 'Home',
-          addressLine: data.address,
-          isDefault: true
-        }] : []
-      };
-
-      regUsers.push(newUser);
-      setLocal(STORAGE_KEYS.REGISTERED_USERS, regUsers);
-      setLocal(STORAGE_KEYS.CURRENT_USER, newUser);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: newUser }));
-
-      return { success: true, user: newUser };
     },
 
-    // 5. Logout
-    logout: async function () {
-      if (initFirebaseIfAvailable() && authInstance) {
-        try {
-          await authInstance.signOut();
-        } catch (e) {}
+    // 6. User Login
+    loginEmail: async function (identifier, password) {
+      const cleanId = (identifier || '').trim();
+      if (!cleanId || !password) {
+        return { success: false, message: 'Please enter your email or mobile number and password.' };
       }
 
-      if (BACKEND_URL && BACKEND_URL.trim().length > 0) {
-        try {
-          await fetch(BACKEND_URL.replace(/\/+$/, '') + '/api/auth/logout', {
-            method: 'POST',
-            credentials: 'include'
-          });
-        } catch (e) {}
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ identifier: cleanId, password: password })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 423 || data.error === 'ACCOUNT_LOCKED') {
+          return {
+            success: false,
+            locked: true,
+            status: 423,
+            message: data.message || 'Account is temporarily locked due to multiple failed attempts.'
+          };
+        }
+
+        if (res.ok && data.success && data.user) {
+          if (data.token) {
+            localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+          }
+          setLocal(STORAGE_KEYS.CURRENT_USER, data.user);
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+        }
+
+        return data;
+
+      } catch (err) {
+        return {
+          success: false,
+          message: 'Unable to connect to database server. Please ensure the FoodWala backend is running.'
+        };
       }
+    },
+
+    // 7. Change Password
+    changePassword: async function (currentPassword, newPassword, confirmPassword) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify({
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+            confirmPassword: confirmPassword
+          })
+        });
+        return await res.json();
+      } catch (err) {
+        return { success: false, message: 'Unable to connect to server.' };
+      }
+    },
+
+    // 8. Forgot Password & Reset
+    forgotPassword: async function (identifier) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: identifier })
+        });
+        return await res.json();
+      } catch (err) {
+        return { success: false, message: 'Unable to connect to server.' };
+      }
+    },
+
+    resetPassword: async function (resetToken, otp, newPassword, confirmPassword) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resetToken: resetToken,
+            otp: otp,
+            newPassword: newPassword,
+            confirmPassword: confirmPassword
+          })
+        });
+        return await res.json();
+      } catch (err) {
+        return { success: false, message: 'Unable to connect to server.' };
+      }
+    },
+
+    // 9. Logout
+    logout: async function () {
+      try {
+        await fetch(`${BACKEND_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: getAuthHeader()
+        });
+      } catch (e) {}
 
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
       if (typeof window.FoodWalaApp !== 'undefined' && window.FoodWalaApp.updateNavUI) {
         window.FoodWalaApp.updateNavUI();
@@ -567,45 +377,200 @@ const BACKEND_URL = "";
       return { success: true };
     },
 
-    // 6. Firestore Sync Helpers (for Orders & Addresses)
-    syncUserData: async function (userData) {
-      if (!userData) return;
-      setLocal(STORAGE_KEYS.CURRENT_USER, userData);
-      if (initFirebaseIfAvailable() && firestoreInstance && userData.uid) {
-        try {
-          await firestoreInstance.collection('users').doc(userData.uid).set(userData, { merge: true });
-        } catch (e) {
-          console.warn('[FoodWala Api] Failed to sync user to Firestore:', e);
-        }
+    // 10. Catalog: Restaurants & Menus (fudwala)
+    getRestaurants: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/restaurants`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } catch (e) {
+        console.error('[FoodWalaApi] Failed to fetch restaurants from MySQL:', e);
+        return [];
       }
     },
 
-    saveOrder: async function (order) {
-      if (!order) return order;
-      const targetId = String(order.id || order.orderId || '').trim();
-      const rawOrders = getLocal(STORAGE_KEYS.ORDERS, []);
-      const orders = Array.isArray(rawOrders) ? [...rawOrders] : [];
-      if (targetId) {
-        const idx = orders.findIndex(o => (o && String(o.id || o.orderId || '').trim() === targetId));
-        if (idx > -1) {
-          orders[idx] = Object.assign({}, orders[idx], order, { id: targetId, orderId: targetId });
-        } else {
-          orders.unshift(Object.assign({}, order, { id: targetId, orderId: targetId }));
-        }
-      } else {
-        orders.unshift(order);
+    getRestaurantMenu: async function (restaurantId) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/restaurants/${restaurantId}/menu`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } catch (e) {
+        console.error(`[FoodWalaApi] Failed to fetch menu for restaurant ${restaurantId} from MySQL:`, e);
+        return [];
       }
-      setLocal(STORAGE_KEYS.ORDERS, orders);
+    },
 
-      const currentUser = this.getCurrentUser();
-      if (currentUser && currentUser.uid && initFirebaseIfAvailable() && firestoreInstance) {
-        try {
-          await firestoreInstance.collection('users').doc(currentUser.uid).collection('orders').doc(order.id || order.orderId).set(order);
-        } catch (e) {
-          console.warn('[FoodWala Api] Failed to sync order to Firestore:', e);
-        }
+    getCategories: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/categories`);
+        return await res.json();
+      } catch (e) {
+        return [];
       }
-      return order;
+    },
+
+    // 11. Saved Addresses (fudwala.address)
+    getAddresses: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/user/addresses`, {
+          headers: getAuthHeader()
+        });
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (e) {
+        return [];
+      }
+    },
+
+    saveAddress: async function (addressData) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/user/addresses`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify(addressData)
+        });
+        return await res.json();
+      } catch (e) {
+        return { success: false, message: e.message };
+      }
+    },
+
+    deleteAddress: async function (addressId) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/user/addresses/${addressId}`, {
+          method: 'DELETE',
+          headers: getAuthHeader()
+        });
+        return await res.json();
+      } catch (e) {
+        return { success: false, message: e.message };
+      }
+    },
+
+    setDefaultAddress: async function (addressId) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/user/addresses/${addressId}/default`, {
+          method: 'PUT',
+          headers: getAuthHeader()
+        });
+        return await res.json();
+      } catch (e) {
+        return { success: false, message: e.message };
+      }
+    },
+
+    // 12. Persistent Cart (fudwala.cart & cart_item)
+    getCart: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/cart`, {
+          headers: getAuthHeader()
+        });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) {
+        return null;
+      }
+    },
+
+    syncCart: async function (cartData) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/cart/sync`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify(cartData)
+        });
+        return await res.json();
+      } catch (e) {
+        return { success: false, message: e.message };
+      }
+    },
+
+    // 13. Coupons (fudwala.coupons)
+    validateCoupon: async function (code, total, userId) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/coupons/validate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code, orderTotal: total, userId: userId })
+        });
+        return await res.json();
+      } catch (e) {
+        return { valid: false, message: 'Failed to validate coupon code.' };
+      }
+    },
+
+    // 14. Transactional Orders (fudwala.orders)
+    placeOrder: async function (orderPayload) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/orders/place`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify(orderPayload)
+        });
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        return {
+          success: false,
+          error: 'NETWORK_ERROR',
+          message: 'Unable to connect to order processing server.'
+        };
+      }
+    },
+
+    getOrders: async function (userId, phone) {
+      try {
+        let url = `${BACKEND_URL}/api/orders`;
+        const params = [];
+        if (userId) params.push(`userId=${encodeURIComponent(userId)}`);
+        if (phone) params.push(`phone=${encodeURIComponent(phone)}`);
+        if (params.length > 0) url += `?${params.join('&')}`;
+
+        const res = await fetch(url, { headers: getAuthHeader() });
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (e) {
+        console.error('[FoodWalaApi] Failed to fetch orders from database:', e);
+        return [];
+      }
+    },
+
+    getOrderById: async function (orderId) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/orders/${orderId}`, { headers: getAuthHeader() });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) {
+        return null;
+      }
+    },
+
+    // 15. Administrator Database Audits
+    getAdminUsers: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/users`, { headers: getAuthHeader() });
+        return await res.json();
+      } catch (e) {
+        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to fetch admin users from database.' };
+      }
+    },
+
+    getAdminOrders: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/orders`, { headers: getAuthHeader() });
+        return await res.json();
+      } catch (e) {
+        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to fetch admin orders from database.' };
+      }
+    },
+
+    getAdminLoginHistory: async function () {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/login-history`, { headers: getAuthHeader() });
+        return await res.json();
+      } catch (e) {
+        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to fetch login history from database.' };
+      }
     }
   };
 

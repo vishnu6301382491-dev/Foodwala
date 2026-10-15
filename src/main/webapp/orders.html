@@ -188,9 +188,10 @@
 
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js" defer></script>
-  <!-- Core FoodWala JS (Minified) -->
+  <!-- FoodWala MySQL API & Core JS -->
+  <script src="./js/api.js" defer></script>
   <script src="./js/ui.js" defer></script>
-  <script src="./js/app.min.js" defer></script>
+  <script src="./js/app.js" defer></script>
   <!-- jsPDF & Receipt Service -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   <script src="./js/receiptService.js" defer></script>
@@ -214,9 +215,15 @@
         FoodWalaApp.Orders.deduplicateOrders();
       }
 
-      function renderOrdersList() {
+      async function renderOrdersList() {
+        let orders = [];
+        if (window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.fetchOrders === 'function') {
+          orders = await FoodWalaApp.Orders.fetchOrders();
+        } else if (window.FoodWalaApp && FoodWalaApp.Orders) {
+          orders = FoodWalaApp.Orders.getAllOrders();
+        }
+
         container.innerHTML = '';
-        const orders = FoodWalaApp.Orders.getAllOrders();
 
         if (!orders || orders.length === 0) {
           container.innerHTML = `
