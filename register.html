@@ -340,13 +340,13 @@
           } else {
             regSubmitBtn.disabled = false;
             regSubmitBtn.innerHTML = 'Create Account';
-            regErrorMsg.textContent = res.message || res.error || 'Server is waking up, please retry in 30 seconds.';
+            regErrorMsg.textContent = res.message || res.error || 'Account and order service is temporarily unavailable. Please try again shortly.';
             regErrorMsg.style.display = 'block';
           }
         } catch (err) {
           regSubmitBtn.disabled = false;
           regSubmitBtn.innerHTML = 'Create Account';
-          regErrorMsg.textContent = 'Server is waking up, please retry in 30 seconds.';
+          regErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
           regErrorMsg.style.display = 'block';
         }
       });

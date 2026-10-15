@@ -1,20 +1,25 @@
 /**
  * FoodWala - Unified Data & Authentication API (api.js)
  * 
- * Single Source of Truth: MySQL Backend (fudwala) on Render / Localhost
- * All operations interact with the backend API using prepared statements.
- * Features automatic retry and cold-start wake up detection for Render free-tier.
+ * Architecture:
+ * - Browsing (restaurants, categories, menus, search): Handled instantly from local static JSON
+ *   data with a 10-minute Stale-While-Revalidate localStorage cache when USE_BACKEND_FOR_BROWSING = false.
+ * - Transactions (auth, OTP, orders, addresses, admin): Communicates with Render MySQL backend
+ *   after validating backend availability with a fast 3-second GET /api/health pre-flight check.
  */
 
 (function (window) {
   'use strict';
 
   // =======================================================================
-  // 1. BACKEND API CONFIGURATION
-  // - Localhost / 127.0.0.1: Uses http://localhost:5000
-  // - GitHub Pages / Production: Uses https://foodwala-backend-api.onrender.com
+  // 1. CONFIGURATION FLAGS & API ENDPOINT
   // =======================================================================
-  
+
+  // When false, ALL browsing operations (restaurants, categories, menus, search)
+  // use only local static data with 10-minute stale-while-revalidate caching.
+  // When true, browsing operations route through the backend API.
+  const USE_BACKEND_FOR_BROWSING = false;
+
   const HOSTED_BACKEND_URL = 'https://foodwala-backend-api.onrender.com';
 
   const API_BASE_URL = (function () {
@@ -31,13 +36,24 @@
   })();
 
   const BACKEND_URL = API_BASE_URL;
-  const SERVER_WAKE_UP_MSG = 'Server is waking up, please retry in 30 seconds.';
+  const SERVICE_UNAVAILABLE_MSG = 'Account and order service is temporarily unavailable. Please try again shortly.';
 
   const STORAGE_KEYS = {
     CURRENT_USER: 'foodwala_current_user',
     AUTH_TOKEN: 'foodwala_auth_token',
     PENDING_OTP: 'foodwala_pending_otp'
   };
+
+  // Safe relative path resolver for GitHub Pages and sub-directory deployments
+  function resolveDataPath(relPath) {
+    if (typeof window !== 'undefined' && window.location) {
+      const cleanRel = relPath.replace(/^\.?\//, '');
+      const pathname = window.location.pathname || '';
+      const baseDir = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+      return `${baseDir}${cleanRel}`;
+    }
+    return `./${relPath.replace(/^\.?\//, '')}`;
+  }
 
   function getLocal(key, defaultVal) {
     try {
@@ -103,25 +119,9 @@
     window.FoodWalaApp.showToast(msg, 'danger');
   }
 
-  // --- CIRCUIT BREAKER & FAST CACHE CONFIGURATION ---
-  const CIRCUIT_BREAKER_WINDOW_MS = 60000; // 60 seconds
-  const CACHE_TTL_MS = 600000;            // 10 minutes (600,000 ms)
-  let circuitBreakerTrippedUntil = 0;
+  // --- FAST LOCALSTORAGE CACHE HELPERS (10-minute TTL) ---
+  const CACHE_TTL_MS = 600000; // 10 minutes
 
-  function isCircuitBreakerOpen() {
-    return Date.now() < circuitBreakerTrippedUntil;
-  }
-
-  function tripCircuitBreaker() {
-    circuitBreakerTrippedUntil = Date.now() + CIRCUIT_BREAKER_WINDOW_MS;
-    console.warn(`[FoodWalaApi] Circuit breaker tripped for ${CIRCUIT_BREAKER_WINDOW_MS / 1000}s. Subsequent GETs will use local static fallback.`);
-  }
-
-  function resetCircuitBreaker() {
-    circuitBreakerTrippedUntil = 0;
-  }
-
-  // Stale-While-Revalidate LocalStorage Cache Helper
   function getCachedData(key) {
     try {
       const raw = localStorage.getItem(`foodwala_cache_${key}`);
@@ -144,122 +144,134 @@
     } catch (e) {}
   }
 
-  // Silent server warm-up ping on page load
-  if (typeof window !== 'undefined') {
-    setTimeout(() => {
-      fetch(`${API_BASE_URL}/api/health`, { method: 'GET', mode: 'cors' })
-        .then(r => r.json())
-        .then(data => {
-          console.log('[FoodWalaApi] Silent warm-up ping completed. Server:', data.status, 'DB:', data.db);
-          if (data.status === 'ok') resetCircuitBreaker();
-        })
-        .catch(err => {
-          console.info('[FoodWalaApi] Silent warm-up ping sent (server may be spinning up):', err.message);
-        });
-    }, 100);
+  // =======================================================================
+  // 2. BACKEND HEALTH CHECK (Pre-flight for interactive operations)
+  // =======================================================================
+  let backendHealthCache = {
+    isHealthy: null,
+    lastChecked: 0
+  };
+
+  /**
+   * Checks if backend is reachable with a strict 3-second timeout.
+   * Caches results for maxAgeMs to avoid spamming the health endpoint.
+   */
+  async function checkBackendHealth(maxAgeMs = 5000) {
+    const now = Date.now();
+    if (backendHealthCache.isHealthy !== null && (now - backendHealthCache.lastChecked) < maxAgeMs) {
+      return backendHealthCache.isHealthy;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second timeout
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/health`, {
+        method: 'GET',
+        mode: 'cors',
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        const healthy = Boolean(data && data.status === 'ok');
+        backendHealthCache = { isHealthy: healthy, lastChecked: now };
+        return healthy;
+      }
+    } catch (e) {
+      clearTimeout(timeoutId);
+    }
+
+    backendHealthCache = { isHealthy: false, lastChecked: now };
+    return false;
+  }
+
+  // Only warm up /api/health on pages that actually require the backend (register, login, checkout, orders)
+  if (typeof window !== 'undefined' && window.location) {
+    const path = (window.location.pathname || '').toLowerCase();
+    const isInteractivePage = /register|login|checkout|orders/i.test(path);
+    if (isInteractivePage) {
+      setTimeout(() => {
+        checkBackendHealth(0).catch(() => {});
+      }, 300);
+    }
+  }
+
+  // --- CIRCUIT BREAKER FOR USE_BACKEND_FOR_BROWSING = true ---
+  const CIRCUIT_BREAKER_WINDOW_MS = 60000;
+  let circuitBreakerTrippedUntil = 0;
+
+  function isCircuitBreakerOpen() {
+    return Date.now() < circuitBreakerTrippedUntil;
+  }
+
+  function tripCircuitBreaker() {
+    circuitBreakerTrippedUntil = Date.now() + CIRCUIT_BREAKER_WINDOW_MS;
+  }
+
+  function resetCircuitBreaker() {
+    circuitBreakerTrippedUntil = 0;
   }
 
   /**
-   * Central fetch wrapper with fail-fast 6-second AbortController timeout,
-   * 1 retry with a 1-second delay, and a 60-second circuit breaker.
-   * Distinguishes failure types (network/CORS vs HTTP 5xx vs DB error).
+   * Central fetch wrapper for backend API calls with strict 3-second timeout.
    */
-  async function apiFetch(endpoint, options = {}, retries = 1, delayMs = 1000) {
-    const isGet = !options.method || options.method.toUpperCase() === 'GET';
-
-    // Fast-path: if circuit breaker is open on a GET request, do not block network for 6 seconds
-    if (isGet && isCircuitBreakerOpen()) {
-      const err = new Error('Circuit breaker open: backend currently offline.');
-      err.circuitBreakerOpen = true;
-      throw err;
-    }
-
+  async function apiFetch(endpoint, options = {}, retries = 0, delayMs = 1000) {
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    
     let lastError = null;
     let lastRes = null;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6-second timeout
-
-      const fetchOptions = {
-        ...options,
-        signal: controller.signal
-      };
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
 
       try {
-        const res = await fetch(url, fetchOptions);
+        const res = await fetch(url, {
+          ...options,
+          signal: controller.signal
+        });
         clearTimeout(timeoutId);
         lastRes = res;
 
-        // If response is successful or a standard client error (e.g. 400 bad phone, 401 unauth, 422, 423 locked), return immediately
         if (res.ok || (res.status >= 400 && res.status < 500 && res.status !== 408)) {
           resetCircuitBreaker();
           return res;
         }
 
-        // Render cold start or transient 500/502/503/504
-        if ((res.status >= 500 || res.status === 408) && attempt < retries) {
-          console.info(`[FoodWalaApi] Transient ${res.status}. Retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1}/${retries})`);
+        if (attempt < retries) {
           await new Promise(r => setTimeout(r, delayMs));
           continue;
         }
-
         return res;
       } catch (err) {
         clearTimeout(timeoutId);
         lastError = err;
-        console.info(`[FoodWalaApi] Attempt ${attempt + 1}/${retries + 1} error:`, err.name === 'AbortError' ? 'Fetch timed out after 6s' : err.message);
-        
         if (attempt < retries) {
           await new Promise(r => setTimeout(r, delayMs));
         }
       }
     }
 
-    // All retries exhausted -> trip circuit breaker for future GET calls
-    if (lastError || (lastRes && (lastRes.status >= 500 || lastRes.status === 404))) {
-      tripCircuitBreaker();
-    }
+    tripCircuitBreaker();
+    showErrorToast(SERVICE_UNAVAILABLE_MSG);
 
-    // Classify failure type accurately
-    let errorDetail = '';
-    if (lastError) {
-      if (lastError.name === 'AbortError') {
-        errorDetail = 'Backend request timed out (6s). Server may be waking up.';
-      } else {
-        errorDetail = 'Unable to connect to backend server. Server might be waking up or blocked by CORS.';
-      }
-    } else if (lastRes) {
-      if (lastRes.status === 404) {
-        errorDetail = 'Backend service is not running or endpoint not found on Render. Please verify Render service status.';
-      } else if (lastRes.status >= 500) {
-        errorDetail = 'Database or backend service unavailable. Please retry in a few moments.';
-      } else {
-        errorDetail = `Request failed with HTTP status ${lastRes.status}.`;
-      }
-    } else {
-      errorDetail = 'Unable to connect to backend server. Please retry in a few moments.';
-    }
-
-    const err = new Error(errorDetail);
+    const err = new Error(SERVICE_UNAVAILABLE_MSG);
     err.status = lastRes ? lastRes.status : 0;
     err.isNetworkOrCors = Boolean(lastError);
     err.response = lastRes;
-
-    // Show single deduplicated red error toast only for interactive operations
-    if (!endpoint.includes('/api/health') && !endpoint.includes('/api/restaurants') && !endpoint.includes('/api/categories')) {
-      showErrorToast(errorDetail);
-    }
-
     throw err;
   }
 
+  // =======================================================================
+  // 3. FOODWALA API CLIENT
+  // =======================================================================
   const FoodWalaApi = {
+    USE_BACKEND_FOR_BROWSING: USE_BACKEND_FOR_BROWSING,
     API_BASE_URL: API_BASE_URL,
     BACKEND_URL: BACKEND_URL,
-    SERVER_WAKE_UP_MSG: SERVER_WAKE_UP_MSG,
+    SERVICE_UNAVAILABLE_MSG: SERVICE_UNAVAILABLE_MSG,
+
+    checkBackendHealth: checkBackendHealth,
 
     normalizePhone: function (phone) {
       return normalizeIndianPhone(phone);
@@ -277,23 +289,231 @@
       return null;
     },
 
-    // 1. Check Phone Availability
+    // ---------------------------------------------------------------------
+    // A. CATALOG & BROWSING (Static by default, zero console errors)
+    // ---------------------------------------------------------------------
+    getRestaurants: async function () {
+      const cacheKey = 'restaurants_list';
+      const cached = getCachedData(cacheKey);
+
+      // Fast path: Fresh cache exists in localStorage (0ms instant render)
+      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length >= 10) {
+        return cached.data;
+      }
+
+      // Stale path: Stale cache exists -> return immediately, refresh in background
+      if (cached && Array.isArray(cached.data) && cached.data.length >= 10) {
+        setTimeout(async () => {
+          try {
+            if (USE_BACKEND_FOR_BROWSING) {
+              const res = await apiFetch('/api/restaurants', {}, 0);
+              if (res.ok) {
+                const freshData = await res.json();
+                if (Array.isArray(freshData) && freshData.length >= 10) {
+                  setCachedData(cacheKey, freshData);
+                  window.dispatchEvent(new CustomEvent('foodwala:restaurantsUpdated', { detail: freshData }));
+                }
+              }
+            } else {
+              const res = await fetch(resolveDataPath('data/restaurants.json'));
+              if (res.ok) {
+                const list = await res.json();
+                if (Array.isArray(list) && list.length >= 10) {
+                  setCachedData(cacheKey, list);
+                  window.dispatchEvent(new CustomEvent('foodwala:restaurantsUpdated', { detail: list }));
+                }
+              }
+            }
+          } catch (e) {}
+        }, 50);
+        return cached.data;
+      }
+
+      // No cache: fetch directly
+      if (!USE_BACKEND_FOR_BROWSING) {
+        try {
+          const res = await fetch(resolveDataPath('data/restaurants.json'));
+          if (res.ok) {
+            const list = await res.json();
+            if (Array.isArray(list) && list.length > 0) {
+              setCachedData(cacheKey, list);
+              return list;
+            }
+          }
+        } catch (e) {}
+      } else {
+        try {
+          const res = await apiFetch('/api/restaurants', {}, 0);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length >= 10) {
+              setCachedData(cacheKey, data);
+              return data;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Final fallback to global object if available
+      if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
+        return window.FOODWALA_RESTAURANTS;
+      }
+      return [];
+    },
+
+    getCategories: async function () {
+      const cacheKey = 'categories_list';
+      const cached = getCachedData(cacheKey);
+
+      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length > 0) {
+        return cached.data;
+      }
+
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        setTimeout(async () => {
+          try {
+            if (USE_BACKEND_FOR_BROWSING) {
+              const res = await apiFetch('/api/categories', {}, 0);
+              if (res.ok) {
+                const fresh = await res.json();
+                if (Array.isArray(fresh) && fresh.length > 0) setCachedData(cacheKey, fresh);
+              }
+            } else {
+              const res = await fetch(resolveDataPath('data/categories.json'));
+              if (res.ok) {
+                const list = await res.json();
+                if (Array.isArray(list) && list.length > 0) setCachedData(cacheKey, list);
+              }
+            }
+          } catch (e) {}
+        }, 50);
+        return cached.data;
+      }
+
+      if (!USE_BACKEND_FOR_BROWSING) {
+        try {
+          const res = await fetch(resolveDataPath('data/categories.json'));
+          if (res.ok) {
+            const list = await res.json();
+            if (Array.isArray(list) && list.length > 0) {
+              setCachedData(cacheKey, list);
+              return list;
+            }
+          }
+        } catch (e) {}
+      } else {
+        try {
+          const res = await apiFetch('/api/categories', {}, 0);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setCachedData(cacheKey, data);
+              return data;
+            }
+          }
+        } catch (e) {}
+      }
+
+      return [
+        { id: 1, name: 'South Indian' },
+        { id: 2, name: 'North Indian' },
+        { id: 3, name: 'Biryani' },
+        { id: 4, name: 'Burgers & Fast Food' },
+        { id: 5, name: 'Desserts & Sweets' },
+        { id: 6, name: 'Beverages' }
+      ];
+    },
+
+    getRestaurantMenu: async function (restaurantId) {
+      const rId = parseInt(restaurantId, 10);
+      const cacheKey = `menu_rest_${rId}`;
+      const cached = getCachedData(cacheKey);
+
+      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length > 0) {
+        return cached.data;
+      }
+
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        setTimeout(async () => {
+          try {
+            if (USE_BACKEND_FOR_BROWSING) {
+              const res = await apiFetch(`/api/restaurants/${rId}/menu`, {}, 0);
+              if (res.ok) {
+                const fresh = await res.json();
+                if (Array.isArray(fresh) && fresh.length > 0) setCachedData(cacheKey, fresh);
+              }
+            }
+          } catch (e) {}
+        }, 50);
+        return cached.data;
+      }
+
+      if (!USE_BACKEND_FOR_BROWSING) {
+        // Try individual menu file first
+        try {
+          const res = await fetch(resolveDataPath(`data/menus/${rId}.json`));
+          if (res.ok) {
+            const items = await res.json();
+            if (Array.isArray(items) && items.length > 0) {
+              setCachedData(cacheKey, items);
+              return items;
+            }
+          }
+        } catch (e) {}
+
+        // Fallback: load full menu-items.json and filter by restaurant ID
+        try {
+          const fallbackRes = await fetch(resolveDataPath('data/menu-items.json'));
+          if (fallbackRes.ok) {
+            const allItems = await fallbackRes.json();
+            const matched = allItems.filter(m => (m.restaurantId === rId || m.restaurant_id === rId));
+            if (matched.length > 0) {
+              setCachedData(cacheKey, matched);
+              return matched;
+            }
+          }
+        } catch (err) {}
+      } else {
+        try {
+          const res = await apiFetch(`/api/restaurants/${rId}/menu`, {}, 0);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setCachedData(cacheKey, data);
+              return data;
+            }
+          }
+        } catch (e) {}
+      }
+
+      return [];
+    },
+
+    // ---------------------------------------------------------------------
+    // B. AUTHENTICATION (Pre-flights /api/health with 3s timeout)
+    // ---------------------------------------------------------------------
     checkPhone: async function (rawPhone) {
       const normalized = normalizeIndianPhone(rawPhone);
       if (!normalized) {
         return { available: false, error: 'Please enter a valid 10-digit mobile number.' };
       }
+
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { available: false, error: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch(`/api/auth/check-phone?phone=${encodeURIComponent(normalized)}`, {
           headers: getAuthHeader()
         });
         return await res.json();
       } catch (e) {
-        return { available: true, error: null };
+        return { available: false, error: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 2. Send Mobile OTP
     sendOtp: async function (rawPhone) {
       const normalized = normalizeIndianPhone(rawPhone);
       if (!normalized) {
@@ -304,24 +524,24 @@
         };
       }
 
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/auth/send-otp', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify({ phone: normalized })
         });
-        const data = await res.json();
-        return data;
+        return await res.json();
       } catch (err) {
-        return {
-          success: false,
-          error: 'SERVER_WAKING_UP',
-          message: SERVER_WAKE_UP_MSG
-        };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 3. Verify OTP
     verifyOtp: async function (rawPhone, code) {
       const normalized = normalizeIndianPhone(rawPhone);
       if (!normalized) {
@@ -331,6 +551,12 @@
       const cleanCode = (code || '').trim();
       if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
         return { success: false, error: 'INVALID_CODE', message: 'Please enter the 6-digit verification code.' };
+      }
+
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
 
       try {
@@ -347,16 +573,17 @@
         }
         return data;
       } catch (err) {
-        return {
-          success: false,
-          error: 'SERVER_WAKING_UP',
-          message: SERVER_WAKE_UP_MSG
-        };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 4. Register Mobile Profile
     registerMobile: async function (data) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/auth/register-mobile', {
           method: 'POST',
@@ -371,15 +598,10 @@
         }
         return resData;
       } catch (err) {
-        return {
-          success: false,
-          error: 'SERVER_WAKING_UP',
-          message: SERVER_WAKE_UP_MSG
-        };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 5. User Sign Up (Register)
     signup: async function (data) {
       const cleanName = (data.name || data.username || '').trim();
       const cleanEmail = (data.email || '').trim().toLowerCase();
@@ -396,6 +618,12 @@
 
       if (password.length < 8) {
         return { success: false, message: 'Password must be at least 8 characters long.' };
+      }
+
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
 
       try {
@@ -415,7 +643,6 @@
 
         const resData = await res.json();
 
-        // Check for duplicate phone or duplicate email (HTTP 409)
         if (res.status === 409 || resData.code === 'PHONE_EXISTS' || resData.code === 'EMAIL_EXISTS') {
           return {
             success: false,
@@ -437,17 +664,11 @@
         }
 
         return resData;
-
       } catch (err) {
-        return {
-          success: false,
-          error: 'SERVER_WAKING_UP',
-          message: SERVER_WAKE_UP_MSG
-        };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 6. User Login (Email or Phone + Password)
     loginEmail: async function (identifier, password) {
       const cleanId = (identifier || '').trim();
       if (!cleanId || !password) {
@@ -459,6 +680,12 @@
         ? { phone: normalizeIndianPhone(cleanId), password: password }
         : { email: cleanId.toLowerCase(), password: password };
 
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/auth/login', {
           method: 'POST',
@@ -468,7 +695,6 @@
 
         const data = await res.json();
 
-        // Check for account lockout (HTTP 423)
         if (res.status === 423 || data.error === 'ACCOUNT_LOCKED') {
           return {
             success: false,
@@ -488,23 +714,23 @@
         }
 
         return data;
-
       } catch (err) {
-        return {
-          success: false,
-          error: 'SERVER_WAKING_UP',
-          message: SERVER_WAKE_UP_MSG
-        };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 7. Password Management
     changePassword: async function (currentPassword, newPassword, confirmPassword) {
       if (newPassword !== confirmPassword) {
         return { success: false, message: 'New passwords do not match.' };
       }
       if (newPassword.length < 8) {
         return { success: false, message: 'New password must be at least 8 characters long.' };
+      }
+
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
 
       try {
@@ -519,12 +745,17 @@
         });
         return await res.json();
       } catch (err) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 8. Forgot & Reset Password
     forgotPassword: async function (emailOrPhone) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/auth/forgot-password', {
           method: 'POST',
@@ -533,11 +764,17 @@
         });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
     resetPassword: async function (token, newPassword) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/auth/reset-password', {
           method: 'POST',
@@ -546,11 +783,10 @@
         });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 9. Sign Out
     logout: async function () {
       try {
         await apiFetch('/api/auth/logout', {
@@ -568,176 +804,15 @@
       return { success: true };
     },
 
-    // 10. Catalog: Restaurants & Menus (fudwala) - With Stale-While-Revalidate (10-minute cache)
-    getRestaurants: async function () {
-      const cacheKey = 'restaurants_list';
-      const cached = getCachedData(cacheKey);
-
-      // Fast path: Fresh cache exists in localStorage (0ms instant render)
-      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length >= 10) {
-        return cached.data;
-      }
-
-      // Stale path: Stale cache exists -> return immediately, refresh in background
-      if (cached && Array.isArray(cached.data) && cached.data.length >= 10) {
-        setTimeout(async () => {
-          try {
-            const res = await apiFetch('/api/restaurants', {}, 1, 1000);
-            if (res.ok) {
-              const freshData = await res.json();
-              if (Array.isArray(freshData) && freshData.length >= 10) {
-                setCachedData(cacheKey, freshData);
-                window.dispatchEvent(new CustomEvent('foodwala:restaurantsUpdated', { detail: freshData }));
-              }
-            }
-          } catch (e) {}
-        }, 100);
-        return cached.data;
-      }
-
-      // No cache -> fetch from API with 1 retry (1s delay, 6s timeout)
-      try {
-        const res = await apiFetch('/api/restaurants', {}, 1, 1000);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length >= 10) {
-            setCachedData(cacheKey, data);
-            return data;
-          }
-        }
-      } catch (e) {
-        console.warn('[FoodWalaApi] API unavailable, using local static restaurants fallback:', e.message);
-      }
-
-      // Fallback: local static restaurants.json (all 105 restaurants)
-      try {
-        const fallbackRes = await fetch('./data/restaurants.json');
-        if (fallbackRes.ok) {
-          const list = await fallbackRes.json();
-          if (Array.isArray(list) && list.length > 0) {
-            setCachedData(cacheKey, list);
-            return list;
-          }
-        }
-      } catch (err) {}
-
-      if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
-        return window.FOODWALA_RESTAURANTS;
-      }
-      return [];
-    },
-
-    getRestaurantMenu: async function (restaurantId) {
-      const rId = parseInt(restaurantId, 10);
-      const cacheKey = `menu_rest_${rId}`;
-      const cached = getCachedData(cacheKey);
-
-      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length > 0) {
-        return cached.data;
-      }
-
-      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
-        setTimeout(async () => {
-          try {
-            const res = await apiFetch(`/api/restaurants/${rId}/menu`, {}, 1, 1000);
-            if (res.ok) {
-              const fresh = await res.json();
-              if (Array.isArray(fresh) && fresh.length > 0) setCachedData(cacheKey, fresh);
-            }
-          } catch (e) {}
-        }, 100);
-        return cached.data;
-      }
-
-      try {
-        const res = await apiFetch(`/api/restaurants/${rId}/menu`, {}, 1, 1000);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setCachedData(cacheKey, data);
-            return data;
-          }
-        }
-      } catch (e) {
-        console.warn(`[FoodWalaApi] API menu unavailable for ${rId}, using static items:`, e.message);
-      }
-
-      try {
-        const fallbackRes = await fetch('./data/menu-items.json');
-        if (fallbackRes.ok) {
-          const allItems = await fallbackRes.json();
-          const matched = allItems.filter(m => (m.restaurantId === rId || m.restaurant_id === rId));
-          if (matched.length > 0) {
-            setCachedData(cacheKey, matched);
-            return matched;
-          }
-        }
-      } catch (err) {}
-
-      return [];
-    },
-
-    getCategories: async function () {
-      const cacheKey = 'categories_list';
-      const cached = getCachedData(cacheKey);
-
-      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length > 0) {
-        return cached.data;
-      }
-
-      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
-        setTimeout(async () => {
-          try {
-            const res = await apiFetch('/api/categories', {}, 1, 1000);
-            if (res.ok) {
-              const fresh = await res.json();
-              if (Array.isArray(fresh) && fresh.length > 0) setCachedData(cacheKey, fresh);
-            }
-          } catch (e) {}
-        }, 100);
-        return cached.data;
-      }
-
-      try {
-        const res = await apiFetch('/api/categories', {}, 1, 1000);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setCachedData(cacheKey, data);
-            return data;
-          }
-        }
-      } catch (e) {
-        console.warn('[FoodWalaApi] API categories unavailable, loading static categories fallback:', e.message);
-      }
-
-      try {
-        const fallbackRes = await fetch('./data/categories.json');
-        if (fallbackRes.ok) {
-          const list = await fallbackRes.json();
-          if (Array.isArray(list) && list.length > 0) {
-            setCachedData(cacheKey, list);
-            return list;
-          }
-        }
-      } catch (err) {}
-
-      return [
-        { id: 1, name: 'South Indian' },
-        { id: 2, name: 'North Indian' },
-        { id: 3, name: 'Biryani' },
-        { id: 4, name: 'Burgers & Fast Food' },
-        { id: 5, name: 'Desserts & Sweets' },
-        { id: 6, name: 'Beverages' }
-      ];
-    },
-
-    // 11. Saved Addresses (fudwala.address)
+    // ---------------------------------------------------------------------
+    // C. USER ADDRESSES
+    // ---------------------------------------------------------------------
     getAddresses: async function () {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) return [];
+
       try {
-        const res = await apiFetch('/api/user/addresses', {
-          headers: getAuthHeader()
-        });
+        const res = await apiFetch('/api/user/addresses', { headers: getAuthHeader() });
         if (!res.ok) return [];
         return await res.json();
       } catch (e) {
@@ -746,6 +821,12 @@
     },
 
     saveAddress: async function (addressData) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/user/addresses', {
           method: 'POST',
@@ -754,11 +835,17 @@
         });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
     deleteAddress: async function (addressId) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch(`/api/user/addresses/${addressId}`, {
           method: 'DELETE',
@@ -766,11 +853,17 @@
         });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
     setDefaultAddress: async function (addressId) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch(`/api/user/addresses/${addressId}/default`, {
           method: 'PUT',
@@ -778,16 +871,19 @@
         });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 12. Persistent Cart (fudwala.cart & cart_item)
+    // ---------------------------------------------------------------------
+    // D. CART & COUPONS
+    // ---------------------------------------------------------------------
     getCart: async function () {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) return null;
+
       try {
-        const res = await apiFetch('/api/cart', {
-          headers: getAuthHeader()
-        });
+        const res = await apiFetch('/api/cart', { headers: getAuthHeader() });
         if (!res.ok) return null;
         return await res.json();
       } catch (e) {
@@ -796,6 +892,9 @@
     },
 
     syncCart: async function (cartData) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) return { success: false };
+
       try {
         const res = await apiFetch('/api/cart/sync', {
           method: 'POST',
@@ -804,12 +903,16 @@
         });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 13. Coupons (fudwala.coupons)
     validateCoupon: async function (code, total, userId) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        return { valid: false, message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/coupons/validate', {
           method: 'POST',
@@ -818,30 +921,36 @@
         });
         return await res.json();
       } catch (e) {
-        return { valid: false, message: 'Server waking up, please retry coupon in 30 seconds.' };
+        return { valid: false, message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
-    // 14. Transactional Orders (fudwala.orders)
+    // ---------------------------------------------------------------------
+    // E. ORDERS & RECEIPTS
+    // ---------------------------------------------------------------------
     placeOrder: async function (orderPayload) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/orders/place', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify(orderPayload)
         });
-        const data = await res.json();
-        return data;
+        return await res.json();
       } catch (e) {
-        return {
-          success: false,
-          error: 'SERVER_WAKING_UP',
-          message: SERVER_WAKE_UP_MSG
-        };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
     getOrders: async function (userId, phone) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) return [];
+
       try {
         let url = '/api/orders';
         const params = [];
@@ -853,12 +962,14 @@
         if (!res.ok) return [];
         return await res.json();
       } catch (e) {
-        console.warn('[FoodWalaApi] Failed to fetch orders (server waking up):', e.message);
         return [];
       }
     },
 
     getOrderById: async function (orderId) {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) return null;
+
       try {
         const res = await apiFetch(`/api/orders/${orderId}`, { headers: getAuthHeader() });
         if (!res.ok) return null;
@@ -868,31 +979,51 @@
       }
     },
 
-    // 15. Administrator Database Audits
+    // ---------------------------------------------------------------------
+    // F. ADMIN AUDITS
+    // ---------------------------------------------------------------------
     getAdminUsers: async function () {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/admin/users', { headers: getAuthHeader() });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
     getAdminOrders: async function () {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/admin/orders', { headers: getAuthHeader() });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     },
 
     getAdminLoginHistory: async function () {
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        showErrorToast(SERVICE_UNAVAILABLE_MSG);
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
+      }
+
       try {
         const res = await apiFetch('/api/admin/login-history', { headers: getAuthHeader() });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
+        return { success: false, error: 'SERVICE_UNAVAILABLE', message: SERVICE_UNAVAILABLE_MSG };
       }
     }
   };
