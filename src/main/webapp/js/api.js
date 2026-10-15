@@ -10,9 +10,16 @@
   'use strict';
 
   function getAdapter() {
-    const config = window.FOODWALA_CONFIG || { MODE: 'mock' };
+    const config = window.FOODWALA_CONFIG || { MODE: 'live' };
     const adapters = window.FoodWalaAdapters || {};
-    return adapters[config.MODE] || adapters.mock;
+    if (config.MODE === 'mock' && adapters.mock) {
+      return adapters.mock;
+    }
+    if (adapters.live) {
+      return adapters.live;
+    }
+    console.error('[FoodWala API] liveAdapter is not available. Please verify scripts loading order.');
+    return adapters.live || adapters.mock;
   }
 
   function normalizePhone(rawPhone) {
@@ -32,7 +39,7 @@
 
   const FoodWalaApi = {
     get config() {
-      return window.FOODWALA_CONFIG || { MODE: 'mock' };
+      return window.FOODWALA_CONFIG || { MODE: 'live' };
     },
 
     get adapter() {

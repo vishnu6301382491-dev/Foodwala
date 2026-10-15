@@ -199,20 +199,39 @@
 
     // 9. Standard Signup
     signup: async function (data) {
-      const res = await liveFetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      handleHttpErrors(res);
-      const resData = await res.json();
-      resData.status = res.status;
-      if (res.ok && resData.success && resData.user) {
-        if (resData.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, resData.token);
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(resData.user));
-        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: resData.user }));
+      try {
+        const res = await liveFetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        let resData = null;
+        try {
+          resData = await res.json();
+        } catch (jsonErr) {
+          resData = { success: false, message: `Server error (HTTP ${res.status}).` };
+        }
+        resData.status = res.status;
+
+        if (res.ok && resData.success && resData.user) {
+          if (resData.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, resData.token);
+          delete resData.user.password;
+          delete resData.user.passwordHash;
+          delete resData.user.password_hash;
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(resData.user));
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: resData.user }));
+        }
+        return resData;
+      } catch (err) {
+        if (err.isTimeout) {
+          return { success: false, status: 503, message: 'Server is waking up, please retry in 30 seconds.' };
+        }
+        if (err.status === 404) {
+          return { success: false, status: 404, message: 'Authentication service endpoint not found (404). Please contact support.' };
+        }
+        return { success: false, status: 0, isNetworkError: true, message: 'Unable to connect to FoodWala server. Please check your internet connection and try again.' };
       }
-      return resData;
     },
 
     // 10. Login
@@ -223,25 +242,44 @@
       
       const payload = {
         identifier: cleanId,
-        email: !isPhone ? cleanId.toLowerCase() : undefined,
+        email: cleanId.includes('@') ? cleanId.toLowerCase() : cleanId,
         phone: isPhone ? digits.slice(-10) : undefined,
         password: password
       };
 
-      const res = await liveFetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      handleHttpErrors(res);
-      const data = await res.json();
-      data.status = res.status;
-      if (res.ok && data.success && data.user) {
-        if (data.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
-        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+      try {
+        const res = await liveFetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          data = { success: false, message: `Server error (HTTP ${res.status}).` };
+        }
+        data.status = res.status;
+
+        if (res.ok && data.success && data.user) {
+          if (data.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+          delete data.user.password;
+          delete data.user.passwordHash;
+          delete data.user.password_hash;
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+        }
+        return data;
+      } catch (err) {
+        if (err.isTimeout) {
+          return { success: false, status: 503, message: 'Server is waking up, please retry in 30 seconds.' };
+        }
+        if (err.status === 404) {
+          return { success: false, status: 404, message: 'Authentication service endpoint not found (404). Please contact support.' };
+        }
+        return { success: false, status: 0, isNetworkError: true, message: 'Unable to connect to FoodWala server. Please check your internet connection and try again.' };
       }
-      return data;
     },
 
     // 11. Change Password

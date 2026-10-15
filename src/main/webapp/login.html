@@ -512,8 +512,12 @@
               loginErrorMsg.textContent = res.message || 'Please check your email/mobile and password.';
             } else if (res.status === 404) {
               loginErrorMsg.textContent = 'Authentication service endpoint not found (404). Please contact support.';
+            } else if (res.status === 503) {
+              loginErrorMsg.textContent = res.message || 'Server is waking up, please retry in 30 seconds.';
             } else if (res.status >= 500) {
               loginErrorMsg.textContent = 'FoodWala server encountered an error. Please try again shortly.';
+            } else if (res.isNetworkError || res.status === 0) {
+              loginErrorMsg.textContent = 'Unable to connect to FoodWala server. Please check your internet connection and try again.';
             } else {
               loginErrorMsg.textContent = res.message || 'Invalid email/mobile number or password.';
             }

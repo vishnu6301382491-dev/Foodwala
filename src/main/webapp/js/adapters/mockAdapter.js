@@ -78,27 +78,39 @@
   // Pre-seed mock users if not present
   function initMockUsers() {
     let users = getLocal(STORAGE_KEYS.MOCK_USERS, null);
+    if (users && Array.isArray(users)) {
+      // Purge any real personal email/phone if previously cached in localStorage
+      const sanitized = users.filter(u => 
+        (u.email || '').toLowerCase() !== 'vishnuvardhanreddych45@gmail.com' && 
+        u.phone !== '6301382491'
+      );
+      if (sanitized.length !== users.length) {
+        users = sanitized;
+        setLocal(STORAGE_KEYS.MOCK_USERS, users);
+      }
+    }
+
     if (!users || !Array.isArray(users) || users.length === 0) {
       users = [
         {
-          userId: 1,
-          name: 'VISHNU',
-          username: 'VISHNU',
-          email: 'vishnuvardhanreddych45@gmail.com',
-          phone: '6301382491',
+          userId: 101,
+          name: 'Demo Customer',
+          username: 'demo_customer',
+          email: 'customer@demo.foodwala.com',
+          phone: '9999990001',
           role: 'customer',
-          passwordHash: mockHash('Password@123'),
-          address: 'Bengaluru Central, Karnataka - 560001',
+          passwordHash: mockHash('Demo@123'),
+          address: 'Demo Address, Koramangala, Bengaluru - 560095',
           memberSince: 'March 2026',
           failedAttempts: 0,
           lockedUntil: 0
         },
         {
-          userId: 2,
+          userId: 102,
           name: 'FoodWala Admin',
           username: 'FoodWala Admin',
-          email: 'admin@foodwala.com',
-          phone: '9876543222',
+          email: 'admin@demo.foodwala.com',
+          phone: '9999990002',
           role: 'admin',
           passwordHash: mockHash('AdminPass123'),
           address: 'FoodWala HQ, MG Road, Bengaluru, Karnataka - 560001',
@@ -107,11 +119,11 @@
           lockedUntil: 0
         },
         {
-          userId: 3,
+          userId: 103,
           name: 'Vidyarthi Bhavan',
           username: 'Vidyarthi Bhavan Manager',
-          email: 'vidyarthi@foodwala.com',
-          phone: '9876543211',
+          email: 'restaurant@demo.foodwala.com',
+          phone: '9999990003',
           role: 'restaurant',
           passwordHash: mockHash('Restaurant123'),
           address: 'Gandhi Bazaar, Basavanagudi, Bengaluru - 560004',
@@ -120,11 +132,11 @@
           lockedUntil: 0
         },
         {
-          userId: 4,
+          userId: 104,
           name: 'Ramesh Kumar',
           username: 'Ramesh Kumar',
-          email: 'ramesh@foodwala.com',
-          phone: '9876543220',
+          email: 'delivery@demo.foodwala.com',
+          phone: '9999990004',
           role: 'partner',
           passwordHash: mockHash('Partner123'),
           address: 'Jayanagar 4th Block, Bengaluru - 560011',

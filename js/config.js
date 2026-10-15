@@ -17,16 +17,24 @@
   const isLocalHost = typeof window !== 'undefined' && window.location && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
+  // Explicit demo/mock mode check:
+  // ONLY enable mock mode if ?mode=mock or ?demo=true in URL, or localStorage flag is set
+  const urlParams = (typeof window !== 'undefined' && window.location && window.location.search) ? 
+    new URLSearchParams(window.location.search) : null;
+  const isExplicitDemo = urlParams ? (urlParams.get('mode') === 'mock' || urlParams.get('demo') === 'true') : false;
+  const isForcedMock = (typeof localStorage !== 'undefined') && localStorage.getItem('foodwala_force_mock') === 'true';
+  const shouldRunMock = isExplicitDemo || isForcedMock;
+
   window.FOODWALA_CONFIG = {
-    MODE: isLocalHost ? 'live' : 'mock',
+    MODE: shouldRunMock ? 'mock' : 'live',
     API_BASE_URL: isLocalHost ? 'http://localhost:5000' : 'https://foodwala-backend.onrender.com',
-    DEMO_MODE: !isLocalHost
+    DEMO_MODE: shouldRunMock
   };
 
-  // Default to demo mode while backend is unreachable
-  window.FOODWALA_IS_DEMO_MODE = !isLocalHost;
+  // Explicit demo mode indicator
+  window.FOODWALA_IS_DEMO_MODE = shouldRunMock;
 
-  let isDemoMode = !isLocalHost;
+  let isDemoMode = shouldRunMock;
   let memoryHealthCache = null; // { isUp: boolean, timestamp: number }
   const statusListeners = [];
 
@@ -35,8 +43,19 @@
     return base.replace(/\/+$/, '') + '/api/health';
   }
 
-  // Restore cached health status from sessionStorage on startup (ZERO network calls on page load)
+  // Restore cached health status from sessionStorage on startup
   function initFromCache() {
+    if (!shouldRunMock) {
+      // Production / standard mode: ALWAYS ensure live mode
+      isDemoMode = false;
+      window.FOODWALA_IS_DEMO_MODE = false;
+      if (window.FOODWALA_CONFIG) {
+        window.FOODWALA_CONFIG.MODE = 'live';
+        window.FOODWALA_CONFIG.DEMO_MODE = false;
+      }
+      return;
+    }
+
     if (typeof sessionStorage !== 'undefined') {
       try {
         const stored = sessionStorage.getItem('foodwala_backend_health');
@@ -45,18 +64,11 @@
           const now = Date.now();
           if (parsed && typeof parsed.isUp === 'boolean' && (now - parsed.timestamp < CACHE_TTL_MS)) {
             memoryHealthCache = parsed;
-            isDemoMode = !parsed.isUp;
-            window.FOODWALA_IS_DEMO_MODE = isDemoMode;
-            if (window.FOODWALA_CONFIG) {
-              window.FOODWALA_CONFIG.MODE = isDemoMode ? 'mock' : 'live';
-              window.FOODWALA_CONFIG.DEMO_MODE = isDemoMode;
-            }
             return;
           }
         }
       } catch (e) {}
     }
-    // Default: offline demo mode
     isDemoMode = true;
     window.FOODWALA_IS_DEMO_MODE = true;
     if (window.FOODWALA_CONFIG) {
@@ -70,16 +82,10 @@
    * - Checks memory cache (< 60s)
    * - Checks sessionStorage (< 60s)
    * - Makes exactly ONE network call with 3s timeout only if cache expired
-   * - Never makes 3 or 5 calls
+   * - Does NOT silently switch production to mock mode if backend is unreachable
    */
   async function checkBackend(forceRefresh = false) {
     const now = Date.now();
-
-    // 0. In mock mode on remote host without forceRefresh, resolve offline status silently to avoid 404 network errors
-    if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock' && !window.FOODWALA_CONFIG.PROBE_BACKEND && !forceRefresh && !isLocalHost) {
-      setMode(true);
-      return false;
-    }
 
     // 1. Check in-memory cache
     if (!forceRefresh && memoryHealthCache && (now - memoryHealthCache.timestamp < CACHE_TTL_MS)) {
@@ -94,7 +100,6 @@
           const parsed = JSON.parse(stored);
           if (parsed && typeof parsed.isUp === 'boolean' && (now - parsed.timestamp < CACHE_TTL_MS)) {
             memoryHealthCache = parsed;
-            setMode(!parsed.isUp);
             return parsed.isUp;
           }
         }
@@ -130,25 +135,28 @@
       } catch (e) {}
     }
 
-    // 5. Update mode and notify UI
-    setMode(!isUp);
+    // If explicit mock mode was NOT requested, NEVER silently switch production to mock mode!
+    if (shouldRunMock) {
+      setMode(!isUp);
+    }
 
     return isUp;
   }
 
   function setMode(demoActive) {
-    const changed = (isDemoMode !== demoActive);
-    isDemoMode = demoActive;
-    window.FOODWALA_IS_DEMO_MODE = demoActive;
+    const active = Boolean(demoActive);
+    const changed = (isDemoMode !== active);
+    isDemoMode = active;
+    window.FOODWALA_IS_DEMO_MODE = active;
 
     if (window.FOODWALA_CONFIG) {
-      window.FOODWALA_CONFIG.MODE = demoActive ? 'mock' : 'live';
-      window.FOODWALA_CONFIG.DEMO_MODE = demoActive;
+      window.FOODWALA_CONFIG.MODE = active ? 'mock' : 'live';
+      window.FOODWALA_CONFIG.DEMO_MODE = active;
     }
 
     removeBanner();
 
-    if (demoActive) {
+    if (active) {
       updateDemoLoginButtons(true);
     } else {
       updateDemoLoginButtons(false);
@@ -156,9 +164,9 @@
     }
 
     if (changed) {
-      window.dispatchEvent(new CustomEvent('foodwala:demoModeChanged', { detail: { isDemoMode: demoActive } }));
+      window.dispatchEvent(new CustomEvent('foodwala:demoModeChanged', { detail: { isDemoMode: active } }));
       statusListeners.forEach(fn => {
-        try { fn(demoActive); } catch (e) {}
+        try { fn(active); } catch (e) {}
       });
     }
   }
