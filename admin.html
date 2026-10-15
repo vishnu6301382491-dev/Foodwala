@@ -64,7 +64,7 @@
           </div>
         </a>
         <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small">
-          <i class="bi bi-database me-1"></i> fudwala @ localhost:3306
+          <i class="bi bi-shield-check me-1"></i> Management Console
         </span>
       </div>
 
@@ -328,7 +328,7 @@
   <!-- Footer -->
   <footer class="bg-white border-top py-3 mt-auto">
     <div class="container text-center text-muted small">
-      FoodWala MySQL Single Source of Truth &copy; 2026. Connected to database <code>fudwala</code> with Argon2id and Prepared Statements.
+      FoodWala Operations Portal &copy; 2026. Secure Admin Console.
     </div>
   </footer>
 
@@ -346,6 +346,16 @@
     let globalOrders = [];
     let globalHistory = [];
 
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) {
+        const u = FoodWalaApp.Auth.getCurrentUser();
+        const r = (u && u.role ? u.role : '').toLowerCase();
+        if (!u || r !== 'admin') {
+          window.location.replace('./login.html?redirect=./admin.html');
+        }
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', async () => {
       initAdminAuth();
       bindEvents();
@@ -353,14 +363,20 @@
 
     function initAdminAuth() {
       const currentUser = FoodWalaApp.Auth.getCurrentUser();
-      if (!currentUser || currentUser.role !== 'admin') {
+      if (!currentUser) {
         document.getElementById('admin-gate').style.display = 'block';
         document.getElementById('admin-dashboard').style.display = 'none';
-      } else {
-        document.getElementById('admin-gate').style.display = 'none';
-        document.getElementById('admin-dashboard').style.display = 'block';
-        loadAdminData();
+        return;
       }
+      const role = (currentUser.role || '').toLowerCase();
+      if (role !== 'admin') {
+        FoodWalaApp.showToast('Access denied: Administrator privileges required.', 'danger');
+        window.location.replace('./profile.html');
+        return;
+      }
+      document.getElementById('admin-gate').style.display = 'none';
+      document.getElementById('admin-dashboard').style.display = 'block';
+      loadAdminData();
     }
 
     function bindEvents() {

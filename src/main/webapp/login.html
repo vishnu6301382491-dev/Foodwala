@@ -417,20 +417,24 @@
       });
 
       // --- Demo login buttons (only active when DEMO_MODE is true) ---
+      // --- Demo login buttons (only active when in offline DEMO_MODE) ---
       const demoContainer = document.getElementById('demo-logins-container');
-      if (demoContainer) {
-        if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.DEMO_MODE) {
-          demoContainer.style.display = 'block';
-        } else {
-          demoContainer.style.display = 'none';
+      function syncDemoLoginsVisibility() {
+        if (demoContainer) {
+          demoContainer.style.display = (window.FOODWALA_IS_DEMO_MODE || (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.DEMO_MODE)) ? 'block' : 'none';
         }
       }
+      syncDemoLoginsVisibility();
+      window.addEventListener('foodwala:demoModeChanged', (e) => {
+        const isDemo = e.detail && e.detail.isDemoMode;
+        if (demoContainer) demoContainer.style.display = isDemo ? 'block' : 'none';
+      });
 
       document.querySelectorAll('.js-demo-login').forEach(btn => {
         btn.addEventListener('click', () => {
           const role = btn.getAttribute('data-role');
           const user = FoodWalaApp.Auth.loginAsDemo(role);
-          FoodWalaApp.showToast(`Signed in as ${user.name}!`, 'success');
+          FoodWalaApp.showToast(`Signed in as ${user.name} (Demo)!`, 'success');
           handlePostLoginNavigation();
         });
       });
@@ -455,6 +459,13 @@
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         loginErrorMsg.style.display = 'none';
+
+        if (window.FOODWALA_IS_DEMO_MODE) {
+          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          loginErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
+          loginErrorMsg.style.display = 'block';
+          return;
+        }
 
         const identifier = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value;
@@ -537,6 +548,13 @@
       document.getElementById('mobile-phone-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         phoneError.style.display = 'none';
+
+        if (window.FOODWALA_IS_DEMO_MODE) {
+          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          phoneError.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
+          phoneError.style.display = 'block';
+          return;
+        }
 
         const rawPhone = phoneInput.value.trim();
         const normalized = FoodWalaApp.Auth.normalizePhone(rawPhone);
@@ -731,6 +749,14 @@
       if (forgotGetOtpBtn) {
         forgotGetOtpBtn.addEventListener('click', async () => {
           forgotStep1Error.style.display = 'none';
+
+          if (window.FOODWALA_IS_DEMO_MODE) {
+            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+            forgotStep1Error.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
+            forgotStep1Error.style.display = 'block';
+            return;
+          }
+
           const identifier = document.getElementById('forgot-identifier').value.trim();
           if (!identifier) {
             forgotStep1Error.textContent = 'Please enter your registered email or mobile number.';

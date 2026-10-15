@@ -204,7 +204,14 @@
   <script src="./js/emailService.js" defer></script>
 
   <script>
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && window.FoodWalaApp && FoodWalaApp.Auth && !FoodWalaApp.Auth.isLoggedIn()) {
+        window.location.replace('./login.html?redirect=./orders.html');
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
+      if (window.FoodWalaApp && FoodWalaApp.Auth && !FoodWalaApp.Auth.requireAuth('./orders.html')) return;
       const container = document.getElementById('orders-list-container');
 
       function formatTimeOnly(dateInput) {
@@ -284,7 +291,10 @@
                   </div>
 
                   <div class="text-md-end">
-                    <span class="badge bg-light text-dark border fw-bold mb-1">Order #${order.orderId || order.id}</span>
+                    <div class="mb-1 d-flex align-items-center justify-content-md-end gap-1">
+                      ${(order.isDemo || window.FOODWALA_IS_DEMO_MODE) ? '<span class="badge bg-warning text-dark fw-bold"><i class="bi bi-shield-exclamation me-1"></i>DEMO</span>' : ''}
+                      <span class="badge bg-light text-dark border fw-bold">Order #${order.orderId || order.id}</span>
+                    </div>
                     <div class="small text-muted">${formattedDate}</div>
                   </div>
 
@@ -429,6 +439,10 @@
       }
 
       renderOrdersList();
+
+      window.addEventListener('foodwala:demoModeChanged', () => {
+        renderOrdersList();
+      });
 
       // Auto-recompute statuses every 30s with setInterval without full page reload
       setInterval(renderOrdersList, 30000);

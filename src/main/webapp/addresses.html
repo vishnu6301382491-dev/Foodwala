@@ -316,6 +316,12 @@
   <script src="./js/app.js"></script>
 
   <script>
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && window.FoodWalaApp && FoodWalaApp.Auth && !FoodWalaApp.Auth.isLoggedIn()) {
+        window.location.replace('./login.html?redirect=./addresses.html');
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
       if (window.FoodWalaAreaPicker) {
         FoodWalaAreaPicker.initCombobox({

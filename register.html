@@ -293,6 +293,13 @@
         e.preventDefault();
         regErrorMsg.style.display = 'none';
 
+        if (window.FOODWALA_IS_DEMO_MODE) {
+          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+          regErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim();
         const phone = document.getElementById('reg-phone').value.trim();

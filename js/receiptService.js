@@ -120,14 +120,33 @@
       doc.text("Bengaluru's Premier Food Discovery & Delivery Network", 15, 22);
       doc.text("GSTIN: 29AABCF1234F1Z8 | FSSAI: 11223344005566", 15, 27);
 
-      // Right header: Tax Invoice
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
-      doc.text('TAX INVOICE / RECEIPT', 195, 15, { align: 'right' });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.text('ORIGINAL FOR RECIPIENT', 195, 21, { align: 'right' });
-      doc.text(`Invoice Ref: #${cleanOrderId}`, 195, 26, { align: 'right' });
+      // Right header: Tax Invoice / DEMO
+      const isDemo = Boolean(order.isDemo || (typeof window !== 'undefined' && window.FOODWALA_IS_DEMO_MODE));
+      if (isDemo) {
+        doc.setFillColor(255, 193, 7);
+        doc.roundedRect(128, 10, 18, 6, 1, 1, 'F');
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('DEMO', 131, 14.5);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text('DEMO RECEIPT', 195, 15, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.text('STORED LOCALLY IN BROWSER', 195, 21, { align: 'right' });
+        doc.text(`Invoice Ref: #${cleanOrderId} [DEMO]`, 195, 26, { align: 'right' });
+      } else {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text('TAX INVOICE / RECEIPT', 195, 15, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text('ORIGINAL FOR RECIPIENT', 195, 21, { align: 'right' });
+        doc.text(`Invoice Ref: #${cleanOrderId}`, 195, 26, { align: 'right' });
+      }
 
       // --- 2. ORDER & RESTAURANT INFO BOX ---
       let y = 40;
@@ -300,12 +319,19 @@
       doc.setLineWidth(0.5);
       doc.line(15, footerY, 195, footerY);
 
+      if (isDemo) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(220, 53, 69);
+        doc.text('*** DEMO ORDER: Simulated locally in browser. No real transaction took place. ***', 105, footerY + 4, { align: 'center' });
+      }
+
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
       doc.setTextColor(108, 117, 125);
-      doc.text('This is a computer-generated invoice and does not require a physical signature.', 105, footerY + 5, { align: 'center' });
-      doc.text('For queries or support, reach us at foodwalapp@gmail.com | 100% Authentic Bengaluru Delicacies', 105, footerY + 9, { align: 'center' });
-      doc.text('FoodWala Inc. &bull; Bengaluru, Karnataka, India &bull; www.foodwala.com', 105, footerY + 13, { align: 'center' });
+      doc.text('This is a computer-generated invoice and does not require a physical signature.', 105, footerY + (isDemo ? 8 : 5), { align: 'center' });
+      doc.text('For queries or support, reach us at foodwalapp@gmail.com | 100% Authentic Bengaluru Delicacies', 105, footerY + (isDemo ? 12 : 9), { align: 'center' });
+      doc.text('FoodWala Inc. &bull; Bengaluru, Karnataka, India &bull; www.foodwala.com', 105, footerY + (isDemo ? 16 : 13), { align: 'center' });
 
       // --- 7. SAVE FILE ---
       const fileName = `FoodWala_Receipt_${cleanOrderId}.pdf`;

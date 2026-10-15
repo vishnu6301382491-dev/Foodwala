@@ -850,6 +850,7 @@ const FoodWalaApp = (function () {
           email: 'customer@foodwala.com',
           phone: '+919876543210',
           role: 'CUSTOMER',
+          isDemo: true,
           memberSince: 'March 2024',
           addresses: [
             {
@@ -878,6 +879,7 @@ const FoodWalaApp = (function () {
           email: 'vidyarthi@foodwala.com',
           phone: '+918026677588',
           role: 'RESTAURANT_ADMIN',
+          isDemo: true,
           memberSince: 'January 2024',
           addresses: []
         },
@@ -887,6 +889,7 @@ const FoodWalaApp = (function () {
           email: 'partner@foodwala.com',
           phone: '+919123456789',
           role: 'DELIVERY_PARTNER',
+          isDemo: true,
           memberSince: 'June 2024',
           vehicle: 'Royal Enfield (KA 01 AB 1234)',
           rating: 4.9,
@@ -1486,13 +1489,16 @@ const FoodWalaApp = (function () {
       if (Array.isArray(rawOrders) && deduped.length !== rawOrders.length) {
         setStorage(STORAGE_KEYS.ORDERS, deduped);
       }
+      if (typeof window !== 'undefined' && !window.FOODWALA_IS_DEMO_MODE) {
+        return deduped.filter(o => !o.isDemo);
+      }
       return deduped;
     },
     fetchOrders: async function () {
       const user = Auth.getCurrentUser();
       const userId = user ? user.userId : null;
       const phone = user ? user.phone : null;
-      if (window.FoodWalaApi && typeof window.FoodWalaApi.getOrders === 'function') {
+      if (typeof window !== 'undefined' && !window.FOODWALA_IS_DEMO_MODE && window.FoodWalaApi && typeof window.FoodWalaApi.getOrders === 'function') {
         try {
           const dbOrders = await window.FoodWalaApi.getOrders(userId, phone);
           if (Array.isArray(dbOrders) && dbOrders.length > 0) {
@@ -1599,11 +1605,13 @@ const FoodWalaApp = (function () {
         }
       }
 
+      const isDemoOrder = Boolean((typeof window !== 'undefined' && window.FOODWALA_IS_DEMO_MODE) || (user && user.isDemo));
       const confirmedId = dbOrder ? (dbOrder.orderId || dbOrder.id) : clientOrderId;
       const newOrder = {
         id: confirmedId,
         orderId: confirmedId,
-        displayId: `#FW-${confirmedId}`,
+        displayId: isDemoOrder ? `#FW-DEMO-${confirmedId}` : `#FW-${confirmedId}`,
+        isDemo: isDemoOrder,
         userId: user ? user.userId : null,
         createdAt: dbOrder ? dbOrder.orderDate : new Date().toISOString(),
         createdAtMs: Date.now(),
@@ -1728,6 +1736,7 @@ const FoodWalaApp = (function () {
     if (!userNavSlot) return;
 
     if (user && user.name) {
+      const isAdmin = (user.role || '').toLowerCase() === 'admin';
       userNavSlot.innerHTML = `
         <div class="dropdown">
           <button class="btn btn-outline-dark btn-sm dropdown-toggle d-flex align-items-center gap-2 py-2 px-3 rounded-pill" type="button" id="userDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
@@ -1742,6 +1751,7 @@ const FoodWalaApp = (function () {
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./profile.html"><i class="bi bi-person text-primary"></i> <span>My Profile</span></a></li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./addresses.html"><i class="bi bi-geo-alt text-danger"></i> <span>My Addresses</span></a></li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./orders.html"><i class="bi bi-bag-check text-success"></i> <span>My Orders</span></a></li>
+            ${isAdmin ? `<li><a class="dropdown-item py-2 d-flex align-items-center gap-2 text-danger fw-semibold" href="./admin.html"><i class="bi bi-shield-lock-fill text-danger"></i> <span>Admin Portal</span></a></li>` : ''}
             <li><hr class="dropdown-divider my-1"></li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2 text-danger js-logout-btn" href="javascript:void(0)"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a></li>
           </ul>
