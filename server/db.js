@@ -39,13 +39,42 @@ const poolConfig = {
 };
 
 if (enableSSL) {
-  poolConfig.ssl = { rejectUnauthorized: false };
+  poolConfig.ssl = {
+    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ? false : true,
+    minVersion: 'TLSv1.2'
+  };
 }
 
 // Log warning if deployed without remote DB configuration
 if (isDeployed && (!host || host === 'localhost' || host === '127.0.0.1')) {
   console.warn('\n⚠️ [Database Warning] Deployed environment detected on Render, but DB_HOST is not configured with a remote MySQL server.');
   console.warn('⚠️ Please set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, and DB_PORT in your Render environment variables.\n');
+}
+
+// Categorize and format database connection errors into clean, informative one-line messages
+function formatDbError(err) {
+  if (!err) return 'Unknown database error';
+  const code = err.code || '';
+  const msg = err.message || '';
+  if (code === 'ECONNREFUSED') {
+    return `Database host ${host}:${port} unreachable (Connection refused)`;
+  }
+  if (code === 'ETIMEDOUT' || code === 'PROTOCOL_CONNECTION_LOST') {
+    return `Connection to database host ${host}:${port} timed out`;
+  }
+  if (code === 'ER_ACCESS_DENIED_ERROR') {
+    return `Database access denied for user '${user}' on host ${host}`;
+  }
+  if (code === 'ER_BAD_DB_ERROR') {
+    return `Database '${database}' does not exist on host ${host}`;
+  }
+  if (code === 'ENOTFOUND') {
+    return `Database host '${host}' could not be resolved (DNS lookup failed)`;
+  }
+  if (msg.includes('SSL') || msg.includes('handshake') || msg.includes('CERT_') || code.includes('HANDSHAKE') || code.includes('SSL')) {
+    return `SSL/TLS handshake failed connecting to ${host}:${port}: ${msg}`;
+  }
+  return `${code ? code + ': ' : ''}${msg}`;
 }
 
 // Create connection pool (does not throw on creation, connections are acquired on demand)
@@ -72,6 +101,7 @@ async function checkHealth() {
       connected: true,
       configured: true,
       host: host,
+      port: port,
       database: rows[0].db,
       version: rows[0].ver,
       ssl: Boolean(enableSSL)
@@ -81,7 +111,8 @@ async function checkHealth() {
       connected: false,
       configured: Boolean(host),
       host: host,
-      error: err.message
+      port: port,
+      error: formatDbError(err)
     };
   }
 }
@@ -92,13 +123,13 @@ async function checkHealth() {
     if (!isDeployed || (host && host !== 'localhost' && host !== '127.0.0.1')) {
       const health = await checkHealth();
       if (health.connected) {
-        console.log(`[Database] Connected to MySQL (${health.version}) -> Database: ${health.database} (SSL: ${health.ssl})`);
+        console.log(`[Database] Connected to MySQL (${health.version}) -> Database: ${health.database} on ${health.host}:${health.port} (SSL: ${health.ssl})`);
       } else {
         console.warn('[Database] Initial connection check warning:', health.error);
       }
     }
   } catch (err) {
-    console.warn('[Database Initial Test Warning]:', err.message);
+    console.warn('[Database Initial Test Warning]:', formatDbError(err));
   }
 })();
 

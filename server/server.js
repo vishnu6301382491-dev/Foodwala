@@ -39,6 +39,8 @@ const smsService = require('./services/smsService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const APP_VERSION = require('./package.json').version || '1.0.0';
+const GIT_COMMIT = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'development';
 const HASH_SECRET = process.env.OTP_HASH_SECRET || crypto.randomBytes(32).toString('hex');
 const IS_DEV_MODE = process.env.OTP_DEV_MODE === 'true' || process.env.NODE_ENV !== 'production';
 
@@ -222,7 +224,13 @@ app.use(authenticateUser);
 // 1. HEALTH & DIAGNOSTIC ENDPOINTS
 // =======================================================================
 
-app.get('/api/health', async (req, res) => {
+// Root endpoint for simple ping/status checks
+app.get('/', (req, res) => {
+  res.status(200).send('FoodWala Backend Running');
+});
+
+// Primary health check endpoint with /health alias
+app.get(['/api/health', '/health'], async (req, res) => {
   let dbHealthy = false;
   let dbDetails = null;
 
@@ -238,6 +246,8 @@ app.get('/api/health', async (req, res) => {
   // Always respond HTTP 200 with { status: "ok", db: true|false }
   return res.status(200).json({
     status: 'ok',
+    version: APP_VERSION,
+    commit: GIT_COMMIT,
     db: dbHealthy,
     database: dbDetails,
     service: 'FoodWala Backend API',
@@ -2187,6 +2197,7 @@ if (require.main === module) {
   const server = app.listen(PORT, HOST, async () => {
     console.log('\n======================================================');
     console.log(`🚀 FoodWala API Server Running on http://${HOST}:${PORT}`);
+    console.log(`📦 Version        : ${APP_VERSION} (commit: ${GIT_COMMIT})`);
     console.log(`🌐 Health Check   : http://${HOST}:${PORT}/api/health`);
     console.log(`🔒 Environment    : ${process.env.NODE_ENV || 'development'}`);
     console.log(`📱 CORS Origins   : ${allowedOrigins.join(', ')}`);

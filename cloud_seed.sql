@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `uq_user_phone` (`phone`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: restaurant
 CREATE TABLE IF NOT EXISTS `restaurant` (
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `restaurant` (
   PRIMARY KEY (`restaurant_id`),
   KEY `admin_user_id` (`admin_user_id`),
   CONSTRAINT `restaurant_ibfk_1` FOREIGN KEY (`admin_user_id`) REFERENCES `user` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: menu_category
 CREATE TABLE IF NOT EXISTS `menu_category` (
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `menu_category` (
   `description` varchar(255) DEFAULT NULL,
   `display_order` int DEFAULT '1',
   PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: menu
 CREATE TABLE IF NOT EXISTS `menu` (
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `menu` (
   PRIMARY KEY (`menu_id`),
   KEY `restaurant_id` (`restaurant_id`),
   CONSTRAINT `menu_ibfk_1` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant` (`restaurant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: orders
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant` (`restaurant_id`),
   CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: order_item
 CREATE TABLE IF NOT EXISTS `order_item` (
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `order_item` (
   KEY `menu_id` (`menu_id`),
   CONSTRAINT `order_item_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   CONSTRAINT `order_item_ibfk_2` FOREIGN KEY (`menu_id`) REFERENCES `menu` (`menu_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: payment
 CREATE TABLE IF NOT EXISTS `payment` (
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `payment` (
   UNIQUE KEY `transaction_id` (`transaction_id`),
   KEY `fk_payment_order` (`order_id`),
   CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: order_status_history
 CREATE TABLE IF NOT EXISTS `order_status_history` (
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS `order_status_history` (
   PRIMARY KEY (`history_id`),
   KEY `fk_history_order` (`order_id`),
   CONSTRAINT `fk_history_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: address
 CREATE TABLE IF NOT EXISTS `address` (
@@ -203,7 +203,7 @@ CREATE TABLE IF NOT EXISTS `address` (
   PRIMARY KEY (`address_id`),
   KEY `fk_address_user` (`user_id`),
   CONSTRAINT `fk_address_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: delivery_partner
 CREATE TABLE IF NOT EXISTS `delivery_partner` (
@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS `delivery_partner` (
   PRIMARY KEY (`partner_id`),
   UNIQUE KEY `user_id` (`user_id`),
   CONSTRAINT `fk_partner_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: cart
 CREATE TABLE IF NOT EXISTS `cart` (
@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS `cart` (
   KEY `fk_cart_restaurant` (`restaurant_id`),
   CONSTRAINT `fk_cart_restaurant` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant` (`restaurant_id`) ON DELETE SET NULL,
   CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: cart_item
 CREATE TABLE IF NOT EXISTS `cart_item` (
@@ -252,7 +252,7 @@ CREATE TABLE IF NOT EXISTS `cart_item` (
   KEY `fk_cart_item_menu` (`menu_id`),
   CONSTRAINT `fk_cart_item_cart` FOREIGN KEY (`cart_id`) REFERENCES `cart` (`cart_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_cart_item_menu` FOREIGN KEY (`menu_id`) REFERENCES `menu` (`menu_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: coupons
 CREATE TABLE IF NOT EXISTS `coupons` (
@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS `coupons` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`coupon_id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: coupon_usage
 CREATE TABLE IF NOT EXISTS `coupon_usage` (
@@ -283,7 +283,7 @@ CREATE TABLE IF NOT EXISTS `coupon_usage` (
   KEY `fk_usage_coupon` (`coupon_id`),
   CONSTRAINT `fk_usage_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`coupon_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_usage_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: favorites
 CREATE TABLE IF NOT EXISTS `favorites` (
@@ -297,7 +297,7 @@ CREATE TABLE IF NOT EXISTS `favorites` (
   KEY `fk_fav_restaurant` (`restaurant_id`),
   CONSTRAINT `fk_fav_restaurant` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant` (`restaurant_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_fav_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: reviews
 CREATE TABLE IF NOT EXISTS `reviews` (
@@ -313,7 +313,7 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   KEY `fk_review_user` (`user_id`),
   CONSTRAINT `fk_review_restaurant` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurant` (`restaurant_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: notifications
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -327,7 +327,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   PRIMARY KEY (`notification_id`),
   KEY `idx_notif_user` (`user_id`),
   CONSTRAINT `fk_notif_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: activity_log
 CREATE TABLE IF NOT EXISTS `activity_log` (
@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS `activity_log` (
   PRIMARY KEY (`log_id`),
   KEY `idx_activity_user` (`user_id`),
   CONSTRAINT `fk_activity_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: login_history
 CREATE TABLE IF NOT EXISTS `login_history` (
@@ -354,14 +354,14 @@ CREATE TABLE IF NOT EXISTS `login_history` (
   KEY `idx_login_user` (`user_id`),
   KEY `idx_login_time` (`login_time`),
   CONSTRAINT `fk_login_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =======================================================================
 -- 2. SEED DATA (Catalog, Categories, Menus, Coupons)
 -- =======================================================================
 
 -- Data for restaurant (105 rows)
-INSERT INTO `restaurant` (`restaurant_id`, `name`, `cuisine_type`, `delivery_time`, `address`, `admin_user_id`, `rating`, `is_active`, `image_path`, `latitude`, `longitude`, `city`, `state`, `pincode`, `phone`, `description`, `area`, `review_count`, `delivery_fee`, `minimum_order`, `is_open`, `opening_time`, `closing_time`) VALUES
+INSERT IGNORE INTO `restaurant` (`restaurant_id`, `name`, `cuisine_type`, `delivery_time`, `address`, `admin_user_id`, `rating`, `is_active`, `image_path`, `latitude`, `longitude`, `city`, `state`, `pincode`, `phone`, `description`, `area`, `review_count`, `delivery_fee`, `minimum_order`, `is_open`, `opening_time`, `closing_time`) VALUES
   (1, 'Central Tiffin Room (CTR) - Shri Sagar', 'South Indian, Breakfast', 25, '7th Cross, Margosa Road, Malleshwaram', 1, 4.8, 1, 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc', 13.0031, 77.5714, 'Bengaluru', 'Karnataka', '560003', '+91 80 2334 4838', 'Legendary Bengaluru eatery world-renowned for buttery crisp Benne Masala Dosa and filter coffee.', 'Malleshwaram', 480, 30, 100, 1, '07:30 AM', '12:30 PM'),
   (2, 'Vidyarthi Bhavan', 'South Indian, Breakfast, Tiffin', 30, '32 Gandhi Bazaar Main Road, Basavanagudi', 4, 4.7, 1, 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4', 12.9438, 77.5738, 'Bengaluru', 'Karnataka', '560004', '+91 80 2667 7588', 'Iconic South Indian culinary institution established in 1943, celebrated for thick signature masala dosas.', 'Basavanagudi', 650, 30, 100, 1, '06:30 AM', '11:30 AM'),
   (3, 'Mavalli Tiffin Room (MTR)', 'South Indian, Karnataka, Pure Veg', 35, '14 Lalbagh Road, Mavalli', 1, 4.6, 1, 'https://images.unsplash.com/photo-1546833999-b9f581a1996d', 12.9554, 77.5873, 'Bengaluru', 'Karnataka', '560027', '+91 80 2222 0022', 'Heritage landmark where Rava Idli was invented, serving authentic traditional Karnataka fare since 1924.', 'Lalbagh', 520, 35, 100, 1, '07:00 AM', '09:30 PM'),
@@ -470,7 +470,7 @@ INSERT INTO `restaurant` (`restaurant_id`, `name`, `cuisine_type`, `delivery_tim
 ON DUPLICATE KEY UPDATE `restaurant_id` = `restaurant_id`;
 
 -- Data for menu_category (416 rows)
-INSERT INTO `menu_category` (`category_id`, `restaurant_id`, `name`, `description`, `display_order`) VALUES
+INSERT IGNORE INTO `menu_category` (`category_id`, `restaurant_id`, `name`, `description`, `display_order`) VALUES
   (1, 1, 'Crispy Dosas', 'Crispy Dosas specials', 1),
   (2, 1, 'Breakfast Specials', 'Breakfast Specials specials', 1),
   (3, 2, 'Crispy Dosas', 'Crispy Dosas specials', 1),
@@ -890,7 +890,7 @@ INSERT INTO `menu_category` (`category_id`, `restaurant_id`, `name`, `descriptio
 ON DUPLICATE KEY UPDATE `category_id` = `category_id`;
 
 -- Data for menu (756 rows)
-INSERT INTO `menu` (`menu_id`, `restaurant_id`, `item_name`, `description`, `price`, `is_available`, `image_path`, `rating`, `category_id`, `category_name`, `is_veg`, `is_popular`, `preparation_time`) VALUES
+INSERT IGNORE INTO `menu` (`menu_id`, `restaurant_id`, `item_name`, `description`, `price`, `is_available`, `image_path`, `rating`, `category_id`, `category_name`, `is_veg`, `is_popular`, `preparation_time`) VALUES
   (1, 1, 'Benne Masala Dosa', 'Crispy golden crepe roasted in pure butter, stuffed with spiced potato mash.', 95, 1, 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4', '4.9', 1, 'Crispy Dosas', 1, 1, '15 mins'),
   (2, 1, 'Mangalore Bajji (Goli Baje)', 'Crispy golden fried flour fritters served with coconut chutney', 55, 1, 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600', '4.7', 2, 'Breakfast Specials', 1, 1, '10-15 mins'),
   (3, 1, 'Degree Filter Coffee', 'Traditional chicory blend freshly decocted hot filter coffee', 35, 1, 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600', '4.9', 1, 'Crispy Dosas', 1, 1, '15 mins'),
@@ -1650,7 +1650,7 @@ INSERT INTO `menu` (`menu_id`, `restaurant_id`, `item_name`, `description`, `pri
 ON DUPLICATE KEY UPDATE `menu_id` = `menu_id`;
 
 -- Data for coupons (4 rows)
-INSERT INTO `coupons` (`coupon_id`, `code`, `discount_type`, `discount_value`, `min_order_amount`, `max_discount`, `description`, `is_active`, `expires_at`, `created_at`) VALUES
+INSERT IGNORE INTO `coupons` (`coupon_id`, `code`, `discount_type`, `discount_value`, `min_order_amount`, `max_discount`, `description`, `is_active`, `expires_at`, `created_at`) VALUES
   (1, 'FOODWALA50', 'PERCENTAGE', 50, 199, 100, '50% OFF up to Ôé╣100 on orders above Ôé╣199', 1, '2027-10-15 11:57:05', '2026-10-15 11:57:05'),
   (2, 'WELCOME', 'FLAT', 50, 149, 50, 'Flat Ôé╣50 OFF on first order above Ôé╣149', 1, '2027-10-15 11:57:05', '2026-10-15 11:57:05'),
   (3, 'BENGALURU100', 'PERCENTAGE', 20, 499, 150, '20% OFF up to Ôé╣150 on orders above Ôé╣499', 1, '2027-10-15 11:57:05', '2026-10-15 11:57:05'),
@@ -1658,7 +1658,7 @@ INSERT INTO `coupons` (`coupon_id`, `code`, `discount_type`, `discount_value`, `
 ON DUPLICATE KEY UPDATE `coupon_id` = `coupon_id`;
 
 -- Data for delivery_partner (1 rows)
-INSERT INTO `delivery_partner` (`partner_id`, `user_id`, `name`, `phone`, `vehicle_number`, `current_lat`, `current_lng`, `accuracy`, `is_available`, `last_location_update`, `vehicle_type`, `profile_image`, `rating`, `status`) VALUES
+INSERT IGNORE INTO `delivery_partner` (`partner_id`, `user_id`, `name`, `phone`, `vehicle_number`, `current_lat`, `current_lng`, `accuracy`, `is_available`, `last_location_update`, `vehicle_type`, `profile_image`, `rating`, `status`) VALUES
   (1, 3, 'Rahul Kumar', '9876543220', 'KA 01 AB 1234', 12.9425, 77.5742, 6, 1, '2026-10-05 16:18:40', 'Hero Electric Scooter', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', 4.8, 'AVAILABLE')
 ON DUPLICATE KEY UPDATE `partner_id` = `partner_id`;
 
