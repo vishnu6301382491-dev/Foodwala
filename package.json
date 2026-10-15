@@ -1,14 +1,16 @@
 {
   "name": "foodwala",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "FoodWala Food Delivery Platform",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "build": "cd server && npm install"
+    "build": "npm install --prefix server",
+    "postinstall": "npm install --prefix server",
+    "verify": "node scripts/verify-deploy.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
