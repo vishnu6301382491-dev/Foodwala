@@ -295,24 +295,7 @@
         regErrorMsg.style.display = 'none';
 
         regSubmitBtn.disabled = true;
-        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
-
-        const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
-          ? await window.FoodWalaHealth.checkBackend()
-          : false;
-
-        if (!isOnline) {
-          regSubmitBtn.disabled = true;
-          regSubmitBtn.innerHTML = 'Unavailable - Retry in 3s';
-          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-          setTimeout(() => {
-            regSubmitBtn.disabled = false;
-            regSubmitBtn.innerHTML = 'Create Account';
-          }, 3000);
-          return;
-        }
-
-        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP...';
+        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Validating...';
 
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim();
@@ -403,13 +386,10 @@
 
           showRegOtpModal(normalizedPhone);
         } catch (err) {
-          regSubmitBtn.disabled = true;
-          regSubmitBtn.innerHTML = 'Unavailable - Retry in 3s';
-          FoodWalaApp.showToast('Account service is temporarily unavailable. Please try again shortly.', 'error');
-          setTimeout(() => {
-            regSubmitBtn.disabled = false;
-            regSubmitBtn.innerHTML = 'Create Account';
-          }, 3000);
+          regSubmitBtn.disabled = false;
+          regSubmitBtn.innerHTML = 'Create Account';
+          regErrorMsg.textContent = 'Account service is temporarily unavailable. Please try again shortly.';
+          regErrorMsg.style.display = 'block';
         }
       });
 
@@ -425,6 +405,24 @@
         if (regOtpPhoneDisplay) regOtpPhoneDisplay.textContent = '+91 ' + phoneNum;
         if (regOtpError) regOtpError.style.display = 'none';
         regOtpBoxes.forEach(b => b.value = '');
+
+        const demoNotice = document.getElementById('reg-otp-demo-notice');
+        let demoCode = '123456';
+        try {
+          const activeOtp = JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}');
+          if (activeOtp && activeOtp.code) demoCode = activeOtp.code;
+        } catch (e) {}
+
+        if (window.FOODWALA_IS_DEMO_MODE || (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock')) {
+          if (demoNotice) {
+            demoNotice.innerHTML = `<i class="bi bi-info-circle me-1"></i> <strong>Demo Mode:</strong> Verification code <strong>${demoCode}</strong> has been auto-filled.`;
+            demoNotice.style.display = 'block';
+          }
+          demoCode.split('').forEach((d, i) => { if (regOtpBoxes[i]) regOtpBoxes[i].value = d; });
+        } else if (demoNotice) {
+          demoNotice.style.display = 'none';
+        }
+
         if (regOtpModal) regOtpModal.show();
         if (regOtpBoxes[0]) setTimeout(() => regOtpBoxes[0].focus(), 300);
       }
@@ -615,6 +613,7 @@
           <p class="text-muted small mb-3">
             We've sent a 6-digit verification code to <strong id="reg-otp-display-phone" class="text-dark">+91 XXXXXXXXXX</strong>. Please enter it below to complete registration.
           </p>
+          <div id="reg-otp-demo-notice" class="alert alert-info py-2 px-3 small text-center mb-3" style="display: none;"></div>
           <div class="d-flex justify-content-between gap-2 my-3" id="reg-otp-boxes-container">
             <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-1" required>
             <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-2" required>

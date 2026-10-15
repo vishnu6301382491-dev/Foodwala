@@ -72,6 +72,12 @@
   async function checkBackend(forceRefresh = false) {
     const now = Date.now();
 
+    // 0. In mock mode, resolve offline status silently to avoid 404 network errors in browser console
+    if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock' && !window.FOODWALA_CONFIG.PROBE_BACKEND) {
+      setMode(true);
+      return false;
+    }
+
     // 1. Check in-memory cache
     if (!forceRefresh && memoryHealthCache && (now - memoryHealthCache.timestamp < CACHE_TTL_MS)) {
       return memoryHealthCache.isUp;

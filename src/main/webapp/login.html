@@ -212,6 +212,7 @@
               <div class="text-center mb-3">
                 <h5 class="fw-bold text-dark mb-1">Enter OTP</h5>
                 <p class="text-muted small mb-0">OTP sent to: <strong class="text-dark" id="display-otp-phone">+91 XXXXX XXXXX</strong></p>
+                <div id="login-otp-demo-notice" class="alert alert-info py-2 px-3 small text-center mt-2 mb-0" style="display: none;"></div>
               </div>
 
               <form id="otp-verify-form">
@@ -480,27 +481,8 @@
           return;
         }
 
-        // Disable button while backend check is in progress
+        // Disable button while sign in is in progress
         loginSubmitBtn.disabled = true;
-        loginSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
-
-        // Check backend status before calling live API (uses 60-second cached checkBackend)
-        const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
-          ? await window.FoodWalaHealth.checkBackend()
-          : false;
-
-        if (!isOnline) {
-          // Disable button for 3 seconds after failure to prevent stacking
-          loginSubmitBtn.disabled = true;
-          loginSubmitBtn.innerHTML = 'Unavailable - Retry in 3s';
-          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-          setTimeout(() => {
-            loginSubmitBtn.disabled = false;
-            loginSubmitBtn.innerHTML = 'Sign In';
-          }, 3000);
-          return;
-        }
-
         loginSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing In...';
 
         try {
@@ -579,23 +561,6 @@
         }
 
         sendOtpBtn.disabled = true;
-        sendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
-
-        const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
-          ? await window.FoodWalaHealth.checkBackend()
-          : false;
-
-        if (!isOnline) {
-          sendOtpBtn.disabled = true;
-          sendOtpBtn.innerHTML = '<span>Unavailable - Retry in 3s</span>';
-          FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-          setTimeout(() => {
-            sendOtpBtn.disabled = false;
-            sendOtpBtn.innerHTML = '<span>Send OTP</span> <i class="bi bi-arrow-right"></i>';
-          }, 3000);
-          return;
-        }
-
         sendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP...';
 
         const res = await FoodWalaApp.Auth.sendOtp(normalized);
@@ -625,6 +590,19 @@
       function clearOtpBoxes() {
         otpBoxes.forEach(box => box.value = '');
         otpError.style.display = 'none';
+
+        if (window.FOODWALA_IS_DEMO_MODE || (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.MODE === 'mock')) {
+          try {
+            const activeOtp = JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}');
+            const demoCode = activeOtp.code || '123456';
+            demoCode.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
+            const notice = document.getElementById('login-otp-demo-notice');
+            if (notice) {
+              notice.innerHTML = `<i class="bi bi-info-circle me-1"></i> <strong>Demo Mode:</strong> Verification code <strong>${demoCode}</strong> auto-filled.`;
+              notice.style.display = 'block';
+            }
+          } catch (e) {}
+        }
       }
 
       otpBoxes.forEach((box, index) => {
@@ -788,23 +766,6 @@
           }
 
           forgotGetOtpBtn.disabled = true;
-          forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
-
-          const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
-            ? await window.FoodWalaHealth.checkBackend()
-            : false;
-
-          if (!isOnline) {
-            forgotGetOtpBtn.disabled = true;
-            forgotGetOtpBtn.innerHTML = 'Unavailable - Retry in 3s';
-            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-            setTimeout(() => {
-              forgotGetOtpBtn.disabled = false;
-              forgotGetOtpBtn.innerHTML = 'Get Verification Code';
-            }, 3000);
-            return;
-          }
-
           forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Generating Code...';
 
           try {
@@ -866,23 +827,6 @@
           }
 
           forgotResetBtn.disabled = true;
-          forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Checking service...';
-
-          const isOnline = (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function')
-            ? await window.FoodWalaHealth.checkBackend()
-            : false;
-
-          if (!isOnline) {
-            forgotResetBtn.disabled = true;
-            forgotResetBtn.innerHTML = 'Unavailable - Retry in 3s';
-            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
-            setTimeout(() => {
-              forgotResetBtn.disabled = false;
-              forgotResetBtn.innerHTML = 'Reset Password';
-            }, 3000);
-            return;
-          }
-
           forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Resetting...';
 
           try {
