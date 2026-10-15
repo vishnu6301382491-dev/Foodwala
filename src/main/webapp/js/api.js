@@ -103,6 +103,47 @@
     window.FoodWalaApp.showToast(msg, 'danger');
   }
 
+  // --- CIRCUIT BREAKER & FAST CACHE CONFIGURATION ---
+  const CIRCUIT_BREAKER_WINDOW_MS = 60000; // 60 seconds
+  const CACHE_TTL_MS = 600000;            // 10 minutes (600,000 ms)
+  let circuitBreakerTrippedUntil = 0;
+
+  function isCircuitBreakerOpen() {
+    return Date.now() < circuitBreakerTrippedUntil;
+  }
+
+  function tripCircuitBreaker() {
+    circuitBreakerTrippedUntil = Date.now() + CIRCUIT_BREAKER_WINDOW_MS;
+    console.warn(`[FoodWalaApi] Circuit breaker tripped for ${CIRCUIT_BREAKER_WINDOW_MS / 1000}s. Subsequent GETs will use local static fallback.`);
+  }
+
+  function resetCircuitBreaker() {
+    circuitBreakerTrippedUntil = 0;
+  }
+
+  // Stale-While-Revalidate LocalStorage Cache Helper
+  function getCachedData(key) {
+    try {
+      const raw = localStorage.getItem(`foodwala_cache_${key}`);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.data) {
+        const isFresh = (Date.now() - parsed.timestamp) < CACHE_TTL_MS;
+        return { data: parsed.data, isFresh: isFresh };
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function setCachedData(key, data) {
+    try {
+      localStorage.setItem(`foodwala_cache_${key}`, JSON.stringify({
+        data: data,
+        timestamp: Date.now()
+      }));
+    } catch (e) {}
+  }
+
   // Silent server warm-up ping on page load
   if (typeof window !== 'undefined') {
     setTimeout(() => {
@@ -110,6 +151,7 @@
         .then(r => r.json())
         .then(data => {
           console.log('[FoodWalaApi] Silent warm-up ping completed. Server:', data.status, 'DB:', data.db);
+          if (data.status === 'ok') resetCircuitBreaker();
         })
         .catch(err => {
           console.info('[FoodWalaApi] Silent warm-up ping sent (server may be spinning up):', err.message);
@@ -118,37 +160,57 @@
   }
 
   /**
-   * Central fetch wrapper with automatic retry for Render free-tier cold starts.
-   * Auto-retries 3 times with a 3-second delay silently before displaying any error.
+   * Central fetch wrapper with fail-fast 6-second AbortController timeout,
+   * 1 retry with a 1-second delay, and a 60-second circuit breaker.
    * Distinguishes failure types (network/CORS vs HTTP 5xx vs DB error).
    */
-  async function apiFetch(endpoint, options = {}, retries = 3, delayMs = 3000) {
+  async function apiFetch(endpoint, options = {}, retries = 1, delayMs = 1000) {
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+
+    // Fast-path: if circuit breaker is open on a GET request, do not block network for 6 seconds
+    if (isGet && isCircuitBreakerOpen()) {
+      const err = new Error('Circuit breaker open: backend currently offline.');
+      err.circuitBreakerOpen = true;
+      throw err;
+    }
+
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     
     let lastError = null;
     let lastRes = null;
 
     for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6-second timeout
+
+      const fetchOptions = {
+        ...options,
+        signal: controller.signal
+      };
+
       try {
-        const res = await fetch(url, options);
+        const res = await fetch(url, fetchOptions);
+        clearTimeout(timeoutId);
         lastRes = res;
 
         // If response is successful or a standard client error (e.g. 400 bad phone, 401 unauth, 422, 423 locked), return immediately
         if (res.ok || (res.status >= 400 && res.status < 500 && res.status !== 408)) {
+          resetCircuitBreaker();
           return res;
         }
 
-        // Render cold start or transient 502/503/504/500
-        if ((res.status === 502 || res.status === 503 || res.status === 504 || res.status === 500) && attempt < retries) {
-          console.info(`[FoodWalaApi] Server waking up / retrying (${res.status}). Attempt ${attempt + 1}/${retries}...`);
+        // Render cold start or transient 500/502/503/504
+        if ((res.status >= 500 || res.status === 408) && attempt < retries) {
+          console.info(`[FoodWalaApi] Transient ${res.status}. Retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1}/${retries})`);
           await new Promise(r => setTimeout(r, delayMs));
           continue;
         }
 
         return res;
       } catch (err) {
+        clearTimeout(timeoutId);
         lastError = err;
-        console.info(`[FoodWalaApi] Attempt ${attempt + 1}/${retries + 1} failed:`, err.message);
+        console.info(`[FoodWalaApi] Attempt ${attempt + 1}/${retries + 1} error:`, err.name === 'AbortError' ? 'Fetch timed out after 6s' : err.message);
         
         if (attempt < retries) {
           await new Promise(r => setTimeout(r, delayMs));
@@ -156,10 +218,19 @@
       }
     }
 
-    // All retries exhausted -> classify failure type accurately
+    // All retries exhausted -> trip circuit breaker for future GET calls
+    if (lastError || (lastRes && (lastRes.status >= 500 || lastRes.status === 404))) {
+      tripCircuitBreaker();
+    }
+
+    // Classify failure type accurately
     let errorDetail = '';
     if (lastError) {
-      errorDetail = 'Unable to connect to backend server. Server might be waking up or blocked by CORS.';
+      if (lastError.name === 'AbortError') {
+        errorDetail = 'Backend request timed out (6s). Server may be waking up.';
+      } else {
+        errorDetail = 'Unable to connect to backend server. Server might be waking up or blocked by CORS.';
+      }
     } else if (lastRes) {
       if (lastRes.status === 404) {
         errorDetail = 'Backend service is not running or endpoint not found on Render. Please verify Render service status.';
@@ -169,7 +240,7 @@
         errorDetail = `Request failed with HTTP status ${lastRes.status}.`;
       }
     } else {
-      errorDetail = 'Unable to connect to backend server. Please retry in 30 seconds.';
+      errorDetail = 'Unable to connect to backend server. Please retry in a few moments.';
     }
 
     const err = new Error(errorDetail);
@@ -497,70 +568,160 @@
       return { success: true };
     },
 
-    // 10. Catalog: Restaurants & Menus (fudwala)
+    // 10. Catalog: Restaurants & Menus (fudwala) - With Stale-While-Revalidate (10-minute cache)
     getRestaurants: async function () {
-      try {
-        const res = await apiFetch('/api/restaurants');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-        throw new Error('Empty restaurants array from API');
-      } catch (e) {
-        console.warn('[FoodWalaApi] Backend API unreachable, falling back to local static dataset:', e.message);
-        try {
-          const fallbackRes = await fetch('./data/restaurants.json');
-          if (fallbackRes.ok) {
-            const list = await fallbackRes.json();
-            if (Array.isArray(list) && list.length > 0) return list;
-          }
-        } catch (err) {}
-        if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
-          return window.FOODWALA_RESTAURANTS;
-        }
-        if (typeof window !== 'undefined' && window.FOODWALA_FEATURED_8) {
-          return window.FOODWALA_FEATURED_8;
-        }
-        return [];
+      const cacheKey = 'restaurants_list';
+      const cached = getCachedData(cacheKey);
+
+      // Fast path: Fresh cache exists in localStorage (0ms instant render)
+      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length >= 10) {
+        return cached.data;
       }
+
+      // Stale path: Stale cache exists -> return immediately, refresh in background
+      if (cached && Array.isArray(cached.data) && cached.data.length >= 10) {
+        setTimeout(async () => {
+          try {
+            const res = await apiFetch('/api/restaurants', {}, 1, 1000);
+            if (res.ok) {
+              const freshData = await res.json();
+              if (Array.isArray(freshData) && freshData.length >= 10) {
+                setCachedData(cacheKey, freshData);
+                window.dispatchEvent(new CustomEvent('foodwala:restaurantsUpdated', { detail: freshData }));
+              }
+            }
+          } catch (e) {}
+        }, 100);
+        return cached.data;
+      }
+
+      // No cache -> fetch from API with 1 retry (1s delay, 6s timeout)
+      try {
+        const res = await apiFetch('/api/restaurants', {}, 1, 1000);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length >= 10) {
+            setCachedData(cacheKey, data);
+            return data;
+          }
+        }
+      } catch (e) {
+        console.warn('[FoodWalaApi] API unavailable, using local static restaurants fallback:', e.message);
+      }
+
+      // Fallback: local static restaurants.json (all 105 restaurants)
+      try {
+        const fallbackRes = await fetch('./data/restaurants.json');
+        if (fallbackRes.ok) {
+          const list = await fallbackRes.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setCachedData(cacheKey, list);
+            return list;
+          }
+        }
+      } catch (err) {}
+
+      if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
+        return window.FOODWALA_RESTAURANTS;
+      }
+      return [];
     },
 
     getRestaurantMenu: async function (restaurantId) {
       const rId = parseInt(restaurantId, 10);
-      try {
-        const res = await apiFetch(`/api/restaurants/${rId}/menu`);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      } catch (e) {
-        console.warn(`[FoodWalaApi] API menu unreachable for ${rId}, loading static items:`, e.message);
+      const cacheKey = `menu_rest_${rId}`;
+      const cached = getCachedData(cacheKey);
+
+      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length > 0) {
+        return cached.data;
       }
+
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        setTimeout(async () => {
+          try {
+            const res = await apiFetch(`/api/restaurants/${rId}/menu`, {}, 1, 1000);
+            if (res.ok) {
+              const fresh = await res.json();
+              if (Array.isArray(fresh) && fresh.length > 0) setCachedData(cacheKey, fresh);
+            }
+          } catch (e) {}
+        }, 100);
+        return cached.data;
+      }
+
+      try {
+        const res = await apiFetch(`/api/restaurants/${rId}/menu`, {}, 1, 1000);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setCachedData(cacheKey, data);
+            return data;
+          }
+        }
+      } catch (e) {
+        console.warn(`[FoodWalaApi] API menu unavailable for ${rId}, using static items:`, e.message);
+      }
+
       try {
         const fallbackRes = await fetch('./data/menu-items.json');
         if (fallbackRes.ok) {
           const allItems = await fallbackRes.json();
           const matched = allItems.filter(m => (m.restaurantId === rId || m.restaurant_id === rId));
-          if (matched.length > 0) return matched;
+          if (matched.length > 0) {
+            setCachedData(cacheKey, matched);
+            return matched;
+          }
         }
       } catch (err) {}
+
       return [];
     },
 
     getCategories: async function () {
-      try {
-        const res = await apiFetch('/api/categories');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      } catch (e) {
-        console.warn('[FoodWalaApi] Backend API unreachable, loading static categories fallback:', e.message);
+      const cacheKey = 'categories_list';
+      const cached = getCachedData(cacheKey);
+
+      if (cached && cached.isFresh && Array.isArray(cached.data) && cached.data.length > 0) {
+        return cached.data;
       }
+
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        setTimeout(async () => {
+          try {
+            const res = await apiFetch('/api/categories', {}, 1, 1000);
+            if (res.ok) {
+              const fresh = await res.json();
+              if (Array.isArray(fresh) && fresh.length > 0) setCachedData(cacheKey, fresh);
+            }
+          } catch (e) {}
+        }, 100);
+        return cached.data;
+      }
+
+      try {
+        const res = await apiFetch('/api/categories', {}, 1, 1000);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setCachedData(cacheKey, data);
+            return data;
+          }
+        }
+      } catch (e) {
+        console.warn('[FoodWalaApi] API categories unavailable, loading static categories fallback:', e.message);
+      }
+
       try {
         const fallbackRes = await fetch('./data/categories.json');
         if (fallbackRes.ok) {
           const list = await fallbackRes.json();
-          if (Array.isArray(list) && list.length > 0) return list;
+          if (Array.isArray(list) && list.length > 0) {
+            setCachedData(cacheKey, list);
+            return list;
+          }
         }
       } catch (err) {}
+
       return [
         { id: 1, name: 'South Indian' },
         { id: 2, name: 'North Indian' },

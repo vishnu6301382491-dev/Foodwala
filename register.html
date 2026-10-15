@@ -116,24 +116,24 @@
           <form id="register-form">
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-name">Full Name *</label>
-              <input type="text" id="reg-name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" required>
+              <input type="text" id="reg-name" name="name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" autocomplete="name" required>
             </div>
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-email">Email Address *</label>
-              <input type="email" id="reg-email" class="form-control rounded-3" placeholder="vishnu@example.com" required>
+              <input type="email" id="reg-email" name="email" class="form-control rounded-3" placeholder="vishnu@example.com" autocomplete="email" required>
             </div>
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-phone">Mobile Phone Number *</label>
-              <input type="tel" id="reg-phone" class="form-control rounded-3" placeholder="+91 98765 43210" required>
+              <input type="tel" id="reg-phone" name="phone" class="form-control rounded-3" placeholder="+91 98765 43210" autocomplete="tel" required>
             </div>
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-address">Delivery Address (Optional)</label>
-              <input type="text" id="reg-address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru">
+              <input type="text" id="reg-address" name="address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru" autocomplete="street-address">
             </div>
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-password">Password *</label>
               <div class="input-group">
-                <input type="password" id="reg-password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                <input type="password" id="reg-password" name="password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
                 <button class="btn btn-outline-secondary" type="button" id="toggle-reg-password" title="Show/Hide Password">
                   <i class="bi bi-eye" id="toggle-reg-password-icon"></i>
                 </button>
@@ -145,7 +145,7 @@
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-confirm-password">Confirm Password *</label>
               <div class="input-group">
-                <input type="password" id="reg-confirm-password" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                <input type="password" id="reg-confirm-password" name="confirmPassword" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
                 <button class="btn btn-outline-secondary" type="button" id="toggle-reg-confirm-password" title="Show/Hide Password">
                   <i class="bi bi-eye" id="toggle-reg-confirm-password-icon"></i>
                 </button>

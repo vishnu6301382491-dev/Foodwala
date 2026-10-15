@@ -148,7 +148,7 @@
                 <label class="form-label small fw-semibold" for="email-input">Email Address or Mobile Number</label>
                 <div class="input-group">
                   <span class="input-group-text bg-light text-muted"><i class="bi bi-person-fill"></i></span>
-                  <input type="text" id="email-input" class="form-control rounded-end-3" placeholder="name@example.com or 9876543210" autocomplete="username" required>
+                  <input type="text" id="email-input" name="identifier" class="form-control rounded-end-3" placeholder="name@example.com or 9876543210" autocomplete="username" required>
                 </div>
               </div>
               <div class="mb-3">
@@ -158,7 +158,7 @@
                 </div>
                 <div class="input-group">
                   <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
-                  <input type="password" id="password-input" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+                  <input type="password" id="password-input" name="password" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
                   <button class="btn btn-outline-secondary" type="button" id="toggle-login-password" title="Show/Hide Password">
                     <i class="bi bi-eye" id="toggle-login-password-icon"></i>
                   </button>
@@ -257,19 +257,19 @@
               <form id="mobile-register-form">
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Mobile Number</label>
-                  <input type="text" id="reg-mobile-display" class="form-control rounded-3 bg-light fw-bold text-muted" readonly>
+                  <input type="text" id="reg-mobile-display" name="phone" class="form-control rounded-3 bg-light fw-bold text-muted" autocomplete="tel" readonly>
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Full Name *</label>
-                  <input type="text" id="reg-mobile-name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" required>
+                  <input type="text" id="reg-mobile-name" name="name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" autocomplete="name" required>
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Email Address (Optional)</label>
-                  <input type="email" id="reg-mobile-email" class="form-control rounded-3" placeholder="name@example.com">
+                  <input type="email" id="reg-mobile-email" name="email" class="form-control rounded-3" placeholder="name@example.com" autocomplete="email">
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Delivery Area in Bengaluru (Optional)</label>
-                  <input type="text" id="reg-mobile-address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru">
+                  <input type="text" id="reg-mobile-address" name="address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru" autocomplete="street-address">
                 </div>
 
                 <button type="submit" id="complete-reg-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mt-2">

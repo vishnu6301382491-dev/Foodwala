@@ -44,6 +44,7 @@ server/.env
 sms.properties
 src/main/webapp/WEB-INF/classes/sms.properties
 !server/.env.example
+!.env.example
 !sms.properties.example
 
 # Database Backups & Dumps (Only migrations.sql is tracked)

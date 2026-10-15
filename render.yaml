@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: foodwala-backend-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CORS_ORIGINS
+        value: https://vishnu6301382491-dev.github.io,http://localhost:5500,http://127.0.0.1:5500
+      - key: FRONTEND_URL
+        value: https://vishnu6301382491-dev.github.io
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: 3306
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: fudwala
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: OTP_DEV_MODE
+        value: "true"
+      - key: SMS_PROVIDER
+        value: console
