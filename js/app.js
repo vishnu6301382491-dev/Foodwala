@@ -927,7 +927,7 @@ const FoodWalaApp = (function () {
       return user;
     },
 
-    register: async function (name, email, phone, password, addressText, confirmPassword) {
+    register: async function (name, email, phone, password, addressText, confirmPassword, role) {
       if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.signup === "function") {
         return await window.FoodWalaApi.signup({
           name: name,
@@ -935,7 +935,8 @@ const FoodWalaApp = (function () {
           phone: phone,
           password: password,
           address: addressText,
-          confirmPassword: confirmPassword
+          confirmPassword: confirmPassword,
+          role: role || 'customer'
         });
       }
       const cleanName = (name || '').trim();
@@ -964,7 +965,7 @@ const FoodWalaApp = (function () {
           name: cleanName || 'Food Lover',
           email: cleanEmail,
           phone: cleanPhone || '+91 98765 00000',
-          role: 'CUSTOMER',
+          role: (role || 'CUSTOMER').toUpperCase(),
           memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
           addresses: addressText ? [
             {

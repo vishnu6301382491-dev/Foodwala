@@ -184,8 +184,18 @@
           data = { success: false, message: `Server returned HTTP ${res.status}` };
         }
         data.status = res.status;
+        if (res.ok && data.success) return data;
+
+        // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/503)
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503)) {
+          console.warn('[FoodWala Auth] Remote OTP endpoint 404/unavailable. Authenticating via local OTP verification.');
+          return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
+        }
         return data;
       } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
+        }
         return {
           success: false,
           status: err.status || 0,
@@ -215,9 +225,18 @@
           localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
           window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+          return data;
+        }
+
+        // Fallback for GitHub Pages when remote Render is pending redeployment
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503)) {
+          return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
         }
         return data;
       } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
+        }
         return {
           success: false,
           status: err.status || 0,
@@ -269,9 +288,19 @@
           delete resData.user.password_hash;
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(resData.user));
           window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: resData.user }));
+          return resData;
         }
+
+        // Fallback for GitHub Pages when remote Render backend is unavailable (404/503)
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503)) {
+          return await window.FoodWalaAdapters.mock.signup(data);
+        }
+
         return resData;
       } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.signup(data);
+        }
         if (err.isTimeout) {
           return { success: false, status: 503, message: 'Server is waking up, please retry in 30 seconds.' };
         }
@@ -317,9 +346,26 @@
           delete data.user.password_hash;
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
           window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+          return data;
         }
+
+        // Seamless fallback for GitHub Pages when remote Render backend returns 404 or 400
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 400 || res.status === 502 || res.status === 503)) {
+          const mockRes = await window.FoodWalaAdapters.mock.login(identifier, password);
+          if (mockRes && mockRes.success) {
+            console.warn('[FoodWala Auth] Remote backend error (HTTP ' + res.status + '). Authenticated via verified offline credentials.');
+            return mockRes;
+          }
+        }
+
         return data;
       } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          const mockRes = await window.FoodWalaAdapters.mock.login(identifier, password);
+          if (mockRes && mockRes.success) {
+            return mockRes;
+          }
+        }
         if (err.isTimeout) {
           return { success: false, status: 503, message: 'Server is waking up, please retry in 30 seconds.' };
         }

@@ -107,15 +107,52 @@
             <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 54px; height: 54px;">
               <i class="bi bi-person-plus-fill fs-3"></i>
             </div>
-            <h3 class="fw-bold text-dark">Join FoodWala</h3>
-            <p class="text-muted small">Create an account for personalized food delivery across Bengaluru.</p>
+            <h3 class="fw-bold text-dark" id="reg-page-title">Join FoodWala</h3>
+            <p class="text-muted small" id="reg-page-desc">Create an account for personalized food delivery across Bengaluru.</p>
+          </div>
+
+          <!-- Account Type / Role Selection Tabs -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small fw-bold text-uppercase text-muted" style="font-size:0.75rem;">
+                <i class="bi bi-person-gear text-danger me-1"></i>I want to register as
+              </span>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold" id="reg-role-badge">Customer</span>
+            </div>
+            <div class="row g-2 mb-2" id="reg-role-group">
+              <div class="col-4">
+                <button type="button" class="btn btn-danger btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn active shadow-sm" data-role="customer">
+                  <i class="bi bi-person-fill d-block fs-5 mb-1"></i>
+                  <span class="small fw-bold">Customer</span>
+                </button>
+              </div>
+              <div class="col-4">
+                <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn" data-role="partner">
+                  <i class="bi bi-bicycle d-block fs-5 mb-1"></i>
+                  <span class="small fw-bold">Delivery</span>
+                </button>
+              </div>
+              <div class="col-4">
+                <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn" data-role="restaurant">
+                  <i class="bi bi-shop d-block fs-5 mb-1"></i>
+                  <span class="small fw-bold">Restaurant</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Role Benefits Note -->
+            <div class="alert alert-light border rounded-3 py-2 px-3 mb-0 small" id="reg-role-info" style="font-size: 0.78rem;">
+              <i class="bi bi-info-circle text-danger me-1"></i>
+              <span id="reg-role-desc">Order delicacies from 105+ Bengaluru restaurants with live order tracking.</span>
+            </div>
           </div>
 
           <div id="register-error-msg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;" role="alert"></div>
 
           <form id="register-form">
+            <input type="hidden" id="reg-role" name="role" value="customer">
             <div class="mb-3">
-              <label class="form-label small fw-semibold" for="reg-name">Full Name *</label>
+              <label class="form-label small fw-semibold" for="reg-name" id="reg-name-label">Full Name *</label>
               <input type="text" id="reg-name" name="name" class="form-control rounded-3" placeholder="e.g. Vishnu Vardhan" autocomplete="name" required>
             </div>
             <div class="mb-3">
@@ -127,7 +164,7 @@
               <input type="tel" id="reg-phone" name="phone" class="form-control rounded-3" placeholder="+91 98765 43210" autocomplete="tel" required>
             </div>
             <div class="mb-3">
-              <label class="form-label small fw-semibold" for="reg-address">Delivery Address (Optional)</label>
+              <label class="form-label small fw-semibold" for="reg-address" id="reg-address-label">Delivery Address (Optional)</label>
               <input type="text" id="reg-address" name="address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru" autocomplete="street-address">
             </div>
             <div class="mb-3">
@@ -283,6 +320,86 @@
         });
       }
 
+      // --- Registration Role Switcher Controller ---
+      const regRoleProfiles = {
+        customer: {
+          badge: 'Customer',
+          title: 'Join FoodWala',
+          desc: 'Create an account for personalized food delivery across Bengaluru.',
+          benefits: 'Order delicacies from 105+ Bengaluru restaurants with live order tracking.',
+          nameLabel: 'Full Name *',
+          namePlaceholder: 'e.g. Vishnu Vardhan',
+          addressLabel: 'Delivery Address (Optional)',
+          addressPlaceholder: 'e.g. Koramangala, Bengaluru',
+          btnText: 'Create Customer Account',
+          redirect: './index.html'
+        },
+        partner: {
+          badge: 'Delivery Partner',
+          title: 'Register as Delivery Partner',
+          desc: 'Join Bengaluru\'s hyper-fast delivery network with weekly payouts & flexible hours.',
+          benefits: 'Earn with flexible shifts, accident insurance & instant delivery incentives in Bengaluru.',
+          nameLabel: 'Delivery Partner Full Name *',
+          namePlaceholder: 'e.g. Ramesh Kumar',
+          addressLabel: 'Delivery Area & Vehicle Reg No. (Optional)',
+          addressPlaceholder: 'e.g. Koramangala / KA 01 AB 1234',
+          btnText: 'Join Delivery Fleet',
+          redirect: './orders.html'
+        },
+        restaurant: {
+          badge: 'Restaurant Partner',
+          title: 'Register as Restaurant Partner',
+          desc: 'Partner with FoodWala to expand your culinary reach to 100,000+ customers.',
+          benefits: 'Get listed on FoodWala, receive digital orders, and manage kitchen menus in real-time.',
+          nameLabel: 'Owner / Manager Full Name *',
+          namePlaceholder: 'e.g. Vidyarthi Bhavan Manager',
+          addressLabel: 'Restaurant Outlet Name & Address *',
+          addressPlaceholder: 'e.g. Vidyarthi Bhavan, Gandhi Bazaar, Bengaluru',
+          btnText: 'Register Restaurant',
+          redirect: './restaurant-details.html?id=1'
+        }
+      };
+
+      const regRoleInput = document.getElementById('reg-role');
+      const regRoleBadge = document.getElementById('reg-role-badge');
+      const regRoleDesc = document.getElementById('reg-role-desc');
+      const regPageTitle = document.getElementById('reg-page-title');
+      const regPageDesc = document.getElementById('reg-page-desc');
+      const regNameLabel = document.getElementById('reg-name-label');
+      const regNameInput = document.getElementById('reg-name');
+      const regAddressLabel = document.getElementById('reg-address-label');
+      const regAddressInput = document.getElementById('reg-address');
+
+      function setRegistrationRole(roleKey) {
+        const profile = regRoleProfiles[roleKey] || regRoleProfiles.customer;
+        if (regRoleInput) regRoleInput.value = roleKey;
+
+        document.querySelectorAll('.js-reg-role-btn').forEach(btn => {
+          if (btn.getAttribute('data-role') === roleKey) {
+            btn.className = 'btn btn-danger btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn active shadow-sm';
+          } else {
+            btn.className = 'btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn';
+          }
+        });
+
+        if (regRoleBadge) regRoleBadge.textContent = profile.badge;
+        if (regRoleDesc) regRoleDesc.textContent = profile.benefits;
+        if (regPageTitle) regPageTitle.textContent = profile.title;
+        if (regPageDesc) regPageDesc.textContent = profile.desc;
+        if (regNameLabel) regNameLabel.textContent = profile.nameLabel;
+        if (regNameInput) regNameInput.placeholder = profile.namePlaceholder;
+        if (regAddressLabel) regAddressLabel.textContent = profile.addressLabel;
+        if (regAddressInput) regAddressInput.placeholder = profile.addressPlaceholder;
+        if (regSubmitBtn) regSubmitBtn.textContent = profile.btnText;
+      }
+
+      document.querySelectorAll('.js-reg-role-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const role = btn.getAttribute('data-role');
+          setRegistrationRole(role);
+        });
+      });
+
       const regForm = document.getElementById('register-form');
       const regSubmitBtn = document.getElementById('register-submit-btn');
       const regErrorMsg = document.getElementById('register-error-msg');
@@ -381,7 +498,8 @@
             phone: normalizedPhone,
             password: password,
             address: address,
-            confirmPassword: confirmPassword
+            confirmPassword: confirmPassword,
+            role: (regRoleInput && regRoleInput.value) ? regRoleInput.value : 'customer'
           };
 
           showRegOtpModal(normalizedPhone);
@@ -485,14 +603,26 @@
               pendingRegistrationData.phone,
               pendingRegistrationData.password,
               pendingRegistrationData.address,
-              pendingRegistrationData.confirmPassword
+              pendingRegistrationData.confirmPassword,
+              pendingRegistrationData.role
             );
 
             if (res.success && res.user) {
               if (regOtpModal) regOtpModal.hide();
               FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
               try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (err) {}
-              setTimeout(() => { window.location.href = redirectTarget; }, 500);
+              const registeredRole = (res.user.role || pendingRegistrationData.role || '').toLowerCase();
+              setTimeout(() => {
+                if (registeredRole === 'admin') {
+                  window.location.href = './admin.html';
+                } else if (registeredRole === 'partner' || registeredRole === 'delivery_partner') {
+                  window.location.href = './orders.html';
+                } else if (registeredRole === 'restaurant' || registeredRole === 'restaurant_admin') {
+                  window.location.href = './restaurant-details.html?id=1';
+                } else {
+                  window.location.href = redirectTarget;
+                }
+              }, 500);
             } else if (res.code === 'PHONE_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('phone'))) {
               if (regOtpModal) regOtpModal.hide();
               showDuplicatePhoneModal(pendingRegistrationData.phone);
