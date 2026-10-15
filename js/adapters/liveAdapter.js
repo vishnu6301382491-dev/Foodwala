@@ -24,7 +24,7 @@
     if (host === 'localhost' || host === '127.0.0.1') {
       return 'http://localhost:5000';
     }
-    return 'https://foodwala-backend-api.onrender.com';
+    return 'https://foodwala-backend.onrender.com';
   }
 
   function getAuthHeader() {

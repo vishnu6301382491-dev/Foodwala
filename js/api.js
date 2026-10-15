@@ -40,7 +40,7 @@
     },
 
     get API_BASE_URL() {
-      return (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend-api.onrender.com';
+      return (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend.onrender.com';
     },
 
     normalizePhone: normalizePhone,

@@ -447,16 +447,16 @@ const FoodWalaApp = (function () {
         }
       } catch (e) {}
 
-      // 3. Unified Backend Environment: Localhost (5000) or Render (https://foodwala-backend-api.onrender.com)
+      // 3. Unified Backend Environment: Localhost (5000) or Render (https://foodwala-backend.onrender.com)
       if (typeof window !== 'undefined') {
         if (window.FoodWalaApi && window.FoodWalaApi.API_BASE_URL) {
           return window.FoodWalaApi.API_BASE_URL;
         }
         if (window.FOODWALA_BACKEND_URL) return window.FOODWALA_BACKEND_URL.replace(/\/+$/, '');
         if (window.FOODWALA_API_URL) return window.FOODWALA_API_URL.replace(/\/+$/, '');
-        return (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend-api.onrender.com';
+        return (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend.onrender.com';
       }
-      return 'https://foodwala-backend-api.onrender.com';
+      return 'https://foodwala-backend.onrender.com';
     },
 
     get apiBaseUrl() {

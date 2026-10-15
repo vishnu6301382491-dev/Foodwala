@@ -16,7 +16,7 @@
 
   window.FOODWALA_CONFIG = {
     MODE: 'mock',
-    API_BASE_URL: 'https://foodwala-backend-api.onrender.com',
+    API_BASE_URL: 'https://foodwala-backend.onrender.com',
     DEMO_MODE: true
   };
 
@@ -28,7 +28,7 @@
   const statusListeners = [];
 
   function getHealthUrl() {
-    const base = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend-api.onrender.com';
+    const base = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend.onrender.com';
     return base.replace(/\/+$/, '') + '/api/health';
   }
 
