@@ -318,6 +318,10 @@
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js" defer></script>
   <!-- Core FoodWala JS (Minified) -->
   <script src="./js/ui.js" defer></script>
+    <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/config.js" defer></script>
+  <script src="./js/adapters/mockAdapter.js" defer></script>
+  <script src="./js/adapters/liveAdapter.js" defer></script>
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
   <script src="./js/app.min.js" defer></script>
@@ -325,9 +329,16 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Load restaurant data fast (uses sessionStorage cache)
-      if (window.FoodWalaApp) {
-        await FoodWalaApp.loadRestaurants();
+      // Load restaurant and menu data fast (uses local/session cache)
+      try {
+        if (window.FoodWalaApp) {
+          await Promise.all([
+            FoodWalaApp.loadRestaurants(),
+            FoodWalaApp.loadMenuItems ? FoodWalaApp.loadMenuItems() : Promise.resolve()
+          ]);
+        }
+      } catch (err) {
+        console.error('[restaurants] Failed to load catalog data:', err);
       }
       
       const searchInput = document.getElementById('restaurant-search-input');
@@ -354,6 +365,22 @@
           locIndicator.innerHTML = `<i class="bi bi-geo-alt-fill text-danger"></i> Delivering to: <strong>${userLoc.shortName}</strong>`;
         } else {
           locIndicator.innerHTML = `<a href="javascript:void(0)" class="text-danger fw-bold text-decoration-none" data-bs-toggle="modal" data-bs-target="#locationModal"><i class="bi bi-geo-alt"></i> Select location for live delivery times</a>`;
+        }
+
+        const allRests = window.FoodWalaApp ? FoodWalaApp.getRestaurants() : [];
+        if (!allRests || allRests.length === 0) {
+          countHeading.textContent = '0 Restaurants in Bengaluru';
+          grid.innerHTML = `
+            <div class="col-12 text-center py-5">
+              <div class="bg-white p-5 rounded-4 shadow-sm">
+                <i class="bi bi-exclamation-triangle fs-1 text-danger d-block mb-3"></i>
+                <h4 class="fw-bold text-dark">Unable to load restaurants</h4>
+                <p class="text-muted small">Could not retrieve the restaurant directory. Please check your network connection and retry.</p>
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold mt-2" onclick="location.reload()">Retry</button>
+              </div>
+            </div>
+          `;
+          return;
         }
 
         const query = searchInput.value.trim();

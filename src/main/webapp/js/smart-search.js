@@ -291,6 +291,8 @@
           // Match Cuisine
           if (rCuisineNorm.includes(tNorm)) {
             score = Math.max(score, 200);
+          } else if (tNorm === 'paneer' && rCuisineNorm.includes('north indian')) {
+            score = Math.max(score, 200);
           } else {
             const jwC = jaroWinkler(rCuisineNorm, tNorm);
             if (jwC >= 0.82) score = Math.max(score, Math.round(jwC * 160));

@@ -166,12 +166,50 @@ const FoodWalaApp = (function () {
     return restaurantsCache;
   }
 
+  // --- FAST CACHED MENU ITEMS LOADER ---
+  async function loadMenuItems() {
+    if (menuItemsCache.length > 0) return menuItemsCache;
+
+    try {
+      const cached = sessionStorage.getItem('foodwala_menus_cache') || localStorage.getItem('foodwala_menus_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          menuItemsCache = parsed;
+          return menuItemsCache;
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const menuRes = await fetch('./data/menu-items.json');
+      if (menuRes.ok) {
+        const fullMenus = await menuRes.json();
+        if (Array.isArray(fullMenus) && fullMenus.length > 0) {
+          menuItemsCache = fullMenus;
+          try {
+            sessionStorage.setItem('foodwala_menus_cache', JSON.stringify(menuItemsCache));
+          } catch (e) {}
+          return menuItemsCache;
+        }
+      }
+    } catch (e) {}
+
+    if (typeof window !== 'undefined' && window.FOODWALA_MENUS && window.FOODWALA_MENUS.length > 0) {
+      menuItemsCache = window.FOODWALA_MENUS;
+    }
+    return menuItemsCache;
+  }
+
   function loadData() {
     if (dataReadyPromise) return dataReadyPromise;
 
     dataReadyPromise = new Promise(async (resolve) => {
-      // Load restaurants first (from cache or fast fetch)
-      await loadRestaurants();
+      // Parallel load restaurants and menu items
+      await Promise.all([
+        loadRestaurants(),
+        loadMenuItems()
+      ]);
 
       // Parallel fetch for categories
       if (window.FoodWalaApi && typeof window.FoodWalaApi.getCategories === 'function') {
@@ -204,22 +242,6 @@ const FoodWalaApp = (function () {
         menuItems: menuItemsCache,
         categories: categoriesCache
       });
-
-      // Lazily load full menu items in the background if needed
-      if (menuItemsCache.length === 0) {
-        setTimeout(async () => {
-          try {
-            const menuRes = await fetch('./data/menu-items.json');
-            if (menuRes.ok) {
-              menuItemsCache = await menuRes.json();
-            }
-          } catch (e) {
-            if (window.FOODWALA_MENUS && window.FOODWALA_MENUS.length > 0) {
-              menuItemsCache = window.FOODWALA_MENUS;
-            }
-          }
-        }, 100);
-      }
     });
 
     return dataReadyPromise;
@@ -432,14 +454,9 @@ const FoodWalaApp = (function () {
         }
         if (window.FOODWALA_BACKEND_URL) return window.FOODWALA_BACKEND_URL.replace(/\/+$/, '');
         if (window.FOODWALA_API_URL) return window.FOODWALA_API_URL.replace(/\/+$/, '');
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          return 'http://localhost:5000';
-        }
-        return 'https://foodwala-backend-api.onrender.com';
+        return (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'https://foodwala-backend-api.onrender.com';
       }
-
-      return 'http://localhost:5000';
+      return 'https://foodwala-backend-api.onrender.com';
     },
 
     get apiBaseUrl() {
@@ -517,16 +534,11 @@ const FoodWalaApp = (function () {
 
       const apiBase = this.getApiBaseUrl();
 
-      // Check if running on GitHub Pages without configured public Java Backend
-      if (apiBase === null) {
-        console.error('[FoodWala OTP] Architecture Notice: Java Backend is not yet configured for GitHub Pages production hosting.');
-        console.warn('[FoodWala OTP] GitHub Pages is a static host and cannot execute Java Servlets / Tomcat backend.');
-        console.info('[FoodWala OTP] To test locally: Open http://localhost:8080/FoodWala/login.html in your browser.');
-        console.info('[FoodWala OTP] To connect GitHub Pages to a live backend: Set window.FOODWALA_API_URL = "https://your-public-java-backend".');
+      if (!apiBase) {
         return {
           success: false,
-          error: 'BACKEND_NOT_CONFIGURED',
-          message: 'GitHub Pages is a static file host and cannot execute Java Servlets. Please run FoodWala locally on Tomcat (http://localhost:8080/FoodWala/) or configure a public Java backend URL.'
+          error: 'SERVICE_UNAVAILABLE',
+          message: 'Account and order service is temporarily unavailable. Please try again shortly.'
         };
       }
 
@@ -594,11 +606,10 @@ const FoodWalaApp = (function () {
         };
       } catch (networkErr) {
         console.error('[FoodWala OTP] Network error:', networkErr);
-        console.error('[FoodWala OTP] Request URL:', endpoint);
         return {
           success: false,
           error: 'NETWORK_ERROR',
-          message: `Unable to connect to Java backend at ${endpoint}. Please ensure Tomcat server is running on localhost:8080.`
+          message: 'Account and order service is temporarily unavailable. Please try again shortly.'
         };
       }
     },
@@ -693,11 +704,10 @@ const FoodWalaApp = (function () {
         };
       } catch (networkErr) {
         console.error('[FoodWala OTP] Network error during verification:', networkErr);
-        console.error('[FoodWala OTP] Target Endpoint:', endpoint);
         return {
           success: false,
           error: 'NETWORK_ERROR',
-          message: `Unable to connect to Java backend at ${endpoint}. Please ensure Tomcat server is running on localhost:8080.`
+          message: 'Account and order service is temporarily unavailable. Please try again shortly.'
         };
       }
     },
@@ -1925,6 +1935,7 @@ const FoodWalaApp = (function () {
     AVAILABLE_COUPONS,
     loadData,
     loadRestaurants,
+    loadMenuItems,
     optimizeImageUrl,
     getRestaurants: () => restaurantsCache,
     getMenuItems: () => menuItemsCache,

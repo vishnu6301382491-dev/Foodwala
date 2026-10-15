@@ -130,7 +130,7 @@
           <!-- Quick Suggestion Tags -->
           <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-light small">
             <span class="opacity-75"><i class="bi bi-fire text-warning"></i> Popular:</span>
-            <a href="./restaurants.html?q=biriyani" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Biryani</a>
+            <a href="./restaurants.html?q=biryani" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Biryani</a>
             <a href="./restaurants.html?q=dosa" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Benne Dosa</a>
             <a href="./restaurants.html?q=pizza" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Pizza</a>
             <a href="./restaurants.html?q=burger" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Burgers</a>
@@ -164,7 +164,7 @@
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=dosa" class="card border-0 shadow-sm rounded-4 p-3 text-decoration-none text-dark hover-lift">
+          <a href="./restaurants.html?cuisine=South+Indian" class="card border-0 shadow-sm rounded-4 p-3 text-decoration-none text-dark hover-lift">
             <img src="https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=160&auto=format&fit=crop&q=75" width="80" height="80" loading="lazy" decoding="async" class="rounded-circle mx-auto mb-2" style="width: 80px; height: 80px; object-fit: cover;" alt="South Indian">
             <span class="fw-bold small d-block">South Indian</span>
           </a>
@@ -182,13 +182,13 @@
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=paneer" class="card border-0 shadow-sm rounded-4 p-3 text-decoration-none text-dark hover-lift">
+          <a href="./restaurants.html?cuisine=North+Indian" class="card border-0 shadow-sm rounded-4 p-3 text-decoration-none text-dark hover-lift">
             <img src="https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=160&auto=format&fit=crop&q=75" width="80" height="80" loading="lazy" decoding="async" class="rounded-circle mx-auto mb-2" style="width: 80px; height: 80px; object-fit: cover;" alt="North Indian">
             <span class="fw-bold small d-block">North Indian</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=dessert" class="card border-0 shadow-sm rounded-4 p-3 text-decoration-none text-dark hover-lift">
+          <a href="./restaurants.html?cuisine=Desserts" class="card border-0 shadow-sm rounded-4 p-3 text-decoration-none text-dark hover-lift">
             <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=160&auto=format&fit=crop&q=75" width="80" height="80" loading="lazy" decoding="async" class="rounded-circle mx-auto mb-2" style="width: 80px; height: 80px; object-fit: cover;" alt="Desserts">
             <span class="fw-bold small d-block">Desserts</span>
           </a>
@@ -367,6 +367,10 @@
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js" defer></script>
   <!-- Core FoodWala JS (Minified) -->
   <script src="./js/ui.js" defer></script>
+    <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/config.js" defer></script>
+  <script src="./js/adapters/mockAdapter.js" defer></script>
+  <script src="./js/adapters/liveAdapter.js" defer></script>
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
   <script src="./js/app.min.js" defer></script>
@@ -375,7 +379,19 @@
   <script>
     function renderFeaturedGrid(list) {
       const grid = document.getElementById('home-featured-grid');
-      if (!grid || !list || !list.length) return;
+      if (!grid) return;
+      if (!list || !list.length) {
+        grid.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <div class="bg-white p-5 rounded-4 shadow-sm">
+              <i class="bi bi-shop fs-1 text-muted d-block mb-3"></i>
+              <h5 class="fw-bold text-dark">No restaurants available right now</h5>
+              <p class="text-muted small">Please check back soon for restaurants in your area.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
       const featured = list.slice(0, 8);
       grid.innerHTML = featured.map(r => `
         <div class="col-md-6 col-lg-3">
@@ -423,9 +439,28 @@
 
       // Load full dataset asynchronously (uses sessionStorage cache when available)
       if (window.FoodWalaApp) {
-        const fullList = await FoodWalaApp.loadRestaurants();
-        if (fullList && fullList.length) {
-          renderFeaturedGrid(fullList);
+        try {
+          const fullList = await FoodWalaApp.loadRestaurants();
+          if (fullList && fullList.length) {
+            renderFeaturedGrid(fullList);
+          } else {
+            renderFeaturedGrid([]);
+          }
+        } catch (err) {
+          console.error('[index] Error loading restaurants:', err);
+          const grid = document.getElementById('home-featured-grid');
+          if (grid) {
+            grid.innerHTML = `
+              <div class="col-12 text-center py-5">
+                <div class="bg-white p-5 rounded-4 shadow-sm">
+                  <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3"></i>
+                  <h5 class="fw-bold text-dark">Unable to load featured restaurants</h5>
+                  <p class="text-muted small">Could not retrieve restaurant data. Please check your connection.</p>
+                  <button class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold mt-2" onclick="location.reload()">Retry</button>
+                </div>
+              </div>
+            `;
+          }
         }
       }
 
