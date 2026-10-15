@@ -14,6 +14,24 @@ class SMSService {
   }
 
   /**
+   * Checks whether a real SMS provider is properly configured with credentials
+   * @returns {boolean}
+   */
+  isConfigured() {
+    if (this.isDevMode) return true;
+    if (this.provider === 'twilio') {
+      return Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER);
+    }
+    if (this.provider === 'msg91') {
+      return Boolean(process.env.MSG91_AUTH_KEY);
+    }
+    if (this.provider === '2factor') {
+      return Boolean(process.env.TWO_FACTOR_API_KEY);
+    }
+    return false;
+  }
+
+  /**
    * Send OTP via configured SMS Provider
    * @param {string} phone - Normalized E.164 phone (+919876543210)
    * @param {string} otp - 6-digit OTP
@@ -21,7 +39,7 @@ class SMSService {
    */
   async sendOtp(phone, otp) {
     // If Dev Mode is enabled, log to server console only and avoid sending real paid SMS
-    if (this.isDevMode || this.provider === 'console') {
+    if (this.isDevMode) {
       console.log('\n==================================================');
       console.log('[FoodWala SMS Service - DEV MODE]');
       console.log('Recipient: ' + phone);
@@ -35,6 +53,10 @@ class SMSService {
       };
     }
 
+    if (!this.isConfigured()) {
+      throw new Error('SMS gateway is not configured on this server.');
+    }
+
     // Production SMS Delivery
     switch (this.provider) {
       case 'twilio':
@@ -44,8 +66,7 @@ class SMSService {
       case '2factor':
         return this.sendVia2Factor(phone, otp);
       default:
-        console.warn("[SMS Service] Unknown provider '" + this.provider + "', falling back to console output.");
-        return { success: true, messageId: 'console_fallback_' + Date.now(), provider: 'console' };
+        throw new Error("SMS provider '" + this.provider + "' is not configured.");
     }
   }
 

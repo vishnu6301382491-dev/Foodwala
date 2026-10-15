@@ -53,7 +53,7 @@ Navigate to the **Environment** tab of your Render web service and add the follo
 | `DB_SSL` | `true` | Enforces TLS/SSL connection with system CAs |
 | `JWT_SECRET` | Click **Generate** in Render UI | Random 64-char secret for session tokens |
 | `ADMIN_PASSWORD` | `<choose-a-strong-password>` | Syncs the admin user credentials on startup |
-| `OTP_DEV_MODE` | `true` | Logs OTPs to server console for testing |
+| `OTP_DEV_MODE` | `false` | Production OTP enforcement (set to false to require real SMS provider) |
 | `SMS_PROVIDER` | `console` | Fallback SMS provider |
 
 > [!CAUTION]

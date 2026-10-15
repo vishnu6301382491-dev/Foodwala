@@ -354,7 +354,7 @@
         if (window.FoodWalaApi && typeof window.FoodWalaApi.checkPhone === 'function') {
           try {
             const check = await window.FoodWalaApi.checkPhone(normalizedPhone);
-            if (check && check.available === false) {
+            if (check && check.available === false && (check.exists === true || check.alreadyRegistered === true)) {
               showDuplicatePhoneModal(normalizedPhone);
               return;
             }
@@ -388,7 +388,7 @@
         } catch (err) {
           regSubmitBtn.disabled = false;
           regSubmitBtn.innerHTML = 'Create Account';
-          regErrorMsg.textContent = 'Account service is temporarily unavailable. Please try again shortly.';
+          regErrorMsg.textContent = err.message || 'Account service is temporarily unavailable. Please try again shortly.';
           regErrorMsg.style.display = 'block';
         }
       });
@@ -559,7 +559,7 @@
           const val = phoneInput.value.trim();
           if (val.length >= 10 && window.FoodWalaApi && typeof window.FoodWalaApi.checkPhone === 'function') {
             const check = await window.FoodWalaApi.checkPhone(val);
-            if (check && check.available === false) {
+            if (check && check.available === false && (check.exists === true || check.alreadyRegistered === true)) {
               showDuplicatePhoneModal(val);
             }
           }

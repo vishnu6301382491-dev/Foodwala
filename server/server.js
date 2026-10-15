@@ -894,9 +894,31 @@ app.post('/api/auth/send-otp', async (req, res) => {
       });
     }
 
+    // In production, verify that a real SMS gateway is configured
+    if (!IS_DEV_MODE && !smsService.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'SMS_GATEWAY_NOT_CONFIGURED',
+        message: 'SMS service is not configured on this server. Please use email/password registration or contact the administrator.'
+      });
+    }
+
     const otp = generateSecureOtp();
     const hashed = hashOtp(normalized, otp);
     const expiresAt = now + (5 * 60 * 1000);
+
+    try {
+      await smsService.sendOtp('+91' + normalized, otp);
+    } catch (smsErr) {
+      console.error('[Send OTP SMS Error]:', smsErr.message);
+      if (!IS_DEV_MODE) {
+        return res.status(502).json({
+          success: false,
+          error: 'SMS_DELIVERY_FAILED',
+          message: 'Failed to deliver SMS verification code. Please try again shortly or use email registration.'
+        });
+      }
+    }
 
     otpStore.set(normalized, {
       hashedOtp: hashed,
@@ -904,12 +926,6 @@ app.post('/api/auth/send-otp', async (req, res) => {
       attempts: 0,
       lastSentAt: now
     });
-
-    try {
-      await smsService.sendOtp('+91' + normalized, otp);
-    } catch (smsErr) {
-      console.warn('[Send OTP SMS Warning]:', smsErr.message);
-    }
 
     const responsePayload = {
       success: true,

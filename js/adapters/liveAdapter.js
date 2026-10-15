@@ -145,39 +145,87 @@
 
     // 5. Check Phone Availability
     checkPhone: async function (rawPhone) {
-      const res = await liveFetch(`/api/auth/check-phone?phone=${encodeURIComponent(rawPhone)}`, {
-        headers: getAuthHeader()
-      });
-      handleHttpErrors(res);
-      return await res.json();
+      try {
+        const res = await liveFetch(`/api/auth/check-phone?phone=${encodeURIComponent(rawPhone)}`, {
+          headers: getAuthHeader()
+        });
+        if (res.status === 404) {
+          return { available: true, error: 'Endpoint not deployed (404)' };
+        }
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (e) {
+          data = { available: false, error: `Invalid response format (HTTP ${res.status})` };
+        }
+        data.status = res.status;
+        return data;
+      } catch (err) {
+        return {
+          available: false,
+          error: err.message,
+          isNetworkError: true
+        };
+      }
     },
 
     // 6. Send Mobile OTP
     sendOtp: async function (rawPhone) {
-      const res = await liveFetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: getAuthHeader(),
-        body: JSON.stringify({ phone: rawPhone })
-      });
-      handleHttpErrors(res);
-      return await res.json();
+      try {
+        const res = await liveFetch('/api/auth/send-otp', {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ phone: rawPhone })
+        });
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (e) {
+          data = { success: false, message: `Server returned HTTP ${res.status}` };
+        }
+        data.status = res.status;
+        return data;
+      } catch (err) {
+        return {
+          success: false,
+          status: err.status || 0,
+          isTimeout: err.isTimeout,
+          isNetworkOrCors: err.isNetworkOrCors,
+          message: err.message || 'Failed to connect to authentication server.'
+        };
+      }
     },
 
     // 7. Verify OTP
     verifyOtp: async function (rawPhone, code) {
-      const res = await liveFetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: getAuthHeader(),
-        body: JSON.stringify({ phone: rawPhone, otp: code })
-      });
-      handleHttpErrors(res);
-      const data = await res.json();
-      if (data.success && data.user && data.token) {
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
-        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+      try {
+        const res = await liveFetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ phone: rawPhone, otp: code })
+        });
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (e) {
+          data = { success: false, message: `Server returned HTTP ${res.status}` };
+        }
+        data.status = res.status;
+        if (data.success && data.user && data.token) {
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+        }
+        return data;
+      } catch (err) {
+        return {
+          success: false,
+          status: err.status || 0,
+          isTimeout: err.isTimeout,
+          isNetworkOrCors: err.isNetworkOrCors,
+          message: err.message || 'OTP verification request failed.'
+        };
       }
-      return data;
     },
 
     // 8. Register Mobile User

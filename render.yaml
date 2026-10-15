@@ -32,6 +32,6 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: OTP_DEV_MODE
-        value: "true"
+        value: "false"
       - key: SMS_PROVIDER
         value: console
