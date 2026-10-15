@@ -1,28 +1,26 @@
 /**
  * FoodWala - Unified Data & Authentication API (api.js)
  * 
- * Single Source of Truth: MySQL Backend (fudwala)
+ * Single Source of Truth: MySQL Backend (fudwala) on Render / Localhost
  * All operations interact with the backend API using prepared statements.
- * LocalStorage is strictly restricted to active user session token and UI preferences.
+ * Features automatic retry and cold-start wake up detection for Render free-tier.
  */
 
 (function (window) {
   'use strict';
 
   // =======================================================================
-  // BACKEND API CONFIGURATION
+  // 1. BACKEND API CONFIGURATION
   // - Localhost / 127.0.0.1: Uses http://localhost:5000
-  // - GitHub Pages (github.io): Uses hosted cloud backend (Render / Railway)
+  // - GitHub Pages / Production: Uses https://foodwala-backend-api.onrender.com
   // =======================================================================
   
-  // PLACEHOLDER FOR HOSTED BACKEND URL (HTTPS)
-  // After deploying your server/ directory to Render or Railway, paste your live backend URL here:
-  // e.g., 'https://foodwala-backend.onrender.com'
-  const HOSTED_BACKEND_URL = 'https://foodwala-backend-api.onrender.com'; // <-- REPLACE_WITH_HOSTED_BACKEND_URL
+  const HOSTED_BACKEND_URL = 'https://foodwala-backend-api.onrender.com';
 
   const API_BASE_URL = (function () {
     if (typeof window !== 'undefined') {
-      if (window.FOODWALA_BACKEND_URL) return window.FOODWALA_BACKEND_URL;
+      if (window.FOODWALA_BACKEND_URL) return window.FOODWALA_BACKEND_URL.replace(/\/+$/, '');
+      if (window.FOODWALA_API_URL) return window.FOODWALA_API_URL.replace(/\/+$/, '');
       const host = window.location.hostname;
       if (host === 'localhost' || host === '127.0.0.1') {
         return 'http://localhost:5000';
@@ -33,6 +31,7 @@
   })();
 
   const BACKEND_URL = API_BASE_URL;
+  const SERVER_WAKE_UP_MSG = 'Server is waking up, please retry in 30 seconds.';
 
   const STORAGE_KEYS = {
     CURRENT_USER: 'foodwala_current_user',
@@ -87,8 +86,51 @@
     return null;
   }
 
+  /**
+   * Central fetch wrapper with automatic retry for Render free-tier cold starts.
+   * If a network failure / connection refused / 502/503 occurs, it notifies the user
+   * and automatically retries before failing.
+   */
+  async function apiFetch(endpoint, options = {}, retries = 2, delayMs = 3000) {
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    
+    let lastError = null;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const res = await fetch(url, options);
+
+        // Render cold start can sometimes return 502 or 503 while the container boots up
+        if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < retries) {
+          console.warn(`[FoodWalaApi] Server waking up (${res.status}). Retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1}/${retries})`);
+          if (typeof window !== 'undefined' && window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+            window.FoodWalaApp.showToast(SERVER_WAKE_UP_MSG, 'info');
+          }
+          await new Promise(r => setTimeout(r, delayMs));
+          continue;
+        }
+
+        return res;
+      } catch (err) {
+        lastError = err;
+        console.warn(`[FoodWalaApi] Network attempt ${attempt + 1}/${retries + 1} failed:`, err.message);
+        
+        if (attempt < retries) {
+          console.info(`[FoodWalaApi] Server waking up. Retrying in ${delayMs / 1000}s...`);
+          if (typeof window !== 'undefined' && window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+            window.FoodWalaApp.showToast(SERVER_WAKE_UP_MSG, 'info');
+          }
+          await new Promise(r => setTimeout(r, delayMs));
+        }
+      }
+    }
+
+    throw lastError || new Error(SERVER_WAKE_UP_MSG);
+  }
+
   const FoodWalaApi = {
+    API_BASE_URL: API_BASE_URL,
     BACKEND_URL: BACKEND_URL,
+    SERVER_WAKE_UP_MSG: SERVER_WAKE_UP_MSG,
 
     normalizePhone: function (phone) {
       return normalizeIndianPhone(phone);
@@ -113,7 +155,9 @@
         return { available: false, error: 'Please enter a valid 10-digit mobile number.' };
       }
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/check-phone?phone=${encodeURIComponent(normalized)}`);
+        const res = await apiFetch(`/api/auth/check-phone?phone=${encodeURIComponent(normalized)}`, {
+          headers: getAuthHeader()
+        });
         return await res.json();
       } catch (e) {
         return { available: true, error: null };
@@ -132,7 +176,7 @@
       }
 
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/send-otp`, {
+        const res = await apiFetch('/api/auth/send-otp', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify({ phone: normalized })
@@ -142,8 +186,8 @@
       } catch (err) {
         return {
           success: false,
-          error: 'NETWORK_ERROR',
-          message: 'Unable to connect to FoodWala server. Please check your connection.'
+          error: 'SERVER_WAKING_UP',
+          message: SERVER_WAKE_UP_MSG
         };
       }
     },
@@ -161,7 +205,7 @@
       }
 
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/verify-otp`, {
+        const res = await apiFetch('/api/auth/verify-otp', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify({ phone: normalized, otp: cleanCode })
@@ -174,14 +218,18 @@
         }
         return data;
       } catch (err) {
-        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to connect to authentication server.' };
+        return {
+          success: false,
+          error: 'SERVER_WAKING_UP',
+          message: SERVER_WAKE_UP_MSG
+        };
       }
     },
 
     // 4. Register Mobile Profile
     registerMobile: async function (data) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/register-mobile`, {
+        const res = await apiFetch('/api/auth/register-mobile', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify(data)
@@ -194,7 +242,11 @@
         }
         return resData;
       } catch (err) {
-        return { success: false, message: 'Registration failed. Please check connection.' };
+        return {
+          success: false,
+          error: 'SERVER_WAKING_UP',
+          message: SERVER_WAKE_UP_MSG
+        };
       }
     },
 
@@ -218,7 +270,7 @@
       }
 
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+        const res = await apiFetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({
@@ -260,34 +312,41 @@
       } catch (err) {
         return {
           success: false,
-          error: 'SERVER_UNAVAILABLE',
-          message: 'Unable to connect to database server. Please ensure the FoodWala backend is running.'
+          error: 'SERVER_WAKING_UP',
+          message: SERVER_WAKE_UP_MSG
         };
       }
     },
 
-    // 6. User Login
+    // 6. User Login (Email or Phone + Password)
     loginEmail: async function (identifier, password) {
       const cleanId = (identifier || '').trim();
       if (!cleanId || !password) {
         return { success: false, message: 'Please enter your email or mobile number and password.' };
       }
 
+      const isPhone = /^[6-9]\d{9}$/.test(cleanId) || /^\+91[6-9]\d{9}$/.test(cleanId);
+      const payload = isPhone
+        ? { phone: normalizeIndianPhone(cleanId), password: password }
+        : { email: cleanId.toLowerCase(), password: password };
+
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        const res = await apiFetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ identifier: cleanId, password: password })
+          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
 
+        // Check for account lockout (HTTP 423)
         if (res.status === 423 || data.error === 'ACCOUNT_LOCKED') {
           return {
             success: false,
-            locked: true,
             status: 423,
-            message: data.message || 'Account is temporarily locked due to multiple failed attempts.'
+            error: 'ACCOUNT_LOCKED',
+            message: data.message || 'Account locked due to multiple failed login attempts. Please try again after 15 minutes or reset your password.',
+            lockRemainingMinutes: data.lockRemainingMinutes || 15
           };
         }
 
@@ -304,15 +363,23 @@
       } catch (err) {
         return {
           success: false,
-          message: 'Unable to connect to database server. Please ensure the FoodWala backend is running.'
+          error: 'SERVER_WAKING_UP',
+          message: SERVER_WAKE_UP_MSG
         };
       }
     },
 
-    // 7. Change Password
+    // 7. Password Management
     changePassword: async function (currentPassword, newPassword, confirmPassword) {
+      if (newPassword !== confirmPassword) {
+        return { success: false, message: 'New passwords do not match.' };
+      }
+      if (newPassword.length < 8) {
+        return { success: false, message: 'New password must be at least 8 characters long.' };
+      }
+
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+        const res = await apiFetch('/api/auth/change-password', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify({
@@ -323,46 +390,41 @@
         });
         return await res.json();
       } catch (err) {
-        return { success: false, message: 'Unable to connect to server.' };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
-    // 8. Forgot Password & Reset
-    forgotPassword: async function (identifier) {
+    // 8. Forgot & Reset Password
+    forgotPassword: async function (emailOrPhone) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+        const res = await apiFetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: identifier })
+          body: JSON.stringify({ identifier: emailOrPhone })
         });
         return await res.json();
-      } catch (err) {
-        return { success: false, message: 'Unable to connect to server.' };
+      } catch (e) {
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
-    resetPassword: async function (resetToken, otp, newPassword, confirmPassword) {
+    resetPassword: async function (token, newPassword) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/reset-password`, {
+        const res = await apiFetch('/api/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            resetToken: resetToken,
-            otp: otp,
-            newPassword: newPassword,
-            confirmPassword: confirmPassword
-          })
+          body: JSON.stringify({ token: token, newPassword: newPassword })
         });
         return await res.json();
-      } catch (err) {
-        return { success: false, message: 'Unable to connect to server.' };
+      } catch (e) {
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
-    // 9. Logout
+    // 9. Sign Out
     logout: async function () {
       try {
-        await fetch(`${BACKEND_URL}/api/auth/logout`, {
+        await apiFetch('/api/auth/logout', {
           method: 'POST',
           headers: getAuthHeader()
         });
@@ -380,39 +442,53 @@
     // 10. Catalog: Restaurants & Menus (fudwala)
     getRestaurants: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/restaurants`);
+        const res = await apiFetch('/api/restaurants');
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        return await res.json();
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+        throw new Error('Empty restaurants array from API');
       } catch (e) {
-        console.error('[FoodWalaApi] Failed to fetch restaurants from MySQL:', e);
+        console.warn('[FoodWalaApi] Backend waking up or unreachable, using fallback restaurants:', e.message);
+        if (typeof window !== 'undefined' && window.FOODWALA_FEATURED_8) {
+          return window.FOODWALA_FEATURED_8;
+        }
         return [];
       }
     },
 
     getRestaurantMenu: async function (restaurantId) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/restaurants/${restaurantId}/menu`);
+        const res = await apiFetch(`/api/restaurants/${restaurantId}/menu`);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return await res.json();
       } catch (e) {
-        console.error(`[FoodWalaApi] Failed to fetch menu for restaurant ${restaurantId} from MySQL:`, e);
+        console.warn(`[FoodWalaApi] Failed to fetch menu for restaurant ${restaurantId}:`, e.message);
         return [];
       }
     },
 
     getCategories: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/categories`);
+        const res = await apiFetch('/api/categories');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         return await res.json();
       } catch (e) {
-        return [];
+        console.warn('[FoodWalaApi] Backend waking up, returning default categories:', e.message);
+        return [
+          { id: 1, name: 'South Indian' },
+          { id: 2, name: 'North Indian' },
+          { id: 3, name: 'Biryani' },
+          { id: 4, name: 'Burgers & Fast Food' },
+          { id: 5, name: 'Desserts & Sweets' },
+          { id: 6, name: 'Beverages' }
+        ];
       }
     },
 
     // 11. Saved Addresses (fudwala.address)
     getAddresses: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/user/addresses`, {
+        const res = await apiFetch('/api/user/addresses', {
           headers: getAuthHeader()
         });
         if (!res.ok) return [];
@@ -424,45 +500,45 @@
 
     saveAddress: async function (addressData) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/user/addresses`, {
+        const res = await apiFetch('/api/user/addresses', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify(addressData)
         });
         return await res.json();
       } catch (e) {
-        return { success: false, message: e.message };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
     deleteAddress: async function (addressId) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/user/addresses/${addressId}`, {
+        const res = await apiFetch(`/api/user/addresses/${addressId}`, {
           method: 'DELETE',
           headers: getAuthHeader()
         });
         return await res.json();
       } catch (e) {
-        return { success: false, message: e.message };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
     setDefaultAddress: async function (addressId) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/user/addresses/${addressId}/default`, {
+        const res = await apiFetch(`/api/user/addresses/${addressId}/default`, {
           method: 'PUT',
           headers: getAuthHeader()
         });
         return await res.json();
       } catch (e) {
-        return { success: false, message: e.message };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
     // 12. Persistent Cart (fudwala.cart & cart_item)
     getCart: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/cart`, {
+        const res = await apiFetch('/api/cart', {
           headers: getAuthHeader()
         });
         if (!res.ok) return null;
@@ -474,35 +550,35 @@
 
     syncCart: async function (cartData) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/cart/sync`, {
+        const res = await apiFetch('/api/cart/sync', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify(cartData)
         });
         return await res.json();
       } catch (e) {
-        return { success: false, message: e.message };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
     // 13. Coupons (fudwala.coupons)
     validateCoupon: async function (code, total, userId) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/coupons/validate`, {
+        const res = await apiFetch('/api/coupons/validate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: code, orderTotal: total, userId: userId })
         });
         return await res.json();
       } catch (e) {
-        return { valid: false, message: 'Failed to validate coupon code.' };
+        return { valid: false, message: 'Server waking up, please retry coupon in 30 seconds.' };
       }
     },
 
     // 14. Transactional Orders (fudwala.orders)
     placeOrder: async function (orderPayload) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/orders/place`, {
+        const res = await apiFetch('/api/orders/place', {
           method: 'POST',
           headers: getAuthHeader(),
           body: JSON.stringify(orderPayload)
@@ -512,32 +588,32 @@
       } catch (e) {
         return {
           success: false,
-          error: 'NETWORK_ERROR',
-          message: 'Unable to connect to order processing server.'
+          error: 'SERVER_WAKING_UP',
+          message: SERVER_WAKE_UP_MSG
         };
       }
     },
 
     getOrders: async function (userId, phone) {
       try {
-        let url = `${BACKEND_URL}/api/orders`;
+        let url = '/api/orders';
         const params = [];
         if (userId) params.push(`userId=${encodeURIComponent(userId)}`);
         if (phone) params.push(`phone=${encodeURIComponent(phone)}`);
         if (params.length > 0) url += `?${params.join('&')}`;
 
-        const res = await fetch(url, { headers: getAuthHeader() });
+        const res = await apiFetch(url, { headers: getAuthHeader() });
         if (!res.ok) return [];
         return await res.json();
       } catch (e) {
-        console.error('[FoodWalaApi] Failed to fetch orders from database:', e);
+        console.warn('[FoodWalaApi] Failed to fetch orders (server waking up):', e.message);
         return [];
       }
     },
 
     getOrderById: async function (orderId) {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/orders/${orderId}`, { headers: getAuthHeader() });
+        const res = await apiFetch(`/api/orders/${orderId}`, { headers: getAuthHeader() });
         if (!res.ok) return null;
         return await res.json();
       } catch (e) {
@@ -548,28 +624,28 @@
     // 15. Administrator Database Audits
     getAdminUsers: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/users`, { headers: getAuthHeader() });
+        const res = await apiFetch('/api/admin/users', { headers: getAuthHeader() });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to fetch admin users from database.' };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
     getAdminOrders: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/orders`, { headers: getAuthHeader() });
+        const res = await apiFetch('/api/admin/orders', { headers: getAuthHeader() });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to fetch admin orders from database.' };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     },
 
     getAdminLoginHistory: async function () {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/admin/login-history`, { headers: getAuthHeader() });
+        const res = await apiFetch('/api/admin/login-history', { headers: getAuthHeader() });
         return await res.json();
       } catch (e) {
-        return { success: false, error: 'NETWORK_ERROR', message: 'Failed to fetch login history from database.' };
+        return { success: false, error: 'SERVER_WAKING_UP', message: SERVER_WAKE_UP_MSG };
       }
     }
   };

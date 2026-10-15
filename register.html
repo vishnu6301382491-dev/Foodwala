@@ -340,13 +340,13 @@
           } else {
             regSubmitBtn.disabled = false;
             regSubmitBtn.innerHTML = 'Create Account';
-            regErrorMsg.textContent = res.error || res.message || 'Registration failed. Please try again.';
+            regErrorMsg.textContent = res.message || res.error || 'Server is waking up, please retry in 30 seconds.';
             regErrorMsg.style.display = 'block';
           }
         } catch (err) {
           regSubmitBtn.disabled = false;
           regSubmitBtn.innerHTML = 'Create Account';
-          regErrorMsg.textContent = 'Unable to complete registration. Please check your connection.';
+          regErrorMsg.textContent = 'Server is waking up, please retry in 30 seconds.';
           regErrorMsg.style.display = 'block';
         }
       });

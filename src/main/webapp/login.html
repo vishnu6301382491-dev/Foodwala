@@ -484,7 +484,7 @@
         } catch (err) {
           loginSubmitBtn.disabled = false;
           loginSubmitBtn.innerHTML = 'Sign In';
-          loginErrorMsg.textContent = 'Sign in failed. Please try again.';
+          loginErrorMsg.textContent = 'Server is waking up, please retry in 30 seconds.';
           loginErrorMsg.style.display = 'block';
         }
       });
@@ -553,7 +553,7 @@
           otpBoxes[0].focus();
           startResendCountdown(30);
         } else {
-          phoneError.textContent = res.message || 'Unable to send OTP right now. Please try again.';
+          phoneError.textContent = res.message || 'Server is waking up, please retry in 30 seconds.';
           phoneError.style.display = 'block';
         }
       });
@@ -746,7 +746,7 @@
           } catch (err) {
             forgotGetOtpBtn.disabled = false;
             forgotGetOtpBtn.innerHTML = 'Get Verification Code';
-            forgotStep1Error.textContent = 'Connection error. Please try again.';
+            forgotStep1Error.textContent = 'Server is waking up, please retry in 30 seconds.';
             forgotStep1Error.style.display = 'block';
           }
         });

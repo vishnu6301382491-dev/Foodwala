@@ -35,13 +35,10 @@ const PORT = process.env.PORT || 5000;
 const HASH_SECRET = process.env.OTP_HASH_SECRET || crypto.randomBytes(32).toString('hex');
 const IS_DEV_MODE = process.env.OTP_DEV_MODE === 'true' || process.env.NODE_ENV !== 'production';
 
-// Security Headers via Helmet
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
-// CORS Configuration
-const allowedOrigins = [
+// ---------------------------------------------------------------------------
+// 1. CORS CONFIGURATION (TOP OF SERVER BEFORE ALL ROUTES & EXPRESS.JSON)
+// ---------------------------------------------------------------------------
+const defaultOrigins = [
   'https://vishnu6301382491-dev.github.io',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
@@ -51,21 +48,50 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'http://localhost:8080'
 ];
+
+let allowedOrigins = [...defaultOrigins];
+if (process.env.CORS_ORIGINS) {
+  const custom = process.env.CORS_ORIGINS.split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean);
+  allowedOrigins = [...new Set([...allowedOrigins, ...custom])];
+}
 if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ''));
+  allowedOrigins.push(process.env.FRONTEND_URL.trim().replace(/\/+$/, ''));
+  allowedOrigins = [...new Set(allowedOrigins)];
 }
 
-app.use(cors({
+function isOriginAllowed(origin) {
+  if (!origin) return true; // Non-browser / curl / server-to-server
+  const cleanOrigin = origin.trim().replace(/\/+$/, '');
+  return allowedOrigins.some(allowed => {
+    if (cleanOrigin === allowed) return true;
+    if (allowed === 'https://vishnu6301382491-dev.github.io' && cleanOrigin.startsWith('https://vishnu6301382491-dev.github.io')) return true;
+    return false;
+  });
+}
+
+const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('https://vishnu6301382491-dev.github.io')) {
+    if (isOriginAllowed(origin)) {
       return callback(null, true);
     }
-    return callback(new Error('CORS policy: Access blocked from origin ' + origin));
+    console.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
+    return callback(null, false);
   },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'Accept'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id', 'Accept']
+  optionsSuccessStatus: 204
+};
+
+// 1. Mount CORS middleware at the very top
+app.use(cors(corsOptions));
+
+// 2. Explicitly handle all preflight OPTIONS requests across all routes
+app.options('*', cors(corsOptions));
+
+// 3. Security Headers via Helmet (configured to allow cross-origin requests)
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Rate Limiter for Authentication Routes
@@ -187,6 +213,29 @@ app.use(authenticateUser);
 // =======================================================================
 // 1. HEALTH & DIAGNOSTIC ENDPOINTS
 // =======================================================================
+
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbHealth = await db.checkHealth();
+    const isOk = dbHealth.connected;
+    return res.status(isOk ? 200 : 503).json({
+      status: isOk ? 'OK' : 'DEGRADED',
+      service: 'FoodWala Backend API',
+      timestamp: new Date().toISOString(),
+      uptime: Math.round(process.uptime()),
+      database: dbHealth,
+      corsAllowedOrigins: allowedOrigins,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (err) {
+    return res.status(503).json({
+      status: 'ERROR',
+      service: 'FoodWala Backend API',
+      timestamp: new Date().toISOString(),
+      error: err.message
+    });
+  }
+});
 
 app.get('/api/health/db', async (req, res) => {
   try {
@@ -2049,6 +2098,44 @@ app.get('/api/admin/login-history', requireAdmin, async (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// 404 NOT FOUND HANDLER (Ensures CORS headers are attached)
+// ---------------------------------------------------------------------------
+app.use((req, res) => {
+  const origin = req.headers.origin;
+  if (origin && isOriginAllowed(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  res.status(404).json({
+    success: false,
+    error: 'NOT_FOUND',
+    message: `Endpoint ${req.method} ${req.originalUrl} not found on FoodWala API server.`
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GLOBAL ERROR HANDLER (Ensures CORS headers are sent on all error responses)
+// ---------------------------------------------------------------------------
+app.use((err, req, res, next) => {
+  console.error('[Global Error Handler]:', err.stack || err.message);
+
+  const origin = req.headers.origin;
+  if (origin && isOriginAllowed(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Id, Accept');
+  }
+
+  const statusCode = err.status || err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    error: err.name || 'INTERNAL_ERROR',
+    message: err.message || 'An internal server error occurred. Please try again.'
+  });
+});
+
 // =======================================================================
 // SEED DEFAULT ADMINISTRATOR FROM ADMIN_PASSWORD (.env)
 // =======================================================================
@@ -2077,24 +2164,33 @@ async function seedAdminUser() {
       console.log('[Security] Synchronized administrator credentials with ADMIN_PASSWORD.');
     }
   } catch (err) {
-    console.warn('[Security] Seed admin warning:', err.message);
+    console.warn('[Security] Seed admin warning (DB might be offline during startup):', err.message);
   }
 }
 
 // =======================================================================
-// SERVER START
+// SERVER START (Never crashes on startup, binds to 0.0.0.0 and PORT)
 // =======================================================================
 
+const HOST = '0.0.0.0';
+
 if (require.main === module) {
-  app.listen(PORT, async () => {
+  const server = app.listen(PORT, HOST, async () => {
     console.log('\n======================================================');
-    console.log('🚀 FoodWala API Server Running on port ' + PORT);
-    console.log('🌐 Health Check   : http://localhost:' + PORT + '/api/health/db');
-    console.log('🔒 DB Backend     : MySQL (fudwala)');
-    console.log('🛡️ Password Hash  : Argon2id (OWASP standard)');
-    console.log('📱 Phone Normal   : Indian 10-Digit Normalized');
+    console.log(`🚀 FoodWala API Server Running on http://${HOST}:${PORT}`);
+    console.log(`🌐 Health Check   : http://${HOST}:${PORT}/api/health`);
+    console.log(`🔒 Environment    : ${process.env.NODE_ENV || 'development'}`);
+    console.log(`📱 CORS Origins   : ${allowedOrigins.join(', ')}`);
     console.log('======================================================\n');
-    await seedAdminUser();
+    try {
+      await seedAdminUser();
+    } catch (e) {
+      console.warn('[Startup] Admin seed deferred:', e.message);
+    }
+  });
+
+  server.on('error', (err) => {
+    console.error('[Server Startup Error]:', err.message);
   });
 }
 

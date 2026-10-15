@@ -6,8 +6,7 @@ import java.sql.Statement;
 
 public class DatabaseUpdate {
     public static void main(String[] args) {
-        String url = "jdbc:mysql://localhost:3306/fudwala?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try (Connection con = DriverManager.getConnection(url, "root", "root");
+        try (Connection con = DBConnection.getConnection();
              Statement st = con.createStatement()) {
 
             System.out.println("Starting Database Schema Update & Data Healing for FoodWala...");

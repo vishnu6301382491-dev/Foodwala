@@ -10,16 +10,12 @@ import java.util.List;
 
 public class RestaurantCatalogSeeder {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/fudwala?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASS = "root";
-
     public static void main(String[] args) {
         System.out.println("==================================================");
         System.out.println("FOODWALA BENGALURU RESTAURANT CATALOG SEEDER");
         System.out.println("==================================================");
 
-        try (Connection con = DriverManager.getConnection(DB_URL, USER, PASS);
+        try (Connection con = DBConnection.getConnection();
              Statement st = con.createStatement()) {
 
             // 1. Ensure Table Columns exist

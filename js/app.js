@@ -414,33 +414,21 @@ const FoodWalaApp = (function () {
         }
       } catch (e) {}
 
-      // 3. Localhost Development Environment (Tomcat Java backend)
+      // 3. Unified Backend Environment: Localhost (5000) or Render (https://foodwala-backend-api.onrender.com)
       if (typeof window !== 'undefined') {
+        if (window.FoodWalaApi && window.FoodWalaApi.API_BASE_URL) {
+          return window.FoodWalaApi.API_BASE_URL;
+        }
+        if (window.FOODWALA_BACKEND_URL) return window.FOODWALA_BACKEND_URL.replace(/\/+$/, '');
+        if (window.FOODWALA_API_URL) return window.FOODWALA_API_URL.replace(/\/+$/, '');
         const hostname = window.location.hostname;
-        const port = window.location.port;
-
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          // If page is hosted on Tomcat directly (e.g. port 8080 with context /FoodWala or /Foodwala)
-          if (port === '8080') {
-            const pathSegments = window.location.pathname.split('/').filter(Boolean);
-            const context = (pathSegments.length > 0 && /Foodwala/i.test(pathSegments[0])) ? '/' + pathSegments[0] : '/FoodWala';
-            return window.location.origin + context;
-          }
-          // Default local Tomcat backend URL
-          return 'http://localhost:8080/FoodWala';
+          return 'http://localhost:5000';
         }
-
-        // 4. Remote / GitHub Pages Hosting (e.g. vishnu6301382491-dev.github.io)
-        if (hostname.endsWith('github.io')) {
-          if (window.FOODWALA_PUBLIC_API_URL) {
-            return window.FOODWALA_PUBLIC_API_URL.replace(/\/+$/, '');
-          }
-          // Return null so we do NOT issue broken relative POST requests to GitHub Pages (which yield 405 Method Not Allowed)
-          return null;
-        }
+        return 'https://foodwala-backend-api.onrender.com';
       }
 
-      return '';
+      return 'http://localhost:5000';
     },
 
     get apiBaseUrl() {

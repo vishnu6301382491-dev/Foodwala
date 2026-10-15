@@ -26,7 +26,7 @@ public final class DBConnection {
     }
 
     public static String getPassword() {
-        return getEnvOrProp("DB_PASSWORD", "root");
+        return getEnvOrProp("DB_PASSWORD", "");
     }
 
     private DBConnection() {

@@ -6,8 +6,7 @@ import java.sql.Statement;
 
 public class DatabaseMigration {
     public static void main(String[] args) {
-        String url = "jdbc:mysql://localhost:3306/fudwala?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try (Connection con = DriverManager.getConnection(url, "root", "root");
+        try (Connection con = DBConnection.getConnection();
              Statement st = con.createStatement()) {
 
             System.out.println("Starting Database Migration for FoodWala Complete System...");
@@ -118,17 +117,16 @@ public class DatabaseMigration {
             addColumnIfNotExists(st, "payment", "razorpay_payment_id", "VARCHAR(100) NULL");
             addColumnIfNotExists(st, "payment", "razorpay_signature", "VARCHAR(255) NULL");
 
-            // 8. Seed sample roles & accounts with Argon2id hash
-            String demoArgon2Hash = PasswordUtil.hash("123456");
-            st.executeUpdate("INSERT IGNORE INTO `user` (user_id, username, password, email, phone, address, role) VALUES " +
-                "(3, 'Rahul (Partner)', '" + demoArgon2Hash + "', 'rahul.delivery@foodwala.com', '9876543220', 'Basavanagudi, Bengaluru', 'DELIVERY_PARTNER')," +
-                "(4, 'Vidyarthi Bhavan Staff', '" + demoArgon2Hash + "', 'vb.admin@foodwala.com', '9876543221', 'Gandhi Bazaar, Basavanagudi, Bengaluru', 'RESTAURANT')," +
-                "(5, 'Admin', '" + demoArgon2Hash + "', 'admin@foodwala.com', '9876543222', 'Bengaluru Central', 'ADMIN')");
+            // 8. Seed sample roles & accounts via environment configuration (if ADMIN_PASSWORD is set)
+            String adminPassword = System.getenv("ADMIN_PASSWORD");
+            if (adminPassword != null && !adminPassword.isBlank()) {
+                String adminHash = PasswordUtil.hash(adminPassword);
+                st.executeUpdate("INSERT IGNORE INTO `user` (username, email, phone, address, role, password_hash) VALUES " +
+                    "('Admin', 'admin@foodwala.com', '9876543222', 'Bengaluru Central', 'ADMIN', '" + adminHash + "')");
+            }
 
-            st.executeUpdate("INSERT IGNORE INTO delivery_partner (partner_id, user_id, name, phone, vehicle_number, current_lat, current_lng, accuracy, is_available) VALUES " +
-                "(1, 3, 'Rahul', '9876543220', 'KA-05-EJ-1234', 12.9416, 77.5750, 8.5, TRUE)");
-
-            st.executeUpdate("UPDATE restaurant SET admin_user_id=4 WHERE restaurant_id=2");
+            st.executeUpdate("INSERT IGNORE INTO delivery_partner (partner_id, name, phone, vehicle_number, current_lat, current_lng, accuracy, is_available) VALUES " +
+                "(1, 'Rahul', '9876543220', 'KA-05-EJ-1234', 12.9416, 77.5750, 8.5, TRUE)");
 
             System.out.println("DATABASE MIGRATION COMPLETED SUCCESSFULLY!");
         } catch (Exception e) {
