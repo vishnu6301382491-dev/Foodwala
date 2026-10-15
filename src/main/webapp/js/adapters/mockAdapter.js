@@ -339,6 +339,10 @@
 
       if (activeOtp.code !== cleanCode) {
         activeOtp.attempts += 1;
+        if (activeOtp.attempts >= 3) {
+          localStorage.removeItem(STORAGE_KEYS.ACTIVE_OTP);
+          return { success: false, error: 'MAX_ATTEMPTS', message: 'Too many incorrect attempts. Please request a new OTP.' };
+        }
         setLocal(STORAGE_KEYS.ACTIVE_OTP, activeOtp);
         const rem = 3 - activeOtp.attempts;
         return { success: false, error: 'WRONG_OTP', message: `Incorrect OTP code. ${rem} attempt(s) remaining.` };

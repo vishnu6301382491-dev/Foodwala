@@ -557,20 +557,14 @@
 
         if (res.success) {
           activeMobilePhone = normalized;
-          const masked = normalized.length >= 10 ? normalized.slice(0, 3) + ' ' + normalized.slice(3, 8) + ' ' + normalized.slice(8) : normalized;
-          displayPhoneEl.textContent = masked;
+          displayPhoneEl.textContent = '+91 ' + normalized;
 
           stepPhone.style.display = 'none';
           stepVerify.style.display = 'block';
           stepRegister.style.display = 'none';
 
           clearOtpBoxes();
-          if (res.isDevMode && res.devOtp) {
-            FoodWalaApp.showToast(`💡 Dev Mode OTP: ${res.devOtp}`, 'info');
-            res.devOtp.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
-          } else {
-            FoodWalaApp.showToast('OTP sent successfully!', 'success');
-          }
+          FoodWalaApp.showToast('OTP sent successfully to your mobile number!', 'success');
           otpBoxes[0].focus();
           startResendCountdown(30);
         } else {
@@ -677,6 +671,8 @@
         stepPhone.style.display = 'block';
         stepRegister.style.display = 'none';
         if (resendTimerInterval) clearInterval(resendTimerInterval);
+        resendTimerWrap.style.display = 'none';
+        resendOtpBtn.style.display = 'none';
       });
 
       // 6. Resend Countdown Timer
