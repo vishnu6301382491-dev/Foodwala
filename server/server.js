@@ -697,46 +697,41 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
       [cleanEmail, cleanPhone || 'NON_MATCHING']
     );
 
-    if (users.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No account found with this email or mobile number.'
+    if (users.length > 0) {
+      const user = users[0];
+      const otp = generateSecureOtp();
+      const resetToken = 'rst_' + crypto.randomBytes(24).toString('hex');
+
+      // Save reset token and 15-minute expiry in fudwala.user
+      await db.execute(
+        'UPDATE user SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE user_id = ?',
+        [resetToken, user.user_id]
+      );
+
+      // Also store in transient otpStore mapped by resetToken and by OTP code
+      otpStore.set('pwd_reset_' + resetToken, {
+        userId: user.user_id,
+        resetToken: resetToken,
+        otp: otp,
+        expiresAt: Date.now() + 15 * 60 * 1000
+      });
+      otpStore.set('pwd_reset_' + otp, {
+        userId: user.user_id,
+        resetToken: resetToken,
+        otp: otp,
+        expiresAt: Date.now() + 15 * 60 * 1000
       });
     }
 
-    const user = users[0];
-    const otp = generateSecureOtp();
-    const resetToken = 'rst_' + crypto.randomBytes(24).toString('hex');
-
-    // Save reset token and 15-minute expiry in fudwala.user
-    await db.execute(
-      'UPDATE user SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE user_id = ?',
-      [resetToken, user.user_id]
-    );
-
-    // Also store in transient otpStore mapped by resetToken
-    otpStore.set('pwd_reset_' + resetToken, {
-      userId: user.user_id,
-      otp: otp,
-      expiresAt: Date.now() + 15 * 60 * 1000
-    });
-
+    // Always return generic response to prevent account enumeration
     return res.json({
       success: true,
-      message: 'Password reset code generated.',
-      user: {
-        userId: user.user_id,
-        email: user.email,
-        phone: user.phone,
-        name: user.username
-      },
-      resetToken: resetToken,
-      otp: otp // Available for UI / EmailJS dispatch
+      message: 'If an account exists with this email or mobile number, a verification code has been dispatched.'
     });
 
   } catch (err) {
     console.error('[Forgot Password Error]:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'Unable to process request at this time.' });
   }
 });
 
@@ -745,10 +740,11 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
  */
 app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
   try {
-    const { resetToken, otp, newPassword, confirmPassword } = req.body;
+    const { resetToken, token, otp, newPassword, confirmPassword } = req.body;
+    const incomingCode = (otp || token || resetToken || '').trim();
 
-    if (!resetToken || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Reset token and new password are required.' });
+    if (!incomingCode || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Verification code and new password are required.' });
     }
 
     if (confirmPassword && newPassword !== confirmPassword) {
@@ -760,25 +756,31 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
       return res.status(400).json({ success: false, message: policy.message });
     }
 
-    // Verify token against database
-    const [users] = await db.execute(
-      'SELECT user_id, email FROM user WHERE reset_token = ? AND reset_token_expires > NOW()',
-      [resetToken]
-    );
+    let userId = null;
 
-    if (users.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired password reset link/token. Please request a new one.'
-      });
+    // Check transient OTP store first
+    const transient = otpStore.get('pwd_reset_' + incomingCode);
+    if (transient && transient.expiresAt > Date.now()) {
+      userId = transient.userId;
+      otpStore.delete('pwd_reset_' + incomingCode);
+      if (transient.resetToken) otpStore.delete('pwd_reset_' + transient.resetToken);
+      if (transient.otp) otpStore.delete('pwd_reset_' + transient.otp);
+    } else {
+      // Check database reset_token
+      const [users] = await db.execute(
+        'SELECT user_id, email FROM user WHERE reset_token = ? AND reset_token_expires > NOW()',
+        [incomingCode]
+      );
+      if (users.length > 0) {
+        userId = users[0].user_id;
+      }
     }
 
-    const userId = users[0].user_id;
-
-    // If OTP was provided, verify it if transient record exists
-    const transient = otpStore.get('pwd_reset_' + resetToken);
-    if (transient && otp && transient.otp !== otp.trim()) {
-      return res.status(400).json({ success: false, message: 'Incorrect 6-digit verification code.' });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification code. Please request a new one.'
+      });
     }
 
     // Hash new password with Argon2id
@@ -791,8 +793,6 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
        WHERE user_id = ?`,
       [newHash, userId]
     );
-
-    otpStore.delete('pwd_reset_' + resetToken);
 
     try {
       await db.execute(
@@ -808,7 +808,7 @@ app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
 
   } catch (err) {
     console.error('[Reset Password Error]:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'Error resetting password. Please try again.' });
   }
 });
 

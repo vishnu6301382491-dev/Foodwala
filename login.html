@@ -746,18 +746,17 @@
             forgotGetOtpBtn.disabled = false;
             forgotGetOtpBtn.innerHTML = 'Get Verification Code';
 
-            if (res.success && res.resetToken) {
-              activeResetToken = res.resetToken;
+            if (res.success) {
               forgotStep1.style.display = 'none';
               forgotStep2.style.display = 'block';
 
-              const phoneOrEmail = res.user ? (res.user.phone || res.user.email) : identifier;
-              forgotStep2Info.innerHTML = `Verification code generated for <strong>${phoneOrEmail}</strong> (Valid for 15 minutes).${res.otp ? `<br><small class="text-success fw-bold">Test OTP: ${res.otp}</small>` : ''}`;
+              const safeId = identifier.replace(/[^\w@.+ -]/g, '');
+              forgotStep2Info.innerHTML = `If an account exists for <strong>${safeId}</strong>, a 6-digit verification code has been dispatched (Valid for 15 minutes).`;
               
               const otpInput = document.getElementById('forgot-otp');
-              if (otpInput && res.otp) otpInput.value = res.otp;
+              if (otpInput) otpInput.value = '';
             } else {
-              forgotStep1Error.textContent = res.message || 'No account found with this email or mobile number.';
+              forgotStep1Error.textContent = res.message || 'Unable to process request. Please try again.';
               forgotStep1Error.style.display = 'block';
             }
           } catch (err) {
@@ -783,7 +782,7 @@
           const newPwd = document.getElementById('forgot-new-pwd').value;
           const confirmPwd = document.getElementById('forgot-confirm-pwd').value;
 
-          if (!otp || otp.length !== 6) {
+          if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
             forgotStep2Error.textContent = 'Please enter the 6-digit verification code.';
             forgotStep2Error.style.display = 'block';
             return;
@@ -795,8 +794,8 @@
             return;
           }
 
-          if (newPwd.length < 8) {
-            forgotStep2Error.textContent = 'Password must be at least 8 characters long.';
+          if (newPwd.length < 8 || !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPwd)) {
+            forgotStep2Error.textContent = 'Password must be at least 8 characters long and contain both letters and numbers.';
             forgotStep2Error.style.display = 'block';
             return;
           }
@@ -805,7 +804,7 @@
           forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Resetting...';
 
           try {
-            const res = await FoodWalaApi.resetPassword(activeResetToken, otp, newPwd, confirmPwd);
+            const res = await FoodWalaApi.resetPassword(otp, newPwd);
             forgotResetBtn.disabled = false;
             forgotResetBtn.innerHTML = 'Reset Password';
 
@@ -817,6 +816,10 @@
               // Reset steps
               forgotStep2.style.display = 'none';
               forgotStep1.style.display = 'block';
+              document.getElementById('forgot-identifier').value = '';
+              document.getElementById('forgot-otp').value = '';
+              document.getElementById('forgot-new-pwd').value = '';
+              document.getElementById('forgot-confirm-pwd').value = '';
               document.getElementById('password-input').value = '';
               document.getElementById('password-input').focus();
             } else {
