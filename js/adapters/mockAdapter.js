@@ -477,8 +477,8 @@
         return { success: false, message: 'Please enter your email or mobile number and password.' };
       }
 
-      const isPhone = /^[6-9]\d{9}$/.test(cleanId.replace(/\D/g, '')) || cleanId.startsWith('+91');
-      const normalizedPhone = isPhone ? normalizePhone(cleanId) : null;
+      const normalizedPhone = normalizePhone(cleanId);
+      const isPhone = normalizedPhone !== null;
       const cleanEmail = !isPhone ? cleanId.toLowerCase() : null;
 
       const users = initMockUsers();
