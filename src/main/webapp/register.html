@@ -287,6 +287,8 @@
       const regSubmitBtn = document.getElementById('register-submit-btn');
       const regErrorMsg = document.getElementById('register-error-msg');
 
+      let pendingRegistrationData = null;
+
       regForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         regErrorMsg.style.display = 'none';
@@ -301,6 +303,26 @@
         // Validation: required fields
         if (!name || !email || !password) {
           regErrorMsg.textContent = 'Name, email and password are required.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        // Sanitize name against XSS
+        const cleanName = name.replace(/<[^>]*>?/gm, '').trim();
+
+        // Validation: email format
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          regErrorMsg.textContent = 'Please enter a valid email address.';
+          regErrorMsg.style.display = 'block';
+          return;
+        }
+
+        // Validation: phone normalization
+        const digits = phone.replace(/\D/g, '');
+        const normalizedPhone = (digits.length === 12 && digits.startsWith('91')) ? digits.substring(2) : (digits.length === 11 && digits.startsWith('0')) ? digits.substring(1) : digits;
+
+        if (!/^[6-9]\d{9}$/.test(normalizedPhone)) {
+          regErrorMsg.textContent = 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.';
           regErrorMsg.style.display = 'block';
           return;
         }
@@ -324,36 +346,148 @@
           return;
         }
 
+        // Pre-check duplicate phone
+        if (window.FoodWalaApi && typeof window.FoodWalaApi.checkPhone === 'function') {
+          try {
+            const check = await window.FoodWalaApi.checkPhone(normalizedPhone);
+            if (check && check.available === false) {
+              showDuplicatePhoneModal(normalizedPhone);
+              return;
+            }
+          } catch (e) {}
+        }
+
         regSubmitBtn.disabled = true;
-        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating Account...';
+        regSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP...';
 
         try {
-          const res = await FoodWalaApp.Auth.register(name, email, phone, password, address, confirmPassword);
-          if (res.success && res.user) {
-            FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
-            try {
-              localStorage.removeItem('foodwala_post_login_redirect');
-            } catch (err) {}
-            setTimeout(() => {
-              window.location.href = redirectTarget;
-            }, 500);
-          } else if (res.status === 409 || res.code === 'PHONE_EXISTS') {
-            regSubmitBtn.disabled = false;
-            regSubmitBtn.innerHTML = 'Create Account';
-            showDuplicatePhoneModal(phone);
-          } else {
-            regSubmitBtn.disabled = false;
-            regSubmitBtn.innerHTML = 'Create Account';
-            regErrorMsg.textContent = res.message || res.error || 'Account and order service is temporarily unavailable. Please try again shortly.';
+          const otpRes = await FoodWalaApp.Auth.sendOtp(normalizedPhone);
+          regSubmitBtn.disabled = false;
+          regSubmitBtn.innerHTML = 'Create Account';
+
+          if (!otpRes.success) {
+            regErrorMsg.textContent = otpRes.message || 'Unable to send verification OTP. Please try again.';
             regErrorMsg.style.display = 'block';
+            return;
           }
+
+          pendingRegistrationData = {
+            name: cleanName,
+            email: email.toLowerCase(),
+            phone: normalizedPhone,
+            password: password,
+            address: address,
+            confirmPassword: confirmPassword
+          };
+
+          showRegOtpModal(normalizedPhone);
         } catch (err) {
           regSubmitBtn.disabled = false;
           regSubmitBtn.innerHTML = 'Create Account';
-          regErrorMsg.textContent = 'Account and order service is temporarily unavailable. Please try again shortly.';
+          regErrorMsg.textContent = 'Account service is temporarily unavailable. Please try again shortly.';
           regErrorMsg.style.display = 'block';
         }
       });
+
+      // --- Registration OTP Verification Modal Logic ---
+      const regOtpModalEl = document.getElementById('regOtpModal');
+      const regOtpModal = regOtpModalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(regOtpModalEl) : null;
+      const regOtpPhoneDisplay = document.getElementById('reg-otp-display-phone');
+      const regOtpBoxes = document.querySelectorAll('.reg-otp-box');
+      const regOtpError = document.getElementById('reg-otp-error-msg');
+      const regVerifyBtn = document.getElementById('reg-verify-otp-btn');
+
+      function showRegOtpModal(phoneNum) {
+        if (regOtpPhoneDisplay) regOtpPhoneDisplay.textContent = '+91 ' + phoneNum;
+        if (regOtpError) regOtpError.style.display = 'none';
+        regOtpBoxes.forEach(b => b.value = '');
+        if (regOtpModal) regOtpModal.show();
+        if (regOtpBoxes[0]) setTimeout(() => regOtpBoxes[0].focus(), 300);
+      }
+
+      regOtpBoxes.forEach((box, index) => {
+        box.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/[^0-9]/g, '');
+          e.target.value = val ? val.slice(-1) : '';
+          if (val && index < regOtpBoxes.length - 1) {
+            regOtpBoxes[index + 1].focus();
+          }
+        });
+
+        box.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !box.value && index > 0) {
+            regOtpBoxes[index - 1].focus();
+          }
+        });
+
+        box.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+          if (pasted) {
+            pasted.split('').forEach((d, i) => { if (regOtpBoxes[i]) regOtpBoxes[i].value = d; });
+            const lastIdx = Math.min(pasted.length, regOtpBoxes.length - 1);
+            regOtpBoxes[lastIdx].focus();
+          }
+        });
+      });
+
+      if (regVerifyBtn) {
+        regVerifyBtn.addEventListener('click', async () => {
+          regOtpError.style.display = 'none';
+          let enteredCode = '';
+          regOtpBoxes.forEach(b => enteredCode += b.value.trim());
+
+          if (enteredCode.length !== 6) {
+            regOtpError.textContent = 'Please enter the complete 6-digit verification code.';
+            regOtpError.style.display = 'block';
+            return;
+          }
+
+          regVerifyBtn.disabled = true;
+          regVerifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verifying...';
+
+          const verifyRes = await FoodWalaApp.Auth.verifyOtp(pendingRegistrationData.phone, enteredCode);
+          if (!verifyRes.success) {
+            regVerifyBtn.disabled = false;
+            regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
+            regOtpError.textContent = verifyRes.message || 'Incorrect verification code. Please try again.';
+            regOtpError.style.display = 'block';
+            return;
+          }
+
+          // OTP verified! Proceed to account creation
+          try {
+            const res = await FoodWalaApp.Auth.register(
+              pendingRegistrationData.name,
+              pendingRegistrationData.email,
+              pendingRegistrationData.phone,
+              pendingRegistrationData.password,
+              pendingRegistrationData.address,
+              pendingRegistrationData.confirmPassword
+            );
+
+            if (res.success && res.user) {
+              if (regOtpModal) regOtpModal.hide();
+              FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
+              try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (err) {}
+              setTimeout(() => { window.location.href = redirectTarget; }, 500);
+            } else if (res.status === 409 || res.code === 'PHONE_EXISTS') {
+              if (regOtpModal) regOtpModal.hide();
+              showDuplicatePhoneModal(pendingRegistrationData.phone);
+            } else {
+              regVerifyBtn.disabled = false;
+              regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
+              regOtpError.textContent = res.message || res.error || 'Failed to create account.';
+              regOtpError.style.display = 'block';
+            }
+          } catch (err) {
+            regVerifyBtn.disabled = false;
+            regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
+            regOtpError.textContent = 'Account service is temporarily unavailable.';
+            regOtpError.style.display = 'block';
+          }
+        });
+      }
 
       // --- Duplicate Phone Modal Logic ---
       const dupModalEl = document.getElementById('duplicatePhoneModal');
@@ -364,7 +498,10 @@
 
       function showDuplicatePhoneModal(phoneNum) {
         if (dupPhoneSpan) {
-          dupPhoneSpan.textContent = phoneNum.startsWith('+91') ? phoneNum : '+91 ' + phoneNum;
+          const raw = phoneNum ? String(phoneNum).trim() : '';
+          const digits = raw.replace(/\D/g, '');
+          const cleanPhone = digits.length >= 10 ? digits.slice(-10) : digits;
+          dupPhoneSpan.textContent = '+91 ' + cleanPhone;
         }
         if (dupLoginBtn) {
           dupLoginBtn.href = `./login.html?redirect=${encodeURIComponent(redirectTarget)}`;
@@ -419,7 +556,7 @@
         </div>
         <div class="modal-body py-4">
           <p class="text-secondary mb-2">
-            The mobile number <strong id="dup-modal-phone" class="text-dark">+91 98765 43210</strong> is already linked to an existing FoodWala account.
+            The mobile number <strong id="dup-modal-phone" class="text-dark">+91 entered number</strong> is already linked to an existing FoodWala account.
           </p>
           <p class="text-muted small mb-0">
             Please log in with your existing account, or use a different phone number to create a new profile.
@@ -432,6 +569,41 @@
           <a href="./login.html" class="btn btn-danger rounded-pill px-4 py-2 flex-fill fw-bold shadow-sm text-center text-decoration-none" id="dup-modal-login-btn">
             Go to Login
           </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration Phone Verification Modal -->
+  <div class="modal fade" id="regOtpModal" tabindex="-1" aria-labelledby="regOtpModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <div class="d-flex align-items-center gap-2">
+            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <i class="bi bi-shield-check fs-5"></i>
+            </div>
+            <h5 class="modal-title fw-bold text-dark" id="regOtpModalLabel">Verify Mobile Number</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <p class="text-muted small mb-3">
+            We've sent a 6-digit verification code to <strong id="reg-otp-display-phone" class="text-dark">+91 XXXXXXXXXX</strong>. Please enter it below to complete registration.
+          </p>
+          <div class="d-flex justify-content-between gap-2 my-3" id="reg-otp-boxes-container">
+            <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-1" required>
+            <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-2" required>
+            <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-3" required>
+            <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-4" required>
+            <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-5" required>
+            <input type="text" class="form-control text-center fs-4 fw-bold rounded-3 reg-otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="reg-otp-6" required>
+          </div>
+          <div id="reg-otp-error-msg" class="text-danger small text-center mb-2 fw-semibold" style="display: none;"></div>
+          <button type="button" id="reg-verify-otp-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mt-3">
+            <span>Verify & Create Account</span>
+            <i class="bi bi-arrow-right"></i>
+          </button>
         </div>
       </div>
     </div>

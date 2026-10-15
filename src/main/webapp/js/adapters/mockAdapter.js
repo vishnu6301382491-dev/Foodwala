@@ -371,7 +371,7 @@
     // 8. Register Mobile User (Name step after new phone OTP)
     registerMobile: async function (data) {
       const normalized = normalizePhone(data.phone);
-      const cleanName = (data.name || '').trim();
+      const cleanName = (data.name || '').replace(/<[^>]*>?/gm, '').trim();
 
       if (!cleanName || !normalized) {
         return { success: false, message: 'Your name is required to complete profile registration.' };
@@ -406,7 +406,7 @@
 
     // 9. Standard Signup (register.html)
     signup: async function (data) {
-      const cleanName = (data.name || data.username || '').trim();
+      const cleanName = (data.name || data.username || '').replace(/<[^>]*>?/gm, '').trim();
       const cleanEmail = (data.email || '').trim().toLowerCase();
       const cleanPhone = normalizePhone(data.phone);
       const password = data.password || '';
