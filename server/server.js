@@ -234,8 +234,12 @@ app.use(authenticateUser);
 // 1. HEALTH & DIAGNOSTIC ENDPOINTS
 // =======================================================================
 
-// Root endpoint for simple ping/status checks
+// Root endpoint for simple ping/status checks or home page in browser
 app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, '..', 'index.html');
+  if (req.accepts('html') && fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
   res.status(200).send('FoodWala Backend Running');
 });
 
@@ -2203,6 +2207,14 @@ app.get('/api/admin/login-history', requireAdmin, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// ---------------------------------------------------------------------------
+// STATIC ASSET SERVING (Allows full-stack testing directly from http://localhost:5000)
+// ---------------------------------------------------------------------------
+const staticRoot = path.join(__dirname, '..');
+app.use(express.static(staticRoot, {
+  extensions: ['html', 'htm']
+}));
 
 // ---------------------------------------------------------------------------
 // 404 NOT FOUND HANDLER (Ensures CORS headers are attached)

@@ -1905,8 +1905,12 @@ const FoodWalaApp = (function () {
     }
   }
 
-  // Pre-load data on load
-  loadData();
+  // Pre-load data on load (skip on auth pages to avoid unnecessary background catalog requests)
+  const currentPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname.toLowerCase() : '';
+  const isAuthPage = currentPath.endsWith('login.html') || currentPath.endsWith('register.html') || currentPath.endsWith('forgot-password.html') || currentPath.endsWith('reset-password.html');
+  if (!isAuthPage) {
+    loadData();
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCommonUI);
