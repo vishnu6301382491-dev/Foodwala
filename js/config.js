@@ -143,11 +143,11 @@
       window.FOODWALA_CONFIG.DEMO_MODE = demoActive;
     }
 
+    removeBanner();
+
     if (demoActive) {
-      renderBanner();
       updateDemoLoginButtons(true);
     } else {
-      removeBanner();
       updateDemoLoginButtons(false);
       cleanUpDemoSessionIfLive();
     }
@@ -188,56 +188,8 @@
   }
 
   function renderBanner() {
-    if (typeof document === 'undefined') return;
-    if (!isTargetPageForBanner()) return;
-
-    let banner = document.getElementById(BANNER_ID);
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = BANNER_ID;
-      banner.className = 'alert alert-warning py-2 px-3 small rounded-3 mb-4 d-flex align-items-center justify-content-center gap-2 border border-warning shadow-sm';
-      banner.setAttribute('role', 'alert');
-      banner.style.fontSize = '0.82rem';
-      banner.innerHTML = `
-        <span class="badge bg-warning text-dark fw-bold" style="font-size:0.75rem;">DEMO</span>
-        <span class="fw-semibold">${BANNER_TEXT}</span>
-      `;
-
-      // Smart placement depending on target page
-      const loginCard = document.querySelector('#email-login-section')?.closest('.card') || document.querySelector('.card');
-      const regCard = document.querySelector('#register-form')?.closest('.card') || document.querySelector('.card');
-      const checkoutContainer = document.querySelector('#checkout-form')?.closest('.container') || document.querySelector('main.container') || document.querySelector('.container');
-      const ordersContainer = document.querySelector('#orders-list-container')?.closest('.container') || document.querySelector('main.container') || document.querySelector('.container');
-
-      const path = window.location.pathname.toLowerCase();
-      if (path.includes('login') && loginCard) {
-        const tabs = loginCard.querySelector('[role="tablist"]');
-        if (tabs) {
-          loginCard.insertBefore(banner, tabs);
-        } else {
-          loginCard.insertBefore(banner, loginCard.firstChild);
-        }
-      } else if (path.includes('register') && regCard) {
-        const form = document.getElementById('register-form');
-        if (form) {
-          regCard.insertBefore(banner, form);
-        } else {
-          regCard.insertBefore(banner, regCard.firstChild);
-        }
-      } else if (path.includes('checkout') && checkoutContainer) {
-        checkoutContainer.insertBefore(banner, checkoutContainer.firstChild);
-      } else if (path.includes('orders') && ordersContainer) {
-        const heading = ordersContainer.querySelector('h3, h4, h2');
-        if (heading && heading.parentNode) {
-          heading.parentNode.insertBefore(banner, heading.nextSibling);
-        } else {
-          ordersContainer.insertBefore(banner, ordersContainer.firstChild);
-        }
-      } else {
-        document.body.insertBefore(banner, document.body.firstChild);
-      }
-    }
-    banner.style.display = 'flex';
+    // Disabled - completely removed per user request
+    removeBanner();
   }
 
   function removeBanner() {
@@ -269,18 +221,18 @@
   // Initialize from cache or default (NO network requests on page load)
   initFromCache();
 
-  // Attach DOMContentLoaded handler for banner placement once DOM elements exist
+  // Attach DOMContentLoaded handler
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
+        removeBanner();
         if (isDemoMode) {
-          renderBanner();
           updateDemoLoginButtons(true);
         }
       });
     } else {
+      removeBanner();
       if (isDemoMode) {
-        renderBanner();
         updateDemoLoginButtons(true);
       }
     }
