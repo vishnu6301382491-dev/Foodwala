@@ -1302,7 +1302,7 @@ app.get('/api/restaurants/:id/menu', async (req, res) => {
               is_available, image_path, rating, category_id, category_name, 
               is_veg, is_popular, preparation_time 
        FROM menu 
-       WHERE restaurant_id = ? AND (is_available = 1 OR is_available IS NULL)
+       WHERE restaurant_id = ? 
        ORDER BY category_name ASC, menu_id ASC`,
       [restId]
     );
@@ -1317,11 +1317,14 @@ app.get('/api/restaurants/:id/menu', async (req, res) => {
       price: parseFloat(m.price) || 0,
       image: m.image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
       image_path: m.image_path,
+      imagePath: m.image_path,
       rating: parseFloat(m.rating) || 4.5,
       category: m.category_name || 'Main Course',
       category_name: m.category_name || 'Main Course',
       isVeg: m.is_veg === 1,
       is_veg: m.is_veg === 1,
+      isAvailable: (m.is_available === 1 || m.is_available === null || m.is_available === true),
+      is_available: (m.is_available === 0 ? 0 : 1),
       isPopular: m.is_popular === 1,
       preparationTime: m.preparation_time || '15-20 mins'
     }));

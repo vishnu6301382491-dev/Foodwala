@@ -249,6 +249,19 @@ const FoodWalaApp = (function () {
 
   async function getRestaurantMenu(restaurantId) {
     const id = parseInt(restaurantId, 10);
+
+    // 0. Check live local manager overrides first (dish additions, price updates, stock toggles)
+    try {
+      const managerOverride = localStorage.getItem('foodwala_mock_restaurant_menu_' + id);
+      if (managerOverride) {
+        const parsed = JSON.parse(managerOverride);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          individualMenuCache.set(id, parsed);
+          return parsed;
+        }
+      }
+    } catch (e) {}
+
     if (individualMenuCache.has(id)) {
       return individualMenuCache.get(id);
     }
@@ -280,6 +293,23 @@ const FoodWalaApp = (function () {
     const filtered = menuItemsCache.filter(m => (m.restaurantId === id || m.restaurant_id === id));
     individualMenuCache.set(id, filtered);
     return filtered;
+  }
+
+  // Live cache invalidation on restaurant partner updates
+  if (typeof window !== 'undefined') {
+    window.addEventListener('foodwala:menuUpdated', function (e) {
+      if (e.detail && e.detail.restaurantId) {
+        individualMenuCache.delete(parseInt(e.detail.restaurantId, 10));
+      } else {
+        individualMenuCache.clear();
+      }
+    });
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'foodwala_menu_last_updated' || (e.key && e.key.startsWith('foodwala_mock_restaurant_menu_'))) {
+        individualMenuCache.clear();
+      }
+    });
   }
 
   // --- LOCATION MODULE (NO FAKE DEFAULT) ---
@@ -1199,6 +1229,17 @@ const FoodWalaApp = (function () {
       return found ? found.quantity : 0;
     },
     addItem: async function (item, restaurant) {
+      // Prevent adding out-of-stock items
+      const isAvail = (item.is_available === 1 || item.is_available === true || item.isAvailable === true || (item.is_available === undefined && item.isAvailable === undefined));
+      if (!isAvail) {
+        if (typeof showToast === 'function') {
+          showToast(`Sorry, "${item.name || item.itemName}" is currently out of stock.`, 'warning');
+        } else if (typeof window.showToast === 'function') {
+          window.showToast(`Sorry, "${item.name || item.itemName}" is currently out of stock.`, 'warning');
+        }
+        return false;
+      }
+
       let cart = this.getCart();
       const rId = item.restaurantId || restaurant.restaurantId || restaurant.id;
 

@@ -247,7 +247,7 @@
   <script src="./js/adapters/liveAdapter.js" defer></script>
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
-  <script src="./js/app.min.js" defer></script>
+  <script src="./js/app.js?v=20261016_06" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -281,13 +281,30 @@
       }
 
       // Load Restaurant Menu Items
-      const menuItems = await FoodWalaApp.getRestaurantMenu(restId);
-      const categories = [...new Set(menuItems.map(m => m.category || 'Specialties'))];
+      let menuItems = await FoodWalaApp.getRestaurantMenu(restId);
+      let categories = [...new Set(menuItems.map(m => m.category || m.categoryName || 'Specialties'))];
 
       // Render Categories
       const pillsContainer = document.getElementById('menu-categories-pills');
-      pillsContainer.innerHTML = `<button class="btn btn-danger btn-sm rounded-pill px-3 active category-tab-btn" data-cat="all">All Items</button>` +
-        categories.map(c => `<button class="btn btn-light btn-sm rounded-pill px-3 border category-tab-btn" data-cat="${c}">${c}</button>`).join('');
+      function renderCategoryTabs() {
+        categories = [...new Set(menuItems.map(m => m.category || m.categoryName || 'Specialties'))];
+        pillsContainer.innerHTML = `<button class="btn btn-danger btn-sm rounded-pill px-3 active category-tab-btn" data-cat="all">All Items</button>` +
+          categories.map(c => `<button class="btn btn-light btn-sm rounded-pill px-3 border category-tab-btn" data-cat="${c}">${c}</button>`).join('');
+
+        pillsContainer.querySelectorAll('.category-tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectedCategory = btn.getAttribute('data-cat');
+            pillsContainer.querySelectorAll('.category-tab-btn').forEach(b => {
+              b.classList.remove('btn-danger', 'active');
+              b.classList.add('btn-light', 'border');
+            });
+            btn.classList.add('btn-danger', 'active');
+            btn.classList.remove('btn-light', 'border');
+            renderMenu();
+          });
+        });
+      }
+      renderCategoryTabs();
 
       let selectedCategory = 'all';
       let isVegOnly = false;
@@ -297,10 +314,10 @@
         let filtered = menuItems;
 
         if (selectedCategory !== 'all') {
-          filtered = filtered.filter(m => (m.category || 'Specialties') === selectedCategory);
+          filtered = filtered.filter(m => (m.category || m.categoryName || 'Specialties') === selectedCategory);
         }
         if (isVegOnly) {
-          filtered = filtered.filter(m => m.isVeg);
+          filtered = filtered.filter(m => (m.isVeg === true || m.is_veg === 1));
         }
 
         if (filtered.length === 0) {
@@ -309,28 +326,36 @@
         }
 
         grid.innerHTML = filtered.map(item => {
-          const mId = item.id || item.menuId;
+          const mId = item.id || item.menuId || item.menu_id;
           const qty = FoodWalaApp.Cart.getItemQuantity(mId);
-          const itemImg = window.FoodWalaApp && FoodWalaApp.optimizeImageUrl ? FoodWalaApp.optimizeImageUrl(item.imagePath, 300) : (item.imagePath || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=75');
+          const itemImg = window.FoodWalaApp && FoodWalaApp.optimizeImageUrl ? FoodWalaApp.optimizeImageUrl(item.imagePath || item.image_path, 300) : (item.imagePath || item.image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=75');
+          const isAvail = (item.is_available === 1 || item.is_available === true || item.isAvailable === true || (item.is_available === undefined && item.isAvailable === undefined));
+          const isVeg = (item.isVeg === true || item.is_veg === 1);
+          const price = parseFloat(item.price) || 0;
 
           return `
             <div class="col-md-6">
               <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white d-flex flex-row justify-content-between align-items-center gap-3">
                 <div class="flex-grow-1">
                   <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="badge ${item.isVeg ? 'bg-success' : 'bg-danger'} rounded-circle p-1" style="width: 10px; height: 10px;"></span>
-                    <span class="badge bg-light text-muted small">${item.category || 'Specialty'}</span>
+                    <span class="badge ${isVeg ? 'bg-success' : 'bg-danger'} rounded-circle p-1" style="width: 10px; height: 10px;"></span>
+                    <span class="badge bg-light text-muted small">${item.category || item.categoryName || 'Specialty'}</span>
+                    ${!isAvail ? '<span class="badge bg-danger-subtle text-danger rounded-pill small px-2 py-0 fw-semibold">Unavailable</span>' : ''}
                   </div>
-                  <h6 class="fw-bold text-dark mb-1">${item.name || item.itemName}</h6>
-                  <div class="fw-bold text-danger mb-2">₹${item.price}</div>
+                  <h6 class="fw-bold text-dark mb-1 ${!isAvail ? 'text-muted' : ''}">${item.name || item.itemName || item.item_name}</h6>
+                  <div class="fw-bold text-danger mb-2">₹${price.toFixed(2)}</div>
                   <small class="text-muted d-block line-clamp-2">${item.description || 'Prepared fresh with authentic spices.'}</small>
                 </div>
 
                 <div class="text-center position-relative" style="width: 110px;">
-                  <img src="${itemImg}" class="rounded-3 mb-2" width="100" height="80" loading="lazy" decoding="async" style="width: 100px; height: 80px; object-fit: cover;" alt="${item.name}">
+                  <img src="${itemImg}" class="rounded-3 mb-2 ${!isAvail ? 'opacity-50' : ''}" width="100" height="80" loading="lazy" decoding="async" style="width: 100px; height: 80px; object-fit: cover;" alt="${item.name || item.itemName}">
                   
                   <div class="mt-1">
-                    ${qty === 0 ? `
+                    ${!isAvail ? `
+                      <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-1 small fw-bold">
+                        <i class="bi bi-x-circle me-1"></i>Out of Stock
+                      </span>
+                    ` : qty === 0 ? `
                       <button class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm js-add-item-btn" data-id="${mId}">
                         ADD +
                       </button>
@@ -351,13 +376,13 @@
         // Bind Stepper Buttons
         grid.querySelectorAll('.js-add-item-btn').forEach(btn => {
           btn.addEventListener('click', async () => {
-            const id = parseInt(btn.getAttribute('data-id'));
-            const target = menuItems.find(m => (m.id === id || m.menuId === id));
+            const id = parseInt(btn.getAttribute('data-id'), 10);
+            const target = menuItems.find(m => (m.id === id || m.menuId === id || m.menu_id === id));
             if (target) {
               const added = await FoodWalaApp.Cart.addItem(target, restaurant);
               if (added !== false) {
                 if (typeof window.showToast === 'function') {
-                  window.showToast(`Added ${target.name} to cart!`, 'success');
+                  window.showToast(`Added ${target.name || target.itemName} to cart!`, 'success');
                 }
                 renderMenu();
                 updateFloatingCart();
@@ -368,7 +393,7 @@
 
         grid.querySelectorAll('.js-stepper-plus').forEach(btn => {
           btn.addEventListener('click', () => {
-            const id = parseInt(btn.getAttribute('data-id'));
+            const id = parseInt(btn.getAttribute('data-id'), 10);
             FoodWalaApp.Cart.updateQuantity(id, 1);
             renderMenu();
             updateFloatingCart();
@@ -377,7 +402,7 @@
 
         grid.querySelectorAll('.js-stepper-minus').forEach(btn => {
           btn.addEventListener('click', () => {
-            const id = parseInt(btn.getAttribute('data-id'));
+            const id = parseInt(btn.getAttribute('data-id'), 10);
             FoodWalaApp.Cart.updateQuantity(id, -1);
             renderMenu();
             updateFloatingCart();
@@ -393,18 +418,25 @@
         }
       }
 
-      // Bind category tabs
-      pillsContainer.querySelectorAll('.category-tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          selectedCategory = btn.getAttribute('data-cat');
-          pillsContainer.querySelectorAll('.category-tab-btn').forEach(b => {
-            b.classList.remove('btn-danger', 'active');
-            b.classList.add('btn-light', 'border');
-          });
-          btn.classList.add('btn-danger', 'active');
-          btn.classList.remove('btn-light', 'border');
+      // Live reload when restaurant manager changes prices, adds items, or toggles availability
+      async function reloadMenuLive() {
+        try {
+          menuItems = await FoodWalaApp.getRestaurantMenu(restId);
+          renderCategoryTabs();
           renderMenu();
-        });
+        } catch (e) {}
+      }
+
+      window.addEventListener('foodwala:menuUpdated', (e) => {
+        if (!e.detail || !e.detail.restaurantId || parseInt(e.detail.restaurantId, 10) === restId) {
+          reloadMenuLive();
+        }
+      });
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'foodwala_menu_last_updated' || e.key === `foodwala_mock_restaurant_menu_${restId}`) {
+          reloadMenuLive();
+        }
       });
 
       // Veg only switch

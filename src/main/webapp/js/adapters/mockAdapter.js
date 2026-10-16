@@ -269,34 +269,65 @@
     // 4. Catalog: Restaurant Menu
     getRestaurantMenu: async function (restaurantId) {
       const rId = parseInt(restaurantId, 10);
+
+      // 1. Check if the manager customized this restaurant's menu
+      const managerKey = 'foodwala_mock_restaurant_menu_' + rId;
+      const managerMenu = getLocal(managerKey, null);
+      if (managerMenu && Array.isArray(managerMenu) && managerMenu.length > 0) {
+        return managerMenu;
+      }
+
       const cacheKey = `${STORAGE_KEYS.MENU_CACHE_PREFIX}${rId}`;
       const cached = getLocal(cacheKey, null);
       if (cached && Array.isArray(cached) && cached.length > 0) {
         return cached;
       }
 
+      let items = [];
       try {
         const res = await fetch(resolveDataPath(`data/menus/${rId}.json`));
         if (res.ok) {
-          const items = await res.json();
-          if (Array.isArray(items) && items.length > 0) {
-            setLocal(cacheKey, items);
-            return items;
-          }
+          items = await res.json();
         }
       } catch (e) {}
 
-      try {
-        const res = await fetch(resolveDataPath('data/menu-items.json'));
-        if (res.ok) {
-          const all = await res.json();
-          const matched = all.filter(m => (m.restaurantId === rId || m.restaurant_id === rId));
-          if (matched.length > 0) {
-            setLocal(cacheKey, matched);
-            return matched;
+      if (!items || items.length === 0) {
+        try {
+          const res = await fetch(resolveDataPath('data/menu-items.json'));
+          if (res.ok) {
+            const all = await res.json();
+            items = all.filter(m => (m.restaurantId === rId || m.restaurant_id === rId));
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
+
+      if (items && Array.isArray(items) && items.length > 0) {
+        // Normalize fields for consistency across manager and customer views
+        const normalized = items.map(it => ({
+          ...it,
+          id: it.id || it.menuId || it.menu_id,
+          menuId: it.menuId || it.id || it.menu_id,
+          menu_id: it.menu_id || it.menuId || it.id,
+          restaurantId: rId,
+          restaurant_id: rId,
+          name: it.name || it.itemName || it.item_name,
+          itemName: it.itemName || it.name || it.item_name,
+          item_name: it.item_name || it.itemName || it.name,
+          price: parseFloat(it.price) || 0,
+          category: it.category || it.categoryName || it.category_name || 'Specialties',
+          categoryName: it.categoryName || it.category || it.category_name || 'Specialties',
+          category_name: it.category_name || it.categoryName || it.category || 'Specialties',
+          isVeg: it.isVeg !== undefined ? Boolean(it.isVeg) : (it.is_veg !== undefined ? Boolean(it.is_veg) : true),
+          is_veg: (it.isVeg !== undefined ? (it.isVeg ? 1 : 0) : (it.is_veg !== undefined ? (it.is_veg ? 1 : 0) : 1)),
+          isAvailable: it.isAvailable !== undefined ? Boolean(it.isAvailable) : (it.is_available !== undefined ? Boolean(it.is_available) : true),
+          is_available: (it.isAvailable !== undefined ? (it.isAvailable ? 1 : 0) : (it.is_available !== undefined ? (it.is_available ? 1 : 0) : 1)),
+          imagePath: it.imagePath || it.image_path || it.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=75',
+          image_path: it.image_path || it.imagePath || it.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=75'
+        }));
+        setLocal(cacheKey, normalized);
+        setLocal(managerKey, normalized);
+        return normalized;
+      }
 
       return [];
     },
@@ -1052,10 +1083,17 @@
 
       const key = 'foodwala_mock_restaurant_menu_' + rId;
       let menu = getLocal(key, null);
+      if (!menu || !Array.isArray(menu) || menu.length === 0) {
+        menu = await this.getRestaurantMenu(rId);
+        if (menu && menu.length > 0) {
+          setLocal(key, menu);
+        }
+      }
+
       if (!menu || menu.length === 0) {
         menu = [
           {
-            menu_id: 1, menuId: 1, restaurant_id: rId, restaurantId: rId,
+            menu_id: 1, menuId: 1, id: 1, restaurant_id: rId, restaurantId: rId,
             item_name: 'Benne Masala Dosa', name: 'Benne Masala Dosa',
             description: 'Crispy golden crepe roasted in pure butter, stuffed with spiced potato mash.',
             price: 95, is_available: 1, isAvailable: true,
@@ -1065,7 +1103,7 @@
             imagePath: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75'
           },
           {
-            menu_id: 2, menuId: 2, restaurant_id: rId, restaurantId: rId,
+            menu_id: 2, menuId: 2, id: 2, restaurant_id: rId, restaurantId: rId,
             item_name: 'Mangalore Bajji (Goli Baje)', name: 'Mangalore Bajji (Goli Baje)',
             description: 'Crispy golden fried flour fritters served with coconut chutney.',
             price: 55, is_available: 1, isAvailable: true,
@@ -1075,7 +1113,7 @@
             imagePath: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=75'
           },
           {
-            menu_id: 3, menuId: 3, restaurant_id: rId, restaurantId: rId,
+            menu_id: 3, menuId: 3, id: 3, restaurant_id: rId, restaurantId: rId,
             item_name: 'Degree Filter Coffee', name: 'Degree Filter Coffee',
             description: 'Authentic south Indian chicory-infused hot brewed frothy coffee.',
             price: 35, is_available: 1, isAvailable: true,
@@ -1085,7 +1123,7 @@
             imagePath: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=75'
           },
           {
-            menu_id: 4, menuId: 4, restaurant_id: rId, restaurantId: rId,
+            menu_id: 4, menuId: 4, id: 4, restaurant_id: rId, restaurantId: rId,
             item_name: 'Steamed Idli (2 pcs)', name: 'Steamed Idli (2 pcs)',
             description: 'Soft melt-in-mouth steamed rice cakes served with hot sambar and chutney.',
             price: 50, is_available: 1, isAvailable: true,
@@ -1095,7 +1133,7 @@
             imagePath: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75'
           },
           {
-            menu_id: 5, menuId: 5, restaurant_id: rId, restaurantId: rId,
+            menu_id: 5, menuId: 5, id: 5, restaurant_id: rId, restaurantId: rId,
             item_name: 'Rava Onion Dosa', name: 'Rava Onion Dosa',
             description: 'Crisp semolina crepe laced with chopped shallots, green chillies & cumin.',
             price: 110, is_available: 0, isAvailable: false,
@@ -1130,48 +1168,67 @@
     addMenuItem: async function (itemData) {
       const rId = parseInt(itemData.restaurantId || itemData.restaurant_id, 10) || 2;
       const key = 'foodwala_mock_restaurant_menu_' + rId;
+      const cacheKey = `${STORAGE_KEYS.MENU_CACHE_PREFIX}${rId}`;
       const menu = getLocal(key, []);
       const newId = Date.now();
       const newItem = {
+        id: newId,
         menu_id: newId,
         menuId: newId,
         restaurant_id: rId,
         restaurantId: rId,
-        item_name: itemData.itemName || itemData.item_name,
-        name: itemData.itemName || itemData.item_name,
-        description: itemData.description || '',
-        price: parseFloat(itemData.price),
+        item_name: itemData.itemName || itemData.item_name || itemData.name,
+        name: itemData.itemName || itemData.item_name || itemData.name,
+        itemName: itemData.itemName || itemData.item_name || itemData.name,
+        description: itemData.description || 'Freshly prepared specialty dish.',
+        price: parseFloat(itemData.price) || 0,
         is_available: 1,
         isAvailable: true,
-        category_name: itemData.categoryName || itemData.category_name || 'Main Course',
-        category: itemData.categoryName || itemData.category_name || 'Main Course',
+        category_name: itemData.categoryName || itemData.category_name || itemData.category || 'Specialties',
+        category: itemData.categoryName || itemData.category_name || itemData.category || 'Specialties',
+        categoryName: itemData.categoryName || itemData.category_name || itemData.category || 'Specialties',
         is_veg: itemData.is_veg !== undefined ? (itemData.is_veg ? 1 : 0) : (itemData.isVeg ? 1 : 0),
         isVeg: itemData.is_veg !== undefined ? Boolean(itemData.is_veg) : Boolean(itemData.isVeg),
         image_path: itemData.imagePath || itemData.image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=75',
         imagePath: itemData.imagePath || itemData.image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=75'
       };
-      menu.push(newItem);
+      menu.unshift(newItem);
       setLocal(key, menu);
+      setLocal(cacheKey, menu);
+
+      try {
+        localStorage.setItem('foodwala_menu_last_updated', Date.now().toString());
+      } catch (e) {}
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('foodwala:menuUpdated', {
+          detail: { restaurantId: rId, action: 'add', item: newItem }
+        }));
+      }
+
       return { success: true, message: `Dish "${newItem.item_name}" added to menu.`, item: newItem };
     },
 
     updateMenuItem: async function (menuId, itemData) {
       const mId = parseInt(menuId, 10);
-      for (let rId of [1, 2, 3]) {
+      for (let rId of [1, 2, 3, 4, 5, 6, 7, 8]) {
         const key = 'foodwala_mock_restaurant_menu_' + rId;
+        const cacheKey = `${STORAGE_KEYS.MENU_CACHE_PREFIX}${rId}`;
         const menu = getLocal(key, []);
-        const idx = menu.findIndex(m => (m.menu_id === mId || m.menuId === mId));
+        const idx = menu.findIndex(m => (m.menu_id === mId || m.menuId === mId || m.id === mId));
         if (idx !== -1) {
           const cur = menu[idx];
           if (itemData.price !== undefined) cur.price = parseFloat(itemData.price);
-          if (itemData.itemName || itemData.item_name) {
-            cur.item_name = itemData.itemName || itemData.item_name;
+          if (itemData.itemName || itemData.item_name || itemData.name) {
+            cur.item_name = itemData.itemName || itemData.item_name || itemData.name;
             cur.name = cur.item_name;
+            cur.itemName = cur.item_name;
           }
           if (itemData.description !== undefined) cur.description = itemData.description;
-          if (itemData.categoryName || itemData.category_name) {
-            cur.category_name = itemData.categoryName || itemData.category_name;
+          if (itemData.categoryName || itemData.category_name || itemData.category) {
+            cur.category_name = itemData.categoryName || itemData.category_name || itemData.category;
             cur.category = cur.category_name;
+            cur.categoryName = cur.category_name;
           }
           if (itemData.isVeg !== undefined || itemData.is_veg !== undefined) {
             cur.isVeg = itemData.is_veg !== undefined ? Boolean(itemData.is_veg) : Boolean(itemData.isVeg);
@@ -1187,6 +1244,18 @@
           }
           menu[idx] = cur;
           setLocal(key, menu);
+          setLocal(cacheKey, menu);
+
+          try {
+            localStorage.setItem('foodwala_menu_last_updated', Date.now().toString());
+          } catch (e) {}
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('foodwala:menuUpdated', {
+              detail: { restaurantId: rId, action: 'update', item: cur }
+            }));
+          }
+
           return { success: true, message: 'Item updated successfully.', item: cur };
         }
       }
@@ -1195,10 +1264,11 @@
 
     toggleItemAvailability: async function (menuId, isAvailable) {
       const mId = parseInt(menuId, 10);
-      for (let rId of [1, 2, 3]) {
+      for (let rId of [1, 2, 3, 4, 5, 6, 7, 8]) {
         const key = 'foodwala_mock_restaurant_menu_' + rId;
+        const cacheKey = `${STORAGE_KEYS.MENU_CACHE_PREFIX}${rId}`;
         const menu = getLocal(key, []);
-        const idx = menu.findIndex(m => (m.menu_id === mId || m.menuId === mId));
+        const idx = menu.findIndex(m => (m.menu_id === mId || m.menuId === mId || m.id === mId));
         if (idx !== -1) {
           const cur = menu[idx];
           const newAvail = isAvailable !== undefined ? Boolean(isAvailable) : !cur.isAvailable;
@@ -1206,12 +1276,24 @@
           cur.is_available = newAvail ? 1 : 0;
           menu[idx] = cur;
           setLocal(key, menu);
+          setLocal(cacheKey, menu);
+
+          try {
+            localStorage.setItem('foodwala_menu_last_updated', Date.now().toString());
+          } catch (e) {}
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('foodwala:menuUpdated', {
+              detail: { restaurantId: rId, action: 'toggle', menuId: mId, isAvailable: newAvail }
+            }));
+          }
+
           return {
             success: true,
             menuId: mId,
             isAvailable: newAvail,
             is_available: newAvail ? 1 : 0,
-            message: newAvail ? `"${cur.item_name}" marked In Stock` : `"${cur.item_name}" marked Out of Stock`
+            message: newAvail ? `"${cur.item_name || cur.name}" marked In Stock` : `"${cur.item_name || cur.name}" marked Out of Stock`
           };
         }
       }
@@ -1220,12 +1302,25 @@
 
     deleteMenuItem: async function (menuId) {
       const mId = parseInt(menuId, 10);
-      for (let rId of [1, 2, 3]) {
+      for (let rId of [1, 2, 3, 4, 5, 6, 7, 8]) {
         const key = 'foodwala_mock_restaurant_menu_' + rId;
+        const cacheKey = `${STORAGE_KEYS.MENU_CACHE_PREFIX}${rId}`;
         const menu = getLocal(key, []);
-        const filtered = menu.filter(m => (m.menu_id !== mId && m.menuId !== mId));
+        const filtered = menu.filter(m => (m.menu_id !== mId && m.menuId !== mId && m.id !== mId));
         if (filtered.length !== menu.length) {
           setLocal(key, filtered);
+          setLocal(cacheKey, filtered);
+
+          try {
+            localStorage.setItem('foodwala_menu_last_updated', Date.now().toString());
+          } catch (e) {}
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('foodwala:menuUpdated', {
+              detail: { restaurantId: rId, action: 'delete', menuId: mId }
+            }));
+          }
+
           return { success: true, message: 'Dish removed from menu.' };
         }
       }
@@ -1237,15 +1332,127 @@
     },
 
     getRestaurantOrders: async function (restaurantId) {
-      const allOrders = await this.getAdminOrders();
+      let orders = getLocal('foodwala_mock_kitchen_orders', null);
+      if (!orders || !Array.isArray(orders) || orders.length === 0) {
+        orders = [
+          {
+            order_id: 1001,
+            orderId: 1001,
+            restaurant_id: 2,
+            customer_name: 'Rahul Sharma (Customer)',
+            customerName: 'Rahul Sharma (Customer)',
+            customer_phone: '9876543210',
+            customerPhone: '9876543210',
+            delivery_address: 'Indiranagar 100ft Road, Bengaluru',
+            deliveryAddress: 'Indiranagar 100ft Road, Bengaluru',
+            total_amount: 450.00,
+            totalAmount: 450.00,
+            payment_mode: 'UPI (PhonePe)',
+            paymentMode: 'UPI (PhonePe)',
+            status: 'PREPARING',
+            items: [
+              { item_name: 'Benne Masala Dosa', quantity: 2, price: 95, total_price: 190 },
+              { item_name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 },
+              { item_name: 'Steamed Idli (2 pcs)', quantity: 1, price: 50, total_price: 50 }
+            ]
+          },
+          {
+            order_id: 1002,
+            orderId: 1002,
+            restaurant_id: 2,
+            customer_name: 'Priya Sundaram',
+            customerName: 'Priya Sundaram',
+            customer_phone: '9876543215',
+            customerPhone: '9876543215',
+            delivery_address: 'Koramangala 4th Block, Bengaluru',
+            deliveryAddress: 'Koramangala 4th Block, Bengaluru',
+            total_amount: 310.00,
+            totalAmount: 310.00,
+            payment_mode: 'Razorpay',
+            paymentMode: 'Razorpay',
+            status: 'PLACED',
+            items: [
+              { item_name: 'Rava Onion Dosa', quantity: 2, price: 110, total_price: 220 },
+              { item_name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 }
+            ]
+          },
+          {
+            order_id: 1003,
+            orderId: 1003,
+            restaurant_id: 2,
+            customer_name: 'Amit Verma',
+            customerName: 'Amit Verma',
+            customer_phone: '9876543218',
+            customerPhone: '9876543218',
+            delivery_address: 'Jayanagar 4th Block, Bengaluru',
+            deliveryAddress: 'Jayanagar 4th Block, Bengaluru',
+            total_amount: 550.00,
+            totalAmount: 550.00,
+            payment_mode: 'Cash On Delivery',
+            paymentMode: 'Cash On Delivery',
+            status: 'DELIVERED',
+            items: [
+              { item_name: 'Benne Masala Dosa', quantity: 3, price: 95, total_price: 285 },
+              { item_name: 'Mangalore Bajji (Goli Baje)', quantity: 2, price: 55, total_price: 110 }
+            ]
+          }
+        ];
+        setLocal('foodwala_mock_kitchen_orders', orders);
+      }
       return {
         success: true,
-        orders: (allOrders && allOrders.orders) ? allOrders.orders : []
+        orders: orders
       };
     },
 
     updateRestaurantOrderStatus: async function (orderId, status) {
-      return { success: true, orderId, status, message: `Order status set to ${status}` };
+      const cleanId = String(orderId).replace(/^#?FW-?/i, '');
+      const numId = parseInt(cleanId, 10);
+      const newStatus = (status || '').toUpperCase();
+
+      // 1. Update kitchen orders
+      let kitchenOrders = getLocal('foodwala_mock_kitchen_orders', []);
+      let updated = false;
+      kitchenOrders = kitchenOrders.map(o => {
+        const oId = String(o.order_id || o.orderId).replace(/^#?FW-?/i, '');
+        if (oId === cleanId || parseInt(oId, 10) === numId) {
+          o.status = newStatus;
+          o.orderStatus = newStatus;
+          updated = true;
+        }
+        return o;
+      });
+      if (updated) {
+        setLocal('foodwala_mock_kitchen_orders', kitchenOrders);
+      }
+
+      // 2. Also update customer orders in STORAGE_KEYS.MOCK_ORDERS and foodwala_orders
+      let customerOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, getLocal('foodwala_orders', []));
+      customerOrders = customerOrders.map(o => {
+        const oId = String(o.orderId || o.order_id || o.id).replace(/^#?FW-?/i, '');
+        if (oId === cleanId || parseInt(oId, 10) === numId) {
+          o.status = newStatus;
+          o.deliveryStatus = newStatus;
+          o.orderStatus = newStatus;
+        }
+        return o;
+      });
+      setLocal(STORAGE_KEYS.MOCK_ORDERS, customerOrders);
+      setLocal('foodwala_orders', customerOrders);
+
+      // 3. Dispatch global order status changed event
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('foodwala:orderStatusChanged', {
+          detail: { orderId: numId || cleanId, status: newStatus }
+        }));
+      }
+
+      return {
+        success: true,
+        orderId: numId || cleanId,
+        status: newStatus,
+        message: `Order #FW-${numId || cleanId} status updated to ${newStatus}`
+      };
     }
   };
 

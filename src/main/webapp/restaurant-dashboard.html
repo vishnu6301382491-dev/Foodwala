@@ -54,6 +54,11 @@
       background-color: #e0f2fe;
       color: #0369a1;
     }
+    .badge-soft-primary {
+      background-color: #dbeafe !important;
+      color: #1d4ed8 !important;
+      border: 1px solid #bfdbfe !important;
+    }
     .dish-img-thumb {
       width: 70px;
       height: 70px;
@@ -102,6 +107,11 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
+        <select id="restaurant-selector-dropdown" class="form-select form-select-sm rounded-pill fw-semibold border shadow-sm d-none d-sm-inline-block" style="width: auto; min-width: 170px;">
+          <option value="2">Vidyarthi Bhavan (#2)</option>
+          <option value="1">CTR Shri Sagar (#1)</option>
+          <option value="3">Meghana Foods (#3)</option>
+        </select>
         <button id="store-status-toggle-btn" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm">
           <i class="bi bi-circle-fill text-success" style="font-size: 0.65rem;"></i>
           <span id="store-status-text">Accepting Orders</span>
@@ -559,11 +569,24 @@
     }
 
     async function loadRestaurantDashboard() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const restId = parseInt(urlParams.get('id') || '2', 10);
+      const previewBtn = document.getElementById('preview-store-btn');
+      if (previewBtn) {
+        previewBtn.href = `./restaurant-details.html?id=${restId}`;
+      }
+      const restSelector = document.getElementById('restaurant-selector-dropdown');
+      if (restSelector) {
+        restSelector.value = restId.toString();
+        restSelector.onchange = (e) => {
+          window.location.search = '?id=' + e.target.value;
+        };
+      }
       try {
         const [detRes, menuRes, ordersRes] = await Promise.all([
-          FoodWalaApi.getRestaurantDetails(2),
-          FoodWalaApi.getRestaurantManageMenu(2),
-          FoodWalaApi.getRestaurantOrders(2)
+          FoodWalaApi.getRestaurantDetails(restId),
+          FoodWalaApi.getRestaurantManageMenu(restId),
+          FoodWalaApi.getRestaurantOrders(restId)
         ]);
 
         if (detRes && detRes.success && detRes.restaurant) {
@@ -857,16 +880,35 @@
         const items = o.items || [];
 
         let statusBadge = 'badge-soft-info';
-        if (status === 'PREPARING') statusBadge = 'badge-soft-warning';
-        if (status === 'READY_FOR_PICKUP') statusBadge = 'badge-soft-primary';
-        if (status === 'DELIVERED') statusBadge = 'badge-soft-success';
+        let statusLabel = 'Order Placed';
+        let statusIcon = 'bi-clock-history';
+
+        if (status === 'PREPARING') {
+          statusBadge = 'badge-soft-warning';
+          statusLabel = 'Preparing Food';
+          statusIcon = 'bi-fire';
+        } else if (status === 'READY_FOR_PICKUP') {
+          statusBadge = 'badge-soft-primary';
+          statusLabel = 'Ready for Rider';
+          statusIcon = 'bi-bicycle';
+        } else if (status === 'DELIVERED') {
+          statusBadge = 'badge-soft-success';
+          statusLabel = 'Delivered';
+          statusIcon = 'bi-check-all';
+        } else if (status === 'OUT_FOR_DELIVERY') {
+          statusBadge = 'badge-soft-primary';
+          statusLabel = 'Out for Delivery';
+          statusIcon = 'bi-scooter';
+        }
 
         return `
           <div class="card border rounded-4 p-3 shadow-none">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
               <div>
                 <span class="fw-bold text-danger fs-6 me-2">#FW-${id}</span>
-                <span class="badge ${statusBadge} rounded-pill px-3 py-1 fw-bold">${status}</span>
+                <span class="badge ${statusBadge} rounded-pill px-3 py-1 fw-bold">
+                  <i class="bi ${statusIcon} me-1"></i>${statusLabel}
+                </span>
                 <div class="text-dark fw-bold mt-1">${escapeHtml(cName)} &bull; <code class="text-dark">${escapeHtml(cPhone)}</code></div>
                 <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(addr)}</small>
               </div>
@@ -894,7 +936,7 @@
                 <i class="bi bi-fire me-1"></i> Mark Preparing
               </button>
               <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold js-order-status-btn" data-id="${id}" data-status="READY_FOR_PICKUP">
-                <i class="bi bi-bell-fill me-1"></i> Ready for Rider
+                <i class="bi bi-bicycle me-1"></i> Ready for Rider
               </button>
               <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold js-order-status-btn" data-id="${id}" data-status="DELIVERED">
                 <i class="bi bi-check-all me-1"></i> Delivered
@@ -911,8 +953,9 @@
           const st = btn.getAttribute('data-status');
           try {
             const res = await FoodWalaApi.updateRestaurantOrderStatus(id, st);
-            if (res.success) {
-              FoodWalaApp.showToast(`Order #FW-${id} status updated to ${st}!`, 'success');
+            if (res && res.success) {
+              const friendlyName = st === 'READY_FOR_PICKUP' ? 'Ready for Rider' : (st === 'PREPARING' ? 'Preparing Food' : (st === 'DELIVERED' ? 'Delivered' : st));
+              FoodWalaApp.showToast(`Order #FW-${id} status updated to "${friendlyName}"!`, 'success');
               const target = globalOrders.find(o => (o.order_id === id || o.orderId === id));
               if (target) target.status = st;
               renderKitchenOrders(globalOrders);
