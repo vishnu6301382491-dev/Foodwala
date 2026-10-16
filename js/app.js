@@ -1570,6 +1570,12 @@ const FoodWalaApp = (function () {
         orders.unshift(Object.assign({}, order, { orderId: targetId, id: targetId }));
       }
       setStorage(STORAGE_KEYS.ORDERS, orders);
+      try {
+        setStorage('foodwala_mock_orders', orders);
+      } catch (e) {}
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('foodwala:orderStatusChanged', { detail: order }));
+      }
       return orders[idx > -1 ? idx : 0];
     },
     placeOrder: async function (orderDetails) {
@@ -1654,27 +1660,41 @@ const FoodWalaApp = (function () {
 
       const isDemoOrder = Boolean((typeof window !== 'undefined' && window.FOODWALA_IS_DEMO_MODE) || (user && user.isDemo));
       const confirmedId = dbOrder ? (dbOrder.orderId || dbOrder.id) : clientOrderId;
+      const cleanId = String(confirmedId).replace(/^#?FW-?/i, '');
+      const numTotal = Number(totals.grandTotal || 0);
+
       const newOrder = {
         id: confirmedId,
         orderId: confirmedId,
-        displayId: isDemoOrder ? `#FW-DEMO-${confirmedId}` : `#FW-${confirmedId}`,
+        order_id: cleanId,
+        displayId: isDemoOrder ? `#FW-DEMO-${confirmedId}` : `#FW-${cleanId}`,
         isDemo: isDemoOrder,
         userId: user ? user.userId : null,
+        user_id: user ? user.userId : null,
         createdAt: dbOrder ? dbOrder.orderDate : new Date().toISOString(),
         createdAtMs: Date.now(),
+        orderDate: dbOrder ? dbOrder.orderDate : new Date().toISOString(),
+        order_date: dbOrder ? dbOrder.orderDate : new Date().toISOString(),
         etaMinutes: 28,
         restaurantId: cart.restaurantId,
+        restaurant_id: cart.restaurantId,
         restaurantName: (dbOrder && dbOrder.restaurantName) || cart.restaurantName || 'Bengaluru Restaurant',
+        restaurant_name: (dbOrder && dbOrder.restaurantName) || cart.restaurantName || 'Bengaluru Restaurant',
         restaurantAddress: (dbOrder && dbOrder.restaurantAddress) || cart.restaurantAddress || 'Bengaluru',
+        restaurant_address: (dbOrder && dbOrder.restaurantAddress) || cart.restaurantAddress || 'Bengaluru',
         restaurantImage: cart.restaurantImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500',
         restaurantLocation: { lat: restLat, lng: restLng },
         deliveryAddress: orderPayload.deliveryAddress,
+        delivery_address: orderPayload.deliveryAddress,
         deliveryLatitude: destLat,
         deliveryLongitude: destLng,
         deliveryLocation: { lat: destLat, lng: destLng },
         customerName: customerName,
+        customer_name: customerName,
         customerPhone: customerPhone,
+        customer_phone: customerPhone,
         customerEmail: customerEmail,
+        customer_email: customerEmail,
         deliveryInstructions: orderDetails.instructions || '',
         items: JSON.parse(JSON.stringify(cart.items || [])),
         itemTotal: totals.itemTotal,
@@ -1683,9 +1703,15 @@ const FoodWalaApp = (function () {
         gst: totals.gst,
         discount: totals.discount,
         coupon: totals.coupon ? totals.coupon.code : null,
-        grandTotal: totals.grandTotal,
+        grandTotal: numTotal,
+        totalAmount: numTotal,
+        total_amount: numTotal,
+        total: numTotal,
         paymentStatus: orderDetails.paymentStatus || (orderDetails.paymentMethod === 'Cash on Delivery' ? 'PENDING_COD' : 'PAID'),
+        payment_status: orderDetails.paymentStatus || (orderDetails.paymentMethod === 'Cash on Delivery' ? 'PENDING_COD' : 'PAID'),
         paymentMethod: orderDetails.paymentMethod || 'UPI Instant',
+        paymentMode: orderDetails.paymentMethod || 'UPI Instant',
+        payment_mode: orderDetails.paymentMethod || 'UPI Instant',
         transactionId: (dbOrder && dbOrder.transactionId) || orderDetails.razorpayPaymentId || `FW-${confirmedId}`,
         razorpayOrderId: orderDetails.razorpayOrderId || null,
         razorpayPaymentId: orderDetails.razorpayPaymentId || null,
@@ -1711,6 +1737,24 @@ const FoodWalaApp = (function () {
 
       orders.unshift(newOrder);
       setStorage(STORAGE_KEYS.ORDERS, orders);
+
+      // Also sync to mock orders store so admin portal and mockAdapter have instant access
+      try {
+        const mockOrders = getStorage('foodwala_mock_orders', []);
+        const mIdx = mockOrders.findIndex(o => String(o.orderId || o.id).replace(/^#?FW-?/i, '') === cleanId);
+        if (mIdx > -1) {
+          mockOrders[mIdx] = newOrder;
+        } else {
+          mockOrders.unshift(newOrder);
+        }
+        setStorage('foodwala_mock_orders', mockOrders);
+      } catch (e) {}
+
+      // Dispatch global real-time event
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('foodwala:orderPlaced', { detail: newOrder }));
+      }
+
       Cart.clearCart();
       return newOrder;
     }

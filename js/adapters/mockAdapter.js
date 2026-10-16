@@ -891,28 +891,80 @@
       if (!currentUser) {
         return { success: false, error: 'UNAUTHORIZED', message: 'Authentication required. Please sign in to place an order.' };
       }
-      const orders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
+      const orders = getLocal(STORAGE_KEYS.MOCK_ORDERS, getLocal('foodwala_orders', []));
       const orderId = orderPayload.orderId || ('FW-' + Math.floor(10000 + Math.random() * 90000));
+      const cleanId = String(orderId).replace(/^#?FW-?/i, '');
+      const numTotal = Number(orderPayload.totalAmount ?? orderPayload.total_amount ?? orderPayload.grandTotal ?? orderPayload.total ?? 0);
 
       const newOrder = {
         ...orderPayload,
-        orderId: orderId,
-        id: orderId,
-        displayId: `#${orderId}`,
+        orderId: cleanId,
+        order_id: cleanId,
+        id: cleanId,
+        displayId: `#FW-${cleanId}`,
         userId: currentUser.userId,
-        customerName: currentUser.name || orderPayload.customerName,
-        customerEmail: currentUser.email || orderPayload.customerEmail,
-        customerPhone: currentUser.phone || orderPayload.customerPhone,
+        user_id: currentUser.userId,
+        customerName: currentUser.name || orderPayload.customerName || 'Customer',
+        customer_name: currentUser.name || orderPayload.customerName || 'Customer',
+        customerEmail: currentUser.email || orderPayload.customerEmail || '',
+        customer_email: currentUser.email || orderPayload.customerEmail || '',
+        customerPhone: currentUser.phone || orderPayload.customerPhone || '',
+        customer_phone: currentUser.phone || orderPayload.customerPhone || '',
+        restaurantName: orderPayload.restaurantName || orderPayload.restaurant_name || 'Vidyarthi Bhavan',
+        restaurant_name: orderPayload.restaurantName || orderPayload.restaurant_name || 'Vidyarthi Bhavan',
+        totalAmount: numTotal,
+        total_amount: numTotal,
+        grandTotal: numTotal,
+        total: numTotal,
+        paymentMode: orderPayload.paymentMode || orderPayload.paymentMethod || 'Razorpay',
+        payment_mode: orderPayload.paymentMode || orderPayload.paymentMethod || 'Razorpay',
+        paymentMethod: orderPayload.paymentMode || orderPayload.paymentMethod || 'Razorpay',
+        paymentStatus: (orderPayload.paymentStatus || 'PAID').toUpperCase(),
+        payment_status: (orderPayload.paymentStatus || 'PAID').toUpperCase(),
         orderDate: new Date().toISOString(),
+        order_date: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         createdAtMs: Date.now(),
         status: 'ORDER_PLACED',
-        deliveryStatus: 'ORDER_PLACED'
+        deliveryStatus: 'ORDER_PLACED',
+        items: orderPayload.items || []
       };
 
       orders.unshift(newOrder);
       setLocal(STORAGE_KEYS.MOCK_ORDERS, orders);
       setLocal('foodwala_orders', orders);
+
+      // Also add to kitchen orders if restaurant portal is used
+      try {
+        let kitchenOrders = getLocal('foodwala_mock_kitchen_orders', []);
+        kitchenOrders.unshift({
+          order_id: cleanId,
+          orderId: cleanId,
+          restaurant_id: orderPayload.restaurantId || 2,
+          customer_name: newOrder.customerName,
+          customerName: newOrder.customerName,
+          customer_phone: newOrder.customerPhone,
+          customerPhone: newOrder.customerPhone,
+          delivery_address: orderPayload.deliveryAddress || 'Bengaluru',
+          deliveryAddress: orderPayload.deliveryAddress || 'Bengaluru',
+          total_amount: numTotal,
+          totalAmount: numTotal,
+          payment_mode: newOrder.paymentMode,
+          paymentMode: newOrder.paymentMode,
+          status: 'PLACED',
+          items: (orderPayload.items || []).map(it => ({
+            item_name: it.name || it.itemName || 'Food Item',
+            quantity: it.quantity || it.qty || 1,
+            price: it.price || 0,
+            total_price: (it.price || 0) * (it.quantity || 1)
+          }))
+        });
+        setLocal('foodwala_mock_kitchen_orders', kitchenOrders);
+      } catch (e) {}
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('foodwala:orderPlaced', { detail: newOrder }));
+      }
 
       return { success: true, order: newOrder };
     },
@@ -943,92 +995,204 @@
     // 19. Admin Audits
     getAdminUsers: async function () {
       const users = initMockUsers();
-      const mapped = users.map(u => ({
-        user_id: u.userId,
-        userId: u.userId,
-        username: u.username || u.name,
-        name: u.name || u.username,
-        email: u.email,
-        phone: u.phone,
-        role: (u.role || 'customer').toLowerCase(),
-        total_orders: u.total_orders || (u.role === 'customer' ? 3 : (u.role === 'admin' ? 1 : 0)),
-        totalOrders: u.total_orders || (u.role === 'customer' ? 3 : (u.role === 'admin' ? 1 : 0)),
-        total_spent: u.total_spent || (u.role === 'customer' ? 1240.50 : 0),
-        totalSpent: u.total_spent || (u.role === 'customer' ? 1240.50 : 0),
-        last_login: u.lastLogin || new Date().toISOString(),
-        lastLogin: u.lastLogin || new Date().toISOString(),
-        failed_attempts: u.failedAttempts || 0,
-        failedAttempts: u.failedAttempts || 0,
-        locked_until: u.lockedUntil || null,
-        lockedUntil: u.lockedUntil || null
-      }));
+      let allOrders = [];
+      try {
+        const ordRes = await this.getAdminOrders();
+        allOrders = (ordRes && ordRes.orders) || [];
+      } catch (e) {}
+
+      const mapped = users.map(u => {
+        const uId = u.userId;
+        const uEmail = (u.email || '').toLowerCase();
+        const uPhone = normalizePhone(u.phone || '');
+
+        const userOrders = allOrders.filter(o => {
+          if (o.userId && String(o.userId) === String(uId)) return true;
+          if (uEmail && o.customerEmail && o.customerEmail.toLowerCase() === uEmail) return true;
+          if (uPhone && o.customerPhone && normalizePhone(o.customerPhone) === uPhone) return true;
+          return false;
+        });
+
+        const totalOrders = userOrders.length;
+        const totalSpent = userOrders.reduce((sum, o) => sum + (Number(o.total_amount || o.totalAmount || o.grandTotal || o.total) || 0), 0);
+
+        return {
+          user_id: u.userId,
+          userId: u.userId,
+          username: u.username || u.name,
+          name: u.name || u.username,
+          email: u.email,
+          phone: u.phone,
+          role: (u.role || 'customer').toLowerCase(),
+          total_orders: totalOrders > 0 ? totalOrders : (u.role === 'customer' ? 1 : 0),
+          totalOrders: totalOrders > 0 ? totalOrders : (u.role === 'customer' ? 1 : 0),
+          total_spent: totalSpent > 0 ? totalSpent : (u.role === 'customer' ? 450.00 : 0),
+          totalSpent: totalSpent > 0 ? totalSpent : (u.role === 'customer' ? 450.00 : 0),
+          last_login: u.lastLogin || new Date().toISOString(),
+          lastLogin: u.lastLogin || new Date().toISOString(),
+          failed_attempts: u.failedAttempts || 0,
+          failedAttempts: u.failedAttempts || 0,
+          locked_until: u.lockedUntil || null,
+          lockedUntil: u.lockedUntil || null
+        };
+      });
       return { success: true, users: mapped };
     },
 
     getAdminOrders: async function () {
-      let orders = await this.getOrders();
-      if (!orders || orders.length === 0) {
-        orders = [
-          {
-            order_id: 1001,
-            orderId: 1001,
-            customer_name: 'Rahul Sharma (Customer)',
-            customerName: 'Rahul Sharma (Customer)',
-            customer_phone: '9876543210',
-            customerPhone: '9876543210',
-            restaurant_name: 'Vidyarthi Bhavan',
-            restaurantName: 'Vidyarthi Bhavan',
-            total_amount: 450.00,
-            totalAmount: 450.00,
-            payment_mode: 'UPI',
-            paymentMode: 'UPI',
-            payment_status: 'PAID',
-            paymentStatus: 'PAID',
-            status: 'DELIVERED',
-            order_date: new Date(Date.now() - 3600000).toISOString(),
-            orderDate: new Date(Date.now() - 3600000).toISOString()
-          },
-          {
-            order_id: 1002,
-            orderId: 1002,
-            customer_name: 'Vishnu Vardhan Reddy',
-            customerName: 'Vishnu Vardhan Reddy',
-            customer_phone: '6301382491',
-            customerPhone: '6301382491',
-            restaurant_name: 'Meghana Foods',
-            restaurantName: 'Meghana Foods',
-            total_amount: 790.00,
-            totalAmount: 790.00,
-            payment_mode: 'Razorpay',
-            paymentMode: 'Razorpay',
-            payment_status: 'PAID',
-            paymentStatus: 'PAID',
-            status: 'DELIVERED',
-            order_date: new Date(Date.now() - 7200000).toISOString(),
-            orderDate: new Date(Date.now() - 7200000).toISOString()
-          },
-          {
-            order_id: 1003,
-            orderId: 1003,
-            customer_name: 'Ananya Sharma',
-            customerName: 'Ananya Sharma',
-            customer_phone: '9848012345',
-            customerPhone: '9848012345',
-            restaurant_name: 'CTR Shri Sagar',
-            restaurantName: 'CTR Shri Sagar',
-            total_amount: 320.00,
-            totalAmount: 320.00,
-            payment_mode: 'Cash On Delivery',
-            paymentMode: 'Cash On Delivery',
-            payment_status: 'PAID',
-            paymentStatus: 'PAID',
-            status: 'PREPARING',
-            order_date: new Date(Date.now() - 900000).toISOString(),
-            orderDate: new Date(Date.now() - 900000).toISOString()
-          }
-        ];
-      }
-      const totalRev = orders.reduce((acc, o) => acc + (Number(o.total_amount || o.totalAmount || o.total) || 0), 0);
+      // 1. Gather all stored customer orders across both storage locations
+      const rawMockOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
+      const rawAppOrders = getLocal('foodwala_orders', []);
+
+      // 2. Base fallback orders to represent historical seed transactions
+      const seedOrders = [
+        {
+          order_id: '1001',
+          orderId: '1001',
+          customer_name: 'Rahul Sharma (Customer)',
+          customerName: 'Rahul Sharma (Customer)',
+          customer_phone: '9876543210',
+          customerPhone: '9876543210',
+          restaurant_name: 'Vidyarthi Bhavan',
+          restaurantName: 'Vidyarthi Bhavan',
+          total_amount: 450.00,
+          totalAmount: 450.00,
+          grandTotal: 450.00,
+          payment_mode: 'UPI',
+          paymentMode: 'UPI',
+          paymentMethod: 'UPI',
+          payment_status: 'PAID',
+          paymentStatus: 'PAID',
+          status: 'DELIVERED',
+          order_date: new Date(Date.now() - 3600000).toISOString(),
+          orderDate: new Date(Date.now() - 3600000).toISOString()
+        },
+        {
+          order_id: '1002',
+          orderId: '1002',
+          customer_name: 'Vishnu Vardhan Reddy',
+          customerName: 'Vishnu Vardhan Reddy',
+          customer_phone: '6301382491',
+          customerPhone: '6301382491',
+          restaurant_name: 'Meghana Foods',
+          restaurantName: 'Meghana Foods',
+          total_amount: 790.00,
+          totalAmount: 790.00,
+          grandTotal: 790.00,
+          payment_mode: 'Razorpay',
+          paymentMode: 'Razorpay',
+          paymentMethod: 'Razorpay',
+          payment_status: 'PAID',
+          paymentStatus: 'PAID',
+          status: 'DELIVERED',
+          order_date: new Date(Date.now() - 7200000).toISOString(),
+          orderDate: new Date(Date.now() - 7200000).toISOString()
+        },
+        {
+          order_id: '1003',
+          orderId: '1003',
+          customer_name: 'Ananya Sharma',
+          customerName: 'Ananya Sharma',
+          customer_phone: '9848012345',
+          customerPhone: '9848012345',
+          restaurant_name: 'CTR Shri Sagar',
+          restaurantName: 'CTR Shri Sagar',
+          total_amount: 320.00,
+          totalAmount: 320.00,
+          grandTotal: 320.00,
+          payment_mode: 'Cash On Delivery',
+          paymentMode: 'Cash On Delivery',
+          paymentMethod: 'Cash On Delivery',
+          payment_status: 'PAID',
+          paymentStatus: 'PAID',
+          status: 'PREPARING',
+          order_date: new Date(Date.now() - 900000).toISOString(),
+          orderDate: new Date(Date.now() - 900000).toISOString()
+        }
+      ];
+
+      // 3. Merge & deduplicate by clean orderId
+      const orderMap = new Map();
+
+      // First add user orders (placed via app / checkout / mockAdapter)
+      const combined = [...rawAppOrders, ...rawMockOrders];
+      combined.forEach(o => {
+        if (!o) return;
+        const rawId = String(o.orderId || o.order_id || o.id || '');
+        const cleanId = rawId.replace(/^#?FW-?/i, '').trim();
+        if (!cleanId) return;
+
+        if (!orderMap.has(cleanId)) {
+          orderMap.set(cleanId, Object.assign({}, o));
+        } else {
+          // Merge to ensure all attributes (restaurantName, grandTotal, etc.) are intact
+          const existing = orderMap.get(cleanId);
+          orderMap.set(cleanId, Object.assign({}, existing, o));
+        }
+      });
+
+      // Add seed orders if not already present
+      seedOrders.forEach(so => {
+        const cleanId = String(so.orderId).replace(/^#?FW-?/i, '').trim();
+        if (!orderMap.has(cleanId)) {
+          orderMap.set(cleanId, so);
+        }
+      });
+
+      // 4. Format and standardize all orders
+      const orders = Array.from(orderMap.values()).map(o => {
+        const rawId = String(o.orderId || o.order_id || o.id || '');
+        const cleanId = rawId.replace(/^#?FW-?/i, '').trim();
+        const numTotal = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
+        
+        let liveStatus = (o.status || 'PLACED').toUpperCase();
+        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+          try {
+            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            if (stInfo && stInfo.status) liveStatus = stInfo.status.toUpperCase();
+          } catch (e) {}
+        }
+
+        const dateVal = o.order_date || o.orderDate || o.createdAt || (o.createdAtMs ? new Date(o.createdAtMs).toISOString() : new Date().toISOString());
+
+        return {
+          ...o,
+          order_id: cleanId,
+          orderId: cleanId,
+          id: cleanId,
+          customer_name: o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer',
+          customerName: o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer',
+          customer_phone: o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-',
+          customerPhone: o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-',
+          customer_email: o.customer_email || o.customerEmail || '',
+          customerEmail: o.customer_email || o.customerEmail || '',
+          restaurant_name: o.restaurant_name || o.restaurantName || 'FoodWala Partner',
+          restaurantName: o.restaurant_name || o.restaurantName || 'FoodWala Partner',
+          total_amount: numTotal,
+          totalAmount: numTotal,
+          grandTotal: numTotal,
+          total: numTotal,
+          payment_mode: o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay',
+          paymentMode: o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay',
+          paymentMethod: o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay',
+          payment_status: (o.payment_status || o.paymentStatus || 'PAID').toUpperCase(),
+          paymentStatus: (o.payment_status || o.paymentStatus || 'PAID').toUpperCase(),
+          status: liveStatus,
+          order_date: dateVal,
+          orderDate: dateVal,
+          createdAt: dateVal
+        };
+      });
+
+      // Sort orders descending (newest order on top)
+      orders.sort((a, b) => {
+        const tA = new Date(a.order_date || a.createdAtMs || 0).getTime();
+        const tB = new Date(b.order_date || b.createdAtMs || 0).getTime();
+        return tB - tA;
+      });
+
+      const totalRev = orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
+
       return {
         success: true,
         orders: orders,

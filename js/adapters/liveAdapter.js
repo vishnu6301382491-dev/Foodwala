@@ -648,7 +648,25 @@
       }
       try {
         const res = await liveFetch('/api/admin/orders', { headers: getAuthHeader() });
-        if (res.ok) return await res.json();
+        if (res.ok) {
+          const liveData = await res.json();
+          // Merge any client-side orders (e.g. newly placed sandbox orders) so none are missed
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && typeof window.FoodWalaAdapters.mock.getAdminOrders === 'function') {
+            try {
+              const mockData = await window.FoodWalaAdapters.mock.getAdminOrders();
+              if (mockData && Array.isArray(mockData.orders)) {
+                const liveIds = new Set((liveData.orders || []).map(o => String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '')));
+                const extraOrders = mockData.orders.filter(o => !liveIds.has(String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '')));
+                if (extraOrders.length > 0) {
+                  liveData.orders = [...extraOrders, ...(liveData.orders || [])];
+                  liveData.totalOrders = liveData.orders.length;
+                  liveData.totalRevenue = liveData.orders.reduce((acc, o) => acc + (Number(o.total_amount || o.totalAmount || o.grandTotal || o.total) || 0), 0);
+                }
+              }
+            } catch (mergeErr) {}
+          }
+          return liveData;
+        }
         if (res.status === 404) {
           unavailableEndpoints.add('admin/orders');
           if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
