@@ -1706,18 +1706,22 @@ const FoodWalaApp = (function () {
     if (!userNavSlot) return;
 
     if (user && user.name) {
-      const isAdmin = (user.role || '').toLowerCase() === 'admin';
+      const role = (user.role || '').toLowerCase();
+      const isAdmin = role === 'admin';
+      const isRestaurant = role === 'restaurant' || role === 'restaurant_admin' || role === 'manager';
       userNavSlot.innerHTML = `
         <div class="dropdown">
           <button class="btn btn-outline-dark btn-sm dropdown-toggle d-flex align-items-center gap-2 py-2 px-3 rounded-pill" type="button" id="userDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-person-circle fs-5 text-danger"></i>
+            <i class="bi bi-person-circle fs-5 ${isRestaurant ? 'text-warning' : 'text-danger'}"></i>
             <span class="fw-semibold">${user.name.split(' ')[0]}</span>
+            ${isRestaurant ? '<span class="badge bg-warning text-dark rounded-pill small px-2 py-0" style="font-size:0.68rem;">Partner</span>' : ''}
           </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 py-2" aria-labelledby="userDropdownBtn" style="min-width: 220px;">
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 py-2" aria-labelledby="userDropdownBtn" style="min-width: 230px;">
             <li class="px-3 py-2 border-bottom">
               <div class="fw-bold text-dark">${user.name}</div>
               <small class="text-muted">${user.email || user.phone || ''}</small>
             </li>
+            ${isRestaurant ? `<li><a class="dropdown-item py-2 d-flex align-items-center gap-2 text-dark fw-bold bg-warning-subtle rounded-3 mx-2 my-1" href="./restaurant-dashboard.html"><i class="bi bi-shop text-warning fs-5"></i> <span>Restaurant Dashboard</span></a></li>` : ''}
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./profile.html"><i class="bi bi-person text-primary"></i> <span>My Profile</span></a></li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./addresses.html"><i class="bi bi-geo-alt text-danger"></i> <span>My Addresses</span></a></li>
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./orders.html"><i class="bi bi-bag-check text-success"></i> <span>My Orders</span></a></li>
@@ -1906,9 +1910,9 @@ const FoodWalaApp = (function () {
     }
   }
 
-  // Pre-load data on load (skip on auth & admin pages to avoid unnecessary background catalog requests)
+  // Pre-load data on load (skip on auth, admin & restaurant portal pages to avoid unnecessary background catalog requests)
   const currentPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname.toLowerCase() : '';
-  const isAuthOrAdminPage = currentPath.endsWith('login.html') || currentPath.endsWith('register.html') || currentPath.endsWith('forgot-password.html') || currentPath.endsWith('reset-password.html') || currentPath.endsWith('admin.html');
+  const isAuthOrAdminPage = currentPath.endsWith('login.html') || currentPath.endsWith('register.html') || currentPath.endsWith('forgot-password.html') || currentPath.endsWith('reset-password.html') || currentPath.endsWith('admin.html') || currentPath.endsWith('restaurant-dashboard.html');
   if (!isAuthOrAdminPage) {
     loadData();
   }

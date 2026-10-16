@@ -100,6 +100,24 @@
   <!-- MAIN CONTAINER -->
   <main class="container my-4 flex-grow-1">
     
+    <!-- Restaurant Manager Quick Access Banner (Visible only to Restaurant Managers) -->
+    <div id="rest-manager-alert" class="alert alert-warning border-warning shadow-sm rounded-4 mb-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-3" style="display: none;">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center p-2" style="width: 44px; height: 44px;">
+          <i class="bi bi-shop fs-4"></i>
+        </div>
+        <div>
+          <strong class="d-block text-dark">👨‍🍳 You are logged in as Restaurant Manager</strong>
+          <small class="text-muted">You are currently viewing the customer storefront. Go to your partner dashboard to edit prices, dishes, or stock.</small>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="./restaurant-dashboard.html" class="btn btn-warning btn-sm rounded-pill px-3 py-2 fw-bold text-dark shadow-sm">
+          <i class="bi bi-pencil-square me-1"></i> Open Restaurant Dashboard (Edit Menu & Prices) &rarr;
+        </a>
+      </div>
+    </div>
+
     <!-- Restaurant Banner Header -->
     <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
       <div class="row align-items-center g-4">
@@ -255,6 +273,16 @@
       
       const urlParams = new URLSearchParams(window.location.search);
       const restId = parseInt(urlParams.get('id') || '1');
+
+      // Check if logged-in user is a restaurant manager
+      const currentUser = (window.FoodWalaApp && FoodWalaApp.Auth) ? FoodWalaApp.Auth.getCurrentUser() : null;
+      if (currentUser) {
+        const role = (currentUser.role || '').toLowerCase();
+        if (role === 'restaurant' || role === 'restaurant_admin' || role === 'manager') {
+          const banner = document.getElementById('rest-manager-alert');
+          if (banner) banner.style.display = 'flex';
+        }
+      }
 
       const restaurants = FoodWalaApp.getRestaurants();
       const restaurant = restaurants.find(r => (r.id === restId || r.restaurantId === restId)) || restaurants[0];

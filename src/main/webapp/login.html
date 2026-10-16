@@ -475,7 +475,7 @@
           } else if (role === 'partner' || role === 'delivery_partner') {
             window.location.href = './orders.html';
           } else if (role === 'restaurant' || role === 'restaurant_admin') {
-            window.location.href = './restaurant-details.html?id=1';
+            window.location.href = './restaurant-dashboard.html';
           } else {
             window.location.href = redirectTarget;
           }
@@ -509,7 +509,7 @@
           phone: '9876543231',
           password: 'Restaurant@123',
           desc: 'Manage restaurant menus, kitchen order queues, and store availability.',
-          redirect: './restaurant-details.html?id=1'
+          redirect: './restaurant-dashboard.html'
         },
         admin: {
           badge: 'Administrator',

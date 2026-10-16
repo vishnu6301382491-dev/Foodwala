@@ -228,6 +228,25 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function requireRestaurant(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: 'UNAUTHORIZED',
+      message: 'Authentication required. Please sign in as a Restaurant Manager.'
+    });
+  }
+  const role = (req.user.role || '').toLowerCase();
+  if (role !== 'restaurant' && role !== 'admin' && role !== 'restaurant_admin' && role !== 'manager') {
+    return res.status(403).json({
+      success: false,
+      error: 'FORBIDDEN',
+      message: 'Access denied. Restaurant manager privileges required.'
+    });
+  }
+  next();
+}
+
 app.use(authenticateUser);
 
 // =======================================================================
@@ -2217,6 +2236,356 @@ app.get('/api/admin/login-history', requireAdmin, async (req, res) => {
        ORDER BY lh.id DESC LIMIT 100`
     );
     res.json({ success: true, history: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// =======================================================================
+// 10. RESTAURANT PARTNER & MANAGER ENDPOINTS
+// =======================================================================
+
+// Helper: resolve restaurant for currently logged in restaurant manager
+async function resolveRestaurantForManager(req) {
+  // If specific restaurantId requested
+  const paramRestId = parseInt(req.query.restaurantId || (req.body && req.body.restaurantId), 10);
+  if (paramRestId) {
+    const [rows] = await db.query('SELECT * FROM restaurant WHERE restaurant_id = ?', [paramRestId]);
+    if (rows.length > 0) return rows[0];
+  }
+
+  // If user is linked by admin_user_id
+  if (req.user && req.user.user_id) {
+    const [rows] = await db.query('SELECT * FROM restaurant WHERE admin_user_id = ?', [req.user.user_id]);
+    if (rows.length > 0) return rows[0];
+  }
+
+  // Default fallback to Vidyarthi Bhavan (ID 2) or CTR (ID 1)
+  const [vRows] = await db.query('SELECT * FROM restaurant WHERE restaurant_id = 2');
+  if (vRows.length > 0) return vRows[0];
+  const [anyRows] = await db.query('SELECT * FROM restaurant LIMIT 1');
+  return anyRows[0] || null;
+}
+
+// 1. Get Restaurant Details for Manager
+app.get('/api/restaurant/details', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant profile not found.' });
+    }
+    res.json({ success: true, restaurant: rest });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Get Restaurant Menu (all items, including out of stock)
+app.get('/api/restaurant/menu', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+    const [rows] = await db.query(
+      `SELECT menu_id, restaurant_id, item_name, description, price, 
+              is_available, image_path, rating, category_id, category_name, 
+              is_veg, is_popular, preparation_time 
+       FROM menu 
+       WHERE restaurant_id = ? 
+       ORDER BY category_name ASC, item_name ASC`,
+      [rest.restaurant_id]
+    );
+
+    const totalItems = rows.length;
+    const availableItems = rows.filter(r => r.is_available === 1 || r.is_available === true).length;
+    const outOfStockItems = totalItems - availableItems;
+    const categories = [...new Set(rows.map(r => r.category_name).filter(Boolean))];
+
+    res.json({
+      success: true,
+      restaurant: rest,
+      menu: rows,
+      stats: {
+        totalItems,
+        availableItems,
+        outOfStockItems,
+        categoriesCount: categories.length
+      },
+      categories
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Add New Menu Item
+app.post('/api/restaurant/menu', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+
+    const {
+      itemName,
+      item_name,
+      description = '',
+      price,
+      categoryName,
+      category_name,
+      isVeg = true,
+      is_veg,
+      imagePath,
+      image_path,
+      preparationTime,
+      preparation_time
+    } = req.body;
+
+    const name = (itemName || item_name || '').trim();
+    const finalPrice = parseFloat(price);
+    const category = (categoryName || category_name || 'Main Course').trim();
+    const vegFlag = is_veg !== undefined ? (is_veg ? 1 : 0) : (isVeg ? 1 : 0);
+    const img = (imagePath || image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=75').trim();
+    const prepTime = (preparationTime || preparation_time || '15-20 mins').trim();
+
+    if (!name || isNaN(finalPrice) || finalPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid dish name and positive price are required.'
+      });
+    }
+
+    const [result] = await db.query(
+      `INSERT INTO menu (restaurant_id, item_name, description, price, is_available, image_path, category_name, is_veg, rating, preparation_time)
+       VALUES (?, ?, ?, ?, 1, ?, ?, ?, 4.5, ?)`,
+      [rest.restaurant_id, name, description, finalPrice, img, category, vegFlag, prepTime]
+    );
+
+    const newMenuId = result.insertId;
+    const [createdRows] = await db.query('SELECT * FROM menu WHERE menu_id = ?', [newMenuId]);
+
+    res.status(201).json({
+      success: true,
+      message: `Dish "${name}" added to menu successfully.`,
+      item: createdRows[0]
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Update Menu Item (Price, details, category, etc.)
+app.put('/api/restaurant/menu/:menuId', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+    const menuId = parseInt(req.params.menuId, 10);
+
+    const {
+      itemName,
+      item_name,
+      description,
+      price,
+      categoryName,
+      category_name,
+      isVeg,
+      is_veg,
+      imagePath,
+      image_path,
+      isAvailable,
+      is_available
+    } = req.body;
+
+    const [existing] = await db.query('SELECT * FROM menu WHERE menu_id = ? AND restaurant_id = ?', [menuId, rest.restaurant_id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Menu item not found in your restaurant.' });
+    }
+
+    const current = existing[0];
+    const newName = (itemName || item_name || current.item_name).trim();
+    const newDesc = description !== undefined ? description : current.description;
+    const newPrice = price !== undefined ? parseFloat(price) : current.price;
+    const newCat = (categoryName || category_name || current.category_name).trim();
+    const newVeg = (is_veg !== undefined ? (is_veg ? 1 : 0) : (isVeg !== undefined ? (isVeg ? 1 : 0) : current.is_veg));
+    const newImg = (imagePath || image_path || current.image_path).trim();
+    const newAvail = (is_available !== undefined ? (is_available ? 1 : 0) : (isAvailable !== undefined ? (isAvailable ? 1 : 0) : current.is_available));
+
+    await db.query(
+      `UPDATE menu SET 
+         item_name = ?, description = ?, price = ?, 
+         category_name = ?, is_veg = ?, image_path = ?, is_available = ?
+       WHERE menu_id = ? AND restaurant_id = ?`,
+      [newName, newDesc, newPrice, newCat, newVeg, newImg, newAvail, menuId, rest.restaurant_id]
+    );
+
+    const [updatedRows] = await db.query('SELECT * FROM menu WHERE menu_id = ?', [menuId]);
+
+    res.json({
+      success: true,
+      message: `Menu item updated successfully.`,
+      item: updatedRows[0]
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5. Quick Toggle Item Availability (Available / Out of Stock)
+app.patch('/api/restaurant/menu/:menuId/availability', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+    const menuId = parseInt(req.params.menuId, 10);
+    const { isAvailable, is_available } = req.body;
+
+    const [existing] = await db.query('SELECT * FROM menu WHERE menu_id = ? AND restaurant_id = ?', [menuId, rest.restaurant_id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Menu item not found.' });
+    }
+
+    const current = existing[0];
+    const targetStatus = (is_available !== undefined ? (is_available ? 1 : 0) : (isAvailable !== undefined ? (isAvailable ? 1 : 0) : (current.is_available === 1 ? 0 : 1)));
+
+    await db.query('UPDATE menu SET is_available = ? WHERE menu_id = ? AND restaurant_id = ?', [targetStatus, menuId, rest.restaurant_id]);
+
+    res.json({
+      success: true,
+      menuId,
+      is_available: targetStatus,
+      isAvailable: targetStatus === 1,
+      message: targetStatus === 1 ? `"${current.item_name}" marked as In Stock` : `"${current.item_name}" marked as Out of Stock`
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 6. Delete Menu Item
+app.delete('/api/restaurant/menu/:menuId', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+    const menuId = parseInt(req.params.menuId, 10);
+
+    const [existing] = await db.query('SELECT * FROM menu WHERE menu_id = ? AND restaurant_id = ?', [menuId, rest.restaurant_id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Menu item not found.' });
+    }
+
+    await db.query('DELETE FROM menu WHERE menu_id = ? AND restaurant_id = ?', [menuId, rest.restaurant_id]);
+
+    res.json({
+      success: true,
+      message: `Dish "${existing[0].item_name}" removed from menu.`
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 7. Toggle Restaurant Open / Closed Status
+app.patch('/api/restaurant/status', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+
+    const { isOpen, is_open } = req.body;
+    const targetOpen = (is_open !== undefined ? (is_open ? 1 : 0) : (isOpen !== undefined ? (isOpen ? 1 : 0) : (rest.is_open === 1 ? 0 : 1)));
+
+    await db.query('UPDATE restaurant SET is_open = ? WHERE restaurant_id = ?', [targetOpen, rest.restaurant_id]);
+
+    res.json({
+      success: true,
+      restaurantId: rest.restaurant_id,
+      is_open: targetOpen,
+      isOpen: targetOpen === 1,
+      message: targetOpen === 1 ? 'Restaurant is now accepting customer orders' : 'Restaurant is currently closed'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 8. Get Incoming Kitchen Orders for Restaurant
+app.get('/api/restaurant/orders', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+
+    const [orders] = await db.query(
+      `SELECT o.order_id, o.restaurant_id, o.customer_name, o.customer_phone, o.customer_email,
+              o.delivery_address, o.total_amount, o.status, o.payment_mode, o.payment_status,
+              o.order_date
+       FROM orders o
+       WHERE o.restaurant_id = ?
+       ORDER BY o.order_id DESC LIMIT 50`,
+      [rest.restaurant_id]
+    );
+
+    // Fetch items for these orders
+    if (orders.length > 0) {
+      const orderIds = orders.map(o => o.order_id);
+      const [items] = await db.query(
+        `SELECT oi.order_id, oi.menu_id, oi.item_name, oi.quantity, oi.item_total, oi.total_price 
+         FROM order_item oi 
+         WHERE oi.order_id IN (${orderIds.map(() => '?').join(',')})`,
+        orderIds
+      );
+      const itemsMap = {};
+      items.forEach(it => {
+        if (!itemsMap[it.order_id]) itemsMap[it.order_id] = [];
+        itemsMap[it.order_id].push(it);
+      });
+      orders.forEach(o => {
+        o.items = itemsMap[o.order_id] || [];
+      });
+    }
+
+    res.json({
+      success: true,
+      restaurant: rest,
+      orders
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 9. Update Kitchen Order Status (Preparing, Ready, Out for delivery, Delivered)
+app.patch('/api/restaurant/orders/:orderId/status', requireRestaurant, async (req, res) => {
+  try {
+    const rest = await resolveRestaurantForManager(req);
+    if (!rest) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+    const orderId = parseInt(req.params.orderId, 10);
+    const { status } = req.body;
+
+    const validStatuses = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+    const newStatus = (status || '').toUpperCase();
+    if (!validStatuses.includes(newStatus)) {
+      return res.status(400).json({ success: false, message: `Invalid status. Allowed: ${validStatuses.join(', ')}` });
+    }
+
+    await db.query('UPDATE orders SET status = ? WHERE order_id = ? AND restaurant_id = ?', [newStatus, orderId, rest.restaurant_id]);
+
+    res.json({
+      success: true,
+      orderId,
+      status: newStatus,
+      message: `Order #FW-${orderId} status updated to ${newStatus}`
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

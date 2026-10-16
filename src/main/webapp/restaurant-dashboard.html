@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Partner Portal | FoodWala</title>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="./assets/vendor/bootstrap/css/bootstrap.min.css">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <!-- Custom Style -->
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    body {
+      background-color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .stat-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.06) !important;
+    }
+    .nav-pills .nav-link.active {
+      background-color: #f59e0b;
+      color: #000;
+      font-weight: 700;
+    }
+    .nav-pills .nav-link {
+      color: #475569;
+      font-weight: 600;
+    }
+    .badge-soft-success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    .badge-soft-danger {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    .badge-soft-warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .badge-soft-info {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    .dish-img-thumb {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+    .switch-avail {
+      cursor: pointer;
+      font-size: 1.15rem;
+    }
+    .price-tag {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .quick-price-btn {
+      cursor: pointer;
+      text-decoration: none;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .quick-price-btn:hover {
+      background: #f1f5f9;
+    }
+  </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Restaurant Top Navbar -->
+  <header class="sticky-top bg-white border-bottom shadow-sm">
+    <div class="container py-2 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <a href="./index.html" class="d-flex align-items-center gap-2 text-decoration-none">
+          <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+            <i class="bi bi-shop fs-5"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold text-dark mb-0 lh-1">FoodWala</h5>
+            <small class="text-warning-emphasis fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">RESTAURANT PARTNER HUB</small>
+          </div>
+        </a>
+        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block">
+          <i class="bi bi-shield-check me-1"></i> Manager Console
+        </span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button id="store-status-toggle-btn" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm">
+          <i class="bi bi-circle-fill text-success" style="font-size: 0.65rem;"></i>
+          <span id="store-status-text">Accepting Orders</span>
+        </button>
+        <a href="./restaurant-details.html?id=2" id="preview-store-btn" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold">
+          <i class="bi bi-box-arrow-up-right me-1"></i> Preview Menu
+        </a>
+        <button id="rest-logout-btn" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+          <i class="bi bi-box-arrow-right me-1"></i> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container my-4 flex-grow-1">
+
+    <!-- Access Gate / Non-Partner Notice -->
+    <div id="rest-gate" class="card border-0 shadow-sm rounded-4 p-5 text-center my-5 mx-auto" style="max-width: 520px; display: none;">
+      <div class="bg-warning-subtle text-warning-emphasis rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+        <i class="bi bi-shop fs-1"></i>
+      </div>
+      <h4 class="fw-bold text-dark mb-2">Restaurant Manager Access</h4>
+      <p class="text-muted small mb-4">Please log in with your restaurant manager credentials to update dish prices, add new items, and toggle item availability.</p>
+      
+      <form id="quick-rest-login-form" class="text-start">
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Manager Email or Mobile</label>
+          <input type="text" id="gate-email" class="form-control rounded-3" placeholder="restaurant@foodwala.com" value="restaurant@foodwala.com" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Password</label>
+          <input type="password" id="gate-password" class="form-control rounded-3" placeholder="Enter password" value="Restaurant@123" required>
+        </div>
+        <div id="gate-error" class="alert alert-danger small py-2 d-none mb-3"></div>
+        <button type="submit" id="gate-login-btn" class="btn btn-warning w-100 rounded-pill py-2 fw-bold text-dark shadow-sm">
+          <i class="bi bi-key-fill me-1"></i> Sign In to Restaurant Manager Hub
+        </button>
+      </form>
+    </div>
+
+    <!-- Restaurant Dashboard Content (Visible to Restaurant Staff) -->
+    <div id="rest-dashboard" style="display: none;">
+      
+      <!-- Restaurant Banner Header -->
+      <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <div class="row align-items-center g-3">
+          <div class="col-auto">
+            <img id="dash-rest-img" src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=75" class="rounded-4 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;" alt="Restaurant">
+          </div>
+          <div class="col">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <h3 class="fw-extrabold text-dark mb-0" id="dash-rest-name">Vidyarthi Bhavan</h3>
+              <span id="dash-status-badge" class="badge badge-soft-success rounded-pill px-3 py-1 fw-bold">
+                <i class="bi bi-check-circle-fill me-1"></i> Live & Accepting Orders
+              </span>
+            </div>
+            <p class="text-muted small mb-1 mt-1" id="dash-rest-cuisine">South Indian, Crispy Dosas, Breakfast Specials</p>
+            <div class="small text-muted d-flex flex-wrap align-items-center gap-3">
+              <span><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span id="dash-rest-address">Gandhi Bazaar, Basavanagudi, Bengaluru</span></span>
+              <span>&bull;</span>
+              <span><i class="bi bi-telephone-fill text-success me-1"></i> <span id="dash-rest-phone">+91 80 2667 7588</span></span>
+              <span>&bull;</span>
+              <span><i class="bi bi-star-fill text-warning me-1"></i> <span id="dash-rest-rating">4.8</span> (100+ reviews)</span>
+            </div>
+          </div>
+          <div class="col-12 col-md-auto text-md-end">
+            <button class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
+              <i class="bi bi-plus-circle-fill me-1"></i> Add New Dish
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Management KPI Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Total Dishes</span>
+              <div class="bg-primary-subtle text-primary rounded-3 p-2">
+                <i class="bi bi-card-list fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-total-dishes">-</h3>
+            <div class="small text-muted" id="kpi-categories-sub">Active categories</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Available / In Stock</span>
+              <div class="bg-success-subtle text-success rounded-3 p-2">
+                <i class="bi bi-check2-circle fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-success mb-1" id="kpi-in-stock">-</h3>
+            <div class="small text-muted">Ready for customer orders</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Out of Stock</span>
+              <div class="bg-danger-subtle text-danger rounded-3 p-2">
+                <i class="bi bi-x-circle fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-danger mb-1" id="kpi-out-stock">-</h3>
+            <div class="small text-muted">Marked unavailable</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Kitchen Orders</span>
+              <div class="bg-warning-subtle text-warning-emphasis rounded-3 p-2">
+                <i class="bi bi-receipt fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-kitchen-orders">-</h3>
+            <div class="small text-muted">Orders received today</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm" id="restTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active rounded-pill px-4" id="menu-tab" data-bs-toggle="pill" data-bs-target="#tab-menu" type="button" role="tab">
+            <i class="bi bi-menu-button-wide-fill me-2"></i>Menu & Prices (<span id="tab-menu-badge">0</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill px-4" id="orders-tab" data-bs-toggle="pill" data-bs-target="#tab-orders" type="button" role="tab">
+            <i class="bi bi-fire me-2"></i>Kitchen Orders (<span id="tab-orders-badge">0</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill px-4" id="settings-tab" data-bs-toggle="pill" data-bs-target="#tab-settings" type="button" role="tab">
+            <i class="bi bi-sliders me-2"></i>Store Settings
+          </button>
+        </li>
+      </ul>
+
+      <!-- TAB CONTENT -->
+      <div class="tab-content" id="restTabsContent">
+        
+        <!-- ================= TAB 1: MENU & PRICE MANAGEMENT ================= -->
+        <div class="tab-pane fade show active" id="tab-menu" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            
+            <!-- Filter Bar & Search -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+              <div class="d-flex flex-wrap align-items-center gap-2" id="category-filter-pills">
+                <button class="btn btn-sm btn-dark rounded-pill px-3 active js-cat-filter" data-cat="all">All Dishes</button>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <div class="position-relative" style="width: 250px;">
+                  <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                  <input type="text" id="menu-search-input" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search dish name...">
+                </div>
+                <button class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                  <i class="bi bi-plus-lg me-1"></i> Add Dish
+                </button>
+              </div>
+            </div>
+
+            <!-- Dishes Table -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="menu-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th style="width: 80px;">Item</th>
+                    <th>Dish Details</th>
+                    <th>Category</th>
+                    <th style="min-width: 140px;">Price (₹)</th>
+                    <th style="min-width: 170px;">Availability</th>
+                    <th class="text-end" style="min-width: 130px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="menu-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                      <div class="spinner-border text-warning mb-2" role="status"></div>
+                      <div>Loading menu items...</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================= TAB 2: KITCHEN ORDERS ================= -->
+        <div class="tab-pane fade" id="tab-orders" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <h5 class="fw-bold text-dark mb-1">Incoming Kitchen Orders</h5>
+                <p class="text-muted small mb-0">Accept orders, monitor kitchen preparations, and notify riders for pickup.</p>
+              </div>
+              <button id="refresh-orders-btn" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Orders
+              </button>
+            </div>
+
+            <div id="orders-container" class="d-flex flex-column gap-3">
+              <!-- Dynamically populated kitchen orders -->
+              <div class="text-center py-5 text-muted">Loading kitchen orders...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TAB 3: STORE SETTINGS ================= -->
+        <div class="tab-pane fade" id="tab-settings" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white" style="max-width: 700px;">
+            <h5 class="fw-bold text-dark mb-3">Restaurant Operational Settings</h5>
+            
+            <form id="store-settings-form">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">Restaurant Name</label>
+                <input type="text" id="settings-name" class="form-control rounded-3" readonly>
+              </div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold text-muted">Contact Phone</label>
+                  <input type="text" id="settings-phone" class="form-control rounded-3" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-bold text-muted">Estimated Prep Time</label>
+                  <input type="text" class="form-control rounded-3" value="20-25 mins" readonly>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">Delivery Address</label>
+                <input type="text" id="settings-address" class="form-control rounded-3" readonly>
+              </div>
+              <div class="mb-4">
+                <label class="form-label small fw-bold text-muted">Order Acceptance</label>
+                <div class="form-check form-switch fs-5">
+                  <input class="form-check-input" type="checkbox" id="settings-open-switch" checked>
+                  <label class="form-check-label fs-6 fw-semibold text-dark ms-2" for="settings-open-switch" id="settings-open-label">Restaurant is Open & Accepting Orders</label>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="./restaurant-details.html?id=2" target="_blank" class="btn btn-outline-secondary rounded-pill px-4">
+                  <i class="bi bi-eye me-1"></i> View Customer Storefront
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= MODAL 1: ADD NEW DISH ================= -->
+  <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-warning text-dark border-0 py-3">
+          <h5 class="modal-title fw-bold" id="addItemModalLabel">
+            <i class="bi bi-plus-circle-fill me-2"></i>Add New Dish to Menu
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="add-dish-form">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Dish Name <span class="text-danger">*</span></label>
+              <input type="text" id="add-dish-name" class="form-control rounded-3" placeholder="e.g. Rava Onion Masala Dosa" required>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">Price (₹) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light fw-bold">₹</span>
+                  <input type="number" step="0.5" id="add-dish-price" class="form-control rounded-end-3" placeholder="95" required min="1">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">Category <span class="text-danger">*</span></label>
+                <input type="text" id="add-dish-cat" class="form-control rounded-3" placeholder="Crispy Dosas" list="category-suggestions" required>
+                <datalist id="category-suggestions">
+                  <option value="Crispy Dosas">
+                  <option value="Breakfast Specials">
+                  <option value="Beverages">
+                  <option value="Snacks & Sweets">
+                  <option value="Main Course">
+                </datalist>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Dietary Preference</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="add-dish-veg" id="veg-true" value="1" checked>
+                  <label class="form-check-label small fw-semibold text-success" for="veg-true">
+                    <i class="bi bi-circle-fill small me-1"></i> Pure Vegetarian
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="add-dish-veg" id="veg-false" value="0">
+                  <label class="form-check-label small fw-semibold text-danger" for="veg-false">
+                    <i class="bi bi-circle-fill small me-1"></i> Non-Vegetarian
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Description</label>
+              <textarea id="add-dish-desc" class="form-control rounded-3" rows="2" placeholder="Crisp crepe roasted in pure ghee, served with fresh coconut chutney and sambar."></textarea>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Image URL</label>
+              <input type="url" id="add-dish-img" class="form-control rounded-3" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75">
+              <div class="form-text small">Preset photo suggestions:
+                <button type="button" class="btn btn-link btn-sm p-0 me-2 js-quick-img" data-url="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75">Dosa</button>
+                <button type="button" class="btn btn-link btn-sm p-0 me-2 js-quick-img" data-url="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=75">Filter Coffee</button>
+                <button type="button" class="btn btn-link btn-sm p-0 me-2 js-quick-img" data-url="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=75">Bajji</button>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer bg-light border-0 py-3">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="add-dish-submit-btn" class="btn btn-warning rounded-pill px-4 fw-bold text-dark shadow-sm">
+              <i class="bi bi-check-lg me-1"></i> Save Dish to Menu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: EDIT DISH & PRICE ================= -->
+  <div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-dark text-white border-0 py-3">
+          <h5 class="modal-title fw-bold" id="editItemModalLabel">
+            <i class="bi bi-pencil-square text-warning me-2"></i>Update Dish & Price
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="edit-dish-form">
+          <input type="hidden" id="edit-dish-id">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Dish Name</label>
+              <input type="text" id="edit-dish-name" class="form-control rounded-3" required>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">Price (₹)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light fw-bold text-success">₹</span>
+                  <input type="number" step="0.5" id="edit-dish-price" class="form-control rounded-end-3 fw-bold" required min="1">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">Category</label>
+                <input type="text" id="edit-dish-cat" class="form-control rounded-3" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Availability Status</label>
+              <select id="edit-dish-avail" class="form-select rounded-3">
+                <option value="1">🟢 Available (In Stock)</option>
+                <option value="0">🔴 Unavailable (Out of Stock)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Description</label>
+              <textarea id="edit-dish-desc" class="form-control rounded-3" rows="2"></textarea>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted">Image URL</label>
+              <input type="url" id="edit-dish-img" class="form-control rounded-3">
+            </div>
+          </div>
+          <div class="modal-footer bg-light border-0 py-3">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="edit-dish-submit-btn" class="btn btn-warning rounded-pill px-4 fw-bold text-dark shadow-sm">
+              <i class="bi bi-check-lg me-1"></i> Update Menu Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-top py-3 mt-auto">
+    <div class="container text-center text-muted small">
+      FoodWala Restaurant Partner Console &copy; 2026. Real-time Menu, Price, and Order Dispatch Engine.
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/config.js?v=20261016_05"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261016_05"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261016_05"></script>
+  <script src="./js/api.js?v=20261016_05"></script>
+  <script src="./js/app.js?v=20261016_05"></script>
+
+  <script>
+    let globalRestaurant = null;
+    let globalMenu = [];
+    let globalOrders = [];
+    let activeCategory = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initRestaurantAuth();
+      bindEvents();
+    });
+
+    function initRestaurantAuth() {
+      const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      if (!currentUser) {
+        document.getElementById('rest-gate').style.display = 'block';
+        document.getElementById('rest-dashboard').style.display = 'none';
+        return;
+      }
+
+      const role = (currentUser.role || '').toLowerCase();
+      if (role !== 'restaurant' && role !== 'admin' && role !== 'restaurant_admin' && role !== 'manager') {
+        FoodWalaApp.showToast('Access denied: Restaurant Manager role required.', 'danger');
+        window.location.replace('./login.html');
+        return;
+      }
+
+      document.getElementById('rest-gate').style.display = 'none';
+      document.getElementById('rest-dashboard').style.display = 'block';
+      loadRestaurantDashboard();
+    }
+
+    async function loadRestaurantDashboard() {
+      try {
+        const [detRes, menuRes, ordersRes] = await Promise.all([
+          FoodWalaApi.getRestaurantDetails(2),
+          FoodWalaApi.getRestaurantManageMenu(2),
+          FoodWalaApi.getRestaurantOrders(2)
+        ]);
+
+        if (detRes && detRes.success && detRes.restaurant) {
+          globalRestaurant = detRes.restaurant;
+          renderRestaurantHeader(globalRestaurant);
+        }
+
+        if (menuRes && menuRes.success) {
+          globalMenu = menuRes.menu || [];
+          renderMenuTable(globalMenu);
+          renderCategoryPills(menuRes.categories || []);
+          
+          const stats = menuRes.stats || {
+            totalItems: globalMenu.length,
+            availableItems: globalMenu.filter(m => m.is_available === 1 || m.isAvailable === true).length,
+            outOfStockItems: globalMenu.filter(m => m.is_available === 0 || m.isAvailable === false).length,
+            categoriesCount: (menuRes.categories || []).length
+          };
+
+          document.getElementById('kpi-total-dishes').textContent = stats.totalItems;
+          document.getElementById('kpi-in-stock').textContent = stats.availableItems;
+          document.getElementById('kpi-out-stock').textContent = stats.outOfStockItems;
+          document.getElementById('tab-menu-badge').textContent = stats.totalItems;
+          document.getElementById('kpi-categories-sub').textContent = `${stats.categoriesCount || 4} Categories`;
+        }
+
+        if (ordersRes && ordersRes.success) {
+          globalOrders = ordersRes.orders || [];
+          renderKitchenOrders(globalOrders);
+          document.getElementById('kpi-kitchen-orders').textContent = globalOrders.length;
+          document.getElementById('tab-orders-badge').textContent = globalOrders.length;
+        }
+
+      } catch (err) {
+        console.error('[RestaurantDashboard] Load error:', err);
+        FoodWalaApp.showToast('Could not sync with restaurant services.', 'danger');
+      }
+    }
+
+    function renderRestaurantHeader(r) {
+      if (!r) return;
+      document.getElementById('dash-rest-name').textContent = r.name || 'Vidyarthi Bhavan';
+      document.getElementById('dash-rest-cuisine').textContent = r.cuisine_type || r.cuisineType || 'South Indian';
+      document.getElementById('dash-rest-address').textContent = r.address || 'Basavanagudi, Bengaluru';
+      document.getElementById('dash-rest-phone').textContent = r.phone || '+91 80 2667 7588';
+      document.getElementById('dash-rest-rating').textContent = (r.rating || 4.8).toFixed(1);
+      if (r.image_path || r.imagePath) {
+        document.getElementById('dash-rest-img').src = r.image_path || r.imagePath;
+      }
+
+      // Store Open / Closed
+      const isOpen = (r.is_open === 1 || r.is_open === true || r.isOpen === true);
+      const statusBtn = document.getElementById('store-status-toggle-btn');
+      const statusText = document.getElementById('store-status-text');
+      const statusBadge = document.getElementById('dash-status-badge');
+      const settingsSwitch = document.getElementById('settings-open-switch');
+      const settingsLabel = document.getElementById('settings-open-label');
+
+      if (isOpen) {
+        statusBtn.className = 'btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm';
+        statusText.innerHTML = '<i class="bi bi-circle-fill text-success" style="font-size: 0.65rem;"></i> Accepting Orders';
+        statusBadge.className = 'badge badge-soft-success rounded-pill px-3 py-1 fw-bold';
+        statusBadge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Live & Accepting Orders';
+        if (settingsSwitch) settingsSwitch.checked = true;
+        if (settingsLabel) settingsLabel.textContent = 'Restaurant is Open & Accepting Orders';
+      } else {
+        statusBtn.className = 'btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm';
+        statusText.innerHTML = '<i class="bi bi-circle-fill text-danger" style="font-size: 0.65rem;"></i> Store Closed';
+        statusBadge.className = 'badge badge-soft-danger rounded-pill px-3 py-1 fw-bold';
+        statusBadge.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> Store Temporarily Closed';
+        if (settingsSwitch) settingsSwitch.checked = false;
+        if (settingsLabel) settingsLabel.textContent = 'Restaurant is Closed to Customer Orders';
+      }
+
+      // Settings Fields
+      const sName = document.getElementById('settings-name');
+      const sPhone = document.getElementById('settings-phone');
+      const sAddr = document.getElementById('settings-address');
+      if (sName) sName.value = r.name || '';
+      if (sPhone) sPhone.value = r.phone || '';
+      if (sAddr) sAddr.value = r.address || '';
+    }
+
+    function renderCategoryPills(categories) {
+      const container = document.getElementById('category-filter-pills');
+      if (!container) return;
+      const allCats = ['all', ...categories];
+      container.innerHTML = allCats.map(c => `
+        <button class="btn btn-sm ${c === activeCategory ? 'btn-dark' : 'btn-light border'} rounded-pill px-3 fw-semibold js-cat-filter" data-cat="${c}">
+          ${c === 'all' ? 'All Dishes' : escapeHtml(c)}
+        </button>
+      `).join('');
+
+      container.querySelectorAll('.js-cat-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeCategory = btn.getAttribute('data-cat');
+          renderCategoryPills(categories);
+          applyMenuFilters();
+        });
+      });
+    }
+
+    function renderMenuTable(items) {
+      const tbody = document.getElementById('menu-table-body');
+      if (!items || items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">No dishes found in this category.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(m => {
+        const id = m.menu_id !== undefined ? m.menu_id : (m.menuId !== undefined ? m.menuId : m.id);
+        const name = m.item_name || m.name || 'Dish';
+        const price = Number(m.price || 0).toFixed(2);
+        const cat = m.category_name || m.category || 'Main Course';
+        const desc = m.description || 'Authentic dish prepared fresh daily.';
+        const img = m.image_path || m.imagePath || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=75';
+        const isVeg = (m.is_veg === 1 || m.is_veg === true || m.isVeg === true);
+        const isAvail = (m.is_available === 1 || m.is_available === true || m.isAvailable === true);
+
+        return `
+          <tr data-id="${id}">
+            <td>
+              <img src="${img}" class="dish-img-thumb shadow-sm" alt="${escapeHtml(name)}">
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge ${isVeg ? 'bg-success' : 'bg-danger'} rounded-circle p-1" style="width: 9px; height: 9px;" title="${isVeg ? 'Vegetarian' : 'Non-Vegetarian'}"></span>
+                <strong class="text-dark fs-6">${escapeHtml(name)}</strong>
+              </div>
+              <small class="text-muted d-block text-truncate" style="max-width: 320px;">${escapeHtml(desc)}</small>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border rounded-pill px-2 py-1 small fw-semibold">
+                ${escapeHtml(cat)}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-1">
+                <span class="price-tag">₹${price}</span>
+                <button type="button" class="btn btn-sm btn-link text-warning-emphasis p-1 quick-price-btn js-quick-price" data-id="${id}" data-name="${escapeHtml(name)}" data-price="${price}" title="Quick Update Price">
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="form-check form-switch mb-0 fs-5">
+                  <input class="form-check-input switch-avail js-toggle-avail" type="checkbox" role="switch" data-id="${id}" ${isAvail ? 'checked' : ''}>
+                </div>
+                <span class="badge ${isAvail ? 'badge-soft-success' : 'badge-soft-danger'} rounded-pill px-2 py-1 fw-bold small">
+                  ${isAvail ? '<i class="bi bi-check-circle me-1"></i>In Stock' : '<i class="bi bi-x-circle me-1"></i>Out of Stock'}
+                </span>
+              </div>
+            </td>
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary rounded-pill px-3 me-1 js-edit-item" data-id="${id}">
+                  <i class="bi bi-pencil me-1"></i> Edit
+                </button>
+                <button class="btn btn-outline-danger rounded-pill px-2 js-delete-item" data-id="${id}" data-name="${escapeHtml(name)}" title="Remove Dish">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      bindTableInteractions();
+    }
+
+    function bindTableInteractions() {
+      // 1. Availability Switch Toggle
+      document.querySelectorAll('.js-toggle-avail').forEach(sw => {
+        sw.addEventListener('change', async (e) => {
+          const id = parseInt(sw.getAttribute('data-id'), 10);
+          const isNowAvail = sw.checked;
+          try {
+            const res = await FoodWalaApi.toggleItemAvailability(id, isNowAvail);
+            if (res.success) {
+              FoodWalaApp.showToast(res.message || (isNowAvail ? 'Item marked In Stock' : 'Item marked Out of Stock'), 'success');
+              // Update local state
+              const item = globalMenu.find(m => (m.menu_id === id || m.menuId === id || m.id === id));
+              if (item) {
+                item.is_available = isNowAvail ? 1 : 0;
+                item.isAvailable = isNowAvail;
+              }
+              applyMenuFilters();
+              updateStatsCards();
+            }
+          } catch (err) {
+            sw.checked = !isNowAvail; // revert
+            FoodWalaApp.showToast('Failed to update availability.', 'danger');
+          }
+        });
+      });
+
+      // 2. Quick Price Edit (Prompt)
+      document.querySelectorAll('.js-quick-price').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          const name = btn.getAttribute('data-name');
+          const currentPrice = btn.getAttribute('data-price');
+          
+          const newPriceStr = prompt(`Update price for "${name}":`, currentPrice);
+          if (newPriceStr === null) return;
+          const newPrice = parseFloat(newPriceStr);
+          if (isNaN(newPrice) || newPrice <= 0) {
+            alert('Please enter a valid price (greater than 0).');
+            return;
+          }
+
+          try {
+            const res = await FoodWalaApi.updateMenuItem(id, { price: newPrice });
+            if (res.success) {
+              FoodWalaApp.showToast(`Price for "${name}" updated to ₹${newPrice.toFixed(2)}`, 'success');
+              const item = globalMenu.find(m => (m.menu_id === id || m.menuId === id || m.id === id));
+              if (item) item.price = newPrice;
+              applyMenuFilters();
+            }
+          } catch (err) {
+            FoodWalaApp.showToast('Failed to update price.', 'danger');
+          }
+        });
+      });
+
+      // 3. Edit Full Dish Modal
+      document.querySelectorAll('.js-edit-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          const item = globalMenu.find(m => (m.menu_id === id || m.menuId === id || m.id === id));
+          if (!item) return;
+
+          document.getElementById('edit-dish-id').value = id;
+          document.getElementById('edit-dish-name').value = item.item_name || item.name || '';
+          document.getElementById('edit-dish-price').value = item.price || 0;
+          document.getElementById('edit-dish-cat').value = item.category_name || item.category || '';
+          document.getElementById('edit-dish-avail').value = (item.is_available === 1 || item.is_available === true || item.isAvailable === true) ? '1' : '0';
+          document.getElementById('edit-dish-desc').value = item.description || '';
+          document.getElementById('edit-dish-img').value = item.image_path || item.imagePath || '';
+
+          const modal = new bootstrap.Modal(document.getElementById('editItemModal'));
+          modal.show();
+        });
+      });
+
+      // 4. Delete Dish Button
+      document.querySelectorAll('.js-delete-item').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          const name = btn.getAttribute('data-name');
+          if (!confirm(`Are you sure you want to remove "${name}" from the menu?`)) {
+            return;
+          }
+
+          try {
+            const res = await FoodWalaApi.deleteMenuItem(id);
+            if (res.success) {
+              FoodWalaApp.showToast(res.message || `Dish "${name}" removed.`, 'success');
+              globalMenu = globalMenu.filter(m => (m.menu_id !== id && m.menuId !== id && m.id !== id));
+              applyMenuFilters();
+              updateStatsCards();
+            }
+          } catch (err) {
+            FoodWalaApp.showToast('Failed to remove item.', 'danger');
+          }
+        });
+      });
+    }
+
+    function renderKitchenOrders(orders) {
+      const container = document.getElementById('orders-container');
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-clock-history fs-1 d-block mb-2 text-warning"></i>
+            <h6>No incoming kitchen orders right now.</h6>
+            <small>Orders placed by customers will appear here in real-time.</small>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(o => {
+        const id = o.order_id || o.orderId;
+        const cName = o.customer_name || o.customerName || 'Customer';
+        const cPhone = o.customer_phone || o.customerPhone || '-';
+        const addr = o.delivery_address || o.deliveryAddress || 'Bengaluru';
+        const total = Number(o.total_amount || o.totalAmount || 0).toFixed(2);
+        const status = (o.status || 'PLACED').toUpperCase();
+        const items = o.items || [];
+
+        let statusBadge = 'badge-soft-info';
+        if (status === 'PREPARING') statusBadge = 'badge-soft-warning';
+        if (status === 'READY_FOR_PICKUP') statusBadge = 'badge-soft-primary';
+        if (status === 'DELIVERED') statusBadge = 'badge-soft-success';
+
+        return `
+          <div class="card border rounded-4 p-3 shadow-none">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+              <div>
+                <span class="fw-bold text-danger fs-6 me-2">#FW-${id}</span>
+                <span class="badge ${statusBadge} rounded-pill px-3 py-1 fw-bold">${status}</span>
+                <div class="text-dark fw-bold mt-1">${escapeHtml(cName)} &bull; <code class="text-dark">${escapeHtml(cPhone)}</code></div>
+                <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(addr)}</small>
+              </div>
+              <div class="text-end">
+                <div class="fs-5 fw-bold text-dark">₹${total}</div>
+                <small class="text-muted">${o.payment_mode || 'Razorpay'}</small>
+              </div>
+            </div>
+
+            <!-- Items ordered -->
+            <div class="bg-light p-2 px-3 rounded-3 mb-3 small">
+              <strong>Order Items:</strong>
+              ${items.length > 0 ? items.map(it => `
+                <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                  <span>${it.quantity}x ${escapeHtml(it.item_name || 'Dish')}</span>
+                  <span class="fw-semibold">₹${Number(it.total_price || it.item_total || 0).toFixed(2)}</span>
+                </div>
+              `).join('') : '<span class="text-muted ms-2">Standard dishes</span>'}
+            </div>
+
+            <!-- Status Controls -->
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <span class="small fw-bold text-muted me-1">Update Status:</span>
+              <button class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold js-order-status-btn" data-id="${id}" data-status="PREPARING">
+                <i class="bi bi-fire me-1"></i> Mark Preparing
+              </button>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold js-order-status-btn" data-id="${id}" data-status="READY_FOR_PICKUP">
+                <i class="bi bi-bell-fill me-1"></i> Ready for Rider
+              </button>
+              <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold js-order-status-btn" data-id="${id}" data-status="DELIVERED">
+                <i class="bi bi-check-all me-1"></i> Delivered
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Bind Kitchen Order Status Buttons
+      container.querySelectorAll('.js-order-status-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          const st = btn.getAttribute('data-status');
+          try {
+            const res = await FoodWalaApi.updateRestaurantOrderStatus(id, st);
+            if (res.success) {
+              FoodWalaApp.showToast(`Order #FW-${id} status updated to ${st}!`, 'success');
+              const target = globalOrders.find(o => (o.order_id === id || o.orderId === id));
+              if (target) target.status = st;
+              renderKitchenOrders(globalOrders);
+            }
+          } catch (err) {
+            FoodWalaApp.showToast('Failed to update order status.', 'danger');
+          }
+        });
+      });
+    }
+
+    function applyMenuFilters() {
+      const term = (document.getElementById('menu-search-input')?.value || '').toLowerCase().trim();
+      let filtered = globalMenu;
+
+      if (activeCategory !== 'all') {
+        filtered = filtered.filter(m => (m.category_name || m.category || '') === activeCategory);
+      }
+
+      if (term) {
+        filtered = filtered.filter(m => {
+          const name = (m.item_name || m.name || '').toLowerCase();
+          const desc = (m.description || '').toLowerCase();
+          return name.includes(term) || desc.includes(term);
+        });
+      }
+
+      renderMenuTable(filtered);
+    }
+
+    function updateStatsCards() {
+      const total = globalMenu.length;
+      const inStock = globalMenu.filter(m => m.is_available === 1 || m.is_available === true || m.isAvailable === true).length;
+      const outStock = total - inStock;
+
+      document.getElementById('kpi-total-dishes').textContent = total;
+      document.getElementById('kpi-in-stock').textContent = inStock;
+      document.getElementById('kpi-out-stock').textContent = outStock;
+      document.getElementById('tab-menu-badge').textContent = total;
+    }
+
+    function bindEvents() {
+      // Gate login
+      const gateForm = document.getElementById('quick-rest-login-form');
+      if (gateForm) {
+        gateForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('gate-email').value.trim();
+          const password = document.getElementById('gate-password').value;
+          const errDiv = document.getElementById('gate-error');
+          const btn = document.getElementById('gate-login-btn');
+
+          errDiv.classList.add('d-none');
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Authenticating...';
+
+          try {
+            const res = await FoodWalaApi.login(email, password);
+            if (res.success && res.user) {
+              FoodWalaApp.showToast(`Welcome, ${res.user.name}!`, 'success');
+              initRestaurantAuth();
+            } else {
+              errDiv.textContent = res.message || 'Login failed.';
+              errDiv.classList.remove('d-none');
+            }
+          } catch (err) {
+            errDiv.textContent = 'Could not connect to authentication service.';
+            errDiv.classList.remove('d-none');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-key-fill me-1"></i> Sign In to Restaurant Manager Hub';
+          }
+        });
+      }
+
+      // Logout
+      const logoutBtn = document.getElementById('rest-logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          FoodWalaApp.Auth.logout();
+          window.location.reload();
+        });
+      }
+
+      // Store Open / Closed Toggle
+      const storeToggle = document.getElementById('store-status-toggle-btn');
+      if (storeToggle) {
+        storeToggle.addEventListener('click', async () => {
+          if (!globalRestaurant) return;
+          const currentOpen = (globalRestaurant.is_open === 1 || globalRestaurant.is_open === true || globalRestaurant.isOpen === true);
+          const targetOpen = !currentOpen;
+          try {
+            const res = await FoodWalaApi.toggleRestaurantStatus(globalRestaurant.restaurant_id || 2, targetOpen);
+            if (res.success) {
+              globalRestaurant.is_open = targetOpen ? 1 : 0;
+              globalRestaurant.isOpen = targetOpen;
+              renderRestaurantHeader(globalRestaurant);
+              FoodWalaApp.showToast(targetOpen ? 'Store is now Accepting Orders!' : 'Store marked Closed.', 'info');
+            }
+          } catch (err) {
+            FoodWalaApp.showToast('Failed to toggle store status.', 'danger');
+          }
+        });
+      }
+
+      // Search input
+      const searchInput = document.getElementById('menu-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', () => applyMenuFilters());
+      }
+
+      // Refresh orders
+      const refreshOrders = document.getElementById('refresh-orders-btn');
+      if (refreshOrders) {
+        refreshOrders.addEventListener('click', async () => {
+          FoodWalaApp.showToast('Refreshing kitchen orders...', 'info');
+          const res = await FoodWalaApi.getRestaurantOrders(2);
+          if (res && res.success) {
+            globalOrders = res.orders || [];
+            renderKitchenOrders(globalOrders);
+          }
+        });
+      }
+
+      // Quick image suggestions in Add Modal
+      document.querySelectorAll('.js-quick-img').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const url = btn.getAttribute('data-url');
+          document.getElementById('add-dish-img').value = url;
+        });
+      });
+
+      // Submit Add Dish Form
+      const addDishForm = document.getElementById('add-dish-form');
+      if (addDishForm) {
+        addDishForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('add-dish-submit-btn');
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+          const itemName = document.getElementById('add-dish-name').value.trim();
+          const price = parseFloat(document.getElementById('add-dish-price').value);
+          const categoryName = document.getElementById('add-dish-cat').value.trim();
+          const isVeg = document.querySelector('input[name="add-dish-veg"]:checked').value === '1';
+          const description = document.getElementById('add-dish-desc').value.trim();
+          const imagePath = document.getElementById('add-dish-img').value.trim();
+
+          try {
+            const res = await FoodWalaApi.addMenuItem({
+              restaurantId: (globalRestaurant && globalRestaurant.restaurant_id) || 2,
+              itemName,
+              price,
+              categoryName,
+              isVeg,
+              description,
+              imagePath
+            });
+
+            if (res.success && res.item) {
+              FoodWalaApp.showToast(res.message || 'Dish added successfully!', 'success');
+              globalMenu.unshift(res.item);
+              applyMenuFilters();
+              updateStatsCards();
+
+              // Close modal & reset form
+              const modalEl = document.getElementById('addItemModal');
+              const modalInstance = bootstrap.Modal.getInstance(modalEl);
+              if (modalInstance) modalInstance.hide();
+              addDishForm.reset();
+            } else {
+              FoodWalaApp.showToast(res.message || 'Failed to add dish.', 'danger');
+            }
+          } catch (err) {
+            FoodWalaApp.showToast('Error saving new dish.', 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save Dish to Menu';
+          }
+        });
+      }
+
+      // Submit Edit Dish Form
+      const editDishForm = document.getElementById('edit-dish-form');
+      if (editDishForm) {
+        editDishForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('edit-dish-submit-btn');
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
+          const menuId = parseInt(document.getElementById('edit-dish-id').value, 10);
+          const itemName = document.getElementById('edit-dish-name').value.trim();
+          const price = parseFloat(document.getElementById('edit-dish-price').value);
+          const categoryName = document.getElementById('edit-dish-cat').value.trim();
+          const isAvailable = document.getElementById('edit-dish-avail').value === '1';
+          const description = document.getElementById('edit-dish-desc').value.trim();
+          const imagePath = document.getElementById('edit-dish-img').value.trim();
+
+          try {
+            const res = await FoodWalaApi.updateMenuItem(menuId, {
+              itemName,
+              price,
+              categoryName,
+              isAvailable,
+              description,
+              imagePath
+            });
+
+            if (res.success) {
+              FoodWalaApp.showToast(`Updated "${itemName}" successfully!`, 'success');
+              const idx = globalMenu.findIndex(m => (m.menu_id === menuId || m.menuId === menuId || m.id === menuId));
+              if (idx !== -1) {
+                globalMenu[idx] = Object.assign({}, globalMenu[idx], {
+                  item_name: itemName,
+                  name: itemName,
+                  price,
+                  category_name: categoryName,
+                  category: categoryName,
+                  is_available: isAvailable ? 1 : 0,
+                  isAvailable,
+                  description,
+                  image_path: imagePath,
+                  imagePath
+                });
+              }
+              applyMenuFilters();
+              updateStatsCards();
+
+              const modalEl = document.getElementById('editItemModal');
+              const modalInstance = bootstrap.Modal.getInstance(modalEl);
+              if (modalInstance) modalInstance.hide();
+            }
+          } catch (err) {
+            FoodWalaApp.showToast('Failed to update dish.', 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Update Menu Item';
+          }
+        });
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/[&<>"']/g, function (m) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+      });
+    }
+  </script>
+</body>
+</html>

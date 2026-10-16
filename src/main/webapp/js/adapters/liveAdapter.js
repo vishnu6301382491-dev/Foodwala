@@ -688,6 +688,177 @@
         }
         return { success: false, history: [] };
       }
+    },
+
+    // 20. Restaurant Partner Management (Live)
+    getRestaurantDetails: async function (restaurantId) {
+      const q = restaurantId ? `?restaurantId=${restaurantId}` : '';
+      try {
+        const res = await liveFetch(`/api/restaurant/details${q}`, { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantDetails(restaurantId);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantDetails(restaurantId);
+        }
+        throw err;
+      }
+    },
+
+    getRestaurantManageMenu: async function (restaurantId) {
+      const q = restaurantId ? `?restaurantId=${restaurantId}` : '';
+      try {
+        const res = await liveFetch(`/api/restaurant/menu${q}`, { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantManageMenu(restaurantId);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantManageMenu(restaurantId);
+        }
+        throw err;
+      }
+    },
+
+    addMenuItem: async function (itemData) {
+      try {
+        const res = await liveFetch('/api/restaurant/menu', {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: JSON.stringify(itemData)
+        });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.addMenuItem(itemData);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.addMenuItem(itemData);
+        }
+        throw err;
+      }
+    },
+
+    updateMenuItem: async function (menuId, itemData) {
+      try {
+        const res = await liveFetch(`/api/restaurant/menu/${menuId}`, {
+          method: 'PUT',
+          headers: getAuthHeader(),
+          body: JSON.stringify(itemData)
+        });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.updateMenuItem(menuId, itemData);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.updateMenuItem(menuId, itemData);
+        }
+        throw err;
+      }
+    },
+
+    toggleItemAvailability: async function (menuId, isAvailable) {
+      try {
+        const res = await liveFetch(`/api/restaurant/menu/${menuId}/availability`, {
+          method: 'PATCH',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ isAvailable, is_available: isAvailable ? 1 : 0 })
+        });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.toggleItemAvailability(menuId, isAvailable);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.toggleItemAvailability(menuId, isAvailable);
+        }
+        throw err;
+      }
+    },
+
+    deleteMenuItem: async function (menuId) {
+      try {
+        const res = await liveFetch(`/api/restaurant/menu/${menuId}`, {
+          method: 'DELETE',
+          headers: getAuthHeader()
+        });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.deleteMenuItem(menuId);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.deleteMenuItem(menuId);
+        }
+        throw err;
+      }
+    },
+
+    toggleRestaurantStatus: async function (restaurantId, isOpen) {
+      try {
+        const res = await liveFetch('/api/restaurant/status', {
+          method: 'PATCH',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ restaurantId, isOpen, is_open: isOpen ? 1 : 0 })
+        });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.toggleRestaurantStatus(restaurantId, isOpen);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.toggleRestaurantStatus(restaurantId, isOpen);
+        }
+        throw err;
+      }
+    },
+
+    getRestaurantOrders: async function (restaurantId) {
+      const q = restaurantId ? `?restaurantId=${restaurantId}` : '';
+      try {
+        const res = await liveFetch(`/api/restaurant/orders${q}`, { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantOrders(restaurantId);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantOrders(restaurantId);
+        }
+        throw err;
+      }
+    },
+
+    updateRestaurantOrderStatus: async function (orderId, status) {
+      try {
+        const res = await liveFetch(`/api/restaurant/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: getAuthHeader(),
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) return await res.json();
+        if (res.status === 404 && window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.updateRestaurantOrderStatus(orderId, status);
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.updateRestaurantOrderStatus(orderId, status);
+        }
+        throw err;
+      }
     }
   };
 

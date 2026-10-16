@@ -183,6 +183,43 @@
 
     getAdminLoginHistory: async function () {
       return await getAdapter().getAdminLoginHistory();
+    },
+
+    // Restaurant Partner Management
+    getRestaurantDetails: async function (restaurantId) {
+      return await getAdapter().getRestaurantDetails(restaurantId);
+    },
+
+    getRestaurantManageMenu: async function (restaurantId) {
+      return await getAdapter().getRestaurantManageMenu(restaurantId);
+    },
+
+    addMenuItem: async function (itemData) {
+      return await getAdapter().addMenuItem(itemData);
+    },
+
+    updateMenuItem: async function (menuId, itemData) {
+      return await getAdapter().updateMenuItem(menuId, itemData);
+    },
+
+    toggleItemAvailability: async function (menuId, isAvailable) {
+      return await getAdapter().toggleItemAvailability(menuId, isAvailable);
+    },
+
+    deleteMenuItem: async function (menuId) {
+      return await getAdapter().deleteMenuItem(menuId);
+    },
+
+    toggleRestaurantStatus: async function (restaurantId, isOpen) {
+      return await getAdapter().toggleRestaurantStatus(restaurantId, isOpen);
+    },
+
+    getRestaurantOrders: async function (restaurantId) {
+      return await getAdapter().getRestaurantOrders(restaurantId);
+    },
+
+    updateRestaurantOrderStatus: async function (orderId, status) {
+      return await getAdapter().updateRestaurantOrderStatus(orderId, status);
     }
   };
 

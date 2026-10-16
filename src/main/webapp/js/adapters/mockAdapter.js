@@ -1020,6 +1020,232 @@
         success: true,
         history: history
       };
+    },
+
+    // 20. Restaurant Partner Management (Mock)
+    getRestaurantDetails: async function (restaurantId) {
+      let rests = null;
+      try { rests = await this.getRestaurants(); } catch (e) {}
+      const rId = parseInt(restaurantId, 10) || 2;
+      let r = (Array.isArray(rests) && rests.find(x => (x.restaurantId === rId || x.id === rId))) || null;
+      if (!r) {
+        r = {
+          restaurant_id: 2,
+          restaurantId: 2,
+          name: 'Vidyarthi Bhavan',
+          cuisine_type: 'South Indian, Crispy Dosas',
+          address: 'Gandhi Bazaar Main Road, Basavanagudi, Bengaluru',
+          phone: '+91 80 2667 7588',
+          rating: 4.8,
+          is_open: 1,
+          isOpen: true,
+          image_path: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75'
+        };
+      }
+      return { success: true, restaurant: r };
+    },
+
+    getRestaurantManageMenu: async function (restaurantId) {
+      const details = await this.getRestaurantDetails(restaurantId);
+      const r = details.restaurant;
+      const rId = r.restaurantId || r.restaurant_id || 2;
+
+      const key = 'foodwala_mock_restaurant_menu_' + rId;
+      let menu = getLocal(key, null);
+      if (!menu || menu.length === 0) {
+        menu = [
+          {
+            menu_id: 1, menuId: 1, restaurant_id: rId, restaurantId: rId,
+            item_name: 'Benne Masala Dosa', name: 'Benne Masala Dosa',
+            description: 'Crispy golden crepe roasted in pure butter, stuffed with spiced potato mash.',
+            price: 95, is_available: 1, isAvailable: true,
+            category_name: 'Crispy Dosas', category: 'Crispy Dosas',
+            is_veg: 1, isVeg: true,
+            image_path: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75',
+            imagePath: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75'
+          },
+          {
+            menu_id: 2, menuId: 2, restaurant_id: rId, restaurantId: rId,
+            item_name: 'Mangalore Bajji (Goli Baje)', name: 'Mangalore Bajji (Goli Baje)',
+            description: 'Crispy golden fried flour fritters served with coconut chutney.',
+            price: 55, is_available: 1, isAvailable: true,
+            category_name: 'Breakfast Specials', category: 'Breakfast Specials',
+            is_veg: 1, isVeg: true,
+            image_path: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=75',
+            imagePath: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=75'
+          },
+          {
+            menu_id: 3, menuId: 3, restaurant_id: rId, restaurantId: rId,
+            item_name: 'Degree Filter Coffee', name: 'Degree Filter Coffee',
+            description: 'Authentic south Indian chicory-infused hot brewed frothy coffee.',
+            price: 35, is_available: 1, isAvailable: true,
+            category_name: 'Beverages', category: 'Beverages',
+            is_veg: 1, isVeg: true,
+            image_path: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=75',
+            imagePath: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=75'
+          },
+          {
+            menu_id: 4, menuId: 4, restaurant_id: rId, restaurantId: rId,
+            item_name: 'Steamed Idli (2 pcs)', name: 'Steamed Idli (2 pcs)',
+            description: 'Soft melt-in-mouth steamed rice cakes served with hot sambar and chutney.',
+            price: 50, is_available: 1, isAvailable: true,
+            category_name: 'Breakfast Specials', category: 'Breakfast Specials',
+            is_veg: 1, isVeg: true,
+            image_path: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75',
+            imagePath: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75'
+          },
+          {
+            menu_id: 5, menuId: 5, restaurant_id: rId, restaurantId: rId,
+            item_name: 'Rava Onion Dosa', name: 'Rava Onion Dosa',
+            description: 'Crisp semolina crepe laced with chopped shallots, green chillies & cumin.',
+            price: 110, is_available: 0, isAvailable: false,
+            category_name: 'Crispy Dosas', category: 'Crispy Dosas',
+            is_veg: 1, isVeg: true,
+            image_path: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75',
+            imagePath: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=400&q=75'
+          }
+        ];
+        setLocal(key, menu);
+      }
+
+      const totalItems = menu.length;
+      const availableItems = menu.filter(m => m.is_available === 1 || m.isAvailable === true).length;
+      const outOfStockItems = totalItems - availableItems;
+      const categories = [...new Set(menu.map(m => m.category_name || m.category).filter(Boolean))];
+
+      return {
+        success: true,
+        restaurant: r,
+        menu,
+        stats: {
+          totalItems,
+          availableItems,
+          outOfStockItems,
+          categoriesCount: categories.length
+        },
+        categories
+      };
+    },
+
+    addMenuItem: async function (itemData) {
+      const rId = parseInt(itemData.restaurantId || itemData.restaurant_id, 10) || 2;
+      const key = 'foodwala_mock_restaurant_menu_' + rId;
+      const menu = getLocal(key, []);
+      const newId = Date.now();
+      const newItem = {
+        menu_id: newId,
+        menuId: newId,
+        restaurant_id: rId,
+        restaurantId: rId,
+        item_name: itemData.itemName || itemData.item_name,
+        name: itemData.itemName || itemData.item_name,
+        description: itemData.description || '',
+        price: parseFloat(itemData.price),
+        is_available: 1,
+        isAvailable: true,
+        category_name: itemData.categoryName || itemData.category_name || 'Main Course',
+        category: itemData.categoryName || itemData.category_name || 'Main Course',
+        is_veg: itemData.is_veg !== undefined ? (itemData.is_veg ? 1 : 0) : (itemData.isVeg ? 1 : 0),
+        isVeg: itemData.is_veg !== undefined ? Boolean(itemData.is_veg) : Boolean(itemData.isVeg),
+        image_path: itemData.imagePath || itemData.image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=75',
+        imagePath: itemData.imagePath || itemData.image_path || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=75'
+      };
+      menu.push(newItem);
+      setLocal(key, menu);
+      return { success: true, message: `Dish "${newItem.item_name}" added to menu.`, item: newItem };
+    },
+
+    updateMenuItem: async function (menuId, itemData) {
+      const mId = parseInt(menuId, 10);
+      for (let rId of [1, 2, 3]) {
+        const key = 'foodwala_mock_restaurant_menu_' + rId;
+        const menu = getLocal(key, []);
+        const idx = menu.findIndex(m => (m.menu_id === mId || m.menuId === mId));
+        if (idx !== -1) {
+          const cur = menu[idx];
+          if (itemData.price !== undefined) cur.price = parseFloat(itemData.price);
+          if (itemData.itemName || itemData.item_name) {
+            cur.item_name = itemData.itemName || itemData.item_name;
+            cur.name = cur.item_name;
+          }
+          if (itemData.description !== undefined) cur.description = itemData.description;
+          if (itemData.categoryName || itemData.category_name) {
+            cur.category_name = itemData.categoryName || itemData.category_name;
+            cur.category = cur.category_name;
+          }
+          if (itemData.isVeg !== undefined || itemData.is_veg !== undefined) {
+            cur.isVeg = itemData.is_veg !== undefined ? Boolean(itemData.is_veg) : Boolean(itemData.isVeg);
+            cur.is_veg = cur.isVeg ? 1 : 0;
+          }
+          if (itemData.imagePath || itemData.image_path) {
+            cur.image_path = itemData.imagePath || itemData.image_path;
+            cur.imagePath = cur.image_path;
+          }
+          if (itemData.isAvailable !== undefined || itemData.is_available !== undefined) {
+            cur.isAvailable = itemData.is_available !== undefined ? Boolean(itemData.is_available) : Boolean(itemData.isAvailable);
+            cur.is_available = cur.isAvailable ? 1 : 0;
+          }
+          menu[idx] = cur;
+          setLocal(key, menu);
+          return { success: true, message: 'Item updated successfully.', item: cur };
+        }
+      }
+      return { success: true, message: 'Item updated.', item: itemData };
+    },
+
+    toggleItemAvailability: async function (menuId, isAvailable) {
+      const mId = parseInt(menuId, 10);
+      for (let rId of [1, 2, 3]) {
+        const key = 'foodwala_mock_restaurant_menu_' + rId;
+        const menu = getLocal(key, []);
+        const idx = menu.findIndex(m => (m.menu_id === mId || m.menuId === mId));
+        if (idx !== -1) {
+          const cur = menu[idx];
+          const newAvail = isAvailable !== undefined ? Boolean(isAvailable) : !cur.isAvailable;
+          cur.isAvailable = newAvail;
+          cur.is_available = newAvail ? 1 : 0;
+          menu[idx] = cur;
+          setLocal(key, menu);
+          return {
+            success: true,
+            menuId: mId,
+            isAvailable: newAvail,
+            is_available: newAvail ? 1 : 0,
+            message: newAvail ? `"${cur.item_name}" marked In Stock` : `"${cur.item_name}" marked Out of Stock`
+          };
+        }
+      }
+      return { success: true, menuId: mId, isAvailable, message: 'Availability updated' };
+    },
+
+    deleteMenuItem: async function (menuId) {
+      const mId = parseInt(menuId, 10);
+      for (let rId of [1, 2, 3]) {
+        const key = 'foodwala_mock_restaurant_menu_' + rId;
+        const menu = getLocal(key, []);
+        const filtered = menu.filter(m => (m.menu_id !== mId && m.menuId !== mId));
+        if (filtered.length !== menu.length) {
+          setLocal(key, filtered);
+          return { success: true, message: 'Dish removed from menu.' };
+        }
+      }
+      return { success: true, message: 'Dish removed.' };
+    },
+
+    toggleRestaurantStatus: async function (restaurantId, isOpen) {
+      return { success: true, isOpen: Boolean(isOpen), is_open: isOpen ? 1 : 0 };
+    },
+
+    getRestaurantOrders: async function (restaurantId) {
+      const allOrders = await this.getAdminOrders();
+      return {
+        success: true,
+        orders: (allOrders && allOrders.orders) ? allOrders.orders : []
+      };
+    },
+
+    updateRestaurantOrderStatus: async function (orderId, status) {
+      return { success: true, orderId, status, message: `Order status set to ${status}` };
     }
   };
 
