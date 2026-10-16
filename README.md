@@ -55,13 +55,13 @@
 
 ---
 
-## 🛠️ Tech Stack
-
-- **Frontend**: HTML5, CSS3, Bootstrap 5.3, Bootstrap Icons, Vanilla JavaScript (ES6+ Modules)
-- **Backend**: Node.js, Express.js, Helmet (security headers), Express-Rate-Limit, CORS
-- **Database**: MySQL 8.0 / MySQL 5.7 (`fudwala`), `mysql2/promise` connection pool
-- **Hashing**: `@node-rs/argon2`
-- **Integrations**: Razorpay Checkout SDK, EmailJS Browser SDK (`@emailjs/browser`), jsPDF (`jspdf.umd.min.js`)
+🛠️ Tech Stack
+Frontend: HTML5, CSS3, Bootstrap 5.3, Bootstrap Icons, JavaScript ES6+, Responsive Web Design
+Backend: Java 17+, Spring Boot, Spring MVC, Spring REST APIs, Spring Security, Spring Data JPA, Hibernate, Jakarta Validation, Maven
+Database: MySQL 8.0, SQL, JPA/Hibernate ORM
+Security: Spring Security, BCrypt Password Hashing, Authentication and Authorization, Role-Based Access Control (RBAC), Session/JWT Authentication Architecture, Input Validation, CORS Configuration
+Integrations: Razorpay Payment Gateway, JavaMail / SMTP, OTP Verification Architecture, PDF Invoice Generation
+Development Tools: IntelliJ IDEA, Eclipse, Visual Studio Code, MySQL Workbench, Postman, Git and GitHub
 
 ---
 
