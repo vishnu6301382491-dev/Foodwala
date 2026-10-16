@@ -56,11 +56,17 @@
 ---
 
 🛠️ Tech Stack
+
 Frontend: HTML5, CSS3, Bootstrap 5.3, Bootstrap Icons, JavaScript ES6+, Responsive Web Design
+
 Backend: Java 17+, Spring Boot, Spring MVC, Spring REST APIs, Spring Security, Spring Data JPA, Hibernate, Jakarta Validation, Maven
+
 Database: MySQL 8.0, SQL, JPA/Hibernate ORM
+
 Security: Spring Security, BCrypt Password Hashing, Authentication and Authorization, Role-Based Access Control (RBAC), Session/JWT Authentication Architecture, Input Validation, CORS Configuration
-Integrations: Razorpay Payment Gateway, JavaMail / SMTP, OTP Verification Architecture, PDF Invoice Generation
+
+Integrations: Razorpay Payment Gateway, JavaMail/SMTP, OTP Verification Architecture, PDF Invoice Generation
+
 Development Tools: IntelliJ IDEA, Eclipse, Visual Studio Code, MySQL Workbench, Postman, Git and GitHub
 
 ---
