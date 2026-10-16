@@ -1468,6 +1468,14 @@ const FoodWalaApp = (function () {
           deliveredAt: order.deliveredAt || order.createdAt
         };
       }
+      if (curr === 'READY_FOR_PICKUP') {
+        return {
+          status: 'READY_FOR_PICKUP',
+          label: 'Ready for Rider',
+          isLive: true,
+          remainingMinutes: 15
+        };
+      }
 
       // Parse timestamp
       let createdMs = Date.now();

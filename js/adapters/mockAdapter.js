@@ -1496,13 +1496,38 @@
     },
 
     getRestaurantOrders: async function (restaurantId) {
-      let orders = getLocal('foodwala_mock_kitchen_orders', null);
-      if (!orders || !Array.isArray(orders) || orders.length === 0) {
-        orders = [
+      const targetRestId = parseInt(restaurantId, 10) || 2;
+
+      // Look up restaurant to get its name for robust matching
+      let targetRestName = '';
+      try {
+        const rests = await this.getRestaurants();
+        const matched = rests.find(r => (parseInt(r.restaurantId || r.id, 10) === targetRestId));
+        if (matched) {
+          targetRestName = (matched.name || '').toLowerCase();
+        }
+      } catch (e) {}
+
+      if (!targetRestName) {
+        if (targetRestId === 2) targetRestName = 'vidyarthi bhavan';
+        else if (targetRestId === 1) targetRestName = 'central tiffin room';
+        else if (targetRestId === 7) targetRestName = 'meghana foods';
+        else if (targetRestId === 3) targetRestName = 'mavalli tiffin room';
+      }
+
+      // 1. Gather all stored customer orders across both storage locations
+      const rawMockOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
+      const rawAppOrders = getLocal('foodwala_orders', []);
+      let kitchenOrders = getLocal('foodwala_mock_kitchen_orders', null);
+
+      if (!kitchenOrders || !Array.isArray(kitchenOrders) || kitchenOrders.length === 0) {
+        kitchenOrders = [
           {
             order_id: 1001,
             orderId: 1001,
             restaurant_id: 2,
+            restaurantId: 2,
+            restaurant_name: 'Vidyarthi Bhavan',
             customer_name: 'Rahul Sharma (Customer)',
             customerName: 'Rahul Sharma (Customer)',
             customer_phone: '9876543210',
@@ -1515,15 +1540,17 @@
             paymentMode: 'UPI (PhonePe)',
             status: 'PREPARING',
             items: [
-              { item_name: 'Benne Masala Dosa', quantity: 2, price: 95, total_price: 190 },
-              { item_name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 },
-              { item_name: 'Steamed Idli (2 pcs)', quantity: 1, price: 50, total_price: 50 }
+              { item_name: 'Benne Masala Dosa', name: 'Benne Masala Dosa', quantity: 2, price: 95, total_price: 190 },
+              { item_name: 'Degree Filter Coffee', name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 },
+              { item_name: 'Steamed Idli (2 pcs)', name: 'Steamed Idli (2 pcs)', quantity: 1, price: 50, total_price: 50 }
             ]
           },
           {
             order_id: 1002,
             orderId: 1002,
             restaurant_id: 2,
+            restaurantId: 2,
+            restaurant_name: 'Vidyarthi Bhavan',
             customer_name: 'Priya Sundaram',
             customerName: 'Priya Sundaram',
             customer_phone: '9876543215',
@@ -1536,14 +1563,16 @@
             paymentMode: 'Razorpay',
             status: 'PLACED',
             items: [
-              { item_name: 'Rava Onion Dosa', quantity: 2, price: 110, total_price: 220 },
-              { item_name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 }
+              { item_name: 'Rava Onion Dosa', name: 'Rava Onion Dosa', quantity: 2, price: 110, total_price: 220 },
+              { item_name: 'Degree Filter Coffee', name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 }
             ]
           },
           {
             order_id: 1003,
             orderId: 1003,
             restaurant_id: 2,
+            restaurantId: 2,
+            restaurant_name: 'Vidyarthi Bhavan',
             customer_name: 'Amit Verma',
             customerName: 'Amit Verma',
             customer_phone: '9876543218',
@@ -1556,13 +1585,144 @@
             paymentMode: 'Cash On Delivery',
             status: 'DELIVERED',
             items: [
-              { item_name: 'Benne Masala Dosa', quantity: 3, price: 95, total_price: 285 },
-              { item_name: 'Mangalore Bajji (Goli Baje)', quantity: 2, price: 55, total_price: 110 }
+              { item_name: 'Benne Masala Dosa', name: 'Benne Masala Dosa', quantity: 3, price: 95, total_price: 285 },
+              { item_name: 'Mangalore Bajji (Goli Baje)', name: 'Mangalore Bajji (Goli Baje)', quantity: 2, price: 55, total_price: 110 }
             ]
           }
         ];
-        setLocal('foodwala_mock_kitchen_orders', orders);
+        setLocal('foodwala_mock_kitchen_orders', kitchenOrders);
       }
+
+      // Check user accounts for any additional stored orders
+      const allUsers = getLocal(STORAGE_KEYS.MOCK_USERS, []);
+      const userOrders = [];
+      if (Array.isArray(allUsers)) {
+        allUsers.forEach(u => {
+          if (Array.isArray(u.orders)) {
+            userOrders.push(...u.orders);
+          }
+        });
+      }
+
+      // Helper to check if an order belongs to target restaurant
+      function matchesTargetRestaurant(o) {
+        if (!o) return false;
+        const oRestId = parseInt(o.restaurantId || o.restaurant_id, 10);
+        if (oRestId && oRestId === targetRestId) return true;
+        const oRestName = (o.restaurantName || o.restaurant_name || '').toLowerCase();
+        if (targetRestName && oRestName) {
+          if (targetRestName.includes('vidyarthi') && oRestName.includes('vidyarthi')) return true;
+          if ((targetRestName.includes('ctr') || targetRestName.includes('shri sagar') || targetRestName.includes('central tiffin')) &&
+              (oRestName.includes('ctr') || oRestName.includes('shri sagar') || oRestName.includes('central tiffin'))) return true;
+          if (targetRestName.includes('meghana') && oRestName.includes('meghana')) return true;
+          if (targetRestName.includes('mavalli') || targetRestName.includes('mtr')) {
+            if (oRestName.includes('mavalli') || oRestName.includes('mtr')) return true;
+          }
+          if (oRestName === targetRestName) return true;
+        }
+        return false;
+      }
+
+      // Deduplicate & merge
+      const orderMap = new Map();
+
+      // Step 1: Customer orders placed via app/checkout (highest fidelity)
+      const combined = [...rawAppOrders, ...rawMockOrders, ...userOrders];
+      combined.forEach(o => {
+        if (!o || !matchesTargetRestaurant(o)) return;
+        const rawId = String(o.orderId || o.order_id || o.id || '');
+        const cleanId = rawId.replace(/^#?FW-?/i, '').trim();
+        if (!cleanId) return;
+
+        if (!orderMap.has(cleanId)) {
+          orderMap.set(cleanId, Object.assign({}, o));
+        } else {
+          const existing = orderMap.get(cleanId);
+          orderMap.set(cleanId, Object.assign({}, existing, o));
+        }
+      });
+
+      // Step 2: Kitchen orders (including manual status overrides made by restaurant manager)
+      if (Array.isArray(kitchenOrders)) {
+        kitchenOrders.forEach(ko => {
+          if (!ko || !matchesTargetRestaurant(ko)) return;
+          const rawId = String(ko.order_id || ko.orderId || ko.id || '');
+          const cleanId = rawId.replace(/^#?FW-?/i, '').trim();
+          if (!cleanId) return;
+
+          if (orderMap.has(cleanId)) {
+            const existing = orderMap.get(cleanId);
+            orderMap.set(cleanId, Object.assign({}, existing, ko));
+          } else {
+            orderMap.set(cleanId, ko);
+          }
+        });
+      }
+
+      // Step 3: Format and standardize all orders
+      const orders = Array.from(orderMap.values()).map(o => {
+        const rawId = String(o.order_id || o.orderId || o.id || '');
+        const cleanId = rawId.replace(/^#?FW-?/i, '').trim();
+        const numTotal = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
+
+        let liveStatus = (o.status || 'PLACED').toUpperCase();
+        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+          try {
+            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            if (stInfo && stInfo.status) liveStatus = stInfo.status.toUpperCase();
+          } catch (e) {}
+        }
+
+        // Standardize items array
+        const rawItems = o.items || [];
+        const items = Array.isArray(rawItems) ? rawItems.map(it => {
+          const itemName = it.item_name || it.name || it.itemName || 'Dish';
+          const qty = Number(it.quantity || it.qty || 1);
+          const price = Number(it.price || 0);
+          const totalPrice = Number(it.total_price || it.totalPrice || it.item_total || (price * qty));
+          return {
+            item_name: itemName,
+            name: itemName,
+            quantity: qty,
+            price: price,
+            total_price: totalPrice
+          };
+        }) : [];
+
+        const dateVal = o.order_date || o.orderDate || o.createdAt || (o.createdAtMs ? new Date(o.createdAtMs).toISOString() : new Date().toISOString());
+
+        return {
+          ...o,
+          order_id: cleanId,
+          orderId: cleanId,
+          id: cleanId,
+          restaurant_id: targetRestId,
+          restaurantId: targetRestId,
+          customer_name: o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer',
+          customerName: o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer',
+          customer_phone: o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-',
+          customerPhone: o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-',
+          delivery_address: o.delivery_address || o.deliveryAddress || (o.address && o.address.street) || 'Bengaluru',
+          deliveryAddress: o.delivery_address || o.deliveryAddress || (o.address && o.address.street) || 'Bengaluru',
+          total_amount: numTotal,
+          totalAmount: numTotal,
+          payment_mode: o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay',
+          paymentMode: o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay',
+          status: liveStatus,
+          order_date: dateVal,
+          orderDate: dateVal,
+          createdAt: dateVal,
+          items: items
+        };
+      });
+
+      // Sort newest first
+      orders.sort((a, b) => {
+        const timeA = new Date(a.order_date || a.orderDate || a.createdAt || 0).getTime() || 0;
+        const timeB = new Date(b.order_date || b.orderDate || b.createdAt || 0).getTime() || 0;
+        return timeB - timeA;
+      });
+
       return {
         success: true,
         orders: orders
@@ -1570,52 +1730,102 @@
     },
 
     updateRestaurantOrderStatus: async function (orderId, status) {
-      const cleanId = String(orderId).replace(/^#?FW-?/i, '');
+      const cleanId = String(orderId).replace(/^#?FW-?/i, '').trim();
       const numId = parseInt(cleanId, 10);
       const newStatus = (status || '').toUpperCase();
 
       // 1. Update kitchen orders
       let kitchenOrders = getLocal('foodwala_mock_kitchen_orders', []);
-      let updated = false;
+      let kFound = false;
       kitchenOrders = kitchenOrders.map(o => {
-        const oId = String(o.order_id || o.orderId).replace(/^#?FW-?/i, '');
-        if (oId === cleanId || parseInt(oId, 10) === numId) {
+        const oId = String(o.order_id || o.orderId || o.id || '').replace(/^#?FW-?/i, '').trim();
+        if (oId === cleanId || (numId && parseInt(oId, 10) === numId)) {
           o.status = newStatus;
           o.orderStatus = newStatus;
-          updated = true;
+          if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
+          kFound = true;
         }
         return o;
       });
-      if (updated) {
-        setLocal('foodwala_mock_kitchen_orders', kitchenOrders);
+      if (!kFound) {
+        kitchenOrders.unshift({
+          order_id: cleanId,
+          orderId: cleanId,
+          id: cleanId,
+          status: newStatus,
+          orderStatus: newStatus,
+          deliveredAt: newStatus === 'DELIVERED' ? new Date().toISOString() : undefined
+        });
+      }
+      setLocal('foodwala_mock_kitchen_orders', kitchenOrders);
+
+      // 2. Update foodwala_orders
+      let appOrders = getLocal('foodwala_orders', []);
+      if (Array.isArray(appOrders)) {
+        appOrders = appOrders.map(o => {
+          const oId = String(o.orderId || o.order_id || o.id || '').replace(/^#?FW-?/i, '').trim();
+          if (oId === cleanId || (numId && parseInt(oId, 10) === numId)) {
+            o.status = newStatus;
+            o.deliveryStatus = newStatus;
+            o.orderStatus = newStatus;
+            if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
+          }
+          return o;
+        });
+        setLocal('foodwala_orders', appOrders);
       }
 
-      // 2. Also update customer orders in STORAGE_KEYS.MOCK_ORDERS and foodwala_orders
-      let customerOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, getLocal('foodwala_orders', []));
-      customerOrders = customerOrders.map(o => {
-        const oId = String(o.orderId || o.order_id || o.id).replace(/^#?FW-?/i, '');
-        if (oId === cleanId || parseInt(oId, 10) === numId) {
-          o.status = newStatus;
-          o.deliveryStatus = newStatus;
-          o.orderStatus = newStatus;
-        }
-        return o;
-      });
-      setLocal(STORAGE_KEYS.MOCK_ORDERS, customerOrders);
-      setLocal('foodwala_orders', customerOrders);
+      // 3. Update foodwala_mock_orders
+      let mockOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
+      if (Array.isArray(mockOrders)) {
+        mockOrders = mockOrders.map(o => {
+          const oId = String(o.orderId || o.order_id || o.id || '').replace(/^#?FW-?/i, '').trim();
+          if (oId === cleanId || (numId && parseInt(oId, 10) === numId)) {
+            o.status = newStatus;
+            o.deliveryStatus = newStatus;
+            o.orderStatus = newStatus;
+            if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
+          }
+          return o;
+        });
+        setLocal(STORAGE_KEYS.MOCK_ORDERS, mockOrders);
+      }
 
-      // 3. Dispatch global order status changed event
+      // 4. Update inside mock users
+      let users = getLocal(STORAGE_KEYS.MOCK_USERS, []);
+      if (Array.isArray(users)) {
+        let userChanged = false;
+        users.forEach(u => {
+          if (Array.isArray(u.orders)) {
+            u.orders.forEach(o => {
+              const oId = String(o.orderId || o.order_id || o.id || '').replace(/^#?FW-?/i, '').trim();
+              if (oId === cleanId || (numId && parseInt(oId, 10) === numId)) {
+                o.status = newStatus;
+                o.deliveryStatus = newStatus;
+                o.orderStatus = newStatus;
+                if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
+                userChanged = true;
+              }
+            });
+          }
+        });
+        if (userChanged) {
+          setLocal(STORAGE_KEYS.MOCK_USERS, users);
+        }
+      }
+
+      // 5. Dispatch global order status changed event
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('foodwala:orderStatusChanged', {
-          detail: { orderId: numId || cleanId, status: newStatus }
+          detail: { orderId: cleanId, status: newStatus }
         }));
       }
 
       return {
         success: true,
-        orderId: numId || cleanId,
+        orderId: cleanId,
         status: newStatus,
-        message: `Order #FW-${numId || cleanId} status updated to ${newStatus}`
+        message: `Order #FW-${cleanId} status updated to ${newStatus}`
       };
     }
   };

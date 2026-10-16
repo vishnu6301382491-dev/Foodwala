@@ -446,6 +446,20 @@
         renderOrdersList();
       });
 
+      window.addEventListener('foodwala:orderPlaced', () => {
+        renderOrdersList();
+      });
+
+      window.addEventListener('foodwala:orderStatusChanged', () => {
+        renderOrdersList();
+      });
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_kitchen_orders') {
+          renderOrdersList();
+        }
+      });
+
       // Auto-recompute statuses every 30s with setInterval without full page reload
       setInterval(renderOrdersList, 30000);
     });
