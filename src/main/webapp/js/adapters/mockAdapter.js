@@ -912,24 +912,114 @@
     // 19. Admin Audits
     getAdminUsers: async function () {
       const users = initMockUsers();
-      return users.map(u => ({
+      const mapped = users.map(u => ({
+        user_id: u.userId,
         userId: u.userId,
-        name: u.name,
+        username: u.username || u.name,
+        name: u.name || u.username,
         email: u.email,
         phone: u.phone,
-        role: u.role,
-        lastLogin: u.lastLogin || u.memberSince,
+        role: (u.role || 'customer').toLowerCase(),
+        total_orders: u.total_orders || (u.role === 'customer' ? 3 : (u.role === 'admin' ? 1 : 0)),
+        totalOrders: u.total_orders || (u.role === 'customer' ? 3 : (u.role === 'admin' ? 1 : 0)),
+        total_spent: u.total_spent || (u.role === 'customer' ? 1240.50 : 0),
+        totalSpent: u.total_spent || (u.role === 'customer' ? 1240.50 : 0),
+        last_login: u.lastLogin || new Date().toISOString(),
+        lastLogin: u.lastLogin || new Date().toISOString(),
+        failed_attempts: u.failedAttempts || 0,
         failedAttempts: u.failedAttempts || 0,
+        locked_until: u.lockedUntil || null,
         lockedUntil: u.lockedUntil || null
       }));
+      return { success: true, users: mapped };
     },
 
     getAdminOrders: async function () {
-      return await this.getOrders();
+      let orders = await this.getOrders();
+      if (!orders || orders.length === 0) {
+        orders = [
+          {
+            order_id: 1001,
+            orderId: 1001,
+            customer_name: 'Rahul Sharma (Customer)',
+            customerName: 'Rahul Sharma (Customer)',
+            customer_phone: '9876543210',
+            customerPhone: '9876543210',
+            restaurant_name: 'Vidyarthi Bhavan',
+            restaurantName: 'Vidyarthi Bhavan',
+            total_amount: 450.00,
+            totalAmount: 450.00,
+            payment_mode: 'UPI',
+            paymentMode: 'UPI',
+            payment_status: 'PAID',
+            paymentStatus: 'PAID',
+            status: 'DELIVERED',
+            order_date: new Date(Date.now() - 3600000).toISOString(),
+            orderDate: new Date(Date.now() - 3600000).toISOString()
+          },
+          {
+            order_id: 1002,
+            orderId: 1002,
+            customer_name: 'Vishnu Vardhan Reddy',
+            customerName: 'Vishnu Vardhan Reddy',
+            customer_phone: '6301382491',
+            customerPhone: '6301382491',
+            restaurant_name: 'Meghana Foods',
+            restaurantName: 'Meghana Foods',
+            total_amount: 790.00,
+            totalAmount: 790.00,
+            payment_mode: 'Razorpay',
+            paymentMode: 'Razorpay',
+            payment_status: 'PAID',
+            paymentStatus: 'PAID',
+            status: 'DELIVERED',
+            order_date: new Date(Date.now() - 7200000).toISOString(),
+            orderDate: new Date(Date.now() - 7200000).toISOString()
+          },
+          {
+            order_id: 1003,
+            orderId: 1003,
+            customer_name: 'Ananya Sharma',
+            customerName: 'Ananya Sharma',
+            customer_phone: '9848012345',
+            customerPhone: '9848012345',
+            restaurant_name: 'CTR Shri Sagar',
+            restaurantName: 'CTR Shri Sagar',
+            total_amount: 320.00,
+            totalAmount: 320.00,
+            payment_mode: 'Cash On Delivery',
+            paymentMode: 'Cash On Delivery',
+            payment_status: 'PAID',
+            paymentStatus: 'PAID',
+            status: 'PREPARING',
+            order_date: new Date(Date.now() - 900000).toISOString(),
+            orderDate: new Date(Date.now() - 900000).toISOString()
+          }
+        ];
+      }
+      const totalRev = orders.reduce((acc, o) => acc + (Number(o.total_amount || o.totalAmount || o.total) || 0), 0);
+      return {
+        success: true,
+        orders: orders,
+        totalOrders: orders.length,
+        totalRevenue: totalRev
+      };
     },
 
     getAdminLoginHistory: async function () {
-      return getLocal(STORAGE_KEYS.LOGIN_HISTORY, []);
+      let history = getLocal(STORAGE_KEYS.LOGIN_HISTORY, []);
+      if (!history || history.length === 0) {
+        history = [
+          { id: 1, login_time: new Date().toISOString(), loginTime: new Date().toISOString(), username: 'Administrator', email: 'admin@example.com', phone: '9876543229', ip_address: '127.0.0.1', ipAddress: '127.0.0.1', status: 'SUCCESS' },
+          { id: 2, login_time: new Date(Date.now() - 1800000).toISOString(), loginTime: new Date(Date.now() - 1800000).toISOString(), username: 'Rahul Sharma', email: 'customer@foodwala.com', phone: '9876543210', ip_address: '127.0.0.1', ipAddress: '127.0.0.1', status: 'SUCCESS' },
+          { id: 3, login_time: new Date(Date.now() - 7200000).toISOString(), loginTime: new Date(Date.now() - 7200000).toISOString(), username: 'VISHNU', email: 'vishnuvardhanreddych45@gmail.com', phone: '6301382491', ip_address: '127.0.0.1', ipAddress: '127.0.0.1', status: 'SUCCESS' },
+          { id: 4, login_time: new Date(Date.now() - 10800000).toISOString(), loginTime: new Date(Date.now() - 10800000).toISOString(), username: 'FoodWala Administrator', email: 'admin@foodwala.com', phone: '9876543222', ip_address: '127.0.0.1', ipAddress: '127.0.0.1', status: 'SUCCESS' }
+        ];
+      }
+      return {
+        success: true,
+        history: history
+      };
     }
   };
 

@@ -334,12 +334,12 @@
 
   <!-- Core Scripts -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js"></script>
-  <script src="./js/adapters/mockAdapter.js"></script>
-  <script src="./js/adapters/liveAdapter.js"></script>
-  <script src="./js/api.js"></script>
-  <script src="./js/app.js"></script>
+  <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/config.js?v=20261016_04"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261016_04"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261016_04"></script>
+  <script src="./js/api.js?v=20261016_04"></script>
+  <script src="./js/app.js?v=20261016_04"></script>
 
   <script>
     let globalUsers = [];
@@ -396,10 +396,10 @@
 
           try {
             const res = await FoodWalaApi.login(email, password);
-            if (res.success && res.user && res.user.role === 'admin') {
+            if (res.success && res.user && (res.user.role || '').toLowerCase() === 'admin') {
               FoodWalaApp.showToast('Welcome, Administrator!', 'success');
               initAdminAuth();
-            } else if (res.success && res.user && res.user.role !== 'admin') {
+            } else if (res.success && res.user && (res.user.role || '').toLowerCase() !== 'admin') {
               errDiv.textContent = 'Account signed in successfully, but does not possess admin privileges.';
               errDiv.classList.remove('d-none');
             } else {
@@ -430,7 +430,7 @@
       if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
           loadAdminData();
-          FoodWalaApp.showToast('Refreshing admin data from MySQL...', 'info');
+          FoodWalaApp.showToast('Refreshing admin data...', 'info');
         });
       }
 
@@ -453,7 +453,25 @@
       }
     }
 
+    async function updateDbHealthBadge() {
+      const badge = document.getElementById('db-health-badge');
+      if (!badge) return;
+      try {
+        if (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function') {
+          const health = await window.FoodWalaHealth.checkBackend();
+          if (health && health.ok) {
+            badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold';
+            badge.innerHTML = '<i class="bi bi-circle-fill small me-1"></i> DB Connected: fudwala (Live)';
+            return;
+          }
+        }
+      } catch (e) {}
+      badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-semibold';
+      badge.innerHTML = '<i class="bi bi-database me-1"></i> Sandbox / Local Storage View';
+    }
+
     async function loadAdminData() {
+      updateDbHealthBadge();
       try {
         const [usersRes, ordersRes, historyRes] = await Promise.all([
           FoodWalaApi.getAdminUsers(),
@@ -461,31 +479,55 @@
           FoodWalaApi.getAdminLoginHistory()
         ]);
 
-        if (usersRes.success) {
-          globalUsers = usersRes.users || [];
-          renderUsersTable(globalUsers);
-          document.getElementById('kpi-users-count').textContent = globalUsers.length;
-          document.getElementById('tab-users-badge').textContent = globalUsers.length;
-          const adminCount = globalUsers.filter(u => u.role === 'admin').length;
-          const lockedCount = globalUsers.filter(u => u.locked_until && new Date(u.locked_until) > new Date()).length;
-          document.getElementById('kpi-users-sub').textContent = `${adminCount} Admin(s), ${lockedCount} Locked`;
+        let usersList = [];
+        if (usersRes) {
+          if (Array.isArray(usersRes)) usersList = usersRes;
+          else if (Array.isArray(usersRes.users)) usersList = usersRes.users;
         }
 
-        if (ordersRes.success) {
-          globalOrders = ordersRes.orders || [];
-          renderOrdersTable(globalOrders);
-          document.getElementById('kpi-orders-count').textContent = ordersRes.totalOrders || globalOrders.length;
-          document.getElementById('tab-orders-badge').textContent = ordersRes.totalOrders || globalOrders.length;
-          document.getElementById('kpi-revenue').textContent = '₹' + Number(ordersRes.totalRevenue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        let ordersList = [];
+        let totalRev = 0;
+        let totalOrdersCount = 0;
+        if (ordersRes) {
+          if (Array.isArray(ordersRes)) {
+            ordersList = ordersRes;
+            totalOrdersCount = ordersList.length;
+            totalRev = ordersList.reduce((acc, o) => acc + (Number(o.total_amount !== undefined ? o.total_amount : (o.totalAmount !== undefined ? o.totalAmount : o.total)) || 0), 0);
+          } else if (Array.isArray(ordersRes.orders)) {
+            ordersList = ordersRes.orders;
+            totalOrdersCount = ordersRes.totalOrders !== undefined ? ordersRes.totalOrders : ordersList.length;
+            totalRev = ordersRes.totalRevenue !== undefined ? ordersRes.totalRevenue : ordersList.reduce((acc, o) => acc + (Number(o.total_amount !== undefined ? o.total_amount : (o.totalAmount !== undefined ? o.totalAmount : o.total)) || 0), 0);
+          }
         }
 
-        if (historyRes.success) {
-          globalHistory = historyRes.history || [];
-          renderSecurityTable(globalHistory);
-          document.getElementById('kpi-login-count').textContent = globalHistory.length;
-          const failedCount = globalHistory.filter(h => h.status === 'FAILED').length;
-          document.getElementById('kpi-login-sub').textContent = `${failedCount} Failed attempts logged`;
+        let historyList = [];
+        if (historyRes) {
+          if (Array.isArray(historyRes)) historyList = historyRes;
+          else if (Array.isArray(historyRes.history)) historyList = historyRes.history;
         }
+
+        globalUsers = usersList;
+        renderUsersTable(globalUsers);
+        document.getElementById('kpi-users-count').textContent = globalUsers.length;
+        document.getElementById('tab-users-badge').textContent = globalUsers.length;
+        const adminCount = globalUsers.filter(u => (u.role || '').toLowerCase() === 'admin').length;
+        const lockedCount = globalUsers.filter(u => {
+          const lk = u.locked_until || u.lockedUntil;
+          return lk && new Date(lk) > new Date();
+        }).length;
+        document.getElementById('kpi-users-sub').textContent = `${adminCount} Admin(s), ${lockedCount} Locked`;
+
+        globalOrders = ordersList;
+        renderOrdersTable(globalOrders);
+        document.getElementById('kpi-orders-count').textContent = totalOrdersCount;
+        document.getElementById('tab-orders-badge').textContent = totalOrdersCount;
+        document.getElementById('kpi-revenue').textContent = '₹' + Number(totalRev || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+        globalHistory = historyList;
+        renderSecurityTable(globalHistory);
+        document.getElementById('kpi-login-count').textContent = globalHistory.length;
+        const failedCount = globalHistory.filter(h => (h.status || '').toUpperCase() === 'FAILED').length;
+        document.getElementById('kpi-login-sub').textContent = `${failedCount} Failed attempts logged`;
 
       } catch (err) {
         console.error('[Admin] Error fetching operational data:', err);
@@ -501,8 +543,19 @@
       }
 
       tbody.innerHTML = users.map(u => {
-        const isLocked = u.locked_until && new Date(u.locked_until) > new Date();
-        const roleBadge = u.role === 'admin' 
+        const userId = u.user_id !== undefined ? u.user_id : (u.userId !== undefined ? u.userId : '-');
+        const username = u.username || u.name || 'User';
+        const email = u.email || '-';
+        const phone = u.phone || '-';
+        const role = (u.role || 'customer').toLowerCase();
+        const totalOrders = u.total_orders !== undefined ? u.total_orders : (u.totalOrders !== undefined ? u.totalOrders : 0);
+        const totalSpent = u.total_spent !== undefined ? u.total_spent : (u.totalSpent !== undefined ? u.totalSpent : 0);
+        const failedAttempts = u.failed_attempts !== undefined ? u.failed_attempts : (u.failedAttempts !== undefined ? u.failedAttempts : 0);
+        const lockedUntil = u.locked_until || u.lockedUntil;
+        const isLocked = lockedUntil && new Date(lockedUntil) > new Date();
+        const lastLogin = u.last_login || u.lastLogin;
+
+        const roleBadge = role === 'admin' 
           ? `<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>`
           : `<span class="badge badge-soft-info px-2 py-1 rounded-pill fw-semibold">Customer</span>`;
         
@@ -512,20 +565,20 @@
 
         return `
           <tr>
-            <td class="fw-bold text-muted">#${u.user_id}</td>
-            <td class="fw-bold text-dark">${escapeHtml(u.username)}</td>
-            <td class="small text-muted">${escapeHtml(u.email || '-')}</td>
-            <td><code class="fw-bold text-dark">${escapeHtml(u.phone)}</code></td>
+            <td class="fw-bold text-muted">#${userId}</td>
+            <td class="fw-bold text-dark">${escapeHtml(username)}</td>
+            <td class="small text-muted">${escapeHtml(email)}</td>
+            <td><code class="fw-bold text-dark">${escapeHtml(phone)}</code></td>
             <td>${roleBadge}</td>
-            <td class="fw-bold">${u.total_orders || 0}</td>
-            <td class="fw-bold text-success">₹${Number(u.total_spent || 0).toFixed(2)}</td>
+            <td class="fw-bold">${totalOrders}</td>
+            <td class="fw-bold text-success">₹${Number(totalSpent || 0).toFixed(2)}</td>
             <td>
-              <span class="badge ${u.failed_attempts > 0 ? 'bg-danger' : 'bg-light text-muted'} rounded-pill">
-                ${u.failed_attempts || 0}
+              <span class="badge ${failedAttempts > 0 ? 'bg-danger' : 'bg-light text-muted'} rounded-pill">
+                ${failedAttempts}
               </span>
             </td>
             <td>${lockBadge}</td>
-            <td class="small text-muted">${u.last_login ? new Date(u.last_login).toLocaleString('en-IN') : 'Never'}</td>
+            <td class="small text-muted">${lastLogin ? new Date(lastLogin).toLocaleString('en-IN') : 'Never'}</td>
           </tr>
         `;
       }).join('');
@@ -539,23 +592,33 @@
       }
 
       tbody.innerHTML = orders.map(o => {
-        let statusBadge = 'badge-soft-info';
-        if (o.status === 'DELIVERED') statusBadge = 'badge-soft-success';
-        if (o.status === 'CANCELLED') statusBadge = 'badge-soft-danger';
+        const orderId = o.order_id !== undefined ? o.order_id : (o.orderId !== undefined ? o.orderId : '-');
+        const customerName = o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer';
+        const customerPhone = o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-';
+        const restaurantName = o.restaurant_name || o.restaurantName || 'FoodWala Partner';
+        const totalAmount = Number(o.total_amount !== undefined ? o.total_amount : (o.totalAmount !== undefined ? o.totalAmount : (o.total || 0)));
+        const paymentMode = o.payment_mode || o.paymentMode || 'Razorpay';
+        const paymentStatus = (o.payment_status || o.paymentStatus || 'PAID').toUpperCase();
+        const status = (o.status || 'PLACED').toUpperCase();
+        const orderDate = o.order_date || o.orderDate || o.createdAt;
 
-        let payBadge = o.payment_status === 'PAID' ? 'badge-soft-success' : 'badge-soft-warning';
+        let statusBadge = 'badge-soft-info';
+        if (status === 'DELIVERED') statusBadge = 'badge-soft-success';
+        if (status === 'CANCELLED') statusBadge = 'badge-soft-danger';
+
+        let payBadge = paymentStatus === 'PAID' ? 'badge-soft-success' : 'badge-soft-warning';
 
         return `
           <tr>
-            <td class="fw-bold text-danger">#FW-${o.order_id}</td>
-            <td class="fw-semibold text-dark">${escapeHtml(o.customer_name || 'Customer')}</td>
-            <td class="small text-muted">${escapeHtml(o.customer_phone || '-')}</td>
-            <td class="small fw-semibold text-dark">${escapeHtml(o.restaurant_name || 'Restaurant')}</td>
-            <td class="fw-bold text-dark">₹${Number(o.total_amount).toFixed(2)}</td>
-            <td class="small text-muted">${escapeHtml(o.payment_mode || 'Razorpay')}</td>
-            <td><span class="badge ${payBadge} rounded-pill px-2 py-1 small">${o.payment_status || 'PAID'}</span></td>
-            <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 small fw-bold">${o.status}</span></td>
-            <td class="small text-muted">${o.order_date ? new Date(o.order_date).toLocaleString('en-IN') : '-'}</td>
+            <td class="fw-bold text-danger">#FW-${orderId}</td>
+            <td class="fw-semibold text-dark">${escapeHtml(customerName)}</td>
+            <td class="small text-muted">${escapeHtml(customerPhone)}</td>
+            <td class="small fw-semibold text-dark">${escapeHtml(restaurantName)}</td>
+            <td class="fw-bold text-dark">₹${totalAmount.toFixed(2)}</td>
+            <td class="small text-muted">${escapeHtml(paymentMode)}</td>
+            <td><span class="badge ${payBadge} rounded-pill px-2 py-1 small">${paymentStatus}</span></td>
+            <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 small fw-bold">${status}</span></td>
+            <td class="small text-muted">${orderDate ? new Date(orderDate).toLocaleString('en-IN') : '-'}</td>
           </tr>
         `;
       }).join('');
@@ -569,18 +632,24 @@
       }
 
       tbody.innerHTML = history.map(h => {
-        const isSuccess = h.status === 'SUCCESS';
+        const id = h.id !== undefined ? h.id : '-';
+        const loginTime = h.login_time || h.loginTime || new Date().toISOString();
+        const username = h.username || h.name || 'Unknown';
+        const emailOrPhone = h.email || h.phone || '-';
+        const ipAddress = h.ip_address || h.ipAddress || '127.0.0.1';
+        const status = (h.status || 'SUCCESS').toUpperCase();
+        const isSuccess = status === 'SUCCESS';
         const badge = isSuccess
           ? `<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-check me-1"></i>SUCCESS</span>`
           : `<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-exclamation me-1"></i>FAILED</span>`;
 
         return `
           <tr>
-            <td class="text-muted small">#${h.id}</td>
-            <td class="small text-dark fw-semibold">${new Date(h.login_time).toLocaleString('en-IN')}</td>
-            <td class="fw-bold text-dark">${escapeHtml(h.username || 'Unknown')}</td>
-            <td class="small text-muted">${escapeHtml(h.email || h.phone || '-')}</td>
-            <td><code class="small text-secondary">${escapeHtml(h.ip_address || '127.0.0.1')}</code></td>
+            <td class="text-muted small">#${id}</td>
+            <td class="small text-dark fw-semibold">${new Date(loginTime).toLocaleString('en-IN')}</td>
+            <td class="fw-bold text-dark">${escapeHtml(username)}</td>
+            <td class="small text-muted">${escapeHtml(emailOrPhone)}</td>
+            <td><code class="small text-secondary">${escapeHtml(ipAddress)}</code></td>
             <td>${badge}</td>
           </tr>
         `;
@@ -592,29 +661,31 @@
         renderUsersTable(globalUsers);
         return;
       }
-      const filtered = globalUsers.filter(u => 
-        (u.username && u.username.toLowerCase().includes(term)) ||
-        (u.email && u.email.toLowerCase().includes(term)) ||
-        (u.phone && u.phone.includes(term))
-      );
+      const filtered = globalUsers.filter(u => {
+        const name = (u.username || u.name || '').toLowerCase();
+        const email = (u.email || '').toLowerCase();
+        const phone = (u.phone || '');
+        return name.includes(term) || email.includes(term) || phone.includes(term);
+      });
       renderUsersTable(filtered);
     }
 
     function applyOrderFilters() {
       const term = (document.getElementById('order-search-input')?.value || '').toLowerCase().trim();
-      const status = document.getElementById('order-status-filter')?.value || 'ALL';
+      const status = (document.getElementById('order-status-filter')?.value || 'ALL').toUpperCase();
 
       let filtered = globalOrders;
       if (status !== 'ALL') {
-        filtered = filtered.filter(o => o.status === status);
+        filtered = filtered.filter(o => (o.status || '').toUpperCase() === status);
       }
       if (term) {
-        filtered = filtered.filter(o => 
-          String(o.order_id).includes(term) ||
-          (o.customer_name && o.customer_name.toLowerCase().includes(term)) ||
-          (o.customer_phone && o.customer_phone.includes(term)) ||
-          (o.restaurant_name && o.restaurant_name.toLowerCase().includes(term))
-        );
+        filtered = filtered.filter(o => {
+          const idStr = String(o.order_id !== undefined ? o.order_id : (o.orderId || ''));
+          const cName = (o.customer_name || o.customerName || '').toLowerCase();
+          const cPhone = String(o.customer_phone || o.customerPhone || '');
+          const rName = (o.restaurant_name || o.restaurantName || '').toLowerCase();
+          return idStr.includes(term) || cName.includes(term) || cPhone.includes(term) || rName.includes(term);
+        });
       }
       renderOrdersTable(filtered);
     }

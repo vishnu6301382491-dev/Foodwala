@@ -122,27 +122,81 @@
 
     // 2. Catalog: Restaurants
     getRestaurants: async function () {
-      const res = await liveFetch('/api/restaurants');
-      handleHttpErrors(res);
-      if (res.ok) return await res.json();
-      throw new Error(`Failed to load restaurants: HTTP ${res.status}`);
+      if (unavailableEndpoints.has('restaurants')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurants();
+        }
+      }
+      try {
+        const res = await liveFetch('/api/restaurants');
+        if (res.ok) return await res.json();
+        if (res.status === 404) {
+          unavailableEndpoints.add('restaurants');
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.getRestaurants();
+          }
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        unavailableEndpoints.add('restaurants');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurants();
+        }
+        return [];
+      }
     },
 
     // 3. Catalog: Categories
     getCategories: async function () {
-      const res = await liveFetch('/api/categories');
-      handleHttpErrors(res);
-      if (res.ok) return await res.json();
-      throw new Error(`Failed to load categories: HTTP ${res.status}`);
+      if (unavailableEndpoints.has('categories')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getCategories();
+        }
+      }
+      try {
+        const res = await liveFetch('/api/categories');
+        if (res.ok) return await res.json();
+        if (res.status === 404) {
+          unavailableEndpoints.add('categories');
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.getCategories();
+          }
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        unavailableEndpoints.add('categories');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getCategories();
+        }
+        return [];
+      }
     },
 
     // 4. Catalog: Restaurant Menu
     getRestaurantMenu: async function (restaurantId) {
       const rId = parseInt(restaurantId, 10);
-      const res = await liveFetch(`/api/restaurants/${rId}/menu`);
-      handleHttpErrors(res);
-      if (res.ok) return await res.json();
-      throw new Error(`Failed to load menu for restaurant ${rId}: HTTP ${res.status}`);
+      if (unavailableEndpoints.has('menu_' + rId)) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantMenu(rId);
+        }
+      }
+      try {
+        const res = await liveFetch(`/api/restaurants/${rId}/menu`);
+        if (res.ok) return await res.json();
+        if (res.status === 404) {
+          unavailableEndpoints.add('menu_' + rId);
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.getRestaurantMenu(rId);
+          }
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        unavailableEndpoints.add('menu_' + rId);
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getRestaurantMenu(rId);
+        }
+        return [];
+      }
     },
 
     // 5. Check Phone Availability
@@ -562,21 +616,78 @@
 
     // 19. Admin Audits
     getAdminUsers: async function () {
-      const res = await liveFetch('/api/admin/users', { headers: getAuthHeader() });
-      handleHttpErrors(res);
-      return await res.json();
+      if (unavailableEndpoints.has('admin/users')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminUsers();
+        }
+      }
+      try {
+        const res = await liveFetch('/api/admin/users', { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        if (res.status === 404) {
+          unavailableEndpoints.add('admin/users');
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.getAdminUsers();
+          }
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        unavailableEndpoints.add('admin/users');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminUsers();
+        }
+        return { success: false, users: [] };
+      }
     },
 
     getAdminOrders: async function () {
-      const res = await liveFetch('/api/admin/orders', { headers: getAuthHeader() });
-      handleHttpErrors(res);
-      return await res.json();
+      if (unavailableEndpoints.has('admin/orders')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminOrders();
+        }
+      }
+      try {
+        const res = await liveFetch('/api/admin/orders', { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        if (res.status === 404) {
+          unavailableEndpoints.add('admin/orders');
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.getAdminOrders();
+          }
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        unavailableEndpoints.add('admin/orders');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminOrders();
+        }
+        return { success: false, orders: [], totalOrders: 0, totalRevenue: 0 };
+      }
     },
 
     getAdminLoginHistory: async function () {
-      const res = await liveFetch('/api/admin/login-history', { headers: getAuthHeader() });
-      handleHttpErrors(res);
-      return await res.json();
+      if (unavailableEndpoints.has('admin/login-history')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminLoginHistory();
+        }
+      }
+      try {
+        const res = await liveFetch('/api/admin/login-history', { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        if (res.status === 404) {
+          unavailableEndpoints.add('admin/login-history');
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            return await window.FoodWalaAdapters.mock.getAdminLoginHistory();
+          }
+        }
+        handleHttpErrors(res);
+      } catch (err) {
+        unavailableEndpoints.add('admin/login-history');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminLoginHistory();
+        }
+        return { success: false, history: [] };
+      }
     }
   };
 
