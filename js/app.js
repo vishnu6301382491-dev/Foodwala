@@ -934,17 +934,52 @@ const FoodWalaApp = (function () {
       return user;
     },
 
-    logout: async function () {
-      if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.logout === "function") {
-        await window.FoodWalaApi.logout();
+    logout: async function (redirectTarget) {
+      try {
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        localStorage.removeItem('foodwala_current_user');
+        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem('foodwala_auth_token');
+        localStorage.removeItem('foodwala_user');
+        sessionStorage.removeItem('foodwala_current_user');
+        sessionStorage.removeItem('foodwala_auth_token');
+      } catch (e) {
+        console.warn('[FoodWala Auth] Storage clearance warning:', e);
       }
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
-      updateUserNavUI();
-      showToast('You have been signed out.', 'success');
-      setTimeout(() => {
-        window.location.href = './login.html';
-      }, 400);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
+      }
+      try {
+        updateUserNavUI();
+      } catch (e) {}
+
+      try {
+        showToast('You have been signed out.', 'success');
+      } catch (e) {}
+
+      // Asynchronously notify API adapter without blocking local logout
+      try {
+        if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.logout === "function") {
+          await Promise.race([
+            window.FoodWalaApi.logout(),
+            new Promise(resolve => setTimeout(resolve, 800))
+          ]);
+        }
+      } catch (e) {
+        console.warn('[FoodWala Auth] API logout error ignored:', e);
+      }
+
+      const destination = (redirectTarget !== undefined) ? redirectTarget : './login.html';
+      if (destination) {
+        setTimeout(() => {
+          if (destination === 'reload') {
+            window.location.reload();
+          } else {
+            window.location.href = destination;
+          }
+        }, 200);
+      }
     },
 
     updateProfile: function (updatedFields) {

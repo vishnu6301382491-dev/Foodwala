@@ -769,6 +769,10 @@
     logout: async function () {
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem('foodwala_current_user');
+      localStorage.removeItem('foodwala_auth_token');
+      localStorage.removeItem('foodwala_user');
+      sessionStorage.removeItem('foodwala_current_user');
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
       return { success: true };
     },

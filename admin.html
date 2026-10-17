@@ -335,11 +335,11 @@
   <!-- Core Scripts -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js?v=20261016_04"></script>
-  <script src="./js/adapters/mockAdapter.js?v=20261016_04"></script>
-  <script src="./js/adapters/liveAdapter.js?v=20261016_04"></script>
-  <script src="./js/api.js?v=20261016_04"></script>
-  <script src="./js/app.js?v=20261016_04"></script>
+  <script src="./js/config.js?v=20261017_01"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261017_01"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261017_01"></script>
+  <script src="./js/api.js?v=20261017_01"></script>
+  <script src="./js/app.js?v=20261017_01"></script>
 
   <script>
     let globalUsers = [];
@@ -366,6 +366,8 @@
       if (!currentUser) {
         document.getElementById('admin-gate').style.display = 'block';
         document.getElementById('admin-dashboard').style.display = 'none';
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        if (logoutBtn) logoutBtn.style.display = 'none';
         return;
       }
       const role = (currentUser.role || '').toLowerCase();
@@ -376,6 +378,8 @@
       }
       document.getElementById('admin-gate').style.display = 'none';
       document.getElementById('admin-dashboard').style.display = 'block';
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      if (logoutBtn) logoutBtn.style.display = 'inline-block';
       loadAdminData();
     }
 
@@ -419,9 +423,11 @@
       // Logout
       const logoutBtn = document.getElementById('admin-logout-btn');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-          FoodWalaApp.Auth.logout();
-          window.location.reload();
+        logoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          logoutBtn.disabled = true;
+          logoutBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Signing out...';
+          await FoodWalaApp.Auth.logout('./login.html');
         });
       }
 

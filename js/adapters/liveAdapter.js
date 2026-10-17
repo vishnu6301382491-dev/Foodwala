@@ -508,12 +508,23 @@
 
     // 14. Logout
     logout: async function () {
-      try {
-        await liveFetch('/api/auth/logout', { method: 'POST', headers: getAuthHeader() });
-      } catch (e) {}
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem('foodwala_current_user');
+      localStorage.removeItem('foodwala_auth_token');
+      localStorage.removeItem('foodwala_user');
+      sessionStorage.removeItem('foodwala_current_user');
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 1500);
+        await fetch(`${getBaseUrl()}/api/auth/logout`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          signal: controller.signal
+        }).catch(() => {});
+        clearTimeout(tid);
+      } catch (e) {}
       return { success: true };
     },
 
