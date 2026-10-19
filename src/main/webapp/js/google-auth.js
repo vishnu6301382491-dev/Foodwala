@@ -526,6 +526,7 @@
     parseJwt: parseJwt,
     validateTokenClaims: validateTokenClaims,
     isConfiguredClientId: isConfiguredClientId,
+    getSavedGoogleAccounts: getSavedGoogleAccounts,
     executeDirectGoogleSignIn: executeDirectGoogleSignIn,
     showDirectGoogleChooserModal: showDirectGoogleChooserModal,
 
