@@ -701,6 +701,171 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 });
 
 /**
+ * Genuine Google Identity Services (GIS) Credential Verification & Login
+ * Accepts: { credential, role }
+ * - Cryptographically verifies the Google ID token with Google's public tokeninfo API
+ * - Validates issuer (accounts.google.com), expiry, and email_verified
+ * - Checks for existing user in database by verified email
+ * - If found: links account, updates last_login, preserves/sets role, issues JWT session
+ * - If new: registers new user with verified email, name, and role
+ * - Returns authentic FoodWala session token and sanitized user payload
+ */
+app.post('/api/auth/google', authLimiter, async (req, res) => {
+  try {
+    const { credential, role: requestedRole } = req.body;
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google ID token credential is required.'
+      });
+    }
+
+    // 1. Verify token with Google's public tokeninfo endpoint
+    let tokenInfo = null;
+    try {
+      const googleVerifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+      const googleRes = await fetch(googleVerifyUrl);
+      if (!googleRes.ok) {
+        return res.status(401).json({
+          success: false,
+          message: 'Google ID token verification failed or token has expired.'
+        });
+      }
+      tokenInfo = await googleRes.json();
+    } catch (netErr) {
+      return res.status(503).json({
+        success: false,
+        message: 'Unable to reach Google authentication servers for token verification.'
+      });
+    }
+
+    // 2. Validate token claims
+    if (!tokenInfo || (!tokenInfo.email_verified && tokenInfo.email_verified !== 'true')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Google account email is not verified.'
+      });
+    }
+
+    const iss = tokenInfo.iss;
+    if (iss !== 'accounts.google.com' && iss !== 'https://accounts.google.com') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token issuer: ' + iss
+      });
+    }
+
+    const email = (tokenInfo.email || '').toLowerCase().trim();
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token does not contain an email address.'
+      });
+    }
+
+    const googleSub = tokenInfo.sub;
+    const name = tokenInfo.name || email.split('@')[0];
+    const picture = tokenInfo.picture || '';
+    const assignedRole = (requestedRole || 'CUSTOMER').toUpperCase();
+
+    // 3. Check if user already exists
+    const [existingUsers] = await db.execute(
+      `SELECT user_id, username, email, phone, role, address, failed_attempts, locked_until, last_login 
+       FROM user 
+       WHERE LOWER(email) = ?`,
+      [email]
+    );
+
+    let user = null;
+    if (existingUsers.length > 0) {
+      user = existingUsers[0];
+      // Update last login
+      await db.execute(
+        'UPDATE user SET failed_attempts = 0, locked_until = NULL, last_login = NOW() WHERE user_id = ?',
+        [user.user_id]
+      );
+    } else {
+      // Create new user in database
+      const randomPassword = 'GAuth_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      const hash = await hashPassword(randomPassword);
+      const phonePlaceholder = '9' + Math.floor(100000000 + Math.random() * 900000000);
+
+      const [insertResult] = await db.execute(
+        `INSERT INTO user (username, email, phone, role, address, password_hash, created_at, last_login)
+         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [name, email, phonePlaceholder, assignedRole, '', hash]
+      );
+
+      user = {
+        user_id: insertResult.insertId,
+        username: name,
+        email: email,
+        phone: phonePlaceholder,
+        role: assignedRole,
+        address: ''
+      };
+    }
+
+    // 4. Record in login history
+    try {
+      await db.execute(
+        'INSERT INTO login_history (user_id, ip_address, user_agent, status) VALUES (?, ?, ?, ?)',
+        [user.user_id, req.ip, req.headers['user-agent'] || '', 'SUCCESS_GOOGLE']
+      );
+    } catch (e) {}
+
+    // 5. Generate JWT and Session Token
+    const token = jwt.sign(
+      { userId: user.user_id, email: user.email, role: user.role, authProvider: 'google', googleSub: googleSub },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    activeSessions.set(token, user.user_id);
+
+    // 6. Fetch user's saved addresses
+    let addresses = [];
+    try {
+      const [addrRows] = await db.execute(
+        `SELECT address_id as id, full_name as fullName, phone, formatted_address as addressLine, 
+                street, area, city, state, pincode, address_type as type, is_default as isDefault 
+         FROM address 
+         WHERE user_id = ? 
+         ORDER BY is_default DESC, address_id DESC`,
+        [user.user_id]
+      );
+      addresses = addrRows || [];
+    } catch (addrErr) {}
+
+    const userPayload = {
+      userId: user.user_id,
+      name: user.username,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      address: user.address,
+      picture: picture,
+      authProvider: 'google',
+      addresses: addresses
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: 'Google Sign-In successful.',
+      token: token,
+      user: userPayload
+    });
+
+  } catch (err) {
+    console.error('[Google Auth Error]:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error processing Google Sign-In.'
+    });
+  }
+});
+
+/**
  * Change Password
  */
 app.post('/api/auth/change-password', requireAuth, async (req, res) => {

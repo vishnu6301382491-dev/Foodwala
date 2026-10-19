@@ -789,7 +789,7 @@
       return { success: true, message: 'Password reset successfully! Please sign in with your new password.' };
     },
 
-    // 13b. Google Sign-In / Sign-Up
+    // 13b. Genuine Google Identity Services Sign-In / Sign-Up
     loginWithGoogle: async function (googleProfile) {
       if (!googleProfile || !googleProfile.email) {
         return { success: false, message: 'Invalid Google account data.' };
@@ -798,14 +798,19 @@
       const name = googleProfile.name || email.split('@')[0];
       const role = (googleProfile.role || 'CUSTOMER').toUpperCase();
       const picture = googleProfile.picture || '';
+      const googleSub = googleProfile.sub || '';
 
       const users = initMockUsers();
-      let matched = users.find(u => (u.email || '').toLowerCase() === email);
+      let matched = users.find(u => 
+        (googleSub && u.googleSub === googleSub) || 
+        (u.email || '').toLowerCase() === email
+      );
 
       if (!matched) {
-        // Create new account for this Google user
+        // Create new account for this verified Google user
         matched = {
           userId: Date.now(),
+          googleSub: googleSub,
           name: name,
           username: name,
           email: email,
@@ -822,6 +827,7 @@
         setLocal(STORAGE_KEYS.MOCK_USERS, users);
       } else {
         if (picture) matched.picture = picture;
+        if (googleSub) matched.googleSub = googleSub;
         if (googleProfile.role) matched.role = role;
         matched.authProvider = 'google';
         setLocal(STORAGE_KEYS.MOCK_USERS, users);

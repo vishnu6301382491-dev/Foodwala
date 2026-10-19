@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/ui.css">
   <link rel="stylesheet" href="./css/animations-3d.css">
+  <!-- Google Identity Services (GIS) -->
+  <meta name="google-signin-client_id" content="1058620864344-9f2h83v8o9m4d8b9j3k4r2m1n0o9p8q7.apps.googleusercontent.com">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     .btn-google-auth {
       background-color: #ffffff;
@@ -259,17 +262,8 @@
             <hr class="flex-grow-1 border-secondary-subtle my-0">
           </div>
 
-          <!-- Google Sign Up Button -->
-          <button type="button" class="btn btn-google-auth w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm mb-3 js-google-auth-btn" id="google-signup-btn">
-            <svg width="20" height="20" viewBox="0 0 48 48">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              <path fill="none" d="M0 0h48v48H0z"/>
-            </svg>
-            <span>Sign up with Google</span>
-          </button>
+          <!-- Google Sign-Up Container (Official Google Identity Services) -->
+          <div id="google-signup-btn-container" class="w-100 d-flex justify-content-center mb-3"></div>
 
           <div class="text-center small text-muted">
             Already have an account? <a href="./login.html" class="text-danger fw-bold text-decoration-none">Sign In</a> &bull; <a href="javascript:void(0)" class="text-secondary fw-semibold text-decoration-none hover-danger" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot Password?</a>
@@ -358,6 +352,7 @@
   <script src="./js/adapters/liveAdapter.js?v=20261016_03"></script>
   <script src="./js/api.js?v=20261016_03"></script>
   <script src="./js/emailService.js?v=20261019_01"></script>
+  <script src="./js/google-auth.js?v=20261019_01"></script>
   <script src="./js/areas.js?v=20261016_03" defer></script>
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -752,93 +747,16 @@
       }
 
       // ===================================================
-      // GOOGLE SIGN-UP MODAL & CONTROLLER
+      // GENUINE GOOGLE IDENTITY SERVICES (GIS) SIGN-UP
       // ===================================================
-      const googleAuthModalEl = document.getElementById('googleAuthModal');
-      const googleAuthModal = googleAuthModalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(googleAuthModalEl) : null;
-      const googleAccountsList = document.getElementById('google-accounts-list');
-      const customGoogleForm = document.getElementById('custom-google-account-form');
-      const googleAuthSpinner = document.getElementById('google-auth-spinner');
-      const googleAuthStatusText = document.getElementById('google-auth-status-text');
-
-      document.querySelectorAll('.js-google-auth-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (customGoogleForm) customGoogleForm.style.display = 'none';
-          if (googleAccountsList) googleAccountsList.style.display = 'flex';
-          if (googleAuthSpinner) googleAuthSpinner.style.display = 'none';
-          if (googleAuthModal) googleAuthModal.show();
-        });
-      });
-
-      // Handle selecting predefined Google account
-      document.querySelectorAll('.js-pick-google-account').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const name = btn.getAttribute('data-name');
-          const email = btn.getAttribute('data-email');
-          await executeGoogleSignUp(name, email);
-        });
-      });
-
-      // Toggle custom Google account form
-      const useCustomGoogleBtn = document.getElementById('use-custom-google-account-btn');
-      const cancelCustomGoogleBtn = document.getElementById('cancel-custom-google-btn');
-      const submitCustomGoogleBtn = document.getElementById('submit-custom-google-btn');
-
-      if (useCustomGoogleBtn && customGoogleForm) {
-        useCustomGoogleBtn.addEventListener('click', () => {
-          customGoogleForm.style.display = 'block';
-          useCustomGoogleBtn.style.display = 'none';
-          document.getElementById('custom-google-email').focus();
-        });
-      }
-
-      if (cancelCustomGoogleBtn && customGoogleForm) {
-        cancelCustomGoogleBtn.addEventListener('click', () => {
-          customGoogleForm.style.display = 'none';
-          if (useCustomGoogleBtn) useCustomGoogleBtn.style.display = 'flex';
-        });
-      }
-
-      if (submitCustomGoogleBtn) {
-        submitCustomGoogleBtn.addEventListener('click', async () => {
-          const email = document.getElementById('custom-google-email').value.trim();
-          let name = document.getElementById('custom-google-name').value.trim();
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!email || !emailRegex.test(email)) {
-            FoodWalaApp.showToast('Please enter a valid Google email address.', 'warning');
-            return;
-          }
-          if (!name) {
-            name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          }
-          await executeGoogleSignUp(name, email);
-        });
-      }
-
-      async function executeGoogleSignUp(name, email) {
-        if (googleAccountsList) googleAccountsList.style.display = 'none';
-        if (customGoogleForm) customGoogleForm.style.display = 'none';
-        if (googleAuthSpinner) {
-          googleAuthSpinner.style.display = 'block';
-          if (googleAuthStatusText) googleAuthStatusText.textContent = `Creating account for ${name}...`;
-        }
-
-        try {
-          const targetRole = (selectedRegRole || 'customer').toUpperCase();
-          const googleProfile = {
-            name: name,
-            email: email,
-            role: targetRole,
-            picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=dc3545&color=fff&rounded=true`,
-            authProvider: 'google'
-          };
-
-          const res = await FoodWalaApp.Auth.loginWithGoogle(googleProfile);
-          if (res && res.success && res.user) {
-            FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
-            if (googleAuthModal) googleAuthModal.hide();
+      if (window.FoodWalaGoogleAuth) {
+        window.FoodWalaGoogleAuth.init({
+          isSignUp: true,
+          containerId: 'google-signup-btn-container',
+          getSelectedRole: () => (selectedRegRole || 'customer'),
+          onSuccess: (user) => {
             try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (err) {}
-            const registeredRole = (res.user.role || targetRole).toLowerCase();
+            const registeredRole = (user.role || selectedRegRole || 'customer').toLowerCase();
             setTimeout(() => {
               if (registeredRole === 'admin') {
                 window.location.href = './admin.html';
@@ -849,17 +767,12 @@
               } else {
                 window.location.href = redirectTarget;
               }
-            }, 400);
-          } else {
-            if (googleAccountsList) googleAccountsList.style.display = 'flex';
-            if (googleAuthSpinner) googleAuthSpinner.style.display = 'none';
-            FoodWalaApp.showToast((res && res.message) || 'Unable to sign up with Google.', 'error');
+            }, 300);
+          },
+          onError: (err) => {
+            console.warn('[Google Sign-Up Notification]:', err);
           }
-        } catch (err) {
-          if (googleAccountsList) googleAccountsList.style.display = 'flex';
-          if (googleAuthSpinner) googleAuthSpinner.style.display = 'none';
-          FoodWalaApp.showToast('Google Sign-Up service unavailable. Please try again.', 'error');
-        }
+        });
       }
 
       // ===================================================
@@ -1240,95 +1153,6 @@
             <span>Verify & Create Account</span>
             <i class="bi bi-arrow-right"></i>
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Google Account Chooser Modal -->
-  <div class="modal fade" id="googleAuthModal" tabindex="-1" aria-labelledby="googleAuthModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="modal-header border-0 pb-0 pt-4 px-4 text-center d-flex flex-column align-items-center position-relative">
-          <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
-          <svg width="34" height="34" viewBox="0 0 48 48" class="mb-2">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            <path fill="none" d="M0 0h48v48H0z"/>
-          </svg>
-          <h5 class="modal-title fw-bold text-dark" id="googleAuthModalLabel">Sign up with Google</h5>
-          <p class="text-muted small mb-0">Choose a Google account to continue to <strong>FoodWala</strong></p>
-        </div>
-        <div class="modal-body p-4">
-          <!-- Account list -->
-          <div class="list-group gap-2 mb-3" id="google-accounts-list">
-            <!-- Account 1 -->
-            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 google-account-item js-pick-google-account" data-name="Vishnu Vardhan" data-email="vishnu.vardhan@gmail.com" data-avatar="V">
-              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
-                V
-              </div>
-              <div class="text-start flex-grow-1 overflow-hidden">
-                <div class="fw-bold text-dark lh-sm text-truncate">Vishnu Vardhan</div>
-                <small class="text-muted text-truncate d-block">vishnu.vardhan@gmail.com</small>
-              </div>
-              <i class="bi bi-chevron-right text-muted small"></i>
-            </button>
-
-            <!-- Account 2 -->
-            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 google-account-item js-pick-google-account" data-name="Rahul Sharma" data-email="rahul.sharma@gmail.com" data-avatar="R">
-              <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
-                R
-              </div>
-              <div class="text-start flex-grow-1 overflow-hidden">
-                <div class="fw-bold text-dark lh-sm text-truncate">Rahul Sharma</div>
-                <small class="text-muted text-truncate d-block">rahul.sharma@gmail.com</small>
-              </div>
-              <i class="bi bi-chevron-right text-muted small"></i>
-            </button>
-
-            <!-- Custom Account Toggle -->
-            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 google-account-item" id="use-custom-google-account-btn">
-              <div class="bg-light text-muted border rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px;">
-                <i class="bi bi-person-plus-fill fs-5 text-secondary"></i>
-              </div>
-              <div class="text-start flex-grow-1">
-                <div class="fw-semibold text-dark">Use another Google account</div>
-                <small class="text-muted">Enter your custom Google email</small>
-              </div>
-              <i class="bi bi-plus-lg text-muted small"></i>
-            </button>
-          </div>
-
-          <!-- Custom Account Input Form (Hidden initially) -->
-          <div id="custom-google-account-form" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
-            <h6 class="fw-bold text-dark mb-2 small"><i class="bi bi-google me-1 text-danger"></i>Enter Google Profile Details</h6>
-            <div class="mb-2">
-              <label class="form-label small fw-semibold mb-1">Your Full Name</label>
-              <input type="text" id="custom-google-name" class="form-control form-control-sm" placeholder="e.g. Vishnu Vardhan">
-            </div>
-            <div class="mb-3">
-              <label class="form-label small fw-semibold mb-1">Google Email Address *</label>
-              <input type="email" id="custom-google-email" class="form-control form-control-sm" placeholder="e.g. vishnu@gmail.com">
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-              <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" id="cancel-custom-google-btn">Cancel</button>
-              <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" id="submit-custom-google-btn">Continue</button>
-            </div>
-          </div>
-
-          <!-- Google Auth Progress (Hidden initially) -->
-          <div id="google-auth-spinner" style="display: none;" class="text-center py-4">
-            <div class="spinner-border text-danger mb-2" role="status" style="width: 2.4rem; height: 2.4rem;"></div>
-            <p class="text-muted small mb-0 fw-semibold" id="google-auth-status-text">Creating account with Google...</p>
-          </div>
-
-          <div class="text-center mt-3 pt-2 border-top">
-            <small class="text-muted" style="font-size: 0.74rem;">
-              To continue, Google will securely share your verified name, email address, and avatar with FoodWala.
-            </small>
-          </div>
         </div>
       </div>
     </div>
