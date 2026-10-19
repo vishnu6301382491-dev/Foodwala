@@ -523,11 +523,15 @@
     // 13b. Google Sign-In / Sign-Up
     loginWithGoogle: async function (googleProfile) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
         const res = await liveFetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(googleProfile)
+          body: JSON.stringify(googleProfile),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.user) {

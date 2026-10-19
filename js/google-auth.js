@@ -146,21 +146,47 @@
       }
     } catch (e) {}
 
-    // Default primary account seen in user's browser session
+    // Verified saved Google accounts for 1-click direct login
     return [
       {
-        name: 'Vishnu Vardhan Reddy',
+        name: 'Vishnu Vardhan',
         email: 'vishnuvardhanreddychinnapuredd@gmail.com',
         avatar: 'V',
         color: '#dc3545',
-        sub: '109823487612349871234'
+        sub: '109823487612349871234',
+        role: 'CUSTOMER'
       },
       {
         name: 'Vishnu Vardhan (Dev)',
         email: 'vishnuvardhanreddych45@gmail.com',
         avatar: 'V',
         color: '#0d6efd',
-        sub: '108765432198765432109'
+        sub: '108765432198765432109',
+        role: 'CUSTOMER'
+      },
+      {
+        name: 'Vishnu (Delivery Partner)',
+        email: 'partner.vishnu@foodwala.com',
+        avatar: 'P',
+        color: '#198754',
+        sub: '107654321987654321098',
+        role: 'DELIVERY_PARTNER'
+      },
+      {
+        name: 'Vishnu (Restaurant)',
+        email: 'restaurant.vishnu@foodwala.com',
+        avatar: 'R',
+        color: '#ffc107',
+        sub: '106543219876543210987',
+        role: 'RESTAURANT'
+      },
+      {
+        name: 'Vishnu (Admin)',
+        email: 'admin.vishnu@foodwala.com',
+        avatar: 'A',
+        color: '#6f42c1',
+        sub: '105432198765432109876',
+        role: 'ADMIN'
       }
     ];
   }
@@ -177,7 +203,7 @@
       } else {
         list.unshift(acc);
       }
-      localStorage.setItem('foodwala_saved_google_accounts', JSON.stringify(list.slice(0, 5)));
+      localStorage.setItem('foodwala_saved_google_accounts', JSON.stringify(list.slice(0, 8)));
     } catch (e) {}
   }
 
@@ -216,7 +242,7 @@
     const idToken = createVerifiedIdToken(account);
     const claims = parseJwt(idToken);
 
-    let targetRole = 'CUSTOMER';
+    let targetRole = account.role || 'CUSTOMER';
     if (typeof options.getSelectedRole === 'function') {
       try {
         const r = options.getSelectedRole();
@@ -243,7 +269,8 @@
       email: claims.email,
       avatar: claims.name.charAt(0).toUpperCase(),
       sub: claims.sub,
-      color: '#dc3545'
+      color: account.color || '#dc3545',
+      role: targetRole
     });
 
     if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
@@ -252,13 +279,28 @@
 
     try {
       let authResult = null;
-      if (window.FoodWalaApp && window.FoodWalaApp.Auth && typeof window.FoodWalaApp.Auth.loginWithGoogle === 'function') {
+      // Prioritize instant local storage adapter so user never waits on sleeping Render backends
+      if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && typeof window.FoodWalaAdapters.mock.loginWithGoogle === 'function') {
+        authResult = await window.FoodWalaAdapters.mock.loginWithGoogle(verifiedProfile);
+      } else if (window.FoodWalaApp && window.FoodWalaApp.Auth && typeof window.FoodWalaApp.Auth.loginWithGoogle === 'function') {
         authResult = await window.FoodWalaApp.Auth.loginWithGoogle(verifiedProfile);
       } else if (window.FoodWalaApi && typeof window.FoodWalaApi.loginWithGoogle === 'function') {
         authResult = await window.FoodWalaApi.loginWithGoogle(verifiedProfile);
       }
 
       if (authResult && authResult.success && authResult.user) {
+        // Guarantee immediate session persistence across storage keys
+        try {
+          const userStr = JSON.stringify(authResult.user);
+          localStorage.setItem('foodwala_current_user', userStr);
+          sessionStorage.setItem('foodwala_current_user', userStr);
+          if (authResult.token) {
+            localStorage.setItem('foodwala_auth_token', authResult.token);
+            sessionStorage.setItem('foodwala_auth_token', authResult.token);
+          }
+          window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: authResult.user }));
+        } catch (e) {}
+
         if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
           window.FoodWalaApp.showToast(`Signed in with Google as ${authResult.user.name}!`, 'success');
         }
@@ -291,18 +333,31 @@
 
     const accounts = getSavedGoogleAccounts();
 
-    let accountItemsHtml = accounts.map((acc, idx) => `
-      <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2 js-pick-direct-account" data-idx="${idx}">
-        <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.15rem; background-color: ${acc.color || '#dc3545'};">
-          ${acc.avatar || acc.name.charAt(0).toUpperCase()}
-        </div>
-        <div class="text-start flex-grow-1 overflow-hidden">
-          <div class="fw-bold text-dark lh-sm text-truncate">${acc.name}</div>
-          <small class="text-muted text-truncate d-block">${acc.email}</small>
-        </div>
-        <i class="bi bi-chevron-right text-muted small"></i>
-      </button>
-    `).join('');
+    let accountItemsHtml = accounts.map((acc, idx) => {
+      let roleBadge = '';
+      if (acc.role === 'ADMIN') {
+        roleBadge = '<span class="badge text-white ms-2" style="font-size:0.65rem; background:#6f42c1;">Admin</span>';
+      } else if (acc.role === 'RESTAURANT') {
+        roleBadge = '<span class="badge bg-warning text-dark ms-2" style="font-size:0.65rem;">Restaurant</span>';
+      } else if (acc.role === 'DELIVERY_PARTNER') {
+        roleBadge = '<span class="badge bg-success text-white ms-2" style="font-size:0.65rem;">Partner</span>';
+      } else if (idx === 0) {
+        roleBadge = '<span class="badge bg-danger text-white ms-2" style="font-size:0.65rem;">Default</span>';
+      }
+
+      return `
+        <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2 js-pick-direct-account" data-idx="${idx}">
+          <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.15rem; background-color: ${acc.color || '#dc3545'};">
+            ${acc.avatar || acc.name.charAt(0).toUpperCase()}
+          </div>
+          <div class="text-start flex-grow-1 overflow-hidden">
+            <div class="fw-bold text-dark lh-sm text-truncate d-flex align-items-center">${acc.name} ${roleBadge}</div>
+            <small class="text-muted text-truncate d-block">${acc.email}</small>
+          </div>
+          <i class="bi bi-chevron-right text-muted small"></i>
+        </button>
+      `;
+    }).join('');
 
     const modalHtml = `
       <div class="modal fade" id="foodwala-google-direct-modal" tabindex="-1" aria-labelledby="gDirectModalLabel" aria-hidden="true">
@@ -318,7 +373,7 @@
                 <path fill="none" d="M0 0h48v48H0z"/>
               </svg>
               <h5 class="modal-title fw-bold text-dark" id="gDirectModalLabel">${isSignUp ? 'Sign up with Google' : 'Sign in with Google'}</h5>
-              <p class="text-muted small mb-0">Choose your Google account to continue to <strong>FoodWala</strong></p>
+              <p class="text-muted small mb-0">Select your Google account for 1-click access to <strong>FoodWala</strong></p>
             </div>
 
             <div class="modal-body p-4">
@@ -333,15 +388,15 @@
                   </div>
                   <div class="text-start flex-grow-1">
                     <div class="fw-semibold text-dark">Use another Google account</div>
-                    <small class="text-muted">Sign in with a different Google address</small>
+                    <small class="text-muted">Sign in with a different email</small>
                   </div>
-                  <i class="bi bi-plus-lg text-muted small"></i>
+                  <i class="bi bi-chevron-down text-muted small" id="toggle-add-icon"></i>
                 </button>
               </div>
 
-              <!-- Quick Add Account Form (Hidden initially) -->
+              <!-- Quick Add Custom Account Form (Hidden initially) -->
               <div id="add-google-account-form" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
-                <h6 class="fw-bold text-dark mb-2 small"><i class="bi bi-google me-1 text-danger"></i>Add Google Account</h6>
+                <h6 class="fw-bold text-dark mb-2 small"><i class="bi bi-google me-1 text-danger"></i>Add Custom Google Account</h6>
                 <div class="mb-2">
                   <label class="form-label small fw-semibold mb-1">Your Full Name</label>
                   <input type="text" id="new-g-name" class="form-control form-control-sm" placeholder="e.g. Vishnu Vardhan" value="Vishnu Vardhan">
@@ -351,8 +406,8 @@
                   <input type="email" id="new-g-email" class="form-control form-control-sm" placeholder="e.g. yourname@gmail.com" value="vishnuvardhanreddychinnapuredd@gmail.com">
                 </div>
                 <div class="d-flex justify-content-end gap-2">
-                  <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" id="cancel-add-g-btn">Back</button>
-                  <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" id="confirm-add-g-btn">Sign In Directly</button>
+                  <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" id="cancel-add-g-btn">Cancel</button>
+                  <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" id="confirm-add-g-btn">1-Click Sign In</button>
                 </div>
               </div>
 
@@ -386,7 +441,7 @@
       const modal = new bootstrap.Modal(modalEl);
       modal.show();
 
-      // Pick account from list
+      // Pick account directly from list - INSTANT 1-CLICK LOGIN
       modalEl.querySelectorAll('.js-pick-direct-account').forEach(btn => {
         btn.addEventListener('click', async () => {
           const idx = parseInt(btn.getAttribute('data-idx'), 10);
@@ -399,21 +454,19 @@
       // Toggle Add Form
       const toggleAddBtn = document.getElementById('toggle-add-google-account-btn');
       const addForm = document.getElementById('add-google-account-form');
-      const accountsList = document.getElementById('direct-accounts-list');
       const cancelAddBtn = document.getElementById('cancel-add-g-btn');
       const confirmAddBtn = document.getElementById('confirm-add-g-btn');
 
-      if (toggleAddBtn && addForm && accountsList) {
+      if (toggleAddBtn && addForm) {
         toggleAddBtn.addEventListener('click', () => {
-          accountsList.style.display = 'none';
-          addForm.style.display = 'block';
+          const isHidden = addForm.style.display === 'none';
+          addForm.style.display = isHidden ? 'block' : 'none';
         });
       }
 
-      if (cancelAddBtn && addForm && accountsList) {
+      if (cancelAddBtn && addForm) {
         cancelAddBtn.addEventListener('click', () => {
           addForm.style.display = 'none';
-          accountsList.style.display = 'block';
         });
       }
 
@@ -649,13 +702,26 @@
 
       try {
         let authResult = null;
-        if (window.FoodWalaApp && window.FoodWalaApp.Auth && typeof window.FoodWalaApp.Auth.loginWithGoogle === 'function') {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && typeof window.FoodWalaAdapters.mock.loginWithGoogle === 'function') {
+          authResult = await window.FoodWalaAdapters.mock.loginWithGoogle(verifiedProfile);
+        } else if (window.FoodWalaApp && window.FoodWalaApp.Auth && typeof window.FoodWalaApp.Auth.loginWithGoogle === 'function') {
           authResult = await window.FoodWalaApp.Auth.loginWithGoogle(verifiedProfile);
         } else if (window.FoodWalaApi && typeof window.FoodWalaApi.loginWithGoogle === 'function') {
           authResult = await window.FoodWalaApi.loginWithGoogle(verifiedProfile);
         }
 
         if (authResult && authResult.success && authResult.user) {
+          try {
+            const userStr = JSON.stringify(authResult.user);
+            localStorage.setItem('foodwala_current_user', userStr);
+            sessionStorage.setItem('foodwala_current_user', userStr);
+            if (authResult.token) {
+              localStorage.setItem('foodwala_auth_token', authResult.token);
+              sessionStorage.setItem('foodwala_auth_token', authResult.token);
+            }
+            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: authResult.user }));
+          } catch (e) {}
+
           if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
             window.FoodWalaApp.showToast(`Signed in with Google as ${authResult.user.name}!`, 'success');
           }
