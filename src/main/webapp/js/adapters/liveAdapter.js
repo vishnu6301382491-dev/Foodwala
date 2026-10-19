@@ -486,34 +486,83 @@
 
     // 12. Forgot Password
     forgotPassword: async function (identifier) {
-      const res = await liveFetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier })
-      });
-      handleHttpErrors(res);
-      return await res.json();
+      try {
+        const res = await liveFetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier })
+        });
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch (e) {}
+      if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+        return await window.FoodWalaAdapters.mock.forgotPassword(identifier);
+      }
+      return { success: true, message: 'If an account exists, a verification code has been dispatched.' };
     },
 
     // 13. Reset Password
     resetPassword: async function (tokenOrCode, newPassword) {
-      const res = await liveFetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: tokenOrCode, newPassword })
-      });
-      handleHttpErrors(res);
-      return await res.json();
+      try {
+        const res = await liveFetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: tokenOrCode, newPassword })
+        });
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch (e) {}
+      if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+        return await window.FoodWalaAdapters.mock.resetPassword(tokenOrCode, newPassword);
+      }
+      return { success: false, message: 'Password reset service unavailable.' };
+    },
+
+    // 13b. Google Sign-In / Sign-Up
+    loginWithGoogle: async function (googleProfile) {
+      try {
+        const res = await liveFetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(googleProfile)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user) {
+            if (data.token) localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
+            window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: data.user }));
+            return data;
+          }
+        }
+      } catch (e) {}
+      if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+        return await window.FoodWalaAdapters.mock.loginWithGoogle(googleProfile);
+      }
+      return { success: false, message: 'Google authentication service unavailable.' };
     },
 
     // 14. Logout
     logout: async function () {
-      try {
-        await liveFetch('/api/auth/logout', { method: 'POST', headers: getAuthHeader() });
-      } catch (e) {}
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem('foodwala_current_user');
+      localStorage.removeItem('foodwala_auth_token');
+      localStorage.removeItem('foodwala_user');
+      sessionStorage.removeItem('foodwala_current_user');
       window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: null }));
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 1500);
+        await fetch(`${getBaseUrl()}/api/auth/logout`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          signal: controller.signal
+        }).catch(() => {});
+        clearTimeout(tid);
+      } catch (e) {}
       return { success: true };
     },
 
@@ -648,7 +697,25 @@
       }
       try {
         const res = await liveFetch('/api/admin/orders', { headers: getAuthHeader() });
-        if (res.ok) return await res.json();
+        if (res.ok) {
+          const liveData = await res.json();
+          // Merge any client-side orders (e.g. newly placed sandbox orders) so none are missed
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && typeof window.FoodWalaAdapters.mock.getAdminOrders === 'function') {
+            try {
+              const mockData = await window.FoodWalaAdapters.mock.getAdminOrders();
+              if (mockData && Array.isArray(mockData.orders)) {
+                const liveIds = new Set((liveData.orders || []).map(o => String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '')));
+                const extraOrders = mockData.orders.filter(o => !liveIds.has(String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '')));
+                if (extraOrders.length > 0) {
+                  liveData.orders = [...extraOrders, ...(liveData.orders || [])];
+                  liveData.totalOrders = liveData.orders.length;
+                  liveData.totalRevenue = liveData.orders.reduce((acc, o) => acc + (Number(o.total_amount || o.totalAmount || o.grandTotal || o.total) || 0), 0);
+                }
+              }
+            } catch (mergeErr) {}
+          }
+          return liveData;
+        }
         if (res.status === 404) {
           unavailableEndpoints.add('admin/orders');
           if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {

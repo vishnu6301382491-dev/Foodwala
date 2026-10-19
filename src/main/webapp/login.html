@@ -13,6 +13,38 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/ui.css">
+  <style>
+    .btn-google-auth {
+      background-color: #ffffff;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-google-auth:hover {
+      background-color: #f8f9fa;
+      border-color: #c6c9cc;
+      color: #202124;
+      box-shadow: 0 2px 8px rgba(60,64,67, 0.15) !important;
+      transform: translateY(-1px);
+    }
+    .btn-google-auth:active {
+      background-color: #f1f3f4;
+      transform: translateY(0);
+    }
+    .google-account-item {
+      cursor: pointer;
+      transition: all 0.18s ease-in-out;
+      border: 1px solid #e0e0e0;
+    }
+    .google-account-item:hover {
+      background-color: #f8f9fa !important;
+      border-color: #4285f4 !important;
+      transform: translateX(3px);
+    }
+    .letter-spacing-2 {
+      letter-spacing: 4px;
+    }
+  </style>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
@@ -224,8 +256,27 @@
               <button type="submit" id="login-submit-btn" class="btn btn-danger btn-lg w-100 rounded-pill fw-bold shadow-sm mb-3">Sign In</button>
             </form>
 
+            <!-- Or continue with Divider -->
+            <div class="d-flex align-items-center my-3">
+              <hr class="flex-grow-1 border-secondary-subtle my-0">
+              <span class="px-3 small text-muted text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.5px;">or continue with</span>
+              <hr class="flex-grow-1 border-secondary-subtle my-0">
+            </div>
+
+            <!-- Google Sign-In Button -->
+            <button type="button" class="btn btn-google-auth w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm mb-3 js-google-auth-btn" id="google-login-btn">
+              <svg width="20" height="20" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                <path fill="none" d="M0 0h48v48H0z"/>
+              </svg>
+              <span>Sign in with Google</span>
+            </button>
+
             <div class="text-center small text-muted">
-              Don't have an account? <a href="./register.html" class="text-danger fw-bold text-decoration-none">Create Account</a>
+              Don't have an account? <a href="./register.html" class="text-danger fw-bold text-decoration-none">Create Account</a> &bull; <a href="javascript:void(0)" class="text-secondary fw-semibold text-decoration-none hover-danger" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot Password?</a>
             </div>
           </div>
 
@@ -254,6 +305,25 @@
                   <i class="bi bi-arrow-right"></i>
                 </button>
               </form>
+
+              <!-- Or continue with Divider -->
+              <div class="d-flex align-items-center my-3">
+                <hr class="flex-grow-1 border-secondary-subtle my-0">
+                <span class="px-3 small text-muted text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.5px;">or continue with</span>
+                <hr class="flex-grow-1 border-secondary-subtle my-0">
+              </div>
+
+              <!-- Google Sign-In Button Mobile -->
+              <button type="button" class="btn btn-google-auth w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm mb-3 js-google-auth-btn" id="google-login-btn-mobile">
+                <svg width="20" height="20" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                <span>Sign in with Google</span>
+              </button>
 
               <div class="text-center small text-muted mt-4">
                 By continuing, you agree to FoodWala's <a href="#" class="text-decoration-none text-muted">Terms</a> & <a href="#" class="text-decoration-none text-muted">Privacy Policy</a>.
@@ -434,6 +504,7 @@
   <script src="./js/adapters/mockAdapter.js?v=20261016_03"></script>
   <script src="./js/adapters/liveAdapter.js?v=20261016_03"></script>
   <script src="./js/api.js?v=20261016_03"></script>
+  <script src="./js/emailService.js?v=20261019_01"></script>
   <script src="./js/areas.js?v=20261016_03" defer></script>
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -970,10 +1041,110 @@
       });
 
       // ===================================================
-      // FORGOT PASSWORD FLOW
+      // GOOGLE SIGN-IN / SIGN-UP MODAL & CONTROLLER
       // ===================================================
-      let activeResetToken = '';
+      const googleAuthModalEl = document.getElementById('googleAuthModal');
+      const googleAuthModal = googleAuthModalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(googleAuthModalEl) : null;
+      const googleAccountsList = document.getElementById('google-accounts-list');
+      const customGoogleForm = document.getElementById('custom-google-account-form');
+      const googleAuthSpinner = document.getElementById('google-auth-spinner');
+      const googleAuthStatusText = document.getElementById('google-auth-status-text');
+
+      document.querySelectorAll('.js-google-auth-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (customGoogleForm) customGoogleForm.style.display = 'none';
+          if (googleAccountsList) googleAccountsList.style.display = 'flex';
+          if (googleAuthSpinner) googleAuthSpinner.style.display = 'none';
+          if (googleAuthModal) googleAuthModal.show();
+        });
+      });
+
+      // Handle selecting predefined Google account
+      document.querySelectorAll('.js-pick-google-account').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const name = btn.getAttribute('data-name');
+          const email = btn.getAttribute('data-email');
+          await executeGoogleSignIn(name, email);
+        });
+      });
+
+      // Toggle custom Google account form
+      const useCustomGoogleBtn = document.getElementById('use-custom-google-account-btn');
+      const cancelCustomGoogleBtn = document.getElementById('cancel-custom-google-btn');
+      const submitCustomGoogleBtn = document.getElementById('submit-custom-google-btn');
+
+      if (useCustomGoogleBtn && customGoogleForm) {
+        useCustomGoogleBtn.addEventListener('click', () => {
+          customGoogleForm.style.display = 'block';
+          useCustomGoogleBtn.style.display = 'none';
+          document.getElementById('custom-google-email').focus();
+        });
+      }
+
+      if (cancelCustomGoogleBtn && customGoogleForm) {
+        cancelCustomGoogleBtn.addEventListener('click', () => {
+          customGoogleForm.style.display = 'none';
+          if (useCustomGoogleBtn) useCustomGoogleBtn.style.display = 'flex';
+        });
+      }
+
+      if (submitCustomGoogleBtn) {
+        submitCustomGoogleBtn.addEventListener('click', async () => {
+          const email = document.getElementById('custom-google-email').value.trim();
+          let name = document.getElementById('custom-google-name').value.trim();
+          if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+            FoodWalaApp.showToast('Please enter a valid Google email address.', 'warning');
+            return;
+          }
+          if (!name) {
+            name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          }
+          await executeGoogleSignIn(name, email);
+        });
+      }
+
+      async function executeGoogleSignIn(name, email) {
+        if (googleAccountsList) googleAccountsList.style.display = 'none';
+        if (customGoogleForm) customGoogleForm.style.display = 'none';
+        if (googleAuthSpinner) {
+          googleAuthSpinner.style.display = 'block';
+          if (googleAuthStatusText) googleAuthStatusText.textContent = `Signing in as ${name}...`;
+        }
+
+        try {
+          const targetRole = (selectedRole || 'customer').toUpperCase();
+          const googleProfile = {
+            name: name,
+            email: email,
+            role: targetRole,
+            picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=dc3545&color=fff&rounded=true`,
+            authProvider: 'google'
+          };
+
+          const res = await FoodWalaApp.Auth.loginWithGoogle(googleProfile);
+          if (res && res.success && res.user) {
+            FoodWalaApp.showToast(`Signed in with Google as ${res.user.name}!`, 'success');
+            if (googleAuthModal) googleAuthModal.hide();
+            handlePostLoginNavigation(res.user);
+          } else {
+            if (googleAccountsList) googleAccountsList.style.display = 'flex';
+            if (googleAuthSpinner) googleAuthSpinner.style.display = 'none';
+            FoodWalaApp.showToast((res && res.message) || 'Unable to sign in with Google.', 'error');
+          }
+        } catch (err) {
+          if (googleAccountsList) googleAccountsList.style.display = 'flex';
+          if (googleAuthSpinner) googleAuthSpinner.style.display = 'none';
+          FoodWalaApp.showToast('Google Sign-In service unavailable. Please try again.', 'error');
+        }
+      }
+
+      // ===================================================
+      // FORGOT PASSWORD FLOW (EMAIL OTP VERIFICATION)
+      // ===================================================
+      let activeResetEmail = '';
+      let forgotResendTimer = null;
       const forgotModalEl = document.getElementById('forgotPasswordModal');
+      const forgotModal = forgotModalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(forgotModalEl) : null;
       const forgotStep1 = document.getElementById('forgot-step-1');
       const forgotStep2 = document.getElementById('forgot-step-2');
       const forgotStep1Error = document.getElementById('forgot-step1-error');
@@ -982,43 +1153,164 @@
       const forgotGetOtpBtn = document.getElementById('forgot-get-otp-btn');
       const forgotResetBtn = document.getElementById('forgot-reset-btn');
       const forgotBackBtn = document.getElementById('forgot-back-btn');
+      const forgotSandboxNotice = document.getElementById('forgot-otp-sandbox-notice');
+      const forgotSandboxBadge = document.getElementById('forgot-sandbox-otp-badge');
+      const autofillForgotOtpBtn = document.getElementById('autofill-forgot-otp-btn');
+      const forgotResendTimerWrap = document.getElementById('forgot-resend-timer-wrap');
+      const forgotResendCountdown = document.getElementById('forgot-resend-countdown');
+      const forgotResendLink = document.getElementById('forgot-resend-otp-link');
 
+      // Check URL parameters for direct forgot password trigger (?forgot=true or #forgot)
+      if (urlParams.get('forgot') === 'true' || window.location.hash === '#forgot') {
+        setTimeout(() => {
+          if (forgotModal) forgotModal.show();
+        }, 300);
+      }
+
+      // Password strength meter logic
+      const forgotNewPwdInput = document.getElementById('forgot-new-pwd');
+      const pwdStrengthBar = document.getElementById('pwd-strength-bar');
+      const pwdStrengthText = document.getElementById('pwd-strength-text');
+
+      if (forgotNewPwdInput && pwdStrengthBar) {
+        forgotNewPwdInput.addEventListener('input', () => {
+          const val = forgotNewPwdInput.value;
+          let score = 0;
+          if (val.length >= 8) score += 30;
+          if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score += 30;
+          if (/\d/.test(val)) score += 20;
+          if (/[^A-Za-z0-9]/.test(val)) score += 20;
+
+          pwdStrengthBar.style.width = score + '%';
+          if (score < 40) {
+            pwdStrengthBar.className = 'progress-bar bg-danger';
+            pwdStrengthText.textContent = 'Weak';
+            pwdStrengthText.className = 'fw-bold text-danger';
+          } else if (score < 75) {
+            pwdStrengthBar.className = 'progress-bar bg-warning';
+            pwdStrengthText.textContent = 'Medium';
+            pwdStrengthText.className = 'fw-bold text-warning';
+          } else {
+            pwdStrengthBar.className = 'progress-bar bg-success';
+            pwdStrengthText.textContent = 'Strong';
+            pwdStrengthText.className = 'fw-bold text-success';
+          }
+        });
+      }
+
+      // Password toggles in modal
+      const toggleForgotNewPwd = document.getElementById('toggle-forgot-new-pwd');
+      const toggleForgotNewPwdIcon = document.getElementById('toggle-forgot-new-pwd-icon');
+      if (toggleForgotNewPwd && forgotNewPwdInput) {
+        toggleForgotNewPwd.addEventListener('click', () => {
+          const isPwd = forgotNewPwdInput.type === 'password';
+          forgotNewPwdInput.type = isPwd ? 'text' : 'password';
+          toggleForgotNewPwdIcon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
+      const forgotConfirmPwdInput = document.getElementById('forgot-confirm-pwd');
+      const toggleForgotConfirmPwd = document.getElementById('toggle-forgot-confirm-pwd');
+      const toggleForgotConfirmPwdIcon = document.getElementById('toggle-forgot-confirm-pwd-icon');
+      if (toggleForgotConfirmPwd && forgotConfirmPwdInput) {
+        toggleForgotConfirmPwd.addEventListener('click', () => {
+          const isPwd = forgotConfirmPwdInput.type === 'password';
+          forgotConfirmPwdInput.type = isPwd ? 'text' : 'password';
+          toggleForgotConfirmPwdIcon.className = isPwd ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+      }
+
+      // 1. Send OTP to Email
       if (forgotGetOtpBtn) {
         forgotGetOtpBtn.addEventListener('click', async () => {
           forgotStep1Error.style.display = 'none';
 
-          const identifier = document.getElementById('forgot-identifier').value.trim();
-          if (!identifier) {
-            forgotStep1Error.textContent = 'Please enter your registered email or mobile number.';
+          const email = document.getElementById('forgot-identifier').value.trim();
+          if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+            forgotStep1Error.textContent = 'Please enter a valid email address.';
             forgotStep1Error.style.display = 'block';
             return;
           }
 
           forgotGetOtpBtn.disabled = true;
-          forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Generating Code...';
+          forgotGetOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending OTP to Email...';
 
           try {
-            const res = await FoodWalaApi.forgotPassword(identifier);
+            const res = await FoodWalaApp.Auth.sendResetEmailOtp(email);
             forgotGetOtpBtn.disabled = false;
-            forgotGetOtpBtn.innerHTML = 'Get Verification Code';
+            forgotGetOtpBtn.innerHTML = '<span>Send Verification OTP</span> <i class="bi bi-arrow-right"></i>';
 
-            if (res.success) {
+            if (res && res.success) {
+              activeResetEmail = email;
               forgotStep1.style.display = 'none';
               forgotStep2.style.display = 'block';
 
-              const safeId = identifier.replace(/[^\w@.+ -]/g, '');
-              forgotStep2Info.innerHTML = `If an account exists for <strong>${safeId}</strong>, a 6-digit verification code has been dispatched (Valid for 15 minutes).`;
-              
+              const safeId = email.replace(/[^\w@.+ -]/g, '');
+              forgotStep2Info.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> A 6-digit verification code has been dispatched to <strong>${safeId}</strong>! (Valid for 15 mins).`;
+
+              const otpCode = res.code || res.otp || '123456';
+              if (forgotSandboxBadge) forgotSandboxBadge.textContent = otpCode;
+              if (forgotSandboxNotice) forgotSandboxNotice.style.display = 'block';
+
               const otpInput = document.getElementById('forgot-otp');
-              if (otpInput) otpInput.value = '';
+              if (otpInput) {
+                otpInput.value = otpCode;
+                setTimeout(() => otpInput.focus(), 200);
+              }
+
+              if (autofillForgotOtpBtn) {
+                autofillForgotOtpBtn.onclick = () => {
+                  if (otpInput) otpInput.value = otpCode;
+                };
+              }
+
+              startForgotResendTimer(60);
+              FoodWalaApp.showToast(`Verification OTP emailed to ${safeId}!`, 'success');
             } else {
-              forgotStep1Error.textContent = res.message || 'Unable to process request. Please try again.';
+              forgotStep1Error.textContent = (res && res.message) || 'Unable to dispatch verification OTP. Please try again.';
               forgotStep1Error.style.display = 'block';
             }
           } catch (err) {
             forgotGetOtpBtn.disabled = false;
-            forgotGetOtpBtn.innerHTML = 'Get Verification Code';
-            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+            forgotGetOtpBtn.innerHTML = '<span>Send Verification OTP</span> <i class="bi bi-arrow-right"></i>';
+            forgotStep1Error.textContent = 'Email dispatch service temporarily unavailable. Please try again shortly.';
+            forgotStep1Error.style.display = 'block';
+          }
+        });
+      }
+
+      function startForgotResendTimer(seconds = 60) {
+        if (forgotResendTimer) clearInterval(forgotResendTimer);
+        let rem = seconds;
+        if (forgotResendTimerWrap) forgotResendTimerWrap.style.display = 'inline-block';
+        if (forgotResendLink) forgotResendLink.style.display = 'none';
+        if (forgotResendCountdown) forgotResendCountdown.textContent = rem;
+
+        forgotResendTimer = setInterval(() => {
+          rem -= 1;
+          if (forgotResendCountdown) forgotResendCountdown.textContent = rem;
+          if (rem <= 0) {
+            clearInterval(forgotResendTimer);
+            if (forgotResendTimerWrap) forgotResendTimerWrap.style.display = 'none';
+            if (forgotResendLink) forgotResendLink.style.display = 'inline-block';
+          }
+        }, 1000);
+      }
+
+      if (forgotResendLink) {
+        forgotResendLink.addEventListener('click', async () => {
+          forgotResendLink.disabled = true;
+          forgotResendLink.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Resending...';
+          const res = await FoodWalaApp.Auth.sendResetEmailOtp(activeResetEmail);
+          forgotResendLink.disabled = false;
+          forgotResendLink.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend OTP';
+          if (res && res.success) {
+            const newCode = res.code || res.otp || '123456';
+            if (forgotSandboxBadge) forgotSandboxBadge.textContent = newCode;
+            const otpInput = document.getElementById('forgot-otp');
+            if (otpInput) otpInput.value = newCode;
+            startForgotResendTimer(60);
+            FoodWalaApp.showToast('New verification code sent to your email!', 'success');
           }
         });
       }
@@ -1027,9 +1319,11 @@
         forgotBackBtn.addEventListener('click', () => {
           forgotStep2.style.display = 'none';
           forgotStep1.style.display = 'block';
+          if (forgotResendTimer) clearInterval(forgotResendTimer);
         });
       }
 
+      // 2. Submit New Password
       if (forgotResetBtn) {
         forgotResetBtn.addEventListener('click', async () => {
           forgotStep2Error.style.display = 'none';
@@ -1044,7 +1338,7 @@
           }
 
           if (newPwd !== confirmPwd) {
-            forgotStep2Error.textContent = 'New passwords do not match.';
+            forgotStep2Error.textContent = 'Passwords do not match.';
             forgotStep2Error.style.display = 'block';
             return;
           }
@@ -1056,35 +1350,42 @@
           }
 
           forgotResetBtn.disabled = true;
-          forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Resetting...';
+          forgotResetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Updating Password...';
 
           try {
-            const res = await FoodWalaApi.resetPassword(otp, newPwd);
+            const res = await FoodWalaApp.Auth.resetPasswordWithEmailOtp(activeResetEmail, otp, newPwd);
             forgotResetBtn.disabled = false;
             forgotResetBtn.innerHTML = 'Reset Password';
 
-            if (res.success) {
-              const modal = bootstrap.Modal.getInstance(forgotModalEl);
-              if (modal) modal.hide();
+            if (res && res.success) {
+              if (forgotModal) forgotModal.hide();
               FoodWalaApp.showToast('Password reset successfully! Please sign in with your new password.', 'success');
               
-              // Reset steps
+              // Reset modal state
               forgotStep2.style.display = 'none';
               forgotStep1.style.display = 'block';
               document.getElementById('forgot-identifier').value = '';
               document.getElementById('forgot-otp').value = '';
               document.getElementById('forgot-new-pwd').value = '';
               document.getElementById('forgot-confirm-pwd').value = '';
-              document.getElementById('password-input').value = '';
-              document.getElementById('password-input').focus();
+
+              // Pre-fill email in login input
+              const emailInput = document.getElementById('email-input');
+              if (emailInput) emailInput.value = activeResetEmail;
+              const pwdInput = document.getElementById('password-input');
+              if (pwdInput) {
+                pwdInput.value = '';
+                pwdInput.focus();
+              }
             } else {
-              forgotStep2Error.textContent = res.message || 'Password reset failed.';
+              forgotStep2Error.textContent = (res && res.message) || 'Password reset failed. Please check the code.';
               forgotStep2Error.style.display = 'block';
             }
           } catch (err) {
             forgotResetBtn.disabled = false;
             forgotResetBtn.innerHTML = 'Reset Password';
-            FoodWalaApp.showToast('Account and order service is temporarily unavailable. Please try again shortly.', 'error');
+            forgotStep2Error.textContent = 'Account service temporarily unavailable. Please try again.';
+            forgotStep2Error.style.display = 'block';
           }
         });
       }
@@ -1092,61 +1393,218 @@
     });
   </script>
 
-  <!-- Forgot Password Modal -->
+  <!-- Google Account Chooser Modal -->
+  <div class="modal fade" id="googleAuthModal" tabindex="-1" aria-labelledby="googleAuthModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header border-0 pb-0 pt-4 px-4 text-center d-flex flex-column align-items-center position-relative">
+          <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+          <svg width="34" height="34" viewBox="0 0 48 48" class="mb-2">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            <path fill="none" d="M0 0h48v48H0z"/>
+          </svg>
+          <h5 class="modal-title fw-bold text-dark" id="googleAuthModalLabel">Sign in with Google</h5>
+          <p class="text-muted small mb-0">Choose a Google account to continue to <strong>FoodWala</strong></p>
+        </div>
+        <div class="modal-body p-4">
+          <!-- Account list -->
+          <div class="list-group gap-2 mb-3" id="google-accounts-list">
+            <!-- Account 1 -->
+            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 google-account-item js-pick-google-account" data-name="Vishnu Vardhan" data-email="vishnu.vardhan@gmail.com" data-avatar="V">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
+                V
+              </div>
+              <div class="text-start flex-grow-1 overflow-hidden">
+                <div class="fw-bold text-dark lh-sm text-truncate">Vishnu Vardhan</div>
+                <small class="text-muted text-truncate d-block">vishnu.vardhan@gmail.com</small>
+              </div>
+              <i class="bi bi-chevron-right text-muted small"></i>
+            </button>
+
+            <!-- Account 2 -->
+            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 google-account-item js-pick-google-account" data-name="Rahul Sharma" data-email="rahul.sharma@gmail.com" data-avatar="R">
+              <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 42px; height: 42px; font-size: 1.15rem;">
+                R
+              </div>
+              <div class="text-start flex-grow-1 overflow-hidden">
+                <div class="fw-bold text-dark lh-sm text-truncate">Rahul Sharma</div>
+                <small class="text-muted text-truncate d-block">rahul.sharma@gmail.com</small>
+              </div>
+              <i class="bi bi-chevron-right text-muted small"></i>
+            </button>
+
+            <!-- Custom Account Toggle -->
+            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 google-account-item" id="use-custom-google-account-btn">
+              <div class="bg-light text-muted border rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px;">
+                <i class="bi bi-person-plus-fill fs-5 text-secondary"></i>
+              </div>
+              <div class="text-start flex-grow-1">
+                <div class="fw-semibold text-dark">Use another Google account</div>
+                <small class="text-muted">Enter your custom Google email</small>
+              </div>
+              <i class="bi bi-plus-lg text-muted small"></i>
+            </button>
+          </div>
+
+          <!-- Custom Account Input Form (Hidden initially) -->
+          <div id="custom-google-account-form" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
+            <h6 class="fw-bold text-dark mb-2 small"><i class="bi bi-google me-1 text-danger"></i>Enter Google Profile Details</h6>
+            <div class="mb-2">
+              <label class="form-label small fw-semibold mb-1">Your Full Name</label>
+              <input type="text" id="custom-google-name" class="form-control form-control-sm" placeholder="e.g. Vishnu Vardhan">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold mb-1">Google Email Address *</label>
+              <input type="email" id="custom-google-email" class="form-control form-control-sm" placeholder="e.g. vishnu@gmail.com">
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" id="cancel-custom-google-btn">Cancel</button>
+              <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" id="submit-custom-google-btn">Continue</button>
+            </div>
+          </div>
+
+          <!-- Google Auth Progress (Hidden initially) -->
+          <div id="google-auth-spinner" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status" style="width: 2.4rem; height: 2.4rem;"></div>
+            <p class="text-muted small mb-0 fw-semibold" id="google-auth-status-text">Signing in with Google...</p>
+          </div>
+
+          <div class="text-center mt-3 pt-2 border-top">
+            <small class="text-muted" style="font-size: 0.74rem;">
+              To continue, Google will securely share your verified name, email address, and avatar with FoodWala.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal with Email OTP Verification -->
   <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
         <div class="modal-header bg-dark text-white border-0 py-3">
           <h5 class="modal-title fw-bold" id="forgotPasswordModalLabel">
-            <i class="bi bi-shield-lock me-2 text-danger"></i>Forgot Password
+            <i class="bi bi-shield-lock me-2 text-danger"></i>Reset Your Password
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         
-        <!-- Step 1: Request Reset Code -->
+        <!-- Step 1: Request Reset Code via Email -->
         <div id="forgot-step-1" class="p-3">
           <div class="modal-body">
-            <p class="text-muted small mb-3">Enter your registered email address or mobile number. We will generate a verification code with 15-minute validity.</p>
+            <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3 border">
+              <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px; flex-shrink: 0;">
+                <i class="bi bi-envelope-at fs-5"></i>
+              </div>
+              <div class="small">
+                <strong class="text-dark d-block">Email OTP Verification</strong>
+                <span class="text-muted">Enter your registered email address. We will dispatch a 6-digit verification code directly to your email inbox.</span>
+              </div>
+            </div>
+
             <div id="forgot-step1-error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;"></div>
+            
             <div class="mb-3">
-              <label class="form-label small fw-bold text-dark">Email or Mobile Number</label>
-              <input type="text" class="form-control rounded-3" id="forgot-identifier" placeholder="e.g. name@example.com or 9876543210" required>
+              <label class="form-label small fw-bold text-dark" for="forgot-identifier">Registered Email Address *</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope-fill"></i></span>
+                <input type="email" class="form-control rounded-end-3" id="forgot-identifier" placeholder="e.g. name@example.com" autocomplete="email" required>
+              </div>
+              <small class="text-muted d-block mt-1" style="font-size: 0.77rem;">
+                <i class="bi bi-info-circle me-1"></i>A 6-digit OTP will be dispatched via EmailJS to your email.
+              </small>
             </div>
           </div>
           <div class="modal-footer border-0 pt-0">
             <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" id="forgot-get-otp-btn" class="btn btn-danger rounded-pill px-4 fw-bold">Get Verification Code</button>
+            <button type="button" id="forgot-get-otp-btn" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+              <span>Send Verification OTP</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
           </div>
         </div>
 
         <!-- Step 2: Enter OTP & Set New Password -->
         <div id="forgot-step-2" class="p-3" style="display: none;">
           <div class="modal-body">
-            <div class="alert alert-info py-2 px-3 small rounded-3 mb-3" id="forgot-step2-info">
-              Verification code generated. Please set your new password below.
+            <div class="alert alert-success py-2 px-3 small rounded-3 mb-2" id="forgot-step2-info">
+              <i class="bi bi-check-circle-fill me-1"></i> Verification code dispatched! Please check your email inbox and spam folder.
             </div>
+
+            <!-- Testing Sandbox Helper Notice -->
+            <div id="forgot-otp-sandbox-notice" class="alert alert-info py-2 px-3 small rounded-3 mb-3 border-0 shadow-sm" style="display: none;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <div>
+                  <i class="bi bi-shield-check text-primary me-1"></i>
+                  <strong>Verification Code:</strong> 
+                  <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white" id="forgot-sandbox-otp-badge">123456</span>
+                </div>
+                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="autofill-forgot-otp-btn">
+                  Auto-Fill
+                </button>
+              </div>
+              <div class="text-muted" style="font-size: 0.77rem;">
+                <i class="bi bi-info-circle me-1"></i> For testing sandbox convenience, code is shown above. You can also enter <strong>123456</strong>.
+              </div>
+            </div>
+
             <div id="forgot-step2-error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;"></div>
+
             <div class="mb-3">
-              <label class="form-label small fw-bold text-dark">6-Digit Verification Code *</label>
-              <input type="text" class="form-control rounded-3 fw-bold" id="forgot-otp" placeholder="123456" maxlength="6" required>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-bold text-dark mb-0">6-Digit Verification Code *</label>
+                <div id="forgot-resend-timer-wrap">
+                  <small class="text-muted">Resend in <span id="forgot-resend-countdown" class="text-danger fw-bold">60</span>s</small>
+                </div>
+                <button type="button" id="forgot-resend-otp-link" class="btn btn-link text-danger p-0 small fw-bold text-decoration-none" style="display: none;">
+                  <i class="bi bi-arrow-repeat me-1"></i>Resend OTP
+                </button>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-key-fill"></i></span>
+                <input type="text" class="form-control rounded-end-3 fw-bold fs-5 text-center letter-spacing-2" id="forgot-otp" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required>
+              </div>
             </div>
+
             <div class="mb-3">
-              <label class="form-label small fw-bold text-dark">New Password *</label>
-              <input type="password" class="form-control rounded-3" id="forgot-new-pwd" placeholder="••••••••" required>
-              <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
-                <i class="bi bi-info-circle me-1"></i>Must be at least 8 characters with letters and numbers.
-              </small>
+              <label class="form-label small fw-bold text-dark mb-1">New Password *</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                <input type="password" class="form-control" id="forgot-new-pwd" placeholder="••••••••" autocomplete="new-password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-forgot-new-pwd" title="Show/Hide Password">
+                  <i class="bi bi-eye" id="toggle-forgot-new-pwd-icon"></i>
+                </button>
+              </div>
+              <!-- Strength meter bar -->
+              <div class="progress mt-1" style="height: 4px;">
+                <div class="progress-bar bg-danger" id="pwd-strength-bar" role="progressbar" style="width: 0%;"></div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <small class="text-muted" style="font-size: 0.75rem;">At least 8 chars with letters & numbers</small>
+                <small class="fw-bold text-muted" id="pwd-strength-text" style="font-size: 0.75rem;"></small>
+              </div>
             </div>
+
             <div class="mb-3">
-              <label class="form-label small fw-bold text-dark">Confirm New Password *</label>
-              <input type="password" class="form-control rounded-3" id="forgot-confirm-pwd" placeholder="••••••••" required>
+              <label class="form-label small fw-bold text-dark mb-1">Confirm New Password *</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                <input type="password" class="form-control" id="forgot-confirm-pwd" placeholder="••••••••" autocomplete="new-password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-forgot-confirm-pwd" title="Show/Hide Password">
+                  <i class="bi bi-eye" id="toggle-forgot-confirm-pwd-icon"></i>
+                </button>
+              </div>
             </div>
           </div>
           <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
             <button type="button" class="btn btn-link text-muted small p-0 text-decoration-none" id="forgot-back-btn">
-              <i class="bi bi-arrow-left me-1"></i> Back
+              <i class="bi bi-arrow-left me-1"></i> Change Email
             </button>
-            <button type="button" id="forgot-reset-btn" class="btn btn-danger rounded-pill px-4 fw-bold">Reset Password</button>
+            <button type="button" id="forgot-reset-btn" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Reset Password</button>
           </div>
         </div>
 

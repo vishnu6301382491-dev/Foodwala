@@ -112,6 +112,10 @@
       return await getAdapter().login(identifier, password);
     },
 
+    loginWithGoogle: async function (googleProfile) {
+      return await getAdapter().loginWithGoogle(googleProfile);
+    },
+
     changePassword: async function (currentPassword, newPassword, confirmPassword) {
       return await getAdapter().changePassword(currentPassword, newPassword, confirmPassword);
     },

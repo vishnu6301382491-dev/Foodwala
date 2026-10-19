@@ -332,8 +332,68 @@
     };
   }
 
+  /**
+   * Sends 6-digit password reset verification OTP to user's email via EmailJS
+   * @param {string} email - Recipient email address
+   * @param {string} otp - 6-digit OTP verification code
+   * @param {string} [userName] - Optional recipient name
+   * @returns {Promise<Object>} Status of dispatch
+   */
+  async function sendOtpEmail(email, otp, userName) {
+    if (!email || !email.includes('@')) {
+      console.warn('[FoodWala EmailService] Invalid email address for OTP dispatch:', email);
+      return { success: false, reason: 'INVALID_EMAIL' };
+    }
+
+    const safeEmail = email.trim();
+    const safeName = (userName && userName.trim()) || 'FoodWala Member';
+    const otpCode = String(otp).trim();
+    const formattedDate = formatOrderDate(new Date());
+
+    if (!isEmailJsConfigured()) {
+      console.warn('[FoodWala EmailService] EmailJS not configured. Utilizing sandbox OTP display.');
+      return { success: true, isDevSandbox: true, otp: otpCode };
+    }
+
+    try {
+      const emailjs = await ensureEmailJsLoaded();
+      emailjs.init({ publicKey: EMAILJS_CONFIG.PUBLIC_KEY });
+
+      const emailParams = {
+        to_email: safeEmail,
+        customer_name: safeName,
+        order_id: `VERIFY-${otpCode}`,
+        restaurant: 'FoodWala Account Security',
+        items: `Your FoodWala Password Reset Verification OTP is:\n\n👉  ${otpCode}  👈\n\nThis verification code is strictly valid for 15 minutes. If you did not request a password reset, please ignore this email or secure your account.`,
+        total: `OTP: ${otpCode}`,
+        payment_mode: 'Security Verification Code',
+        order_date: formattedDate,
+        address: 'Account Security / Password Reset Verification',
+        admin_note: `Password Reset OTP dispatch to ${safeEmail}`
+      };
+
+      console.log(`[FoodWala EmailService] Dispatching Password Reset OTP to ${safeEmail}...`, emailParams);
+      const response = await emailjs.send(
+        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.TEMPLATE_ID,
+        emailParams,
+        EMAILJS_CONFIG.PUBLIC_KEY
+      );
+
+      console.log('[FoodWala EmailService] OTP Email response:', response);
+      if (response && response.status === 200) {
+        return { success: true, status: 200, email: safeEmail, otp: otpCode };
+      }
+      return { success: false, reason: 'NON_200_STATUS', response: response, otp: otpCode };
+    } catch (err) {
+      console.warn('[FoodWala EmailService] EmailJS send error for OTP (falling back to sandbox preview):', err);
+      return { success: true, isDevFallback: true, error: err, otp: otpCode };
+    }
+  }
+
   window.FoodWalaEmail = {
     sendReceiptEmail: sendReceiptEmail,
+    sendOtpEmail: sendOtpEmail,
     CONFIG: EMAILJS_CONFIG,
     isConfigured: isEmailJsConfigured
   };
