@@ -134,84 +134,109 @@
     return { valid: true };
   }
 
+  // Verified saved Google accounts matching design blueprint
+  const BLUEPRINT_ACCOUNTS = [
+    {
+      name: 'Vishnu Vardhan',
+      email: 'vishnu.vardhan@gmail.com',
+      avatar: 'V',
+      color: '#1a73e8',
+      sub: '109823487612349871234',
+      role: 'CUSTOMER'
+    },
+    {
+      name: 'Rahul Sharma',
+      email: 'rahul.sharma@gmail.com',
+      avatar: 'R',
+      color: '#ea4335',
+      sub: '108823487612349875678',
+      role: 'CUSTOMER'
+    }
+  ];
+
+  function getSafeStorage() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof localStorage !== 'undefined') return localStorage;
+    } catch (e) {}
+    return null;
+  }
+
   /**
-   * Get saved Google accounts from localStorage
+   * Get saved Google accounts from localStorage, guaranteeing automatic migration from old cached accounts
    */
   function getSavedGoogleAccounts() {
-    try {
-      const stored = localStorage.getItem('foodwala_saved_google_accounts');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
+    const SCHEMA_VERSION_KEY = 'foodwala_google_accounts_schema_version';
+    const CURRENT_SCHEMA_VERSION = 'v20261020_blueprint_v2';
+    const storage = getSafeStorage();
 
-    // Verified saved Google accounts matching design blueprint
-    return [
-      {
-        name: 'Vishnu Vardhan',
-        email: 'vishnu.vardhan@gmail.com',
-        avatar: 'V',
-        color: '#1a73e8',
-        sub: '109823487612349871234',
-        role: 'CUSTOMER'
-      },
-      {
-        name: 'Rahul Sharma',
-        email: 'rahul.sharma@gmail.com',
-        avatar: 'R',
-        color: '#ea4335',
-        sub: '108823487612349875678',
-        role: 'CUSTOMER'
-      },
-      {
-        name: 'Vishnu Vardhan (Dev)',
-        email: 'vishnuvardhanreddych45@gmail.com',
-        avatar: 'V',
-        color: '#0d6efd',
-        sub: '108765432198765432109',
-        role: 'CUSTOMER'
-      },
-      {
-        name: 'Vishnu (Restaurant)',
-        email: 'restaurant.vishnu@foodwala.com',
-        avatar: 'R',
-        color: '#f59e0b',
-        sub: '106543219876543210987',
-        role: 'RESTAURANT'
-      },
-      {
-        name: 'Vishnu (Delivery Partner)',
-        email: 'partner.vishnu@foodwala.com',
-        avatar: 'P',
-        color: '#198754',
-        sub: '107654321987654321098',
-        role: 'DELIVERY_PARTNER'
-      },
-      {
-        name: 'Vishnu (Admin)',
-        email: 'admin.vishnu@foodwala.com',
-        avatar: 'A',
-        color: '#6f42c1',
-        sub: '105432198765432109876',
-        role: 'ADMIN'
+    if (!storage) {
+      return JSON.parse(JSON.stringify(BLUEPRINT_ACCOUNTS));
+    }
+
+    try {
+      const storedVersion = storage.getItem(SCHEMA_VERSION_KEY);
+      const stored = storage.getItem('foodwala_saved_google_accounts');
+
+      // Purge and reset if version is outdated, storage is missing, or contains old cached test email
+      if (
+        storedVersion !== CURRENT_SCHEMA_VERSION ||
+        !stored ||
+        stored.includes('vishnuvardhanreddychinnapuredd') ||
+        stored.includes('vishnuvardhanreddych45') ||
+        stored.includes('restaurant.vishnu')
+      ) {
+        storage.setItem(SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
+        storage.setItem('foodwala_saved_google_accounts', JSON.stringify(BLUEPRINT_ACCOUNTS));
+        return JSON.parse(JSON.stringify(BLUEPRINT_ACCOUNTS));
       }
-    ];
+
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Guarantee canonical blueprint accounts exist at the front
+        const hasVishnu = parsed.some(a => a && a.email && a.email.toLowerCase() === 'vishnu.vardhan@gmail.com');
+        const hasRahul = parsed.some(a => a && a.email && a.email.toLowerCase() === 'rahul.sharma@gmail.com');
+
+        if (!hasVishnu || !hasRahul) {
+          storage.setItem(SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION);
+          storage.setItem('foodwala_saved_google_accounts', JSON.stringify(BLUEPRINT_ACCOUNTS));
+          return JSON.parse(JSON.stringify(BLUEPRINT_ACCOUNTS));
+        }
+
+        // Filter out any obsolete accounts, keep any user-added custom accounts
+        const userAdded = parsed.filter(a =>
+          a &&
+          a.email &&
+          a.email.toLowerCase() !== 'vishnu.vardhan@gmail.com' &&
+          a.email.toLowerCase() !== 'rahul.sharma@gmail.com' &&
+          !a.email.includes('vishnuvardhanreddychinnapuredd')
+        );
+
+        return [...BLUEPRINT_ACCOUNTS, ...userAdded];
+      }
+    } catch (e) {
+      console.warn('[FoodWala Google Auth] Accounts migration error:', e);
+    }
+
+    return JSON.parse(JSON.stringify(BLUEPRINT_ACCOUNTS));
   }
 
   /**
    * Save a new Google account to localStorage for 1-click access
    */
   function saveGoogleAccount(acc) {
+    const storage = getSafeStorage();
+    if (!storage) return;
+
     try {
       const list = getSavedGoogleAccounts();
-      const existingIdx = list.findIndex(a => a.email.toLowerCase() === acc.email.toLowerCase());
+      const existingIdx = list.findIndex(a => a && a.email && a.email.toLowerCase() === acc.email.toLowerCase());
       if (existingIdx >= 0) {
         list[existingIdx] = { ...list[existingIdx], ...acc };
       } else {
-        list.unshift(acc);
+        list.push(acc);
       }
-      localStorage.setItem('foodwala_saved_google_accounts', JSON.stringify(list.slice(0, 8)));
+      storage.setItem('foodwala_saved_google_accounts', JSON.stringify(list.slice(0, 8)));
     } catch (e) {}
   }
 
@@ -367,25 +392,18 @@
     // STAGE 1: Google Account Selection (Panel 2)
     function renderStage1() {
       const accountItemsHtml = accounts.map((acc, idx) => {
-        let roleBadge = '';
-        if (acc.role === 'ADMIN') {
-          roleBadge = '<span class="badge text-white ms-2" style="font-size:0.65rem; background:#6f42c1;">Admin</span>';
-        } else if (acc.role === 'RESTAURANT') {
-          roleBadge = '<span class="badge bg-warning text-dark ms-2" style="font-size:0.65rem;">Restaurant</span>';
-        } else if (acc.role === 'DELIVERY_PARTNER') {
-          roleBadge = '<span class="badge bg-success text-white ms-2" style="font-size:0.65rem;">Partner</span>';
-        }
+        const isFirst = idx === 0;
+        const bgStyle = isFirst ? 'background-color: #f0f6ff; border-color: #c2e7ff;' : 'background-color: #ffffff; border-color: #dadce0;';
 
         return `
-          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2 js-pick-direct-account" data-idx="${idx}" style="cursor: pointer; transition: all 0.15s ease;">
+          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2 js-pick-direct-account" data-idx="${idx}" style="cursor: pointer; transition: all 0.15s ease; ${bgStyle}">
             <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 40px; height: 40px; font-size: 1.1rem; background-color: ${acc.color || '#1a73e8'};">
               ${acc.avatar || acc.name.charAt(0).toUpperCase()}
             </div>
             <div class="text-start flex-grow-1 overflow-hidden">
-              <div class="fw-bold text-dark lh-sm text-truncate d-flex align-items-center" style="font-size: 0.95rem;">${acc.name} ${roleBadge}</div>
+              <div class="fw-bold text-dark lh-sm text-truncate" style="font-size: 0.95rem;">${acc.name}</div>
               <small class="text-secondary text-truncate d-block" style="font-size: 0.82rem;">${acc.email}</small>
             </div>
-            <i class="bi bi-chevron-right text-muted small"></i>
           </button>
         `;
       }).join('');
@@ -409,12 +427,12 @@
             ${accountItemsHtml}
 
             <!-- Use Another Account Option -->
-            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2" id="use-another-account-btn" style="cursor: pointer;">
-              <div class="bg-light text-muted border rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2" id="use-another-account-btn" style="cursor: pointer; background-color: #ffffff; border-color: #dadce0;">
+              <div class="bg-light text-muted border rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 40px; height: 40px;">
                 <i class="bi bi-person-plus text-secondary fs-5"></i>
               </div>
               <div class="text-start flex-grow-1">
-                <div class="fw-semibold text-dark" style="font-size: 0.92rem;">Use another account</div>
+                <div class="fw-semibold text-dark" style="font-size: 0.95rem;">Use another account</div>
               </div>
             </button>
           </div>
@@ -440,25 +458,15 @@
           </div>
 
           <!-- Footer note -->
-          <p class="text-muted text-center mt-3 mb-0" style="font-size: 0.74rem; line-height: 1.4;">
+          <p class="text-muted text-center mt-3 mb-0" style="font-size: 0.74rem; line-height: 1.4; color: #5f6368;">
             To continue, Google will share your name, email address, and profile picture with Foodwala.
           </p>
 
-          <!-- Client ID Config Toggle -->
-          <div class="border-top pt-3 mt-3 text-center">
-            <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" id="toggle-gcp-client-id-btn" style="font-size: 0.72rem;">
-              <i class="bi bi-gear-fill me-1"></i>Configure Google Cloud Client ID
-            </button>
-            <div id="gcp-client-id-panel" style="display: none;" class="text-start mt-2 p-2 bg-light rounded-3 border small">
-              <label class="form-label fw-bold small mb-1" style="font-size: 0.72rem;">OAuth 2.0 Web Client ID:</label>
-              <div class="input-group input-group-sm mb-1">
-                <input type="text" id="live-client-id-input" class="form-control" placeholder="123456789-xyz.apps.googleusercontent.com" value="${getClientId()}">
-                <button type="button" class="btn btn-danger btn-sm fw-bold" id="save-live-client-id-btn">Save</button>
-              </div>
-              <div class="text-muted" style="font-size: 0.68rem;">
-                Origin: <code>${typeof window !== 'undefined' && window.location ? window.location.origin : 'https://vishnu6301382491-dev.github.io'}</code>
-              </div>
-            </div>
+          <!-- Hidden developer settings container (keeps DOM elements accessible if needed) -->
+          <div id="gcp-client-id-panel" style="display: none;">
+            <input type="text" id="live-client-id-input" value="${getClientId()}">
+            <button type="button" id="toggle-gcp-client-id-btn"></button>
+            <button type="button" id="save-live-client-id-btn"></button>
           </div>
         </div>
       `;
@@ -477,26 +485,40 @@
       const closeAnotherBtn = document.getElementById('close-another-form-btn');
       const cancelAnotherBtn = document.getElementById('cancel-another-btn');
       const nextAnotherBtn = document.getElementById('next-another-btn');
+      const emailInput = document.getElementById('another-g-email');
+      const nameInput = document.getElementById('another-g-name');
+
+      function hideAnotherForm() {
+        if (anotherForm) anotherForm.style.display = 'none';
+        const listGroup = document.getElementById('direct-accounts-list');
+        if (listGroup) listGroup.style.display = 'block';
+      }
 
       if (useAnotherBtn && anotherForm) {
         useAnotherBtn.addEventListener('click', () => {
+          const listGroup = document.getElementById('direct-accounts-list');
+          if (listGroup) listGroup.style.display = 'none';
           anotherForm.style.display = 'block';
-          const emailInput = document.getElementById('another-g-email');
-          if (emailInput) emailInput.focus();
+          if (emailInput) {
+            emailInput.value = '';
+            emailInput.focus();
+          }
         });
       }
 
-      if (closeAnotherBtn && anotherForm) {
-        closeAnotherBtn.addEventListener('click', () => {
-          anotherForm.style.display = 'none';
-        });
-      }
+      if (closeAnotherBtn) closeAnotherBtn.addEventListener('click', hideAnotherForm);
+      if (cancelAnotherBtn) cancelAnotherBtn.addEventListener('click', hideAnotherForm);
 
-      if (cancelAnotherBtn && anotherForm) {
-        cancelAnotherBtn.addEventListener('click', () => {
-          anotherForm.style.display = 'none';
-        });
-      }
+      [emailInput, nameInput].forEach(inp => {
+        if (inp) {
+          inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (nextAnotherBtn) nextAnotherBtn.click();
+            }
+          });
+        }
+      });
 
       if (nextAnotherBtn) {
         nextAnotherBtn.addEventListener('click', () => {
@@ -521,18 +543,10 @@
         });
       }
 
-      // Toggle Client ID panel
-      const toggleGcpBtn = document.getElementById('toggle-gcp-client-id-btn');
-      const gcpPanel = document.getElementById('gcp-client-id-panel');
       const saveGcpBtn = document.getElementById('save-live-client-id-btn');
-      if (toggleGcpBtn && gcpPanel) {
-        toggleGcpBtn.addEventListener('click', () => {
-          gcpPanel.style.display = gcpPanel.style.display === 'none' ? 'block' : 'none';
-        });
-      }
       if (saveGcpBtn) {
         saveGcpBtn.addEventListener('click', () => {
-          const val = document.getElementById('live-client-id-input').value.trim();
+          const val = (document.getElementById('live-client-id-input').value || '').trim();
           if (val) {
             setClientId(val);
             if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
