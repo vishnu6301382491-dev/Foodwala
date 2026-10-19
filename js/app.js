@@ -1932,17 +1932,30 @@ const FoodWalaApp = (function () {
       const role = (user.role || '').toLowerCase();
       const isAdmin = role === 'admin';
       const isRestaurant = role === 'restaurant' || role === 'restaurant_admin' || role === 'manager';
+      const isPartner = role === 'partner' || role === 'delivery_partner';
+
+      const initial = (user.avatar || user.name.charAt(0)).toUpperCase();
+      const avatarBg = user.authProvider === 'google' ? '#1a73e8' : (isRestaurant ? '#f59e0b' : (isAdmin ? '#6f42c1' : (isPartner ? '#198754' : '#1a73e8')));
+
       userNavSlot.innerHTML = `
         <div class="dropdown">
-          <button class="btn btn-outline-dark btn-sm dropdown-toggle d-flex align-items-center gap-2 py-2 px-3 rounded-pill" type="button" id="userDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-person-circle fs-5 ${isRestaurant ? 'text-warning' : 'text-danger'}"></i>
-            <span class="fw-semibold">${user.name.split(' ')[0]}</span>
+          <button class="btn btn-sm dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-pill shadow-sm" type="button" id="userDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid #dadce0; background: #ffffff;">
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm flex-shrink-0" style="width: 32px; height: 32px; background-color: ${avatarBg}; font-size: 0.95rem;">
+              ${initial}
+            </div>
+            <span class="fw-semibold text-dark pe-1">${user.name.split(' ')[0]}</span>
             ${isRestaurant ? '<span class="badge bg-warning text-dark rounded-pill small px-2 py-0" style="font-size:0.68rem;">Partner</span>' : ''}
+            ${isAdmin ? '<span class="badge text-white rounded-pill small px-2 py-0" style="font-size:0.68rem; background:#6f42c1;">Admin</span>' : ''}
           </button>
           <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 py-2" aria-labelledby="userDropdownBtn" style="min-width: 230px;">
             <li class="px-3 py-2 border-bottom">
-              <div class="fw-bold text-dark">${user.name}</div>
-              <small class="text-muted">${user.email || user.phone || ''}</small>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 28px; height: 28px; background-color: ${avatarBg}; font-size: 0.85rem;">
+                  ${initial}
+                </div>
+                <div class="fw-bold text-dark text-truncate">${user.name}</div>
+              </div>
+              <small class="text-muted d-block text-truncate">${user.email || user.phone || ''}</small>
             </li>
             ${isRestaurant ? `<li><a class="dropdown-item py-2 d-flex align-items-center gap-2 text-dark fw-bold bg-warning-subtle rounded-3 mx-2 my-1" href="./restaurant-dashboard.html"><i class="bi bi-shop text-warning fs-5"></i> <span>Restaurant Dashboard</span></a></li>` : ''}
             <li><a class="dropdown-item py-2 d-flex align-items-center gap-2" href="./profile.html"><i class="bi bi-person text-primary"></i> <span>My Profile</span></a></li>

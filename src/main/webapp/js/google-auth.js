@@ -146,14 +146,22 @@
       }
     } catch (e) {}
 
-    // Verified saved Google accounts for 1-click direct login
+    // Verified saved Google accounts matching design blueprint
     return [
       {
         name: 'Vishnu Vardhan',
-        email: 'vishnuvardhanreddychinnapuredd@gmail.com',
+        email: 'vishnu.vardhan@gmail.com',
         avatar: 'V',
-        color: '#dc3545',
+        color: '#1a73e8',
         sub: '109823487612349871234',
+        role: 'CUSTOMER'
+      },
+      {
+        name: 'Rahul Sharma',
+        email: 'rahul.sharma@gmail.com',
+        avatar: 'R',
+        color: '#ea4335',
+        sub: '108823487612349875678',
         role: 'CUSTOMER'
       },
       {
@@ -165,20 +173,20 @@
         role: 'CUSTOMER'
       },
       {
+        name: 'Vishnu (Restaurant)',
+        email: 'restaurant.vishnu@foodwala.com',
+        avatar: 'R',
+        color: '#f59e0b',
+        sub: '106543219876543210987',
+        role: 'RESTAURANT'
+      },
+      {
         name: 'Vishnu (Delivery Partner)',
         email: 'partner.vishnu@foodwala.com',
         avatar: 'P',
         color: '#198754',
         sub: '107654321987654321098',
         role: 'DELIVERY_PARTNER'
-      },
-      {
-        name: 'Vishnu (Restaurant)',
-        email: 'restaurant.vishnu@foodwala.com',
-        avatar: 'R',
-        color: '#ffc107',
-        sub: '106543219876543210987',
-        role: 'RESTAURANT'
       },
       {
         name: 'Vishnu (Admin)',
@@ -324,7 +332,10 @@
   }
 
   /**
-   * Render the Direct Google Account Chooser Modal (No 401 error, 1-Click Login)
+   * Render the Direct Google Account Chooser & Permission Modal (Matching Design Blueprint)
+   * Panel 2: Account Selection
+   * Panel 3: Google Permission Confirmation
+   * Panel 4: Redirection & Avatar UI
    */
   function showDirectGoogleChooserModal(options = {}) {
     const isSignUp = Boolean(options.isSignUp);
@@ -333,147 +344,164 @@
 
     const accounts = getSavedGoogleAccounts();
 
-    let accountItemsHtml = accounts.map((acc, idx) => {
-      let roleBadge = '';
-      if (acc.role === 'ADMIN') {
-        roleBadge = '<span class="badge text-white ms-2" style="font-size:0.65rem; background:#6f42c1;">Admin</span>';
-      } else if (acc.role === 'RESTAURANT') {
-        roleBadge = '<span class="badge bg-warning text-dark ms-2" style="font-size:0.65rem;">Restaurant</span>';
-      } else if (acc.role === 'DELIVERY_PARTNER') {
-        roleBadge = '<span class="badge bg-success text-white ms-2" style="font-size:0.65rem;">Partner</span>';
-      } else if (idx === 0) {
-        roleBadge = '<span class="badge bg-danger text-white ms-2" style="font-size:0.65rem;">Default</span>';
-      }
-
-      return `
-        <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2 js-pick-direct-account" data-idx="${idx}">
-          <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 42px; height: 42px; font-size: 1.15rem; background-color: ${acc.color || '#dc3545'};">
-            ${acc.avatar || acc.name.charAt(0).toUpperCase()}
-          </div>
-          <div class="text-start flex-grow-1 overflow-hidden">
-            <div class="fw-bold text-dark lh-sm text-truncate d-flex align-items-center">${acc.name} ${roleBadge}</div>
-            <small class="text-muted text-truncate d-block">${acc.email}</small>
-          </div>
-          <i class="bi bi-chevron-right text-muted small"></i>
-        </button>
-      `;
-    }).join('');
-
-    const modalHtml = `
-      <div class="modal fade" id="foodwala-google-direct-modal" tabindex="-1" aria-labelledby="gDirectModalLabel" aria-hidden="true">
+    const modalShellHtml = `
+      <div class="modal fade" id="foodwala-google-direct-modal" tabindex="-1" aria-labelledby="gDirectModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-          <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="modal-header border-0 pb-0 pt-4 px-4 text-center d-flex flex-column align-items-center position-relative">
-              <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
-              <svg width="34" height="34" viewBox="0 0 48 48" class="mb-2">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                <path fill="none" d="M0 0h48v48H0z"/>
-              </svg>
-              <h5 class="modal-title fw-bold text-dark" id="gDirectModalLabel">${isSignUp ? 'Sign up with Google' : 'Sign in with Google'}</h5>
-              <p class="text-muted small mb-0">Select your Google account for 1-click access to <strong>FoodWala</strong></p>
-            </div>
-
-            <div class="modal-body p-4">
-              <!-- Account list -->
-              <div class="list-group mb-3" id="direct-accounts-list">
-                ${accountItemsHtml}
-
-                <!-- Add / Use Another Account Option -->
-                <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border" id="toggle-add-google-account-btn">
-                  <div class="bg-light text-muted border rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px;">
-                    <i class="bi bi-person-plus-fill fs-5 text-secondary"></i>
-                  </div>
-                  <div class="text-start flex-grow-1">
-                    <div class="fw-semibold text-dark">Use another Google account</div>
-                    <small class="text-muted">Sign in with a different email</small>
-                  </div>
-                  <i class="bi bi-chevron-down text-muted small" id="toggle-add-icon"></i>
-                </button>
-              </div>
-
-              <!-- Quick Add Custom Account Form (Hidden initially) -->
-              <div id="add-google-account-form" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
-                <h6 class="fw-bold text-dark mb-2 small"><i class="bi bi-google me-1 text-danger"></i>Add Custom Google Account</h6>
-                <div class="mb-2">
-                  <label class="form-label small fw-semibold mb-1">Your Full Name</label>
-                  <input type="text" id="new-g-name" class="form-control form-control-sm" placeholder="e.g. Vishnu Vardhan" value="Vishnu Vardhan">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold mb-1">Google Email Address</label>
-                  <input type="email" id="new-g-email" class="form-control form-control-sm" placeholder="e.g. yourname@gmail.com" value="vishnuvardhanreddychinnapuredd@gmail.com">
-                </div>
-                <div class="d-flex justify-content-end gap-2">
-                  <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" id="cancel-add-g-btn">Cancel</button>
-                  <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" id="confirm-add-g-btn">1-Click Sign In</button>
-                </div>
-              </div>
-
-              <!-- Google Cloud Client ID Configuration Toggle -->
-              <div class="border-top pt-3 text-center">
-                <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0 small" id="toggle-gcp-client-id-btn" style="font-size: 0.76rem;">
-                  <i class="bi bi-gear-fill me-1"></i>Configure Google Cloud Client ID
-                </button>
-                
-                <div id="gcp-client-id-panel" style="display: none;" class="text-start mt-2 p-2 bg-light rounded-3 border small">
-                  <label class="form-label fw-bold small mb-1" style="font-size: 0.72rem;">OAuth 2.0 Web Client ID:</label>
-                  <div class="input-group input-group-sm mb-1">
-                    <input type="text" id="live-client-id-input" class="form-control" placeholder="123456789-xyz.apps.googleusercontent.com" value="${getClientId()}">
-                    <button type="button" class="btn btn-danger btn-sm fw-bold" id="save-live-client-id-btn">Save</button>
-                  </div>
-                  <div class="text-muted" style="font-size: 0.68rem;">
-                    Origin: <code>${window.location.origin}</code>
-                  </div>
-                </div>
-              </div>
-
-            </div>
+          <div class="modal-content border-0 shadow-lg overflow-hidden position-relative" style="border-radius: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div id="g-modal-content-container"></div>
           </div>
         </div>
       </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    document.body.insertAdjacentHTML('beforeend', modalShellHtml);
     const modalEl = document.getElementById('foodwala-google-direct-modal');
-    if (modalEl && typeof bootstrap !== 'undefined') {
-      const modal = new bootstrap.Modal(modalEl);
-      modal.show();
+    const container = document.getElementById('g-modal-content-container');
+    let bsModal = null;
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
 
-      // Pick account directly from list - INSTANT 1-CLICK LOGIN
-      modalEl.querySelectorAll('.js-pick-direct-account').forEach(btn => {
-        btn.addEventListener('click', async () => {
+    // STAGE 1: Google Account Selection (Panel 2)
+    function renderStage1() {
+      const accountItemsHtml = accounts.map((acc, idx) => {
+        let roleBadge = '';
+        if (acc.role === 'ADMIN') {
+          roleBadge = '<span class="badge text-white ms-2" style="font-size:0.65rem; background:#6f42c1;">Admin</span>';
+        } else if (acc.role === 'RESTAURANT') {
+          roleBadge = '<span class="badge bg-warning text-dark ms-2" style="font-size:0.65rem;">Restaurant</span>';
+        } else if (acc.role === 'DELIVERY_PARTNER') {
+          roleBadge = '<span class="badge bg-success text-white ms-2" style="font-size:0.65rem;">Partner</span>';
+        }
+
+        return `
+          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2 js-pick-direct-account" data-idx="${idx}" style="cursor: pointer; transition: all 0.15s ease;">
+            <div class="text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0" style="width: 40px; height: 40px; font-size: 1.1rem; background-color: ${acc.color || '#1a73e8'};">
+              ${acc.avatar || acc.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="text-start flex-grow-1 overflow-hidden">
+              <div class="fw-bold text-dark lh-sm text-truncate d-flex align-items-center" style="font-size: 0.95rem;">${acc.name} ${roleBadge}</div>
+              <small class="text-secondary text-truncate d-block" style="font-size: 0.82rem;">${acc.email}</small>
+            </div>
+            <i class="bi bi-chevron-right text-muted small"></i>
+          </button>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="modal-body p-4 pt-4">
+          <div class="text-center mb-3">
+            <svg width="34" height="34" viewBox="0 0 48 48" class="mb-2">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            <h5 class="fw-bold text-dark mb-1" style="font-size: 1.25rem;">${isSignUp ? 'Sign up with Google' : 'Sign in with Google'}</h5>
+            <p class="text-secondary small mb-0" style="font-size: 0.88rem;">Choose an account<br>to continue to <strong style="color: #1a73e8;">Foodwala</strong></p>
+          </div>
+
+          <!-- Account list -->
+          <div class="list-group mb-3" id="direct-accounts-list">
+            ${accountItemsHtml}
+
+            <!-- Use Another Account Option -->
+            <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-3 rounded-3 border mb-2" id="use-another-account-btn" style="cursor: pointer;">
+              <div class="bg-light text-muted border rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                <i class="bi bi-person-plus text-secondary fs-5"></i>
+              </div>
+              <div class="text-start flex-grow-1">
+                <div class="fw-semibold text-dark" style="font-size: 0.92rem;">Use another account</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Inline Enter Another Account Form (initially hidden) -->
+          <div id="another-account-form" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="small fw-bold text-dark"><i class="bi bi-google me-1 text-danger"></i>Use another Google account</span>
+              <button type="button" class="btn-close" id="close-another-form-btn" style="font-size: 0.65rem;" aria-label="Close form"></button>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-semibold text-secondary mb-1">Your Full Name</label>
+              <input type="text" id="another-g-name" class="form-control form-control-sm" placeholder="e.g. Vishnu Vardhan" value="Vishnu Vardhan">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-secondary mb-1">Google Email Address</label>
+              <input type="email" id="another-g-email" class="form-control form-control-sm" placeholder="name@gmail.com" value="">
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="cancel-another-btn">Cancel</button>
+              <button type="button" class="btn btn-sm text-white rounded-pill px-3 fw-bold" id="next-another-btn" style="background: #1a73e8;">Next</button>
+            </div>
+          </div>
+
+          <!-- Footer note -->
+          <p class="text-muted text-center mt-3 mb-0" style="font-size: 0.74rem; line-height: 1.4;">
+            To continue, Google will share your name, email address, and profile picture with Foodwala.
+          </p>
+
+          <!-- Client ID Config Toggle -->
+          <div class="border-top pt-3 mt-3 text-center">
+            <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" id="toggle-gcp-client-id-btn" style="font-size: 0.72rem;">
+              <i class="bi bi-gear-fill me-1"></i>Configure Google Cloud Client ID
+            </button>
+            <div id="gcp-client-id-panel" style="display: none;" class="text-start mt-2 p-2 bg-light rounded-3 border small">
+              <label class="form-label fw-bold small mb-1" style="font-size: 0.72rem;">OAuth 2.0 Web Client ID:</label>
+              <div class="input-group input-group-sm mb-1">
+                <input type="text" id="live-client-id-input" class="form-control" placeholder="123456789-xyz.apps.googleusercontent.com" value="${getClientId()}">
+                <button type="button" class="btn btn-danger btn-sm fw-bold" id="save-live-client-id-btn">Save</button>
+              </div>
+              <div class="text-muted" style="font-size: 0.68rem;">
+                Origin: <code>${typeof window !== 'undefined' && window.location ? window.location.origin : 'https://vishnu6301382491-dev.github.io'}</code>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Event handlers for Stage 1
+      container.querySelectorAll('.js-pick-direct-account').forEach(btn => {
+        btn.addEventListener('click', () => {
           const idx = parseInt(btn.getAttribute('data-idx'), 10);
           const chosen = accounts[idx];
-          modal.hide();
-          await executeDirectGoogleSignIn(chosen, options);
+          renderStage2(chosen);
         });
       });
 
-      // Toggle Add Form
-      const toggleAddBtn = document.getElementById('toggle-add-google-account-btn');
-      const addForm = document.getElementById('add-google-account-form');
-      const cancelAddBtn = document.getElementById('cancel-add-g-btn');
-      const confirmAddBtn = document.getElementById('confirm-add-g-btn');
+      const useAnotherBtn = document.getElementById('use-another-account-btn');
+      const anotherForm = document.getElementById('another-account-form');
+      const closeAnotherBtn = document.getElementById('close-another-form-btn');
+      const cancelAnotherBtn = document.getElementById('cancel-another-btn');
+      const nextAnotherBtn = document.getElementById('next-another-btn');
 
-      if (toggleAddBtn && addForm) {
-        toggleAddBtn.addEventListener('click', () => {
-          const isHidden = addForm.style.display === 'none';
-          addForm.style.display = isHidden ? 'block' : 'none';
+      if (useAnotherBtn && anotherForm) {
+        useAnotherBtn.addEventListener('click', () => {
+          anotherForm.style.display = 'block';
+          const emailInput = document.getElementById('another-g-email');
+          if (emailInput) emailInput.focus();
         });
       }
 
-      if (cancelAddBtn && addForm) {
-        cancelAddBtn.addEventListener('click', () => {
-          addForm.style.display = 'none';
+      if (closeAnotherBtn && anotherForm) {
+        closeAnotherBtn.addEventListener('click', () => {
+          anotherForm.style.display = 'none';
         });
       }
 
-      if (confirmAddBtn) {
-        confirmAddBtn.addEventListener('click', async () => {
-          const email = document.getElementById('new-g-email').value.trim();
-          let name = document.getElementById('new-g-name').value.trim();
+      if (cancelAnotherBtn && anotherForm) {
+        cancelAnotherBtn.addEventListener('click', () => {
+          anotherForm.style.display = 'none';
+        });
+      }
+
+      if (nextAnotherBtn) {
+        nextAnotherBtn.addEventListener('click', () => {
+          const email = (document.getElementById('another-g-email').value || '').trim();
+          let name = (document.getElementById('another-g-name').value || '').trim();
           if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             if (window.FoodWalaApp && window.FoodWalaApp.showToast) {
               window.FoodWalaApp.showToast('Please enter a valid Google email address.', 'warning');
@@ -481,19 +509,19 @@
             return;
           }
           if (!name) name = email.split('@')[0];
-
-          modal.hide();
-          await executeDirectGoogleSignIn({
+          const customAcc = {
             name: name,
             email: email,
             avatar: name.charAt(0).toUpperCase(),
+            color: '#1a73e8',
             sub: '10' + Math.floor(1000000000000000 + Math.random() * 9000000000000000),
-            color: '#dc3545'
-          }, options);
+            role: 'CUSTOMER'
+          };
+          renderStage2(customAcc);
         });
       }
 
-      // Toggle GCP Client ID panel
+      // Toggle Client ID panel
       const toggleGcpBtn = document.getElementById('toggle-gcp-client-id-btn');
       const gcpPanel = document.getElementById('gcp-client-id-panel');
       const saveGcpBtn = document.getElementById('save-live-client-id-btn');
@@ -515,6 +543,98 @@
         });
       }
     }
+
+    // STAGE 2: Google Permission (Panel 3)
+    function renderStage2(chosen) {
+      container.innerHTML = `
+        <div class="modal-body p-4 pt-4">
+          <div class="text-center mb-3">
+            <svg width="34" height="34" viewBox="0 0 48 48" class="mb-2">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            <h5 class="fw-bold text-dark mb-2 fs-5" style="line-height: 1.35;">Foodwala wants to access your Google Account</h5>
+
+            <!-- Selected account chip -->
+            <div class="d-flex justify-content-center my-2">
+              <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill border bg-light shadow-sm" style="max-width: 90%;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 24px; height: 24px; background-color: ${chosen.color || '#1a73e8'}; font-size: 0.75rem;">
+                  ${chosen.avatar || chosen.name.charAt(0).toUpperCase()}
+                </div>
+                <span class="small fw-semibold text-secondary text-truncate" style="font-size: 0.82rem;">${chosen.email}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-start mb-2 text-secondary fw-semibold" style="font-size: 0.88rem;">
+            This will allow <strong style="color: #1a73e8;">Foodwala</strong> to:
+          </div>
+
+          <!-- Permissions list -->
+          <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded-3 border mb-2 bg-white shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(26, 115, 232, 0.1);">
+                <i class="bi bi-person-fill" style="color: #1a73e8; font-size: 1.05rem;"></i>
+              </div>
+              <span class="fw-semibold text-dark" style="font-size: 0.88rem;">See your basic profile info</span>
+            </div>
+            <i class="bi bi-info-circle text-muted small" title="Name, language preference, and profile picture"></i>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded-3 border mb-3 bg-white shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(26, 115, 232, 0.1);">
+                <i class="bi bi-shield-check" style="color: #1a73e8; font-size: 1.05rem;"></i>
+              </div>
+              <span class="fw-semibold text-dark" style="font-size: 0.88rem;">See your email address</span>
+            </div>
+            <i class="bi bi-info-circle text-muted small" title="Primary email address"></i>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="d-flex justify-content-end align-items-center gap-2 mt-4 pt-3 border-top">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-semibold" id="g-permission-cancel-btn" style="border-color: #dadce0; color: #1a73e8;">Cancel</button>
+            <button type="button" class="btn rounded-pill px-4 btn-sm fw-bold text-white shadow-sm" style="background: #1a73e8; border: none;" id="g-permission-allow-btn">Allow</button>
+          </div>
+
+          <!-- Footer notice -->
+          <p class="text-muted text-center mt-3 mb-0" style="font-size: 0.72rem;">
+            You can manage this at any time in your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" style="color: #1a73e8; text-decoration: none;">Google Account</a>.
+          </p>
+        </div>
+      `;
+
+      // Cancel button goes back to Stage 1
+      const cancelBtn = document.getElementById('g-permission-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          renderStage1();
+        });
+      }
+
+      // Allow button executes login
+      const allowBtn = document.getElementById('g-permission-allow-btn');
+      if (allowBtn) {
+        allowBtn.addEventListener('click', async () => {
+          allowBtn.disabled = true;
+          allowBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Signing in...`;
+          setTimeout(async () => {
+            if (bsModal) {
+              bsModal.hide();
+            } else if (modalEl) {
+              modalEl.remove();
+            }
+            await executeDirectGoogleSignIn(chosen, options);
+          }, 200);
+        });
+      }
+    }
+
+    // Initialize with Stage 1
+    renderStage1();
   }
 
   /**
@@ -592,13 +712,12 @@
       }
 
       // -------------------------------------------------------------
-      // CASE 2: Client ID not yet registered in GCP
-      // Render official-style Google button that connects directly with 0 console errors
+      // CASE 2: Official Google "Continue with Google" button
       // -------------------------------------------------------------
-      const buttonLabel = isSignUp ? 'Sign up with Google' : 'Sign in with Google';
+      const buttonLabel = options.buttonLabel || 'Continue with Google';
       const buttonHtml = `
-        <button type="button" class="btn btn-google-auth w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm js-google-direct-btn" style="background:#fff; border:1px solid #dadce0; color:#3c4043; height:44px;">
-          <svg width="20" height="20" viewBox="0 0 48 48">
+        <button type="button" class="btn btn-google-auth w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm js-google-direct-btn" style="background:#fff; border:1px solid #dadce0; color:#3c4043; height:44px; font-size: 0.95rem;">
+          <svg width="20" height="20" viewBox="0 0 48 48" class="flex-shrink-0">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
             <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
