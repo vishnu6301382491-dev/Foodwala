@@ -13,6 +13,7 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/ui.css">
+  <link rel="stylesheet" href="./css/animations-3d.css">
   <style>
     .btn-google-auth {
       background-color: #ffffff;
@@ -46,7 +47,34 @@
     }
   </style>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="bg-light d-flex flex-column min-vh-100 position-relative">
+
+  <!-- 3D Animated Colorful Background with Orbs & Floating Food Badges -->
+  <div class="fw-3d-bg-canvas" aria-hidden="true">
+    <div class="fw-3d-ambient-mesh"></div>
+    <div class="fw-3d-orb fw-3d-orb-1"></div>
+    <div class="fw-3d-orb fw-3d-orb-2"></div>
+    <div class="fw-3d-orb fw-3d-orb-3"></div>
+
+    <!-- Floating 3D Food Badges with Parallax -->
+    <div class="fw-3d-floating-food fw-3d-food-pos-1">
+      <span class="food-icon">🍕</span>
+      <span>Woodfired Pizza</span>
+    </div>
+    <div class="fw-3d-floating-food fw-3d-food-pos-2">
+      <span class="food-icon">🍛</span>
+      <span>Authentic Dum Biryani</span>
+    </div>
+    <div class="fw-3d-floating-food fw-3d-food-pos-3">
+      <span class="food-icon">⚡</span>
+      <span>25 Min Fast Delivery</span>
+    </div>
+    <div class="fw-3d-floating-food fw-3d-food-pos-4">
+      <span class="food-icon">🥑</span>
+      <span>Fresh Bengaluru Kitchens</span>
+    </div>
+  </div>
+
 
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
@@ -133,8 +161,9 @@
   <!-- MAIN CONTAINER -->
   <main class="container my-5 flex-grow-1">
     <div class="row justify-content-center">
-      <div class="col-md-6 col-lg-5">
-        <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white">
+      <div class="col-md-6 col-lg-5 fw-3d-stage">
+        <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white fw-3d-card position-relative">
+          <div class="fw-3d-shine"></div>
           <div class="text-center mb-4">
             <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 54px; height: 54px;">
               <i class="bi bi-person-plus-fill fs-3"></i>
@@ -774,7 +803,8 @@
         submitCustomGoogleBtn.addEventListener('click', async () => {
           const email = document.getElementById('custom-google-email').value.trim();
           let name = document.getElementById('custom-google-name').value.trim();
-          if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!email || !emailRegex.test(email)) {
             FoodWalaApp.showToast('Please enter a valid Google email address.', 'warning');
             return;
           }
@@ -920,7 +950,8 @@
           forgotStep1Error.style.display = 'none';
 
           const email = document.getElementById('forgot-identifier').value.trim();
-          if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!email || !emailRegex.test(email)) {
             forgotStep1Error.textContent = 'Please enter a valid email address.';
             forgotStep1Error.style.display = 'block';
             return;
@@ -1434,5 +1465,6 @@
   </div>
 
 <div id="recaptcha-container"></div>
+  <script src="./js/animations-3d.js" defer></script>
 </body>
 </html>

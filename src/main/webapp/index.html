@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
   <link rel="stylesheet" href="./css/style.min.css">
   <link rel="stylesheet" href="./css/ui.css">
+  <link rel="stylesheet" href="./css/animations-3d.css">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
@@ -99,27 +100,31 @@
     </div>
   </div>
 
-  <!-- Hero Section -->
-  <section class="hero-section py-5 position-relative text-white" style="background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #991b1b 100%);">
-    <div class="container py-4">
+  <!-- Hero Section with 3D Floating Elements & Dynamic Lighting -->
+  <section class="hero-section hero-section-3d py-5 position-relative text-white" style="background: linear-gradient(135deg, #090d16 0%, #151b28 40%, #5c1111 80%, #991b1b 100%);">
+    <!-- Ambient 3D orbs for hero -->
+    <div class="fw-3d-orb fw-3d-orb-1" style="opacity: 0.45; top: -10%; left: -5%;"></div>
+    <div class="fw-3d-orb fw-3d-orb-2" style="opacity: 0.35; bottom: -15%; right: -5%;"></div>
+
+    <div class="container py-4 position-relative" style="z-index: 2;">
       <div class="row align-items-center g-4">
         <div class="col-lg-7">
-          <div class="badge bg-danger bg-opacity-75 text-white px-3 py-2 rounded-pill mb-3 fw-bold">
+          <div class="badge bg-danger bg-opacity-75 text-white px-3 py-2 rounded-pill mb-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
             <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Fast Delivery across 14+ Bengaluru Hubs
           </div>
           <h1 class="display-4 fw-extrabold mb-3 lh-sm text-white">
-            Craving something <span class="text-warning">extraordinary?</span>
+            Craving something <span class="text-warning text-gradient">extraordinary?</span>
           </h1>
           <p class="lead text-light opacity-75 mb-4">
             Order from 105+ iconic Bengaluru restaurants — from legendary Donne & Dum Biryanis to authentic Benne Dosa, woodfired pizzas, and gourmet burgers.
           </p>
 
-          <!-- Search Box -->
-          <div class="bg-white p-2 rounded-4 shadow-lg position-relative text-dark">
+          <!-- Search Box with Glow Shadow -->
+          <div class="bg-white p-2 rounded-4 shadow-lg position-relative text-dark fw-3d-search-box" style="box-shadow: 0 15px 40px -10px rgba(220, 38, 38, 0.3) !important;">
             <form action="./restaurants.html" method="GET" class="d-flex align-items-center gap-2">
               <i class="bi bi-search text-danger fs-4 ms-3"></i>
               <input type="text" name="q" id="hero-search-input" class="form-control border-0 shadow-none fs-6 py-2" placeholder="Search restaurant, dish (e.g. biriyani, dosa, burger, paneer)..." autocomplete="off">
-              <button type="submit" class="btn btn-danger px-4 py-2 rounded-3 fw-bold d-flex align-items-center gap-2">
+              <button type="submit" class="btn btn-danger btn-danger-shimmer px-4 py-2 rounded-3 fw-bold d-flex align-items-center gap-2">
                 <span>Find Food</span>
                 <i class="bi bi-arrow-right"></i>
               </button>
@@ -130,16 +135,35 @@
           <!-- Quick Suggestion Tags -->
           <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-light small">
             <span class="opacity-75"><i class="bi bi-fire text-warning"></i> Popular:</span>
-            <a href="./restaurants.html?q=biryani" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Biryani</a>
-            <a href="./restaurants.html?q=dosa" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Benne Dosa</a>
-            <a href="./restaurants.html?q=pizza" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Pizza</a>
-            <a href="./restaurants.html?q=burger" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Burgers</a>
-            <a href="./restaurants.html?q=paneer" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1">Paneer</a>
+            <a href="./restaurants.html?q=biryani" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Biryani</a>
+            <a href="./restaurants.html?q=dosa" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Benne Dosa</a>
+            <a href="./restaurants.html?q=pizza" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Pizza</a>
+            <a href="./restaurants.html?q=burger" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Burgers</a>
+            <a href="./restaurants.html?q=paneer" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Paneer</a>
           </div>
         </div>
 
-        <div class="col-lg-5 text-center">
-          <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=75" alt="Delicious Food" class="img-fluid rounded-4 shadow-lg" width="600" height="380" fetchpriority="high" decoding="async" style="max-height: 380px; width: 100%; object-fit: cover;">
+        <div class="col-lg-5 text-center position-relative">
+          <div class="hero-image-3d-wrapper">
+            <!-- 3D Floating Badges around hero image -->
+            <div class="hero-3d-badge-floating hero-badge-1 d-flex align-items-center gap-2">
+              <span class="fs-4">🔥</span>
+              <div class="text-start">
+                <span class="fw-bold d-block text-dark lh-1" style="font-size: 0.85rem;">50% Flat Off</span>
+                <small class="text-danger fw-semibold" style="font-size: 0.7rem;">Code: FOODWALA50</small>
+              </div>
+            </div>
+
+            <div class="hero-3d-badge-floating hero-badge-2 d-flex align-items-center gap-2">
+              <span class="fs-4">⚡</span>
+              <div class="text-start">
+                <span class="fw-bold d-block text-dark lh-1" style="font-size: 0.85rem;">25 Min Delivery</span>
+                <small class="text-success fw-semibold" style="font-size: 0.7rem;">Live GPS Tracking</small>
+              </div>
+            </div>
+
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=75" alt="Delicious Food" class="img-fluid hero-image-3d shadow-lg" width="600" height="380" fetchpriority="high" decoding="async" style="max-height: 380px; width: 100%; object-fit: cover;">
+          </div>
         </div>
       </div>
     </div>
@@ -492,5 +516,6 @@
       }
     });
   </script>
+  <script src="./js/animations-3d.js" defer></script>
 </body>
 </html>
