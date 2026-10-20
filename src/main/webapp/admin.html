@@ -47,6 +47,8 @@
       color: #055160;
     }
   </style>
+  <link rel="stylesheet" href="./css/animations-3d.css">
+  <script src="./js/theme.js"></script>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
@@ -72,6 +74,10 @@
         <a href="./index.html" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold">
           <i class="bi bi-arrow-left me-1"></i> Storefront
         </a>
+                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn border" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
+          <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
+          <span class="theme-toggle-label d-none d-sm-inline">Dark</span>
+        </button>
         <a href="./profile.html" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
           <i class="bi bi-person me-1"></i> Profile
         </a>
@@ -335,11 +341,11 @@
   <!-- Core Scripts -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js?v=20261016_04"></script>
-  <script src="./js/adapters/mockAdapter.js?v=20261016_04"></script>
-  <script src="./js/adapters/liveAdapter.js?v=20261016_04"></script>
-  <script src="./js/api.js?v=20261016_04"></script>
-  <script src="./js/app.js?v=20261016_04"></script>
+  <script src="./js/config.js?v=20261017_01"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261017_01"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261017_01"></script>
+  <script src="./js/api.js?v=20261017_01"></script>
+  <script src="./js/app.js?v=20261017_01"></script>
 
   <script>
     let globalUsers = [];
@@ -366,6 +372,8 @@
       if (!currentUser) {
         document.getElementById('admin-gate').style.display = 'block';
         document.getElementById('admin-dashboard').style.display = 'none';
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        if (logoutBtn) logoutBtn.style.display = 'none';
         return;
       }
       const role = (currentUser.role || '').toLowerCase();
@@ -376,6 +384,8 @@
       }
       document.getElementById('admin-gate').style.display = 'none';
       document.getElementById('admin-dashboard').style.display = 'block';
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      if (logoutBtn) logoutBtn.style.display = 'inline-block';
       loadAdminData();
     }
 
@@ -419,18 +429,25 @@
       // Logout
       const logoutBtn = document.getElementById('admin-logout-btn');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-          FoodWalaApp.Auth.logout();
-          window.location.reload();
+        logoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          logoutBtn.disabled = true;
+          logoutBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Signing out...';
+          await FoodWalaApp.Auth.logout('./login.html');
         });
       }
 
       // Refresh
       const refreshBtn = document.getElementById('refresh-all-btn');
       if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-          loadAdminData();
-          FoodWalaApp.showToast('Refreshing admin data...', 'info');
+        refreshBtn.addEventListener('click', async () => {
+          refreshBtn.disabled = true;
+          const origHtml = refreshBtn.innerHTML;
+          refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Refreshing...';
+          await loadAdminData();
+          refreshBtn.disabled = false;
+          refreshBtn.innerHTML = origHtml;
+          FoodWalaApp.showToast('Admin data refreshed successfully!', 'success');
         });
       }
 
@@ -451,6 +468,23 @@
       if (orderFilter) {
         orderFilter.addEventListener('change', () => applyOrderFilters());
       }
+
+      // Real-time synchronization: listen for orders placed in any tab or session
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_users') {
+          loadAdminData();
+        }
+      });
+      window.addEventListener('foodwala:orderPlaced', () => loadAdminData());
+      window.addEventListener('foodwala:orderStatusChanged', () => loadAdminData());
+
+      // Auto-recalculate statuses & sync every 15 seconds
+      setInterval(() => {
+        const dash = document.getElementById('admin-dashboard');
+        if (dash && dash.style.display !== 'none') {
+          loadAdminData();
+        }
+      }, 15000);
     }
 
     async function updateDbHealthBadge() {
@@ -458,8 +492,8 @@
       if (!badge) return;
       try {
         if (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function') {
-          const health = await window.FoodWalaHealth.checkBackend();
-          if (health && health.ok) {
+          const isLive = await window.FoodWalaHealth.checkBackend();
+          if (isLive === true || (isLive && isLive.ok)) {
             badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold';
             badge.innerHTML = '<i class="bi bi-circle-fill small me-1"></i> DB Connected: fudwala (Live)';
             return;
@@ -492,11 +526,11 @@
           if (Array.isArray(ordersRes)) {
             ordersList = ordersRes;
             totalOrdersCount = ordersList.length;
-            totalRev = ordersList.reduce((acc, o) => acc + (Number(o.total_amount !== undefined ? o.total_amount : (o.totalAmount !== undefined ? o.totalAmount : o.total)) || 0), 0);
+            totalRev = ordersList.reduce((acc, o) => acc + (Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total) || 0), 0);
           } else if (Array.isArray(ordersRes.orders)) {
             ordersList = ordersRes.orders;
             totalOrdersCount = ordersRes.totalOrders !== undefined ? ordersRes.totalOrders : ordersList.length;
-            totalRev = ordersRes.totalRevenue !== undefined ? ordersRes.totalRevenue : ordersList.reduce((acc, o) => acc + (Number(o.total_amount !== undefined ? o.total_amount : (o.totalAmount !== undefined ? o.totalAmount : o.total)) || 0), 0);
+            totalRev = ordersRes.totalRevenue !== undefined ? ordersRes.totalRevenue : ordersList.reduce((acc, o) => acc + (Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total) || 0), 0);
           }
         }
 
@@ -592,32 +626,43 @@
       }
 
       tbody.innerHTML = orders.map(o => {
-        const orderId = o.order_id !== undefined ? o.order_id : (o.orderId !== undefined ? o.orderId : '-');
+        const rawId = o.order_id !== undefined ? o.order_id : (o.orderId !== undefined ? o.orderId : (o.id || '-'));
+        const cleanOrderId = String(rawId).replace(/^#?FW-?/i, '').trim();
         const customerName = o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer';
         const customerPhone = o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-';
         const restaurantName = o.restaurant_name || o.restaurantName || 'FoodWala Partner';
-        const totalAmount = Number(o.total_amount !== undefined ? o.total_amount : (o.totalAmount !== undefined ? o.totalAmount : (o.total || 0)));
-        const paymentMode = o.payment_mode || o.paymentMode || 'Razorpay';
+        const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
+        const paymentMode = o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay';
         const paymentStatus = (o.payment_status || o.paymentStatus || 'PAID').toUpperCase();
-        const status = (o.status || 'PLACED').toUpperCase();
+        
+        let status = (o.status || 'PLACED').toUpperCase();
+        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+          try {
+            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            if (stInfo && stInfo.status) status = stInfo.status.toUpperCase();
+          } catch (e) {}
+        }
+
         const orderDate = o.order_date || o.orderDate || o.createdAt;
 
         let statusBadge = 'badge-soft-info';
         if (status === 'DELIVERED') statusBadge = 'badge-soft-success';
-        if (status === 'CANCELLED') statusBadge = 'badge-soft-danger';
+        else if (status === 'ON_THE_WAY' || status === 'ON THE WAY') statusBadge = 'badge-soft-warning text-dark';
+        else if (status === 'PREPARING' || status === 'CONFIRMED' || status === 'IN_PROGRESS') statusBadge = 'badge-soft-primary';
+        else if (status === 'CANCELLED') statusBadge = 'badge-soft-danger';
 
         let payBadge = paymentStatus === 'PAID' ? 'badge-soft-success' : 'badge-soft-warning';
 
         return `
           <tr>
-            <td class="fw-bold text-danger">#FW-${orderId}</td>
+            <td class="fw-bold text-danger">#FW-${escapeHtml(cleanOrderId)}</td>
             <td class="fw-semibold text-dark">${escapeHtml(customerName)}</td>
             <td class="small text-muted">${escapeHtml(customerPhone)}</td>
             <td class="small fw-semibold text-dark">${escapeHtml(restaurantName)}</td>
             <td class="fw-bold text-dark">₹${totalAmount.toFixed(2)}</td>
             <td class="small text-muted">${escapeHtml(paymentMode)}</td>
-            <td><span class="badge ${payBadge} rounded-pill px-2 py-1 small">${paymentStatus}</span></td>
-            <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 small fw-bold">${status}</span></td>
+            <td><span class="badge ${payBadge} rounded-pill px-2 py-1 small">${escapeHtml(paymentStatus)}</span></td>
+            <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 small fw-bold">${escapeHtml(status)}</span></td>
             <td class="small text-muted">${orderDate ? new Date(orderDate).toLocaleString('en-IN') : '-'}</td>
           </tr>
         `;
@@ -676,11 +721,22 @@
 
       let filtered = globalOrders;
       if (status !== 'ALL') {
-        filtered = filtered.filter(o => (o.status || '').toUpperCase() === status);
+        const normTarget = status.replace(/[\s_]+/g, '_');
+        filtered = filtered.filter(o => {
+          let st = (o.status || '').toUpperCase().replace(/[\s_]+/g, '_');
+          if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+            try {
+              const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+              if (stInfo && stInfo.status) st = stInfo.status.toUpperCase().replace(/[\s_]+/g, '_');
+            } catch(e) {}
+          }
+          return st === normTarget;
+        });
       }
       if (term) {
         filtered = filtered.filter(o => {
-          const idStr = String(o.order_id !== undefined ? o.order_id : (o.orderId || ''));
+          const rawId = o.order_id !== undefined ? o.order_id : (o.orderId !== undefined ? o.orderId : (o.id || ''));
+          const idStr = String(rawId).toLowerCase();
           const cName = (o.customer_name || o.customerName || '').toLowerCase();
           const cPhone = String(o.customer_phone || o.customerPhone || '');
           const rName = (o.restaurant_name || o.restaurantName || '').toLowerCase();

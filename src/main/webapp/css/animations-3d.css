@@ -2844,3 +2844,531 @@ body {
 [data-bs-theme="dark"] .fw-confirmation-page {
   background: var(--fw-bg-canvas) !important;
 }
+
+
+/* ==========================================================================
+   19. ZOMATO APP DUAL-THEME MASTER COLOR & BACKGROUND SYSTEM
+   Strict specification:
+   Light Mode: Primary #D92D20, Accent #FF9F1C, Background #FFF8F1, Cards #FFFFFF,
+               Text #202124, Secondary #60656F, Borders #E9E2DA
+   Dark Mode:  Primary #FF705D, Accent #FFB454, Background #101418, Cards #1B2228,
+               Text #F5F7FA, Secondary #AAB4BE, Borders #34404A
+   Green:      Reserved STRICTLY for success and availability states
+   ========================================================================== */
+
+/* --- Light Mode Canvas & Layout Surfaces --- */
+body {
+  background-color: #FFF8F1 !important;
+  color: #202124 !important;
+  min-height: 100vh;
+}
+
+body.zomato-mesh,
+.fw-orders-page,
+.fw-checkout-page,
+.fw-tracking-page,
+.fw-confirmation-page {
+  background: radial-gradient(circle at 12% 15%, rgba(217, 45, 32, 0.06) 0%, transparent 40%),
+              radial-gradient(circle at 88% 20%, rgba(255, 159, 28, 0.07) 0%, transparent 45%),
+              #FFF8F1 !important;
+}
+
+.card,
+.bg-white {
+  background-color: #FFFFFF !important;
+  color: #202124 !important;
+  border-color: #E9E2DA !important;
+}
+
+.navbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 1.5px solid #E9E2DA !important;
+  box-shadow: 0 2px 12px rgba(217, 45, 32, 0.04) !important;
+}
+
+.navbar .nav-link {
+  color: #60656F !important;
+  font-weight: 600;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: #D92D20 !important;
+}
+
+.text-dark {
+  color: #202124 !important;
+}
+
+.text-muted,
+.text-secondary {
+  color: #60656F !important;
+}
+
+.border,
+.border-bottom,
+.border-top,
+.border-start,
+.border-end {
+  border-color: #E9E2DA !important;
+}
+
+/* Light Mode Action Buttons */
+.btn-primary,
+.btn-danger {
+  background-color: #D92D20 !important;
+  border-color: #D92D20 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(217, 45, 32, 0.25) !important;
+}
+
+.btn-primary:hover,
+.btn-danger:hover {
+  background-color: #B92216 !important;
+  border-color: #B92216 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 18px rgba(217, 45, 32, 0.35) !important;
+}
+
+.btn-outline-danger {
+  color: #D92D20 !important;
+  border-color: #D92D20 !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: #D92D20 !important;
+  color: #FFFFFF !important;
+}
+
+.btn-outline-warning {
+  color: #D97706 !important;
+  border-color: #FF9F1C !important;
+}
+
+.btn-outline-warning:hover {
+  background-color: #FF9F1C !important;
+  color: #FFFFFF !important;
+}
+
+/* Light Mode Chips & Sub-surfaces */
+.bg-light {
+  background-color: #F7EFE7 !important;
+  color: #202124 !important;
+  border-color: #E9E2DA !important;
+}
+
+.badge.bg-light {
+  background-color: #F7EFE7 !important;
+  color: #202124 !important;
+  border: 1px solid #E9E2DA !important;
+}
+
+.order-item-chip {
+  background-color: #F7EFE7 !important;
+  border: 1.5px solid #E9E2DA !important;
+  color: #202124 !important;
+}
+
+.order-item-chip .dish-name {
+  color: #202124 !important;
+}
+
+.order-item-chip .dish-price {
+  color: #60656F !important;
+}
+
+.order-id-badge-pill {
+  background-color: #F7EFE7 !important;
+  color: #202124 !important;
+  border: 1.5px solid #E9E2DA !important;
+}
+
+.order-payment-chip {
+  background-color: #FFF3E0 !important;
+  color: #D97706 !important;
+  border: 1.5px solid #FFD8A8 !important;
+}
+
+/* --- Dark Mode Canvas & Layout Surfaces --- */
+[data-bs-theme="dark"] body {
+  background-color: #101418 !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] body.zomato-mesh,
+[data-bs-theme="dark"] .fw-orders-page,
+[data-bs-theme="dark"] .fw-checkout-page,
+[data-bs-theme="dark"] .fw-tracking-page,
+[data-bs-theme="dark"] .fw-confirmation-page {
+  background: radial-gradient(circle at 15% 10%, rgba(255, 112, 93, 0.12) 0%, transparent 50%),
+              radial-gradient(circle at 85% 85%, rgba(255, 180, 84, 0.09) 0%, transparent 45%),
+              #101418 !important;
+}
+
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .bg-white {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+
+[data-bs-theme="dark"] .navbar {
+  background-color: #1B2228 !important;
+  border-bottom: 1.5px solid #34404A !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link {
+  color: #AAB4BE !important;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link:hover,
+[data-bs-theme="dark"] .navbar .nav-link.active {
+  color: #FF705D !important;
+}
+
+[data-bs-theme="dark"] .text-dark {
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .text-muted,
+[data-bs-theme="dark"] .text-secondary {
+  color: #AAB4BE !important;
+}
+
+[data-bs-theme="dark"] .border,
+[data-bs-theme="dark"] .border-bottom,
+[data-bs-theme="dark"] .border-top,
+[data-bs-theme="dark"] .border-start,
+[data-bs-theme="dark"] .border-end {
+  border-color: #34404A !important;
+}
+
+/* Dark Mode Action Buttons */
+[data-bs-theme="dark"] .btn-primary,
+[data-bs-theme="dark"] .btn-danger {
+  background-color: #FF705D !important;
+  border-color: #FF705D !important;
+  color: #101418 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(255, 112, 93, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .btn-primary:hover,
+[data-bs-theme="dark"] .btn-danger:hover {
+  background-color: #FF8B7B !important;
+  border-color: #FF8B7B !important;
+  color: #101418 !important;
+  box-shadow: 0 6px 18px rgba(255, 112, 93, 0.45) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-danger {
+  color: #FF705D !important;
+  border-color: #FF705D !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-danger:hover {
+  background-color: #FF705D !important;
+  color: #101418 !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-dark {
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-dark:hover {
+  background-color: #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: #AAB4BE !important;
+  border-color: #34404A !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+  background-color: #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-warning {
+  color: #FFB454 !important;
+  border-color: #FFB454 !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-warning:hover {
+  background-color: #FFB454 !important;
+  color: #101418 !important;
+}
+
+/* Dark Mode Chips & Sub-surfaces */
+[data-bs-theme="dark"] .bg-light {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-light {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border: 1px solid #34404A !important;
+}
+
+[data-bs-theme="dark"] .order-item-chip {
+  background-color: #242D35 !important;
+  border: 1.5px solid #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .order-item-chip .dish-name {
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .order-item-chip .dish-price {
+  color: #AAB4BE !important;
+}
+
+[data-bs-theme="dark"] .order-id-badge-pill {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border: 1.5px solid #34404A !important;
+}
+
+[data-bs-theme="dark"] .order-payment-chip {
+  background-color: rgba(255, 180, 84, 0.16) !important;
+  color: #FFB454 !important;
+  border: 1.5px solid rgba(255, 180, 84, 0.35) !important;
+}
+
+/* --- Strict Green Rule: Exclusively Reserved for Success & Availability --- */
+.badge-veg,
+.veg-badge,
+.rating-pill-green,
+.badge-success,
+.status-delivered,
+.text-success {
+  color: #16A34A !important;
+}
+
+.bg-success-subtle {
+  background-color: #DCFCE7 !important;
+  color: #16A34A !important;
+  border-color: #86EFAC !important;
+}
+
+[data-bs-theme="dark"] .badge-veg,
+[data-bs-theme="dark"] .veg-badge,
+[data-bs-theme="dark"] .rating-pill-green,
+[data-bs-theme="dark"] .badge-success,
+[data-bs-theme="dark"] .status-delivered,
+[data-bs-theme="dark"] .text-success {
+  color: #22C55E !important;
+}
+
+[data-bs-theme="dark"] .bg-success-subtle {
+  background-color: rgba(34, 197, 94, 0.16) !important;
+  color: #22C55E !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
+}
+
+/* Zomato Green Rating Badge Pill */
+.zomato-rating-badge {
+  background-color: #16A34A;
+  color: #FFFFFF !important;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+}
+
+[data-bs-theme="dark"] .zomato-rating-badge {
+  background-color: #22C55E;
+  color: #101418 !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+}
+
+/* Pure Veg Square & Circle Indicator */
+.veg-indicator {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #16A34A;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.veg-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #16A34A;
+}
+
+[data-bs-theme="dark"] .veg-indicator {
+  border-color: #22C55E;
+}
+
+[data-bs-theme="dark"] .veg-indicator .dot {
+  background-color: #22C55E;
+}
+
+/* Zomato Gold Accent Tag */
+.zomato-gold-tag {
+  color: #D97706;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+[data-bs-theme="dark"] .zomato-gold-tag {
+  color: #FFB454;
+}
+
+/* Modal and Dropdown Surfaces */
+.modal-content {
+  background-color: #FFFFFF !important;
+  color: #202124 !important;
+  border: 1px solid #E9E2DA !important;
+  border-radius: 20px !important;
+}
+
+[data-bs-theme="dark"] .modal-content {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border: 1px solid #34404A !important;
+}
+
+/* Input Form Controls */
+.form-control,
+.form-select {
+  background-color: #FFFFFF !important;
+  color: #202124 !important;
+  border: 1.5px solid #E9E2DA !important;
+  border-radius: 12px !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #D92D20 !important;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.15) !important;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border: 1.5px solid #34404A !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  border-color: #FF705D !important;
+  box-shadow: 0 0 0 3px rgba(255, 112, 93, 0.25) !important;
+}
+
+/* Dropdowns & Popovers */
+.dropdown-menu {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E9E2DA !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+}
+.dropdown-item {
+  color: #202124 !important;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+  background-color: #F7EFE7 !important;
+  color: #D92D20 !important;
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+  background-color: #1B2228 !important;
+  border-color: #34404A !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45) !important;
+}
+[data-bs-theme="dark"] .dropdown-item {
+  color: #F5F7FA !important;
+}
+[data-bs-theme="dark"] .dropdown-item:hover, [data-bs-theme="dark"] .dropdown-item:focus {
+  background-color: #242D35 !important;
+  color: #FF705D !important;
+}
+[data-bs-theme="dark"] .dropdown-divider {
+  border-color: #34404A !important;
+}
+
+/* List Groups & Tables */
+.list-group-item {
+  background-color: #FFFFFF !important;
+  color: #202124 !important;
+  border-color: #E9E2DA !important;
+}
+[data-bs-theme="dark"] .list-group-item {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+
+[data-bs-theme="dark"] .table {
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+[data-bs-theme="dark"] .table > :not(caption) > * > * {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border-bottom-color: #34404A !important;
+}
+
+/* Offcanvas & Toasts */
+[data-bs-theme="dark"] .offcanvas {
+  background-color: #101418 !important;
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+[data-bs-theme="dark"] .toast {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+
+/* Accordion */
+[data-bs-theme="dark"] .accordion-item {
+  background-color: #1B2228 !important;
+  border-color: #34404A !important;
+}
+[data-bs-theme="dark"] .accordion-button {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+}
+[data-bs-theme="dark"] .accordion-button:not(.collapsed) {
+  background-color: #242D35 !important;
+  color: #FF705D !important;
+}
+[data-bs-theme="dark"] .accordion-body {
+  background-color: #1B2228 !important;
+  color: #AAB4BE !important;
+}
+
+/* Footer Styling */
+footer {
+  border-top: 1.5px solid #E9E2DA !important;
+}
+[data-bs-theme="dark"] footer {
+  background-color: #0D1013 !important;
+  border-top-color: #34404A !important;
+  color: #AAB4BE !important;
+}
+[data-bs-theme="dark"] footer a {
+  color: #AAB4BE !important;
+}
+[data-bs-theme="dark"] footer a:hover {
+  color: #FF705D !important;
+}

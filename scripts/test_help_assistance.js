@@ -254,6 +254,46 @@ assert(latestThemeJsContent.includes('setPalette') && latestThemeJsContent.inclu
 assert(latestThemeJsContent.includes('cyclePalette'), 'theme.js implements cyclePalette for dynamic theme switching.');
 assert(latestThemeJsContent.includes('data-fw-palette'), 'theme.js sets data-fw-palette attribute on document root.');
 
+
+// Test 13: Verify Zomato App Dual-Theme Color System, Universal Theme Toggle, & Strict Green Rules
+console.log('\nTest 13: Verifying Zomato App Dual-Theme Color System, Universal Theme Toggle & Strict Green Rules...');
+const styleCssContent = fs.readFileSync(path.join(PROJECT_ROOT, 'css', 'style.css'), 'utf8');
+
+// 1. Light Mode Zomato Tokens
+assert(styleCssContent.includes('#D92D20'), 'css/style.css defines Light Mode Primary #D92D20 (Zomato Crimson).');
+assert(styleCssContent.includes('#FF9F1C'), 'css/style.css defines Light Mode Accent #FF9F1C (Golden Amber).');
+assert(styleCssContent.includes('#FFF8F1'), 'css/style.css defines Light Mode Background #FFF8F1 (Warm Ivory Canvas).');
+assert(styleCssContent.includes('#202124'), 'css/style.css defines Light Mode Text #202124.');
+assert(styleCssContent.includes('#60656F'), 'css/style.css defines Light Mode Secondary Text #60656F.');
+assert(styleCssContent.includes('#E9E2DA'), 'css/style.css defines Light Mode Borders #E9E2DA.');
+
+// 2. Dark Mode Zomato Tokens
+assert(styleCssContent.includes('#FF705D'), 'css/style.css defines Dark Mode Primary #FF705D (Vibrant Coral Red).');
+assert(styleCssContent.includes('#FFB454'), 'css/style.css defines Dark Mode Accent #FFB454 (Luminous Amber).');
+assert(styleCssContent.includes('#101418'), 'css/style.css defines Dark Mode Background #101418 (Deep Obsidian).');
+assert(styleCssContent.includes('#1B2228'), 'css/style.css defines Dark Mode Cards #1B2228 (Charcoal Slate).');
+assert(styleCssContent.includes('#F5F7FA'), 'css/style.css defines Dark Mode Text #F5F7FA.');
+assert(styleCssContent.includes('#AAB4BE'), 'css/style.css defines Dark Mode Secondary Text #AAB4BE.');
+assert(styleCssContent.includes('#34404A'), 'css/style.css defines Dark Mode Borders #34404A.');
+
+// 3. Strict Green Rule Enforcement
+assert(latestCssContent.includes('.zomato-rating-badge') && latestCssContent.includes('.veg-indicator'), 'CSS defines strict green components: rating badge & veg indicator.');
+assert(latestCssContent.includes('.status-delivered'), 'CSS reserves green for status-delivered.');
+
+// 4. Universal Theme Toggle Button & Script across all 16 interactive pages
+const interactivePages = [
+  'index.html', 'home.html', 'restaurants.html', 'restaurant-details.html',
+  'menu.html', 'cart.html', 'checkout.html', 'order-confirmation.html',
+  'orders.html', 'order-tracking.html', 'order-track.html', 'login.html',
+  'register.html', 'profile.html', 'addresses.html', 'admin.html', 'restaurant-dashboard.html'
+];
+interactivePages.forEach(p => {
+  const pContent = fs.readFileSync(path.join(PROJECT_ROOT, p), 'utf8');
+  assert(pContent.includes('fw-theme-toggle-btn'), p + ' contains #fw-theme-toggle-btn.');
+  assert(pContent.includes('theme.js'), p + ' includes theme.js script.');
+  assert(pContent.includes('animations-3d.css'), p + ' links animations-3d.css.');
+});
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');
