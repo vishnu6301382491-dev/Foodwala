@@ -809,24 +809,76 @@
 }
 
 /* ==========================================================================
-   6. 3D RESTAURANT & FOOD DISH CARDS (Dynamic Glare & 3D Pop)
+   6. 3D RESTAURANT & FOOD DISH CARDS (Dynamic Glare, Rich Colors & Warm Palette)
    ========================================================================== */
+
+.fw-restaurants-section-3d {
+  position: relative;
+  background: radial-gradient(circle at 10% 15%, rgba(254, 215, 170, 0.35) 0%, transparent 40%),
+              radial-gradient(circle at 90% 85%, rgba(254, 202, 202, 0.35) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(254, 243, 199, 0.25) 0%, transparent 50%),
+              linear-gradient(180deg, #faf7f2 0%, #fffcf8 50%, #fbf8f3 100%) !important;
+  border-top: 1px solid rgba(249, 115, 22, 0.1);
+  border-bottom: 1px solid rgba(249, 115, 22, 0.1);
+}
+
+.restaurant-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 1.5rem;
+  scrollbar-width: none;
+}
+.restaurant-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.restaurant-filter-pill {
+  background: #ffffff;
+  color: #334155;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.restaurant-filter-pill:hover {
+  border-color: #ef4444;
+  color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.12);
+}
+
+.restaurant-filter-pill.active {
+  background: linear-gradient(135deg, #e23744 0%, #ea580c 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(226, 55, 68, 0.35);
+}
 
 .fw-3d-restaurant-card {
   position: relative;
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #fffdfb 100%);
   border-radius: 22px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid rgba(226, 55, 68, 0.12);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(226, 55, 68, 0.04);
   transform-style: preserve-3d;
-  transition: transform 0.24s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.24s ease;
+  transition: transform 0.28s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.28s ease, border-color 0.28s ease;
   will-change: transform;
   overflow: hidden;
 }
 
 .fw-3d-restaurant-card:hover {
   transform: translateY(-8px) scale(1.025);
-  box-shadow: 0 24px 50px -10px rgba(220, 38, 38, 0.22), 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  border-color: rgba(226, 55, 68, 0.4);
+  box-shadow: 0 22px 42px -8px rgba(226, 55, 68, 0.22), 0 0 20px rgba(245, 158, 11, 0.16);
 }
 
 .fw-3d-restaurant-card .card-img-wrapper {
@@ -834,6 +886,14 @@
   overflow: hidden;
   border-radius: 22px 22px 0 0;
   transform-style: preserve-3d;
+}
+
+.fw-3d-restaurant-card .card-img-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, transparent 40%, rgba(0, 0, 0, 0.8) 100%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .fw-3d-restaurant-card .card-img-wrapper img {
@@ -846,12 +906,93 @@
 
 .fw-3d-restaurant-card .card-badge-3d {
   transform: translateZ(28px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 3;
   transition: transform 0.25s ease;
 }
 
 .fw-3d-restaurant-card:hover .card-badge-3d {
   transform: translateZ(40px) scale(1.05);
+}
+
+/* Discount Offer Ribbon */
+.card-offer-ribbon {
+  background: linear-gradient(135deg, #e23744 0%, #ea580c 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(226, 55, 68, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Glass Delivery Time Badge */
+.card-delivery-badge {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Deep Emerald Rating Pill */
+.card-rating-pill {
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Cuisine Pastel Pill Tags */
+.cuisine-tag-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-right: 4px;
+  margin-bottom: 2px;
+}
+.cuisine-tag-south-indian {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+.cuisine-tag-biryani {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+.cuisine-tag-burger {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.cuisine-tag-dessert {
+  background: #faf5ff;
+  color: #7e22ce;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+.cuisine-tag-default {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid rgba(148, 163, 184, 0.25);
 }
 
 /* ==========================================================================

@@ -333,15 +333,25 @@
     </div>
   </section>
 
-  <!-- Featured Bengaluru Restaurants -->
-  <section class="py-5 bg-light flex-grow-1">
+  <!-- Featured Bengaluru Restaurants (Warm Dining Palette & Filter Pills) -->
+  <section class="py-5 fw-restaurants-section-3d flex-grow-1">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-end mb-4">
+      <div class="d-flex justify-content-between align-items-end mb-3 flex-wrap gap-2">
         <div>
-          <span class="text-danger fw-bold text-uppercase small letter-spacing-1">Top Rated in Bengaluru</span>
-          <h2 class="fw-extrabold text-dark mb-0">Featured Restaurants</h2>
+          <span class="fw-category-pill-tag"><i class="bi bi-fire text-danger me-1"></i> Top Rated In Bengaluru</span>
+          <h2 class="fw-extrabold text-dark mb-1">Featured Restaurants</h2>
+          <p class="text-muted small mb-0">Handpicked dining destinations with rich culinary flavors & instant discounts</p>
         </div>
-        <a href="./restaurants.html" class="btn btn-danger btn-sm rounded-pill fw-bold">Explore All 105 Restaurants &rarr;</a>
+        <a href="./restaurants.html" class="btn btn-danger btn-danger-shimmer btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm">Explore All 105 Spots &rarr;</a>
+      </div>
+
+      <!-- Quick Category Filter Pills -->
+      <div class="restaurant-filter-bar mb-4" id="home-restaurant-filter-bar">
+        <button type="button" class="restaurant-filter-pill active" data-filter="all">🔥 All Spots</button>
+        <button type="button" class="restaurant-filter-pill" data-filter="fast">⚡ Fast Delivery (≤30m)</button>
+        <button type="button" class="restaurant-filter-pill" data-filter="veg">🌱 Pure Veg</button>
+        <button type="button" class="restaurant-filter-pill" data-filter="rated">⭐ Rating 4.5+</button>
+        <button type="button" class="restaurant-filter-pill" data-filter="offer">🎁 Flat 50% Off</button>
       </div>
 
       <div class="row g-4" id="home-featured-grid">
@@ -702,56 +712,123 @@
   <script src="./js/smart-search.min.js" defer></script>
 
   <script>
+    let currentFeaturedList = [];
+    let currentFilter = 'all';
+
+    function getCuisineBadge(cuisine) {
+      if (!cuisine) return '<span class="cuisine-tag-pill cuisine-tag-default">Multi-Cuisine</span>';
+      const c = cuisine.toLowerCase();
+      if (c.includes('south indian') || c.includes('dosa')) {
+        return '<span class="cuisine-tag-pill cuisine-tag-south-indian">South Indian</span><span class="cuisine-tag-pill cuisine-tag-default">Tiffin</span>';
+      } else if (c.includes('biryani')) {
+        return '<span class="cuisine-tag-pill cuisine-tag-biryani">Biryani</span><span class="cuisine-tag-pill cuisine-tag-default">Dum Special</span>';
+      } else if (c.includes('burger') || c.includes('fast food') || c.includes('continental')) {
+        return '<span class="cuisine-tag-pill cuisine-tag-burger">Burgers</span><span class="cuisine-tag-pill cuisine-tag-default">Continental</span>';
+      } else if (c.includes('dessert') || c.includes('ice cream')) {
+        return '<span class="cuisine-tag-pill cuisine-tag-dessert">Desserts</span><span class="cuisine-tag-pill cuisine-tag-default">Ice Cream</span>';
+      } else {
+        const parts = cuisine.split(',');
+        const first = parts[0].trim();
+        const second = parts[1] ? parts[1].trim() : 'Popular';
+        return `<span class="cuisine-tag-pill cuisine-tag-default">${first}</span><span class="cuisine-tag-pill cuisine-tag-default">${second}</span>`;
+      }
+    }
+
     function renderFeaturedGrid(list) {
       const grid = document.getElementById('home-featured-grid');
       if (!grid) return;
-      if (!list || !list.length) {
+      if (list && list.length) {
+        currentFeaturedList = list;
+      }
+      
+      let filtered = currentFeaturedList.slice(0, 8);
+      if (currentFilter === 'fast') {
+        filtered = currentFeaturedList.filter(r => (r.deliveryTime || 30) <= 30).slice(0, 8);
+      } else if (currentFilter === 'veg') {
+        filtered = currentFeaturedList.filter(r => r.isPureVeg).slice(0, 8);
+      } else if (currentFilter === 'rated') {
+        filtered = currentFeaturedList.filter(r => (r.rating || 4.2) >= 4.5).slice(0, 8);
+      } else if (currentFilter === 'offer') {
+        filtered = currentFeaturedList.slice(0, 8);
+      }
+
+      if (!filtered.length) {
         grid.innerHTML = `
           <div class="col-12 text-center py-5">
-            <div class="bg-white p-5 rounded-4 shadow-sm">
-              <i class="bi bi-shop fs-1 text-muted d-block mb-3"></i>
-              <h5 class="fw-bold text-dark">No restaurants available right now</h5>
-              <p class="text-muted small">Please check back soon for restaurants in your area.</p>
+            <div class="bg-white p-5 rounded-4 shadow-sm border border-light">
+              <i class="bi bi-funnel fs-1 text-muted d-block mb-3"></i>
+              <h5 class="fw-bold text-dark">No restaurants match this filter</h5>
+              <p class="text-muted small">Try selecting "All Spots" to view all iconic Bengaluru restaurants.</p>
+              <button class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold mt-2" onclick="applyRestaurantFilter('all')">Show All</button>
             </div>
           </div>
         `;
         return;
       }
-      const featured = list.slice(0, 8);
-      grid.innerHTML = featured.map(r => `
+
+      grid.innerHTML = filtered.map(r => `
         <div class="col-md-6 col-lg-3">
           <div class="card h-100 border-0 fw-3d-restaurant-card js-3d-tilt">
-            <a href="./restaurant-details.html?id=${r.id || r.restaurantId}" class="text-decoration-none text-dark">
+            <a href="./restaurant-details.html?id=${r.id || r.restaurantId}" class="text-decoration-none text-dark d-flex flex-column h-100">
               <div class="card-img-wrapper position-relative">
                 <img src="${r.imagePath || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75'}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; width: 100%; object-fit: cover;" alt="${r.name}">
+                <div class="card-img-vignette"></div>
+                <!-- Offer Ribbon -->
+                <div class="position-absolute top-0 start-0 m-2 card-badge-3d">
+                  <span class="card-offer-ribbon">
+                    <i class="bi bi-tag-fill"></i> FLAT 50% OFF
+                  </span>
+                </div>
+                <!-- Veg / Non-Veg Badge -->
+                <div class="position-absolute top-0 end-0 m-2 card-badge-3d">
+                  ${r.isPureVeg ? '<span class="badge bg-success bg-gradient px-2 py-1 rounded-pill shadow-sm" style="font-size: 0.68rem; font-weight: 800;">🌱 PURE VEG</span>' : '<span class="badge bg-dark bg-opacity-75 text-white px-2 py-1 rounded-pill shadow-sm" style="font-size: 0.68rem; font-weight: 800;">⭐ ICONIC</span>'}
+                </div>
+                <!-- Delivery Time -->
                 <div class="position-absolute bottom-0 start-0 m-2 card-badge-3d">
-                  <span class="badge bg-dark bg-opacity-75 text-white px-2 py-1 rounded-pill small">
-                    <i class="bi bi-clock me-1"></i> ${r.deliveryTime || 30} mins
+                  <span class="card-delivery-badge">
+                    <i class="bi bi-lightning-charge-fill text-warning"></i> ${r.deliveryTime || 30} mins
                   </span>
                 </div>
-                ${r.isPureVeg ? '<div class="position-absolute top-0 end-0 m-2 card-badge-3d"><span class="badge bg-success px-2 py-1 rounded-pill">PURE VEG</span></div>' : ''}
               </div>
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <h6 class="fw-bold text-dark text-truncate mb-0" style="max-width: 170px;">${r.name}</h6>
-                  <span class="badge bg-success d-flex align-items-center gap-1 shadow-sm">
-                    <span>${(r.rating || 4.2).toFixed(1)}</span>
-                    <i class="bi bi-star-fill text-white" style="font-size: 10px;"></i>
-                  </span>
+              <div class="card-body p-3 d-flex flex-column justify-content-between flex-grow-1">
+                <div>
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="fw-bold text-dark text-truncate mb-0" style="max-width: 175px;">${r.name}</h6>
+                    <span class="card-rating-pill shadow-sm">
+                      <span>${(r.rating || 4.2).toFixed(1)}</span>
+                      <i class="bi bi-star-fill text-warning" style="font-size: 10px;"></i>
+                    </span>
+                  </div>
+                  <div class="my-2">
+                    ${getCuisineBadge(r.cuisineType)}
+                  </div>
                 </div>
-                <p class="text-muted small text-truncate mb-2">${r.cuisineType || 'Multi-Cuisine'}</p>
-                <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top">
-                  <span><i class="bi bi-geo-alt text-danger me-1"></i> ${r.area || 'Bengaluru'}</span>
-                  <span class="fw-semibold text-dark">₹${r.costForTwo || 400} for two</span>
+                <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top mt-2">
+                  <span class="text-truncate" style="max-width: 140px;"><i class="bi bi-geo-alt-fill text-danger me-1"></i> ${r.area || 'Bengaluru'}</span>
+                  <span class="fw-bold text-dark">₹${r.costForTwo || 400} for two</span>
                 </div>
               </div>
             </a>
           </div>
         </div>
       `).join('');
+
       if (window.init3DCardTilt) {
         window.init3DCardTilt(grid);
       }
+    }
+
+    function applyRestaurantFilter(filter) {
+      currentFilter = filter;
+      const pills = document.querySelectorAll('.restaurant-filter-pill');
+      pills.forEach(p => {
+        if (p.getAttribute('data-filter') === filter) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+      renderFeaturedGrid(currentFeaturedList);
     }
 
     // Fast-path instant render from seed dataset (0ms latency, eliminates blank section)
@@ -791,6 +868,15 @@
           }
         }
       }
+
+      // Setup Restaurant Filter Buttons
+      const filterPills = document.querySelectorAll('.restaurant-filter-pill');
+      filterPills.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const filter = btn.getAttribute('data-filter');
+          applyRestaurantFilter(filter);
+        });
+      });
 
       // Setup Autocomplete
       const searchInput = document.getElementById('hero-search-input');
