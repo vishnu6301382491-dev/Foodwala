@@ -181,7 +181,7 @@ async function runAll() {
   // Test 5
   console.log('\nTest 5: Handling an OAuth configuration error...');
   const clientId = GoogleAuth.getClientId();
-  assert.ok(clientId, 'Client ID must be defined');
+  assert.strictEqual(clientId, '387098615100-026midj2987jt0p75sqjmi5f94a0nib7.apps.googleusercontent.com', 'Configured Client ID must match newly generated Google OAuth Web Client ID');
   assert.ok(clientId.includes('.apps.googleusercontent.com'), 'Client ID must follow standard format');
   const customId = '123456789-testoverride.apps.googleusercontent.com';
   GoogleAuth.setClientId(customId);

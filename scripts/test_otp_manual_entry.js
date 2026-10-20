@@ -47,10 +47,12 @@ console.log('\nTest 4: Inspecting GIS integration in login and register...');
 assert(loginHtml.includes('https://accounts.google.com/gsi/client'), 'FAIL: GIS client script missing in login.html');
 assert(loginHtml.includes('js/google-auth.js'), 'FAIL: google-auth.js missing in login.html');
 assert(loginHtml.includes('id="google-signin-btn-container"'), 'FAIL: google-signin-btn-container missing in login.html');
+assert(loginHtml.includes('387098615100-026midj2987jt0p75sqjmi5f94a0nib7.apps.googleusercontent.com'), 'FAIL: Configured client_id missing in login.html');
 
 assert(regHtml.includes('https://accounts.google.com/gsi/client'), 'FAIL: GIS client script missing in register.html');
 assert(regHtml.includes('js/google-auth.js'), 'FAIL: google-auth.js missing in register.html');
 assert(regHtml.includes('id="google-signup-btn-container"'), 'FAIL: google-signup-btn-container missing in register.html');
+assert(regHtml.includes('387098615100-026midj2987jt0p75sqjmi5f94a0nib7.apps.googleusercontent.com'), 'FAIL: Configured client_id missing in register.html');
 
 console.log('   ✅ PASS: Official GIS integration intact in both login.html and register.html.');
 

@@ -13,7 +13,7 @@
   'use strict';
 
   // Configured Google OAuth 2.0 Web Client ID
-  const DEFAULT_CLIENT_ID = '1058620864344-9f2h83v8o9m4d8b9j3k4r2m1n0o9p8q7.apps.googleusercontent.com';
+  const DEFAULT_CLIENT_ID = '387098615100-026midj2987jt0p75sqjmi5f94a0nib7.apps.googleusercontent.com';
 
   /**
    * Check if a given Client ID is a valid Google OAuth Client ID
