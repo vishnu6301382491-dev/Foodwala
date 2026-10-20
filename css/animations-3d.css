@@ -3372,3 +3372,183 @@ footer {
 [data-bs-theme="dark"] footer a:hover {
   color: #FF705D !important;
 }
+
+/* ==========================================================================
+   20. BULLETPROOF DARK THEME CONTRAST & FORM VISIBILITY SYSTEM
+   Guarantees zero white-on-white text, zero invisible inputs, and high-contrast
+   cards, chips, segmented tabs, and form controls across all pages.
+   ========================================================================== */
+
+/* 1. Bulletproof Dark Mode Form & Input Engine */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-control.bg-light,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .form-select.bg-light,
+[data-bs-theme="dark"] textarea,
+[data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] input[type="email"],
+[data-bs-theme="dark"] input[type="password"],
+[data-bs-theme="dark"] input[type="tel"],
+[data-bs-theme="dark"] input[type="number"],
+[data-bs-theme="dark"] input[type="search"],
+[data-bs-theme="dark"] .input-group-text,
+[data-bs-theme="dark"] .input-group-text.bg-light {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border: 1.5px solid #34404A !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus,
+[data-bs-theme="dark"] textarea:focus,
+[data-bs-theme="dark"] input:focus {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border-color: #FF705D !important;
+  box-shadow: 0 0 0 3px rgba(255, 112, 93, 0.25) !important;
+}
+
+[data-bs-theme="dark"] .form-control::placeholder,
+[data-bs-theme="dark"] textarea::placeholder,
+[data-bs-theme="dark"] input::placeholder {
+  color: #AAB4BE !important;
+  opacity: 0.9 !important;
+}
+
+/* 2. Absolute Card & White Utility Overrides */
+[data-bs-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .card.bg-white,
+[data-bs-theme="dark"] div.bg-white {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border-color: #34404A !important;
+}
+
+/* 3. Login & Register Segmented Tab Switcher (Fixes White Box Leak) */
+[data-bs-theme="dark"] .js-login-tab-btn.active,
+[data-bs-theme="dark"] .js-login-tab-btn.btn-light,
+[data-bs-theme="dark"] #tab-email-btn.active,
+[data-bs-theme="dark"] #tab-mobile-btn.active,
+[data-bs-theme="dark"] .btn.active.btn-light {
+  background-color: #FF705D !important;
+  color: #101418 !important;
+  border-color: #FF705D !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(255, 112, 93, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .js-login-tab-btn:not(.active),
+[data-bs-theme="dark"] #tab-email-btn:not(.active),
+[data-bs-theme="dark"] #tab-mobile-btn:not(.active) {
+  background-color: transparent !important;
+  color: #AAB4BE !important;
+}
+
+/* Quick Fill Role Card */
+[data-bs-theme="dark"] #role-quick-fill-card,
+[data-bs-theme="dark"] .role-quick-fill-card,
+[data-bs-theme="dark"] .quick-fill-card {
+  background-color: #1B2228 !important;
+  border: 1.5px solid #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] #role-quick-fill-card .badge,
+[data-bs-theme="dark"] .role-quick-fill-card .badge,
+[data-bs-theme="dark"] #role-quick-fill-card .badge.bg-white {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border: 1px solid #34404A !important;
+}
+
+/* 4. Orders Entity Badges & Chips */
+[data-bs-theme="dark"] .order-id-badge-pill {
+  background-color: #242D35 !important;
+  color: #F5F7FA !important;
+  border: 1.5px solid #34404A !important;
+  font-weight: 700 !important;
+}
+
+[data-bs-theme="dark"] .order-payment-chip {
+  background-color: rgba(255, 180, 84, 0.16) !important;
+  color: #FFB454 !important;
+  border: 1.5px solid rgba(255, 180, 84, 0.35) !important;
+  font-weight: 700 !important;
+}
+
+[data-bs-theme="dark"] .order-item-chip {
+  background-color: #242D35 !important;
+  border: 1.5px solid #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .order-item-chip .dish-name {
+  color: #F5F7FA !important;
+  font-weight: 600 !important;
+}
+
+[data-bs-theme="dark"] .order-item-chip .dish-price {
+  color: #AAB4BE !important;
+  font-weight: 600 !important;
+}
+
+[data-bs-theme="dark"] .fw-order-history-card {
+  background-color: #1B2228 !important;
+  border: 1.5px solid #34404A !important;
+  color: #F5F7FA !important;
+}
+
+/* 5. Checkout Address & Payment Option Cards */
+[data-bs-theme="dark"] .address-card {
+  background-color: #1B2228 !important;
+  border: 1.5px solid #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .address-card:hover {
+  background-color: #242D35 !important;
+  border-color: #FF705D !important;
+}
+
+[data-bs-theme="dark"] .address-card.selected {
+  background-color: #242D35 !important;
+  border: 2px solid #FF705D !important;
+  box-shadow: 0 4px 16px rgba(255, 112, 93, 0.22) !important;
+}
+
+[data-bs-theme="dark"] .payment-option-card {
+  background-color: #1B2228 !important;
+  border: 1.5px solid #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .payment-option-card.selected {
+  background-color: #242D35 !important;
+  border: 2px solid #FF705D !important;
+  box-shadow: 0 4px 16px rgba(255, 112, 93, 0.2) !important;
+}
+
+/* Role info card in login.html */
+[data-bs-theme="dark"] #role-info-card {
+  background-color: #242D35 !important;
+  border-color: #34404A !important;
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] #role-info-card .text-dark {
+  color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] #role-info-card .text-muted {
+  color: #AAB4BE !important;
+}
+
+[data-bs-theme="dark"] #role-info-card .badge.bg-white {
+  background-color: #1B2228 !important;
+  color: #F5F7FA !important;
+  border: 1px solid #34404A !important;
+}
+
+[data-bs-theme="dark"] #role-info-card .badge.bg-white span {
+  color: #F5F7FA !important;
+}

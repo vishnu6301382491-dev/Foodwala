@@ -1684,24 +1684,50 @@ textarea.form-control {
 
 /* Address Cards */
 .address-card {
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--fw-border, #E9E2DA);
     border-radius: 14px;
     padding: 18px;
     transition: all 0.2s ease;
     cursor: pointer;
-    background: #ffffff;
+    background: var(--fw-card, #ffffff);
+    color: var(--fw-text, #202124);
     position: relative;
 }
 
 .address-card:hover {
-    border-color: #cbd5e1;
+    border-color: var(--fw-primary, #D92D20);
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
 .address-card.selected {
-    border-color: #ff5200;
-    background: #fffbf9;
-    box-shadow: 0 4px 16px rgba(255, 82, 0, 0.12);
+    border-color: var(--fw-primary, #D92D20);
+    background: rgba(217, 45, 32, 0.05);
+    box-shadow: 0 4px 16px rgba(217, 45, 32, 0.12);
+}
+
+[data-bs-theme="dark"] .address-card {
+    background: #1B2228 !important;
+    border-color: #34404A !important;
+    color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .address-card:hover {
+    border-color: #FF705D !important;
+    background: #242D35 !important;
+}
+
+[data-bs-theme="dark"] .address-card.selected {
+    border-color: #FF705D !important;
+    background: #242D35 !important;
+    box-shadow: 0 4px 16px rgba(255, 112, 93, 0.22) !important;
+}
+
+[data-bs-theme="dark"] .address-card .text-dark {
+    color: #F5F7FA !important;
+}
+
+[data-bs-theme="dark"] .address-card .text-muted {
+    color: #AAB4BE !important;
 }
 
 .address-type-badge {

@@ -294,6 +294,29 @@ interactivePages.forEach(p => {
   assert(pContent.includes('animations-3d.css'), p + ' links animations-3d.css.');
 });
 
+// Test 14: Verify Bulletproof Dark Mode Form Engine, Address Cards, Entity Chips & Segmented Controls
+console.log('\nTest 14: Verifying Bulletproof Dark Mode Form Engine, Address Cards & Entity Chips...');
+const animCssContent = fs.readFileSync(path.join(PROJECT_ROOT, 'css', 'animations-3d.css'), 'utf8');
+const finalStyleCss = fs.readFileSync(path.join(PROJECT_ROOT, 'css', 'style.css'), 'utf8');
+
+// 1. Bulletproof Dark Mode Form Engine
+assert(animCssContent.includes('[data-bs-theme="dark"] .form-control') && animCssContent.includes('#242D35'), 'CSS defines dark surface #242D35 for form controls in dark mode.');
+assert(animCssContent.includes('[data-bs-theme="dark"] .form-control::placeholder') && animCssContent.includes('#AAB4BE'), 'CSS enforces legible #AAB4BE placeholder contrast in dark mode.');
+assert(animCssContent.includes('[data-bs-theme="dark"] .form-control.bg-light') && animCssContent.includes('[data-bs-theme="dark"] .form-select.bg-light'), 'CSS overrides bg-light on form-control and form-select.');
+
+// 2. Address Card Dark Theming
+assert(finalStyleCss.includes('[data-bs-theme="dark"] .address-card') && finalStyleCss.includes('#1B2228'), 'css/style.css defines dark surface #1B2228 for address cards in dark mode.');
+assert(finalStyleCss.includes('[data-bs-theme="dark"] .address-card.selected') && finalStyleCss.includes('#242D35'), 'css/style.css defines selected address card surface #242D35 with coral accent.');
+
+// 3. Entity Chips & Badges in Dark Mode
+assert(animCssContent.includes('[data-bs-theme="dark"] .order-id-badge-pill') && animCssContent.includes('#242D35'), 'CSS defines dark slate #242D35 container for .order-id-badge-pill.');
+assert(animCssContent.includes('[data-bs-theme="dark"] .order-payment-chip') && animCssContent.includes('#FFB454'), 'CSS defines luminous amber #FFB454 for .order-payment-chip.');
+assert(animCssContent.includes('[data-bs-theme="dark"] .order-item-chip') && animCssContent.includes('.dish-name'), 'CSS defines dedicated high-contrast styles for .order-item-chip and .dish-name.');
+
+// 4. Segmented Tab Switcher & Quick Fill
+assert(animCssContent.includes('[data-bs-theme="dark"] .js-login-tab-btn.active') && animCssContent.includes('#FF705D'), 'CSS defines coral active state #FF705D for login segmented switcher.');
+assert(animCssContent.includes('[data-bs-theme="dark"] #role-info-card'), 'CSS defines dark container for #role-info-card in login.html.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');
