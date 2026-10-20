@@ -435,8 +435,10 @@
       const regNameInput = document.getElementById('reg-name');
       const regAddressLabel = document.getElementById('reg-address-label');
       const regAddressInput = document.getElementById('reg-address');
+      let selectedRegRole = 'customer';
 
       function setRegistrationRole(roleKey) {
+        selectedRegRole = roleKey;
         const profile = regRoleProfiles[roleKey] || regRoleProfiles.customer;
         if (regRoleInput) regRoleInput.value = roleKey;
 
@@ -702,10 +704,10 @@
         window.FoodWalaGoogleAuth.init({
           isSignUp: true,
           containerId: 'google-signup-btn-container',
-          getSelectedRole: () => (selectedRegRole || 'customer'),
+          getSelectedRole: () => (typeof selectedRegRole !== 'undefined' ? selectedRegRole : 'customer'),
           onSuccess: (user) => {
             try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (err) {}
-            const registeredRole = (user.role || selectedRegRole || 'customer').toLowerCase();
+            const registeredRole = (user.role || (typeof selectedRegRole !== 'undefined' ? selectedRegRole : 'customer')).toLowerCase();
             setTimeout(() => {
               if (registeredRole === 'admin') {
                 window.location.href = './admin.html';

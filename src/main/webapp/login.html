@@ -545,7 +545,6 @@
       }
 
       // --- Secure Portal Routing & Role Isolation ---
-      const urlParams = new URLSearchParams(window.location.search);
       const portalMode = (urlParams.get('portal') || urlParams.get('role') || '').toLowerCase();
       let selectedRole = 'customer';
 
@@ -558,6 +557,22 @@
       const emailInput = document.getElementById('email-input');
       const loginSubmitBtn = document.getElementById('login-submit-btn');
       const signupPrompt = document.querySelector('.card .text-center.small.text-muted');
+      // Auto-populate inputs and clean URL if arrived with GET parameters (native form submit recovery)
+      const urlIdentifier = urlParams.get('identifier');
+      const urlPassword = urlParams.get('password');
+      if (urlIdentifier && emailInput) {
+        emailInput.value = urlIdentifier;
+      }
+      if (urlPassword) {
+        const pwdInputEl = document.getElementById('password-input');
+        if (pwdInputEl) pwdInputEl.value = urlPassword;
+      }
+      if (urlIdentifier || urlPassword) {
+        try {
+          const cleanUrl = window.location.pathname + (portalMode ? ('?portal=' + encodeURIComponent(portalMode)) : (urlRedirect ? ('?redirect=' + encodeURIComponent(urlRedirect)) : ''));
+          window.history.replaceState({}, document.title, cleanUrl);
+        } catch (e) {}
+      }
 
       if (portalMode === 'admin') {
         selectedRole = 'admin';
@@ -665,7 +680,6 @@
 
       // --- Email/password form submission ---
       const loginForm = document.getElementById('login-form');
-      const loginSubmitBtn = document.getElementById('login-submit-btn');
       const loginErrorMsg = document.getElementById('login-error-msg');
 
       loginForm.addEventListener('submit', async (e) => {

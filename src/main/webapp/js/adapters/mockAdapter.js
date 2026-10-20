@@ -607,7 +607,7 @@
 
       // Verify password hash (flexible for standard role test passwords)
       const inputHash = mockHash(password);
-      const standardPasswords = ['password', 'Admin@123', 'admin123', 'Password@123', 'Partner@123', 'Restaurant@123', 'Vishnu@123', 'vishnu@123', '12345678'];
+      const standardPasswords = ['password', 'Admin@123', 'admin123', 'Password@123', 'Partner@123', 'Restaurant@123', 'Vishnu@123', 'vishnu@123', 'Vishnu@143', 'vishnu@143', '12345678'];
       const isPassValid = (user.passwordHash === inputHash) || (user.passwordHash === password) || (user.password === password) || standardPasswords.includes(password);
       if (!isPassValid) {
         user.failedAttempts = (user.failedAttempts || 0) + 1;
