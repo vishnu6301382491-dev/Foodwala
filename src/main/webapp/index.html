@@ -68,6 +68,13 @@
               <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
             </a>
           </li>
+          <!-- 24/7 Help Quick Action Button -->
+          <li class="nav-item">
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 js-open-247-help" title="FoodWala 24/7 Customer Help Assistance">
+              <i class="bi bi-headset fs-6 text-danger"></i>
+              <span>24/7 Help</span>
+            </button>
+          </li>
           <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
           <li class="nav-item ms-lg-2" id="navbar-user-slot">
             <div class="d-flex align-items-center gap-2">
@@ -100,27 +107,43 @@
     </div>
   </div>
 
-  <!-- Hero Section with 3D Culinary Showcase & Dynamic Lighting -->
-  <section class="hero-section hero-section-3d py-5 position-relative">
-    <!-- Ambient 3D orbs for hero -->
-    <div class="fw-3d-orb fw-3d-orb-1" style="opacity: 0.28; top: -10%; left: -5%;"></div>
-    <div class="fw-3d-orb fw-3d-orb-2" style="opacity: 0.22; bottom: -15%; right: -5%;"></div>
+  <!-- Hero Section with Zomato-Style Cinematic 4K Culinary Video Backdrop -->
+  <section class="hero-section hero-section-3d py-5 position-relative overflow-hidden text-white" style="min-height: 540px; background: #0f172a;">
+    <!-- 4K Looping Culinary Food Video Backdrop & Cinematic Overlay -->
+    <div class="hero-video-box">
+      <video id="hero-food-video" class="hero-video-elem" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&auto=format&fit=crop&q=80">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-top-view-of-a-delicious-pizza-coming-out-of-the-42738-large.mp4" type="video/mp4">
+      </video>
+      <div class="hero-video-overlay"></div>
+    </div>
 
-    <div class="container py-4 position-relative" style="z-index: 2;">
+    <!-- Video Play/Pause & Audio Toggle Controls -->
+    <div class="hero-video-controls">
+      <button type="button" class="hero-video-btn" id="btn-hero-video-play" title="Toggle Video Play/Pause">
+        <i class="bi bi-pause-fill" id="hero-video-play-icon"></i>
+        <span id="hero-video-play-text">Pause</span>
+      </button>
+      <button type="button" class="hero-video-btn" id="btn-hero-video-mute" title="Toggle Sound">
+        <i class="bi bi-volume-mute-fill" id="hero-video-mute-icon"></i>
+        <span id="hero-video-mute-text">Muted</span>
+      </button>
+    </div>
+
+    <div class="container py-4 position-relative" style="z-index: 5;">
       <div class="row align-items-center g-4">
         <div class="col-lg-7">
-          <div class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 px-3 py-2 rounded-pill mb-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
-            <i class="bi bi-lightning-charge-fill text-danger me-1"></i> Fast Delivery across 14+ Bengaluru Hubs
+          <div class="badge bg-danger bg-opacity-80 text-white border border-danger border-opacity-40 px-3 py-2 rounded-pill mb-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1 backdrop-blur">
+            <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Fast Delivery across 14+ Bengaluru Hubs
           </div>
-          <h1 class="display-4 fw-extrabold mb-3 lh-sm text-dark">
-            Craving something <span class="text-danger text-gradient">extraordinary?</span>
+          <h1 class="display-4 fw-extrabold mb-3 lh-sm text-white text-shadow-sm">
+            Craving something <span class="text-warning text-gradient">extraordinary?</span>
           </h1>
-          <p class="lead text-secondary opacity-90 mb-4">
+          <p class="lead text-light text-opacity-90 mb-4">
             Order from 105+ iconic Bengaluru restaurants — from legendary Donne & Dum Biryanis to authentic Benne Dosa, woodfired pizzas, and gourmet burgers.
           </p>
 
           <!-- Search Box with Glow Shadow -->
-          <div class="bg-white p-2 rounded-4 shadow-lg position-relative text-dark fw-3d-search-box" style="box-shadow: 0 15px 40px -10px rgba(220, 38, 38, 0.2) !important; border: 1px solid rgba(0,0,0,0.06);">
+          <div class="bg-white p-2 rounded-4 shadow-2xl position-relative text-dark fw-3d-search-box" style="box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(255,255,255,0.2);">
             <form action="./restaurants.html" method="GET" class="d-flex align-items-center gap-2">
               <i class="bi bi-search text-danger fs-4 ms-3"></i>
               <input type="text" name="q" id="hero-search-input" class="form-control border-0 shadow-none fs-6 py-2" placeholder="Search restaurant, dish (e.g. biriyani, dosa, burger, paneer)..." autocomplete="off">
@@ -133,13 +156,13 @@
           </div>
 
           <!-- Quick Suggestion Tags -->
-          <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-secondary small">
-            <span class="fw-bold text-dark"><i class="bi bi-fire text-danger"></i> Popular:</span>
-            <a href="./restaurants.html?q=biryani" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Biryani</a>
-            <a href="./restaurants.html?q=dosa" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Benne Dosa</a>
-            <a href="./restaurants.html?q=pizza" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Pizza</a>
-            <a href="./restaurants.html?q=burger" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Burgers</a>
-            <a href="./restaurants.html?q=paneer" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Paneer</a>
+          <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-light small">
+            <span class="fw-bold text-white"><i class="bi bi-fire text-warning"></i> Popular:</span>
+            <a href="./restaurants.html?q=biryani" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Biryani</a>
+            <a href="./restaurants.html?q=dosa" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Benne Dosa</a>
+            <a href="./restaurants.html?q=pizza" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Pizza</a>
+            <a href="./restaurants.html?q=burger" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Burgers</a>
+            <a href="./restaurants.html?q=paneer" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Paneer</a>
           </div>
         </div>
 
@@ -772,8 +795,45 @@
           }
         });
       }
+
+      // Video Controls (Play/Pause & Mute/Unmute)
+      const foodVideo = document.getElementById('hero-food-video');
+      const btnPlay = document.getElementById('btn-hero-video-play');
+      const btnMute = document.getElementById('btn-hero-video-mute');
+      const iconPlay = document.getElementById('hero-video-play-icon');
+      const textPlay = document.getElementById('hero-video-play-text');
+      const iconMute = document.getElementById('hero-video-mute-icon');
+      const textMute = document.getElementById('hero-video-mute-text');
+
+      if (foodVideo && btnPlay) {
+        btnPlay.addEventListener('click', () => {
+          if (foodVideo.paused) {
+            foodVideo.play();
+            if (iconPlay) iconPlay.className = 'bi bi-pause-fill';
+            if (textPlay) textPlay.textContent = 'Pause';
+          } else {
+            foodVideo.pause();
+            if (iconPlay) iconPlay.className = 'bi bi-play-fill';
+            if (textPlay) textPlay.textContent = 'Play';
+          }
+        });
+      }
+
+      if (foodVideo && btnMute) {
+        btnMute.addEventListener('click', () => {
+          foodVideo.muted = !foodVideo.muted;
+          if (foodVideo.muted) {
+            if (iconMute) iconMute.className = 'bi bi-volume-mute-fill';
+            if (textMute) textMute.textContent = 'Muted';
+          } else {
+            if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
+            if (textMute) textMute.textContent = 'Sound On';
+          }
+        });
+      }
     });
   </script>
   <script src="./js/animations-3d.js" defer></script>
+  <script src="./js/help-assistance.js" defer></script>
 </body>
 </html>
