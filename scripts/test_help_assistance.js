@@ -149,6 +149,36 @@ assert(cssContent.includes('.cat-pizza') && cssContent.includes('#ef4444'), 'CSS
 assert(cssContent.includes('.cat-burger') && cssContent.includes('#f59e0b'), 'CSS defines vivid bright amber border for Burger category.');
 assert(cssContent.includes('.cat-biryani') && cssContent.includes('#f97316'), 'CSS defines vivid bright orange border for Biryani category.');
 
+// Test 9: Verify Realistic High-Quality Category Food Photography & Dark-Mode Typography Contrast
+console.log('\nTest 9: Verifying Realistic High-Quality Food Photography & Dark Mode Contrast...');
+const catNames = ['pizza', 'burger', 'biryani', 'chinese', 'south-indian', 'beverages', 'desserts', 'rolls'];
+catNames.forEach((cat) => {
+  const localImg = path.join(PROJECT_ROOT, 'images', 'categories', `${cat}.jpg`);
+  const webappImg = path.join(PROJECT_ROOT, 'src', 'main', 'webapp', 'images', 'categories', `${cat}.jpg`);
+  assert(fs.existsSync(localImg), `images/categories/${cat}.jpg exists on disk.`);
+  assert(fs.existsSync(webappImg), `src/main/webapp/images/categories/${cat}.jpg mirrored on disk.`);
+  if (fs.existsSync(localImg)) {
+    assert(fs.statSync(localImg).size > 15000, `${cat}.jpg size is high-res (>15KB).`);
+  }
+});
+
+const updatedIndexHtml = fs.readFileSync(path.join(PROJECT_ROOT, 'index.html'), 'utf8');
+const updatedHomeHtml = fs.readFileSync(path.join(PROJECT_ROOT, 'home.html'), 'utf8');
+const updatedCssContent = fs.readFileSync(path.join(PROJECT_ROOT, 'css', 'animations-3d.css'), 'utf8');
+
+assert(updatedIndexHtml.includes('./images/categories/pizza.jpg'), 'index.html points to realistic pizza photography.');
+assert(updatedIndexHtml.includes('./images/categories/chinese.jpg'), 'index.html has unique realistic Chinese wok photography (no duplicate biryani).');
+assert(updatedIndexHtml.includes('./images/categories/rolls.jpg'), 'index.html has unique realistic Rolls photography (no duplicate dosa).');
+assert(updatedIndexHtml.includes('cat-real-photo'), 'index.html applies .cat-real-photo class.');
+
+assert(updatedHomeHtml.includes('./images/categories/pizza.jpg'), 'home.html points to realistic pizza photography.');
+assert(updatedHomeHtml.includes('./images/categories/chinese.jpg'), 'home.html has unique realistic Chinese wok photography.');
+assert(updatedHomeHtml.includes('cat-real-photo'), 'home.html applies .cat-real-photo class.');
+
+assert(updatedCssContent.includes('.category-card-3d .cat-real-photo'), 'CSS defines .category-card-3d .cat-real-photo styles.');
+assert(updatedCssContent.includes('border-radius: 50%'), 'CSS shapes category food photography into circular gourmet dishes.');
+assert(updatedCssContent.includes('[data-bs-theme="dark"] .text-dark') && updatedCssContent.includes('#f8fafc'), 'CSS overrides dark mode .text-dark with luminous #f8fafc.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');
