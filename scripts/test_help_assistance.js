@@ -237,6 +237,23 @@ assert(orderTrackingHtml.includes('btn-trigger-pop'), 'order-tracking.html provi
 assert(orderTrackHtml.includes('tracking-pop-slot'), 'order-track.html also has tracking-pop-slot container.');
 assert(updatedCssContent.includes('.pop-toast-kitchen') && updatedCssContent.includes('.pop-toast-delivered'), 'CSS defines milestone pop toast border classes.');
 
+
+// Test 12: Verify Appetizing Background Palettes, Radial Mesh Lighting & Palette Controller
+console.log('\nTest 12: Verifying Appetizing Background Palettes, Radial Mesh Lighting & Palette Controller...');
+const latestCssContent = fs.readFileSync(path.join(PROJECT_ROOT, 'css', 'animations-3d.css'), 'utf8');
+const latestThemeJsContent = fs.readFileSync(path.join(PROJECT_ROOT, 'js', 'theme.js'), 'utf8');
+
+// 1. CSS Palette Definitions
+assert(latestCssContent.includes('--fw-bg-canvas') && latestCssContent.includes('radial-gradient'), 'CSS defines dynamic multi-source radial mesh lighting (--fw-bg-canvas).');
+assert(latestCssContent.includes('#fff8f5') && latestCssContent.includes('#120909'), 'CSS specifies warm porcelain peach (#fff8f5) and smoked cacao (#120909) appetite base colors.');
+assert(latestCssContent.includes('[data-fw-palette="sunset"]') && latestCssContent.includes('[data-fw-palette="sapphire"]'), 'CSS defines Sunset Spice and Midnight Sapphire palette themes.');
+assert(latestCssContent.includes('[data-fw-palette="amber"]') && latestCssContent.includes('[data-fw-palette="emerald"]'), 'CSS defines Warm Dining Amber and Fresh Emerald palette themes.');
+
+// 2. JavaScript Theme & Palette Controller
+assert(latestThemeJsContent.includes('setPalette') && latestThemeJsContent.includes('getPalette'), 'theme.js implements setPalette and getPalette functions.');
+assert(latestThemeJsContent.includes('cyclePalette'), 'theme.js implements cyclePalette for dynamic theme switching.');
+assert(latestThemeJsContent.includes('data-fw-palette'), 'theme.js sets data-fw-palette attribute on document root.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');

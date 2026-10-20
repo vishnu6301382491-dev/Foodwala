@@ -2704,3 +2704,143 @@ footer i.bi-geo-alt {
   color: #93c5fd !important;
   border-color: rgba(59, 130, 246, 0.45) !important;
 }
+
+
+/* ==========================================================================
+   18. APPETIZING BACKGROUND PALETTES & MULTI-LAYERED MESH LIGHTING
+   ========================================================================== */
+
+/* --- Palette 1: Sunset Spice & Crimson (Default Appetite Theme) --- */
+:root, [data-fw-palette="sunset"] {
+  --fw-bg-canvas: radial-gradient(circle at 15% 15%, rgba(220, 38, 38, 0.08) 0%, transparent 45%),
+                  radial-gradient(circle at 85% 20%, rgba(234, 88, 12, 0.09) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.06) 0%, transparent 50%),
+                  #fff8f5;
+  --fw-bg-base: #fff8f5;
+  --fw-surface-card: #ffffff;
+  --fw-card-border: rgba(234, 88, 12, 0.14);
+  --fw-card-shadow: 0 10px 30px -4px rgba(220, 38, 38, 0.08);
+  --fw-text-primary: #180808;
+  --fw-text-muted: #6b3b34;
+}
+
+[data-bs-theme="dark"], [data-bs-theme="dark"][data-fw-palette="sunset"] {
+  --fw-bg-canvas: radial-gradient(circle at 20% 10%, rgba(220, 38, 38, 0.18) 0%, transparent 55%),
+                  radial-gradient(circle at 80% 80%, rgba(234, 88, 12, 0.14) 0%, transparent 50%),
+                  #120909;
+  --fw-bg-base: #120909;
+  --fw-surface-card: #1d1212;
+  --fw-card-border: rgba(255, 99, 71, 0.20);
+  --fw-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(239, 68, 68, 0.22);
+  --fw-text-primary: #fff1f0;
+  --fw-text-muted: #d4a5a0;
+}
+
+/* --- Palette 2: Midnight Sapphire (VIP Lounge & Late Night Dining) --- */
+[data-fw-palette="sapphire"] {
+  --fw-bg-canvas: radial-gradient(circle at 80% 10%, rgba(37, 99, 235, 0.08) 0%, transparent 45%),
+                  radial-gradient(circle at 10% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 40%),
+                  #f4f7fc;
+  --fw-bg-base: #f4f7fc;
+  --fw-surface-card: #ffffff;
+  --fw-card-border: rgba(37, 99, 235, 0.14);
+  --fw-card-shadow: 0 10px 30px -4px rgba(37, 99, 235, 0.08);
+  --fw-text-primary: #0b132b;
+  --fw-text-muted: #475569;
+}
+
+[data-bs-theme="dark"][data-fw-palette="sapphire"] {
+  --fw-bg-canvas: radial-gradient(circle at 75% 15%, rgba(37, 99, 235, 0.22) 0%, transparent 50%),
+                  radial-gradient(circle at 20% 70%, rgba(124, 58, 237, 0.16) 0%, transparent 55%),
+                  #080d1a;
+  --fw-bg-base: #080d1a;
+  --fw-surface-card: #0f172a;
+  --fw-card-border: rgba(96, 165, 250, 0.20);
+  --fw-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(37, 99, 235, 0.22);
+  --fw-text-primary: #f8fafc;
+  --fw-text-muted: #94a3b8;
+}
+
+/* --- Palette 3: Warm Dining Amber (Artisanal Bistro & Bakery) --- */
+[data-fw-palette="amber"] {
+  --fw-bg-canvas: radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.09) 0%, transparent 40%),
+                  radial-gradient(circle at 85% 15%, rgba(251, 146, 60, 0.09) 0%, transparent 45%),
+                  #fdfbf7;
+  --fw-bg-base: #fdfbf7;
+  --fw-surface-card: #ffffff;
+  --fw-card-border: rgba(245, 158, 11, 0.16);
+  --fw-card-shadow: 0 10px 30px -4px rgba(245, 158, 11, 0.08);
+  --fw-text-primary: #261608;
+  --fw-text-muted: #78593a;
+}
+
+[data-bs-theme="dark"][data-fw-palette="amber"] {
+  --fw-bg-canvas: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.18) 0%, transparent 60%),
+                  radial-gradient(circle at 85% 85%, rgba(194, 65, 12, 0.14) 0%, transparent 50%),
+                  #16110a;
+  --fw-bg-base: #16110a;
+  --fw-surface-card: #211a11;
+  --fw-card-border: rgba(245, 158, 11, 0.22);
+  --fw-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(245, 158, 11, 0.22);
+  --fw-text-primary: #fffbeb;
+  --fw-text-muted: #d4a373;
+}
+
+/* --- Palette 4: Fresh Emerald (Gourmet Organic & Healthy) --- */
+[data-fw-palette="emerald"] {
+  --fw-bg-canvas: radial-gradient(circle at 20% 15%, rgba(16, 185, 129, 0.09) 0%, transparent 45%),
+                  radial-gradient(circle at 80% 25%, rgba(132, 204, 22, 0.07) 0%, transparent 40%),
+                  #f3faf6;
+  --fw-bg-base: #f3faf6;
+  --fw-surface-card: #ffffff;
+  --fw-card-border: rgba(16, 185, 129, 0.16);
+  --fw-card-shadow: 0 10px 30px -4px rgba(16, 185, 129, 0.08);
+  --fw-text-primary: #062419;
+  --fw-text-muted: #2d634c;
+}
+
+[data-bs-theme="dark"][data-fw-palette="emerald"] {
+  --fw-bg-canvas: radial-gradient(circle at 80% 10%, rgba(16, 185, 129, 0.19) 0%, transparent 50%),
+                  radial-gradient(circle at 15% 85%, rgba(5, 150, 105, 0.15) 0%, transparent 55%),
+                  #071611;
+  --fw-bg-base: #071611;
+  --fw-surface-card: #0e231b;
+  --fw-card-border: rgba(52, 211, 153, 0.22);
+  --fw-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(16, 185, 129, 0.22);
+  --fw-text-primary: #ecfdf5;
+  --fw-text-muted: #6ee7b7;
+}
+
+/* Universal Body Background Integration */
+body {
+  background: var(--fw-bg-canvas) !important;
+  color: var(--fw-text-primary);
+  min-height: 100vh;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+[data-bs-theme="dark"] body {
+  background: var(--fw-bg-canvas) !important;
+  color: var(--fw-text-primary) !important;
+}
+
+[data-bs-theme="dark"] .bg-white {
+  background-color: var(--fw-surface-card) !important;
+  color: var(--fw-text-primary) !important;
+  border-color: var(--fw-card-border) !important;
+}
+
+/* Unified Page Classes */
+.fw-orders-page,
+.fw-checkout-page,
+.fw-tracking-page,
+.fw-confirmation-page {
+  background: var(--fw-bg-canvas) !important;
+}
+
+[data-bs-theme="dark"] .fw-orders-page,
+[data-bs-theme="dark"] .fw-checkout-page,
+[data-bs-theme="dark"] .fw-tracking-page,
+[data-bs-theme="dark"] .fw-confirmation-page {
+  background: var(--fw-bg-canvas) !important;
+}
