@@ -108,11 +108,12 @@
   </div>
 
   <!-- Hero Section with Zomato-Style Cinematic 4K Culinary Video Backdrop -->
-  <section class="hero-section hero-section-3d py-5 position-relative overflow-hidden text-white" style="min-height: 540px; background: #0f172a;">
+  <section class="hero-section hero-section-3d py-5 position-relative overflow-hidden text-white" style="min-height: 540px;">
     <!-- 4K Looping Culinary Food Video Backdrop & Cinematic Overlay -->
     <div class="hero-video-box">
       <video id="hero-food-video" class="hero-video-elem" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&auto=format&fit=crop&q=80">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-top-view-of-a-delicious-pizza-coming-out-of-the-42738-large.mp4" type="video/mp4">
+        <source src="./videos/food-hero.webm" type="video/webm">
+        <source src="https://upload.wikimedia.org/wikipedia/commons/2/22/Bubbling_baking_pizza.webm" type="video/webm">
       </video>
       <div class="hero-video-overlay"></div>
     </div>
@@ -310,98 +311,6 @@
     </div>
   </section>
 
-  <!-- ==========================================================================
-       SESSION 3: 3D LIVE ORDER TRACKING & TURN-BY-TURN DELIVERY SECTION
-       ========================================================================== -->
-  <section class="fw-3d-tracking-section py-5">
-    <div class="container py-3">
-      <div class="row align-items-center g-5">
-        <div class="col-lg-6">
-          <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill mb-3 fw-bold small d-inline-flex align-items-center gap-2">
-            <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
-            <span>Live GPS Order Tracking Active</span>
-          </div>
-          <h2 class="display-6 fw-extrabold text-dark mb-3">
-            Hyper-Local Speed. <span class="text-danger">Turn-by-Turn Precision.</span>
-          </h2>
-          <p class="text-secondary opacity-90 mb-4">
-            From our kitchen hubs in Maruthi Nagar, Koramangala, and across 14+ Bengaluru hubs straight to your doorstep in an average of 24 minutes.
-          </p>
-
-          <div class="d-flex flex-column gap-2 mb-4">
-            <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
-              <div class="fw-3d-milestone-dot bg-danger text-white">🍳</div>
-              <div>
-                <span class="fw-bold text-dark small d-block">1. Fresh Kitchen Prep</span>
-                <small class="text-muted">Cooked to order with tamper-proof thermal packaging.</small>
-              </div>
-            </div>
-            <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
-              <div class="fw-3d-milestone-dot bg-warning text-dark">🛵</div>
-              <div>
-                <span class="fw-bold text-dark small d-block">2. Valet Live Dispatch</span>
-                <small class="text-muted">Assigned immediately with turn-by-turn motorcycle telemetry.</small>
-              </div>
-            </div>
-            <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
-              <div class="fw-3d-milestone-dot bg-success text-white">📍</div>
-              <div>
-                <span class="fw-bold text-dark small d-block">3. Live GPS Arrival at Maruthi Nagar / BLR</span>
-                <small class="text-muted">Watch your delivery partner arrive live on map in 24 mins.</small>
-              </div>
-            </div>
-          </div>
-
-          <div class="d-flex gap-3">
-            <a href="./orders.html" class="btn btn-danger btn-danger-shimmer px-4 py-2.5 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
-              <i class="bi bi-geo-alt-fill"></i> Track Live Orders
-            </a>
-            <a href="./restaurants.html" class="btn btn-outline-danger px-4 py-2.5 rounded-pill fw-bold">
-              Explore Menu
-            </a>
-          </div>
-        </div>
-
-        <div class="col-lg-6">
-          <div class="p-4 bg-white rounded-4 border border-light shadow-lg">
-            <!-- 3D Road Stage -->
-            <div class="fw-3d-road-stage mb-3">
-              <div class="fw-3d-sky-glow"></div>
-              <div class="fw-3d-road-plane">
-                <div class="fw-3d-road-curbs">
-                  <div class="fw-3d-road-curb"></div>
-                  <div class="fw-3d-road-curb"></div>
-                </div>
-                <div class="fw-3d-road-dashes"></div>
-              </div>
-              <div class="fw-3d-scooter-anchor">
-                <div class="fw-3d-scooter-pulse-ring"></div>
-                <div class="fw-3d-scooter-vehicle">
-                  <img src="./images/3d/3d-scooter.svg" alt="3D FoodWala Delivery Scooter" class="fw-3d-scooter-svg-model">
-                </div>
-                <div class="fw-3d-scooter-shadow"></div>
-              </div>
-            </div>
-
-            <!-- Live Telemetry Card -->
-            <div class="bg-light p-3 rounded-3 border d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center gap-3">
-                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
-                  <i class="bi bi-shield-check fs-5"></i>
-                </div>
-                <div>
-                  <span class="fw-bold text-dark d-block small">Valet: Suresh Kumar</span>
-                  <small class="text-success fw-bold"><i class="bi bi-record-circle me-1"></i>En Route: Maruthi Nagar (14 min)</small>
-                </div>
-              </div>
-              <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold">SPEED: 32 km/h</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Featured Bengaluru Restaurants -->
   <section class="py-5 bg-light flex-grow-1">
     <div class="container">
@@ -534,6 +443,98 @@
                   <img src="./images/3d/3d-giftbox.svg" alt="3D Special Offer Gift Box" class="fw-3d-giftbox-model">
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3D LIVE ORDER TRACKING & TURN-BY-TURN DELIVERY SECTION
+       ========================================================================== -->
+  <section class="fw-3d-tracking-section py-5">
+    <div class="container py-3">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill mb-3 fw-bold small d-inline-flex align-items-center gap-2">
+            <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
+            <span>Live GPS Order Tracking Active</span>
+          </div>
+          <h2 class="display-6 fw-extrabold text-dark mb-3">
+            Hyper-Local Speed. <span class="text-danger">Turn-by-Turn Precision.</span>
+          </h2>
+          <p class="text-secondary opacity-90 mb-4">
+            From our kitchen hubs in Maruthi Nagar, Koramangala, and across 14+ Bengaluru hubs straight to your doorstep in an average of 24 minutes.
+          </p>
+
+          <div class="d-flex flex-column gap-2 mb-4">
+            <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
+              <div class="fw-3d-milestone-dot bg-danger text-white">🍳</div>
+              <div>
+                <span class="fw-bold text-dark small d-block">1. Fresh Kitchen Prep</span>
+                <small class="text-muted">Cooked to order with tamper-proof thermal packaging.</small>
+              </div>
+            </div>
+            <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
+              <div class="fw-3d-milestone-dot bg-warning text-dark">🛵</div>
+              <div>
+                <span class="fw-bold text-dark small d-block">2. Valet Live Dispatch</span>
+                <small class="text-muted">Assigned immediately with turn-by-turn motorcycle telemetry.</small>
+              </div>
+            </div>
+            <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
+              <div class="fw-3d-milestone-dot bg-success text-white">📍</div>
+              <div>
+                <span class="fw-bold text-dark small d-block">3. Live GPS Arrival at Maruthi Nagar / BLR</span>
+                <small class="text-muted">Watch your delivery partner arrive live on map in 24 mins.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <a href="./orders.html" class="btn btn-danger btn-danger-shimmer px-4 py-2.5 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
+              <i class="bi bi-geo-alt-fill"></i> Track Live Orders
+            </a>
+            <a href="./restaurants.html" class="btn btn-outline-danger px-4 py-2.5 rounded-pill fw-bold">
+              Explore Menu
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="p-4 bg-white rounded-4 border border-light shadow-lg">
+            <!-- 3D Road Stage -->
+            <div class="fw-3d-road-stage mb-3">
+              <div class="fw-3d-sky-glow"></div>
+              <div class="fw-3d-road-plane">
+                <div class="fw-3d-road-curbs">
+                  <div class="fw-3d-road-curb"></div>
+                  <div class="fw-3d-road-curb"></div>
+                </div>
+                <div class="fw-3d-road-dashes"></div>
+              </div>
+              <div class="fw-3d-scooter-anchor">
+                <div class="fw-3d-scooter-pulse-ring"></div>
+                <div class="fw-3d-scooter-vehicle">
+                  <img src="./images/3d/3d-scooter.svg" alt="3D FoodWala Delivery Scooter" class="fw-3d-scooter-svg-model">
+                </div>
+                <div class="fw-3d-scooter-shadow"></div>
+              </div>
+            </div>
+
+            <!-- Live Telemetry Card -->
+            <div class="bg-light p-3 rounded-3 border d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                  <i class="bi bi-shield-check fs-5"></i>
+                </div>
+                <div>
+                  <span class="fw-bold text-dark d-block small">Valet: Suresh Kumar</span>
+                  <small class="text-success fw-bold"><i class="bi bi-record-circle me-1"></i>En Route: Maruthi Nagar (14 min)</small>
+                </div>
+              </div>
+              <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold">SPEED: 32 km/h</span>
             </div>
           </div>
         </div>
@@ -796,7 +797,7 @@
         });
       }
 
-      // Video Controls (Play/Pause & Mute/Unmute)
+      // Video Autoplay Initialization & Safe Controls
       const foodVideo = document.getElementById('hero-food-video');
       const btnPlay = document.getElementById('btn-hero-video-play');
       const btnMute = document.getElementById('btn-hero-video-mute');
@@ -805,31 +806,50 @@
       const iconMute = document.getElementById('hero-video-mute-icon');
       const textMute = document.getElementById('hero-video-mute-text');
 
-      if (foodVideo && btnPlay) {
-        btnPlay.addEventListener('click', () => {
-          if (foodVideo.paused) {
-            foodVideo.play();
+      if (foodVideo) {
+        foodVideo.muted = true;
+        foodVideo.defaultMuted = true;
+        const playPromise = foodVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
             if (iconPlay) iconPlay.className = 'bi bi-pause-fill';
             if (textPlay) textPlay.textContent = 'Pause';
-          } else {
-            foodVideo.pause();
+          }).catch(() => {
             if (iconPlay) iconPlay.className = 'bi bi-play-fill';
             if (textPlay) textPlay.textContent = 'Play';
-          }
-        });
-      }
+          });
+        }
 
-      if (foodVideo && btnMute) {
-        btnMute.addEventListener('click', () => {
-          foodVideo.muted = !foodVideo.muted;
-          if (foodVideo.muted) {
-            if (iconMute) iconMute.className = 'bi bi-volume-mute-fill';
-            if (textMute) textMute.textContent = 'Muted';
-          } else {
-            if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
-            if (textMute) textMute.textContent = 'Sound On';
-          }
-        });
+        if (btnPlay) {
+          btnPlay.addEventListener('click', () => {
+            if (foodVideo.paused) {
+              const p = foodVideo.play();
+              if (p !== undefined) {
+                p.then(() => {
+                  if (iconPlay) iconPlay.className = 'bi bi-pause-fill';
+                  if (textPlay) textPlay.textContent = 'Pause';
+                }).catch(() => {});
+              }
+            } else {
+              foodVideo.pause();
+              if (iconPlay) iconPlay.className = 'bi bi-play-fill';
+              if (textPlay) textPlay.textContent = 'Play';
+            }
+          });
+        }
+
+        if (btnMute) {
+          btnMute.addEventListener('click', () => {
+            foodVideo.muted = !foodVideo.muted;
+            if (foodVideo.muted) {
+              if (iconMute) iconMute.className = 'bi bi-volume-mute-fill';
+              if (textMute) textMute.textContent = 'Muted';
+            } else {
+              if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
+              if (textMute) textMute.textContent = 'Sound On';
+            }
+          });
+        }
       }
     });
   </script>

@@ -83,11 +83,11 @@
         '        </form>',
         '        <!-- Direct Escalation Links -->',
         '        <div class="d-flex align-items-center justify-content-between pt-2 border-top text-muted" style="font-size: 0.75rem;">',
-        '          <a href="tel:180036639252" class="text-decoration-none text-danger fw-bold d-flex align-items-center gap-1">',
-        '            <i class="bi bi-telephone-fill"></i> 1800-FOOD-WALA (Toll-Free)',
+        '          <a href="tel:+918500457005" class="text-decoration-none text-danger fw-bold d-flex align-items-center gap-1">',
+        '            <i class="bi bi-telephone-fill"></i> +91 85004 57005',
         '          </a>',
-        '          <a href="https://wa.me/919876543210?text=Hi%20FoodWala%20Support,%20I%20need%20help%20with%20my%20order" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fw-bold d-flex align-items-center gap-1">',
-        '            <i class="bi bi-whatsapp"></i> WhatsApp',
+        '          <a href="https://wa.me/918500457005?text=Hi%20FoodWala%20Support,%20I%20need%20help%20with%20my%20order" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fw-bold d-flex align-items-center gap-1">',
+        '            <i class="bi bi-whatsapp"></i> WhatsApp Chat',
         '          </a>',
         '        </div>',
         '      </div>',
@@ -251,13 +251,13 @@
         } else if (text.indexOf('contact') !== -1 || text.indexOf('call') !== -1 || text.indexOf('agent') !== -1 || text.indexOf('human') !== -1 || text.indexOf('phone') !== -1 || text.indexOf('number') !== -1) {
           self.appendAgentMessage([
             '📞 <strong>Direct Human Support:</strong><br>',
-            'Call our 24/7 toll-free helpline: <a href="tel:180036639252" class="fw-bold text-danger">1800-FOOD-WALA</a>, or message our direct WhatsApp desk.<br>',
-            '<a href="https://wa.me/919876543210?text=Hi%20FoodWala%20Support" target="_blank" class="btn btn-success btn-sm rounded-pill mt-2 fw-bold text-white"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp Chat</a>'
+            'Call our 24/7 care hotline: <a href="tel:+918500457005" class="fw-bold text-danger">+91 85004 57005</a>, or message our direct WhatsApp desk.<br>',
+            '<a href="https://wa.me/918500457005?text=Hi%20FoodWala%20Support" target="_blank" class="btn btn-success btn-sm rounded-pill mt-2 fw-bold text-white"><i class="bi bi-whatsapp me-1"></i> Chat on WhatsApp (+91 85004 57005)</a>'
           ].join(''));
         } else {
           self.appendAgentMessage([
             'I understand! Our 24/7 care desk is at your service.<br>',
-            'You can choose from the quick action buttons above or call our helpline directly at <a href="tel:180036639252" class="fw-bold text-danger">1800-FOOD-WALA</a> for instant personal assistance.'
+            'You can choose from the quick action buttons above, message our WhatsApp desk, or call our care hotline directly at <a href="tel:+918500457005" class="fw-bold text-danger">+91 85004 57005</a> for instant personal assistance.'
           ].join(''));
         }
       }, 400);

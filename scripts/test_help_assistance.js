@@ -74,11 +74,22 @@ assert(cssContent.includes('.hero-video-overlay'), 'CSS defines .hero-video-over
 assert(cssContent.includes('.fw-help-floating-btn'), 'CSS defines .fw-help-floating-btn.');
 assert(cssContent.includes('.fw-help-pulse-dot'), 'CSS defines .fw-help-pulse-dot radar animation.');
 
-// Test 5: Verify Smart Query Responses logic
-console.log('\nTest 5: Verifying Smart Query handler response logic...');
+// Test 5: Verify Smart Query Responses logic & Real WhatsApp Number
+console.log('\nTest 5: Verifying Smart Query handler response logic & WhatsApp number...');
 assert(helpJsContent.includes('Suresh Kumar') && helpJsContent.includes('Maruthi Nagar'), 'Order tracking logic references live valet Suresh Kumar and Maruthi Nagar.');
 assert(helpJsContent.includes('FOODWALA50'), 'Coupon logic references FOODWALA50 discount code.');
-assert(helpJsContent.includes('180036639252') || helpJsContent.includes('1800-FOOD-WALA'), 'Escalation logic references toll-free helpline.');
+assert(helpJsContent.includes('8500457005'), 'WhatsApp integration uses user verified number 8500457005.');
+
+// Test 6: Verify Local Video Asset & Section Order
+console.log('\nTest 6: Verifying local video asset & section alignment in index.html...');
+const videoPath = path.join(PROJECT_ROOT, 'videos', 'food-hero.webm');
+assert(fs.existsSync(videoPath), 'videos/food-hero.webm exists locally.');
+assert(fs.statSync(videoPath).size > 1000000, 'videos/food-hero.webm size is valid (>1MB).');
+
+const restIndex = indexHtml.indexOf('Featured Restaurants');
+const trackIndex = indexHtml.indexOf('fw-3d-tracking-section');
+assert(restIndex !== -1 && trackIndex !== -1 && restIndex < trackIndex, 'Featured Restaurants appears BEFORE Live GPS Tracking section in index.html.');
+assert(indexHtml.includes('videos/food-hero.webm'), 'index.html points to local ./videos/food-hero.webm.');
 
 console.log('\n============================================================');
 if (allPassed) {
