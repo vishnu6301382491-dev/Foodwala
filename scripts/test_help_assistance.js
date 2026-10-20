@@ -179,6 +179,28 @@ assert(updatedCssContent.includes('.category-card-3d .cat-real-photo'), 'CSS def
 assert(updatedCssContent.includes('border-radius: 50%'), 'CSS shapes category food photography into circular gourmet dishes.');
 assert(updatedCssContent.includes('[data-bs-theme="dark"] .text-dark') && updatedCssContent.includes('#f8fafc'), 'CSS overrides dark mode .text-dark with luminous #f8fafc.');
 
+// Test 10: Verify Light Mode Vibrant Colors, Distinct Card Boundaries & 3D Animations
+console.log('\nTest 10: Verifying Light Mode Vibrant Colors, Distinct Card Boundaries & 3D Animations...');
+assert(updatedIndexHtml.includes('milestone-prep'), 'index.html applies milestone-prep class.');
+assert(updatedIndexHtml.includes('milestone-dispatch'), 'index.html applies milestone-dispatch class.');
+assert(updatedIndexHtml.includes('milestone-arrival'), 'index.html applies milestone-arrival class.');
+
+assert(updatedHomeHtml.includes('milestone-prep'), 'home.html applies milestone-prep class.');
+assert(updatedHomeHtml.includes('milestone-dispatch'), 'home.html applies milestone-dispatch class.');
+assert(updatedHomeHtml.includes('milestone-arrival'), 'home.html applies milestone-arrival class.');
+
+assert(updatedCssContent.includes('.milestone-prep') && updatedCssContent.includes('#f87171'), 'CSS defines vibrant red border for Kitchen Prep milestone.');
+assert(updatedCssContent.includes('.milestone-dispatch') && updatedCssContent.includes('#fbbf24'), 'CSS defines vibrant amber border for Valet Dispatch milestone.');
+assert(updatedCssContent.includes('.milestone-arrival') && updatedCssContent.includes('#4ade80'), 'CSS defines vibrant emerald border for Live GPS Arrival milestone.');
+
+assert(updatedCssContent.includes('.feature-fast-delivery') && updatedCssContent.includes('#ef4444'), 'CSS defines 2px solid crimson border for Lightning Fast feature.');
+assert(updatedCssContent.includes('.feature-live-tracking') && updatedCssContent.includes('#3b82f6'), 'CSS defines 2px solid royal blue border for Live GPS Tracking feature.');
+assert(updatedCssContent.includes('.feature-best-offers') && updatedCssContent.includes('#f59e0b'), 'CSS defines 2px solid amber border for Unbeatable Offers feature.');
+assert(updatedCssContent.includes('.feature-curated-spots') && updatedCssContent.includes('#22c55e'), 'CSS defines 2px solid emerald border for Curated Spots feature.');
+
+assert(updatedCssContent.includes('[data-bs-theme="dark"] .fw-3d-tracking-section') && updatedCssContent.includes('#0b0f19'), 'CSS defines deep obsidian surface for Dark Mode tracking section.');
+assert(updatedCssContent.includes('[data-bs-theme="dark"] .fw-features-3d-section') && updatedCssContent.includes('#0b0f19'), 'CSS defines deep obsidian surface for Dark Mode features section.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');

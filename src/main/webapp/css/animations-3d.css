@@ -1029,29 +1029,50 @@
 .fw-features-3d-section {
   position: relative;
   padding: 5rem 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #fef2f2 100%);
+  background: radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.08) 0%, transparent 45%),
+              radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.1) 0%, transparent 45%),
+              linear-gradient(180deg, #fffcf8 0%, #fef3c7 40%, #fee2e2 100%);
   overflow: hidden;
+}
+
+.fw-features-3d-section h2 {
+  color: #0f172a !important;
+  font-weight: 900;
+}
+
+.fw-features-3d-section p.text-muted {
+  color: #334155 !important;
+  font-weight: 600;
 }
 
 .fw-feature-3d-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: #ffffff;
   border-radius: 26px;
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(0, 0, 0, 0.08);
   padding: 2.2rem 1.75rem;
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.08), 0 4px 14px -2px rgba(0, 0, 0, 0.04);
   transform-style: preserve-3d;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease, background 0.28s ease;
   will-change: transform;
   height: 100%;
 }
 
+.fw-feature-3d-card h5 {
+  color: #0f172a !important;
+  font-weight: 800;
+  transition: color 0.2s ease;
+}
+
+.fw-feature-3d-card p.text-muted {
+  color: #334155 !important;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
 .fw-feature-3d-card:hover {
-  transform: translateY(-12px) rotateX(4deg) rotateY(-4deg) scale(1.03);
-  box-shadow: 0 25px 50px -10px var(--feat-shadow, rgba(220, 38, 38, 0.25)), 0 0 25px var(--feat-glow, rgba(245, 158, 11, 0.2));
-  border-color: rgba(220, 38, 38, 0.25);
+  transform: translateY(-12px) rotateX(4deg) scale(1.04);
+  box-shadow: 0 25px 50px -10px var(--feat-shadow, rgba(220, 38, 38, 0.35)), 0 0 25px var(--feat-glow, rgba(245, 158, 11, 0.25));
 }
 
 .feature-3d-icon-box {
@@ -1085,24 +1106,47 @@
 }
 
 .feature-fast-delivery {
-  --feat-shadow: rgba(239, 68, 68, 0.28);
-  --feat-glow: rgba(249, 115, 22, 0.22);
-  --feat-icon-shadow: rgba(239, 68, 68, 0.4);
+  background: linear-gradient(150deg, #ffffff 0%, #fee2e2 60%, #fecaca 100%) !important;
+  border: 2px solid #ef4444 !important;
+  --feat-shadow: rgba(239, 68, 68, 0.35);
+  --feat-glow: rgba(249, 115, 22, 0.25);
+  --feat-icon-shadow: rgba(239, 68, 68, 0.45);
 }
+.feature-fast-delivery:hover h5 {
+  color: #dc2626 !important;
+}
+
 .feature-live-tracking {
-  --feat-shadow: rgba(59, 130, 246, 0.28);
-  --feat-glow: rgba(14, 165, 233, 0.22);
-  --feat-icon-shadow: rgba(59, 130, 246, 0.4);
+  background: linear-gradient(150deg, #ffffff 0%, #dbeafe 60%, #bfdbfe 100%) !important;
+  border: 2px solid #3b82f6 !important;
+  --feat-shadow: rgba(59, 130, 246, 0.35);
+  --feat-glow: rgba(14, 165, 233, 0.25);
+  --feat-icon-shadow: rgba(59, 130, 246, 0.45);
 }
+.feature-live-tracking:hover h5 {
+  color: #2563eb !important;
+}
+
 .feature-best-offers {
-  --feat-shadow: rgba(245, 158, 11, 0.28);
-  --feat-glow: rgba(251, 191, 36, 0.22);
-  --feat-icon-shadow: rgba(245, 158, 11, 0.4);
+  background: linear-gradient(150deg, #ffffff 0%, #fef3c7 60%, #fde68a 100%) !important;
+  border: 2px solid #f59e0b !important;
+  --feat-shadow: rgba(245, 158, 11, 0.35);
+  --feat-glow: rgba(251, 191, 36, 0.25);
+  --feat-icon-shadow: rgba(245, 158, 11, 0.45);
 }
+.feature-best-offers:hover h5 {
+  color: #d97706 !important;
+}
+
 .feature-curated-spots {
-  --feat-shadow: rgba(16, 185, 129, 0.28);
-  --feat-glow: rgba(5, 150, 105, 0.22);
-  --feat-icon-shadow: rgba(16, 185, 129, 0.4);
+  background: linear-gradient(150deg, #ffffff 0%, #dcfce7 60%, #bbf7d0 100%) !important;
+  border: 2px solid #22c55e !important;
+  --feat-shadow: rgba(34, 197, 94, 0.35);
+  --feat-glow: rgba(16, 185, 129, 0.25);
+  --feat-icon-shadow: rgba(34, 197, 94, 0.45);
+}
+.feature-curated-spots:hover h5 {
+  color: #16a34a !important;
 }
 
 /* ==========================================================================
@@ -1505,27 +1549,74 @@
    3D LIVE ORDER TRACKING SECTION STYLES (Modern High-Tech Light Theme)
    ========================================================================== */
 .fw-3d-tracking-section {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  background: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 40%),
+              linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.fw-3d-tracking-section h2 {
+  color: #0f172a !important;
+  font-weight: 900;
+}
+
+.fw-3d-tracking-section p.text-secondary {
+  color: #334155 !important;
+  font-weight: 600;
 }
 
 .fw-3d-tracking-milestone {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 2px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
-  padding: 0.9rem 1.15rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-  transition: all 0.25s ease;
+  padding: 0.95rem 1.25rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fw-3d-tracking-milestone span.fw-bold {
+  color: #0f172a !important;
+  font-size: 0.92rem;
+}
+
+.fw-3d-tracking-milestone small.text-muted {
+  color: #475569 !important;
+  font-weight: 500;
 }
 
 .fw-3d-tracking-milestone:hover {
-  background: #ffffff;
-  border-color: rgba(220, 38, 38, 0.35);
-  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.12);
-  transform: translateX(6px);
+  transform: translateX(8px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.milestone-prep {
+  background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%) !important;
+  border: 2px solid #f87171 !important;
+}
+.milestone-prep:hover {
+  border-color: #ef4444 !important;
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.2) !important;
+}
+
+.milestone-dispatch {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%) !important;
+  border: 2px solid #fbbf24 !important;
+}
+.milestone-dispatch:hover {
+  border-color: #f59e0b !important;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.2) !important;
+}
+
+.milestone-arrival {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
+  border: 2px solid #4ade80 !important;
+}
+.milestone-arrival:hover {
+  border-color: #22c55e !important;
+  box-shadow: 0 12px 28px rgba(34, 197, 94, 0.2) !important;
 }
 
 .fw-3d-milestone-dot {
@@ -2054,6 +2145,103 @@
 [data-bs-theme="dark"] footer {
   background: #080c14 !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dark Mode Live Order Tracking Section */
+[data-bs-theme="dark"] .fw-3d-tracking-section {
+  background: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 90% 80%, rgba(239, 68, 68, 0.14) 0%, transparent 45%),
+              linear-gradient(180deg, #0b0f19 0%, #0f172a 50%, #0b0f19 100%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .fw-3d-tracking-section h2 {
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .fw-3d-tracking-section p.text-secondary {
+  color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .fw-3d-tracking-milestone {
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-bs-theme="dark"] .fw-3d-tracking-milestone span.fw-bold {
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .fw-3d-tracking-milestone small.text-muted {
+  color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .milestone-prep {
+  background: linear-gradient(135deg, #1e293b 0%, #3f0a0a 100%) !important;
+  border-color: #ef4444 !important;
+}
+
+[data-bs-theme="dark"] .milestone-dispatch {
+  background: linear-gradient(135deg, #1e293b 0%, #3f1a05 100%) !important;
+  border-color: #f59e0b !important;
+}
+
+[data-bs-theme="dark"] .milestone-arrival {
+  background: linear-gradient(135deg, #1e293b 0%, #052e16 100%) !important;
+  border-color: #22c55e !important;
+}
+
+/* Dark Mode Why Choose FoodWala Features Section */
+[data-bs-theme="dark"] .fw-features-3d-section {
+  background: radial-gradient(circle at 15% 15%, rgba(239, 68, 68, 0.15) 0%, transparent 45%),
+              radial-gradient(circle at 85% 85%, rgba(245, 158, 11, 0.15) 0%, transparent 45%),
+              linear-gradient(180deg, #0b0f19 0%, #111827 50%, #0b0f19 100%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .fw-features-3d-section h2 {
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .fw-features-3d-section p.text-muted {
+  color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .fw-feature-3d-card {
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-bs-theme="dark"] .fw-feature-3d-card h5 {
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .fw-feature-3d-card p.text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .feature-fast-delivery {
+  background: linear-gradient(150deg, #1e293b 0%, #3f0a0a 100%) !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .feature-live-tracking {
+  background: linear-gradient(150deg, #1e293b 0%, #082f49 100%) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .feature-best-offers {
+  background: linear-gradient(150deg, #1e293b 0%, #3f1a05 100%) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .feature-curated-spots {
+  background: linear-gradient(150deg, #1e293b 0%, #052e16 100%) !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.3) !important;
 }
 
 /* Theme Switcher Button Styling */
