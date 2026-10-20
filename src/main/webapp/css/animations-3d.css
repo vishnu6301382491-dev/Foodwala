@@ -305,14 +305,103 @@
 }
 
 /* ==========================================================================
-   4. HOME PAGE HERO 3D ENHANCEMENTS & DEPTH LAYERING
+   4. HOME PAGE HERO 3D ENHANCEMENTS & DEPTH LAYERING (Warm Appetizing Theme)
    ========================================================================== */
 
 .hero-section-3d {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #090d16 0%, #151b28 40%, #5c1111 80%, #991b1b 100%) !important;
+  background: radial-gradient(circle at 85% 20%, rgba(251, 146, 60, 0.28) 0%, transparent 45%),
+              radial-gradient(circle at 10% 80%, rgba(239, 68, 68, 0.18) 0%, transparent 40%),
+              linear-gradient(135deg, #fffbf5 0%, #fff7ed 35%, #fee2e2 75%, #fef2f2 100%) !important;
   perspective: 1200px;
+}
+
+.hero-3d-stage {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 420px;
+  margin: 0 auto;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+.hero-3d-centerpiece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateZ(30px);
+  width: 250px;
+  height: 250px;
+  z-index: 5;
+  filter: drop-shadow(0 25px 35px rgba(220, 38, 38, 0.28));
+  animation: fwCenterpieceFloat 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+@keyframes fwCenterpieceFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateZ(30px) translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateZ(45px) translateY(-14px) rotate(2deg);
+  }
+}
+
+.hero-3d-orbit-dish {
+  position: absolute;
+  filter: drop-shadow(0 18px 25px rgba(0, 0, 0, 0.18));
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.hero-3d-orbit-dish:hover {
+  transform: scale(1.15) translateZ(60px) !important;
+  filter: drop-shadow(0 25px 35px rgba(220, 38, 38, 0.35));
+}
+
+.hero-orbit-burger {
+  top: 10px;
+  left: 10px;
+  width: 125px;
+  height: 125px;
+  z-index: 6;
+  animation: fwOrbitDish1 6.5s ease-in-out infinite;
+}
+
+.hero-orbit-pizza {
+  top: 15px;
+  right: 15px;
+  width: 130px;
+  height: 130px;
+  z-index: 6;
+  animation: fwOrbitDish2 7s ease-in-out infinite;
+}
+
+.hero-orbit-dosa {
+  bottom: 15px;
+  right: 25px;
+  width: 135px;
+  height: 135px;
+  z-index: 6;
+  animation: fwOrbitDish3 6s ease-in-out infinite;
+}
+
+@keyframes fwOrbitDish1 {
+  0%, 100% { transform: translate3d(0, 0, 40px) rotate(-6deg); }
+  50% { transform: translate3d(0, -12px, 60px) rotate(4deg); }
+}
+
+@keyframes fwOrbitDish2 {
+  0%, 100% { transform: translate3d(0, 0, 40px) rotate(6deg); }
+  50% { transform: translate3d(0, -15px, 65px) rotate(-3deg); }
+}
+
+@keyframes fwOrbitDish3 {
+  0%, 100% { transform: translate3d(0, 0, 40px) rotate(-3deg); }
+  50% { transform: translate3d(0, -10px, 55px) rotate(5deg); }
 }
 
 .hero-image-3d-wrapper {
@@ -340,30 +429,30 @@
   border-radius: 20px;
   padding: 10px 18px;
   color: #0f172a;
-  box-shadow: 0 16px 35px -5px rgba(0, 0, 0, 0.35), 0 0 18px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 16px 35px -5px rgba(220, 38, 38, 0.18), 0 4px 15px rgba(0, 0, 0, 0.06);
   z-index: 10;
   animation: fwHeroBadgeBob 5s ease-in-out infinite;
   transform-style: preserve-3d;
   will-change: transform;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
 .hero-badge-1 {
-  top: 8%;
+  top: 5%;
   left: -20px;
   animation-duration: 5.5s;
 }
 
 .hero-badge-2 {
-  bottom: 12%;
-  right: -15px;
+  bottom: 8%;
+  left: -15px;
   animation-duration: 6.2s;
   animation-delay: -2s;
 }
 
 .hero-badge-3 {
-  top: 52%;
-  left: -30px;
+  top: 48%;
+  right: -25px;
   animation-duration: 6.8s;
   animation-delay: -3.5s;
 }
@@ -444,12 +533,12 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
   transform-style: preserve-3d;
   perspective: 900px;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
   will-change: transform;
   text-decoration: none !important;
   color: #1e293b;
   display: block;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .category-card-3d::before {
@@ -457,39 +546,63 @@
   position: absolute;
   inset: 0;
   border-radius: 24px;
-  background: radial-gradient(circle at 50% 20%, var(--cat-accent, rgba(220, 38, 38, 0.12)), transparent 70%);
+  background: radial-gradient(circle at 50% 25%, var(--cat-accent, rgba(220, 38, 38, 0.12)), transparent 70%);
   opacity: 0.55;
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
 .category-card-3d:hover {
-  transform: translateY(-10px) scale(1.05) rotateX(6deg) rotateY(-4deg);
-  box-shadow: 0 22px 40px -8px var(--cat-shadow, rgba(220, 38, 38, 0.25)), 0 0 20px var(--cat-glow, rgba(245, 158, 11, 0.2));
+  transform: translateY(-10px) scale(1.05) rotateX(6deg) rotateY(-3deg);
+  box-shadow: 0 24px 45px -8px var(--cat-shadow, rgba(220, 38, 38, 0.22)), 0 0 20px var(--cat-glow, rgba(245, 158, 11, 0.18));
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
 .category-card-3d .cat-img-wrap {
   position: relative;
-  width: 86px;
-  height: 86px;
+  width: 90px;
+  height: 90px;
   margin: 0 auto 0.85rem auto;
-  border-radius: 50%;
   transform: translateZ(24px);
   transform-style: preserve-3d;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.category-card-3d:hover .cat-img-wrap {
-  transform: translateZ(38px) scale(1.1) rotateZ(-3deg);
+.category-card-3d .cat-pedestal {
+  position: absolute;
+  bottom: 0;
+  width: 72px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, var(--cat-accent, rgba(220, 38, 38, 0.2)) 0%, transparent 75%);
+  filter: blur(2px);
+  transform: translateZ(5px);
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.category-card-3d:hover .cat-pedestal {
+  transform: translateZ(10px) scale(1.2);
+  opacity: 0.85;
 }
 
 .category-card-3d .cat-img-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.2);
-  border: 3px solid #ffffff;
+  width: 86px;
+  height: 86px;
+  object-fit: contain;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.16));
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease;
+}
+
+.category-card-3d:hover .cat-img-wrap img {
+  transform: translateZ(42px) translateY(-8px) scale(1.22);
+  filter: drop-shadow(0 20px 24px rgba(220, 38, 38, 0.32));
 }
 
 .category-card-3d .cat-label {
@@ -502,7 +615,7 @@
 
 .category-card-3d:hover .cat-label {
   color: var(--fw-primary);
-  transform: translateZ(24px);
+  transform: translateZ(26px);
 }
 
 /* Category Accent Variants */
@@ -1073,28 +1186,29 @@
 }
 
 /* ==========================================================================
-   3D LIVE ORDER TRACKING SECTION STYLES
+   3D LIVE ORDER TRACKING SECTION STYLES (Modern High-Tech Light Theme)
    ========================================================================== */
 .fw-3d-tracking-section {
-  background: linear-gradient(135deg, #090d16 0%, #151b28 50%, #1a1528 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .fw-3d-tracking-milestone {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 16px;
   padding: 0.9rem 1.15rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
 }
 
 .fw-3d-tracking-milestone:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: #ffffff;
   border-color: rgba(220, 38, 38, 0.35);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.12);
   transform: translateX(6px);
 }
 
@@ -1109,11 +1223,20 @@
   flex-shrink: 0;
 }
 
+.fw-3d-scooter-svg-model {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.45));
+  animation: fwScooterBounce 1.2s ease-in-out infinite alternate;
+  transform-origin: 50% 90%;
+}
+
 /* ==========================================================================
-   3D HOLOGRAPHIC GOURMET DEALS SECTION STYLES
+   3D GOURMET DEALS SECTION STYLES (Warm Appetizing Theme)
    ========================================================================== */
 .fw-3d-deals-section {
-  background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #451a03 100%);
+  background: linear-gradient(135deg, #fffbf5 0%, #fff7ed 50%, #fef3c7 100%);
   position: relative;
   overflow: hidden;
   border-top: 1px solid rgba(245, 158, 11, 0.15);
@@ -1122,12 +1245,11 @@
 
 .fw-3d-deal-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(220, 38, 38, 0.18) 50%, rgba(139, 92, 246, 0.12) 100%);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, #ffffff 0%, #fffbf5 45%, #fef3c7 100%);
+  border: 2px solid rgba(245, 158, 11, 0.35);
   border-radius: 28px;
   padding: 2.25rem;
-  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 60px -15px rgba(234, 88, 12, 0.18), 0 0 30px rgba(245, 158, 11, 0.12);
   transform-style: preserve-3d;
   perspective: 1000px;
   transition: transform 0.25s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.25s ease;
@@ -1136,7 +1258,21 @@
 
 .fw-3d-deal-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 30px 60px -12px rgba(245, 158, 11, 0.35), 0 0 35px rgba(220, 38, 38, 0.25);
+  box-shadow: 0 32px 70px -12px rgba(245, 158, 11, 0.32), 0 0 35px rgba(220, 38, 38, 0.2);
+}
+
+.fw-3d-giftbox-model {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(234, 88, 12, 0.3));
+  animation: fwGiftBob 4s ease-in-out infinite alternate;
+  transform-style: preserve-3d;
+}
+
+@keyframes fwGiftBob {
+  0% { transform: translateY(0) scale(1) rotate(0deg); }
+  100% { transform: translateY(-12px) scale(1.06) rotate(3deg); }
 }
 
 .fw-3d-holo-shimmer {
@@ -1145,7 +1281,7 @@
   background: linear-gradient(
     45deg,
     transparent 35%,
-    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0.22) 50%,
     transparent 65%
   );
   transform: rotate(25deg);

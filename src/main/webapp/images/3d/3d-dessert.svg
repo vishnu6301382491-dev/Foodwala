@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="cakeShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(15,23,42,0.35)"/>
+      <stop offset="60%" stop-color="rgba(15,23,42,0.12)"/>
+      <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+    </radialGradient>
+    <linearGradient id="plateDessert" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="chocSponge" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#451a03"/>
+      <stop offset="50%" stop-color="#290f02"/>
+      <stop offset="100%" stop-color="#1c0a01"/>
+    </linearGradient>
+    <linearGradient id="chocFudge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#581c87"/>
+      <stop offset="25%" stop-color="#4a044e"/>
+      <stop offset="70%" stop-color="#310c1c"/>
+      <stop offset="100%" stop-color="#1f0712"/>
+    </linearGradient>
+    <linearGradient id="chocGanache" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#701a75"/>
+      <stop offset="30%" stop-color="#4a044e"/>
+      <stop offset="80%" stop-color="#2c0818"/>
+      <stop offset="100%" stop-color="#17030c"/>
+    </linearGradient>
+    <radialGradient id="iceCreamBall" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#fef3c7"/>
+      <stop offset="85%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </radialGradient>
+    <linearGradient id="goldSpoon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="40%" stop-color="#f59e0b"/>
+      <stop offset="80%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <filter id="glossHighlight" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient Shadow -->
+  <ellipse cx="200" cy="340" rx="145" ry="35" fill="url(#cakeShadow)"/>
+
+  <!-- Modern Porcelain Plate -->
+  <ellipse cx="200" cy="290" rx="150" ry="50" fill="url(#plateDessert)"/>
+  <ellipse cx="200" cy="285" rx="138" ry="44" fill="#ffffff"/>
+  <ellipse cx="200" cy="284" rx="115" ry="34" fill="#f1f5f9" opacity="0.6"/>
+
+  <!-- Plate Cocoa Powder Rim Dusting -->
+  <g fill="#78350f" opacity="0.45">
+    <circle cx="85" cy="280" r="1.5"/><circle cx="92" cy="275" r="1.2"/><circle cx="98" cy="286" r="1.8"/>
+    <circle cx="110" cy="295" r="1.4"/><circle cx="295" cy="290" r="1.6"/><circle cx="308" cy="284" r="1.3"/>
+    <circle cx="315" cy="296" r="1.5"/><circle cx="280" cy="305" r="1.2"/>
+  </g>
+
+  <!-- Chocolate Sauce Swirl on Plate Base -->
+  <path d="M 120,295 C 150,315 250,315 280,285 C 290,275 270,265 240,275" stroke="#3b0764" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M 135,285 C 160,300 230,305 260,288" stroke="#701a75" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+  <!-- Chocolate Lava Cake Mound (Sponge Base) -->
+  <path d="M 115,275 C 110,210 135,170 200,170 C 265,170 290,210 285,275 C 260,295 140,295 115,275 Z" fill="url(#chocSponge)"/>
+  
+  <!-- Cake Texture Crumbs -->
+  <ellipse cx="130" cy="265" rx="3.5" ry="2" fill="#78350f"/>
+  <ellipse cx="270" cy="268" rx="4" ry="2.5" fill="#78350f"/>
+  <ellipse cx="140" cy="245" rx="3" ry="2" fill="#581c87"/>
+  <ellipse cx="260" cy="250" rx="3.5" ry="2" fill="#581c87"/>
+
+  <!-- Thick Glossy Chocolate Fudge Ganache Dripping Down -->
+  <path d="M 125,200 C 120,225 130,240 135,265 C 138,272 148,272 150,260 C 154,235 160,245 168,268 C 172,278 182,278 185,262 C 190,240 198,245 204,272 C 208,282 220,282 224,265 C 230,245 238,252 245,268 C 248,274 258,272 260,260 C 268,235 275,220 275,200 C 255,175 145,175 125,200 Z" fill="url(#chocGanache)"/>
+
+  <!-- Ganache High-Gloss Wet Highlights -->
+  <path d="M 145,185 C 175,175 225,175 255,185 C 235,180 165,180 145,185 Z" fill="#f472b6" opacity="0.6" filter="url(#glossHighlight)"/>
+  <path d="M 132,235 Q 134,258 137,262" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+  <path d="M 166,242 Q 169,260 171,265" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+  <path d="M 203,248 Q 206,268 208,270" stroke="#f472b6" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+  <path d="M 242,246 Q 245,262 247,265" stroke="#f472b6" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- 3D Vanilla Ice Cream Scoop on Top -->
+  <ellipse cx="200" cy="165" rx="55" ry="15" fill="rgba(0,0,0,0.3)"/>
+  <circle cx="200" cy="140" r="50" fill="url(#iceCreamBall)"/>
+  <!-- Textured ice cream ruffled base skirt -->
+  <path d="M 148,155 C 155,172 175,168 185,162 C 195,172 215,172 225,162 C 235,170 250,165 252,154 C 260,140 255,130 250,125 C 240,90 160,90 150,125 C 145,135 142,145 148,155 Z" fill="url(#iceCreamBall)"/>
+
+  <!-- Vanilla Bean Specks -->
+  <circle cx="180" cy="120" r="1" fill="#78350f"/><circle cx="195" cy="135" r="1.2" fill="#78350f"/>
+  <circle cx="215" cy="125" r="0.9" fill="#78350f"/><circle cx="170" cy="140" r="1.1" fill="#78350f"/>
+  <circle cx="225" cy="145" r="1" fill="#78350f"/>
+
+  <!-- Hot Chocolate Fudge Drizzle over Vanilla Ice Cream -->
+  <path d="M 175,98 C 172,115 185,125 180,148 C 178,155 186,155 188,145 C 192,125 208,135 210,152" stroke="#4a044e" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <path d="M 175,98 C 172,115 185,125 180,148 C 178,155 186,155 188,145 C 192,125 208,135 210,152" stroke="#f472b6" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+  <!-- Fresh Glossy Ruby Red Raspberry Topper -->
+  <g id="raspberry" transform="translate(190, 80)">
+    <ellipse cx="10" cy="15" rx="14" ry="12" fill="#be123c"/>
+    <!-- Raspberry Drupelets (3D Spheres) -->
+    <circle cx="4" cy="10" r="4.5" fill="#e11d48"/><circle cx="4" cy="9" r="1.5" fill="#ffffff" opacity="0.8"/>
+    <circle cx="12" cy="8" r="4.5" fill="#e11d48"/><circle cx="12" cy="7" r="1.5" fill="#ffffff" opacity="0.8"/>
+    <circle cx="18" cy="11" r="4.2" fill="#be123c"/>
+    <circle cx="3" cy="17" r="4.2" fill="#9f1239"/>
+    <circle cx="10" cy="16" r="4.5" fill="#e11d48"/><circle cx="10" cy="15" r="1.5" fill="#ffffff" opacity="0.8"/>
+    <circle cx="17" cy="17" r="4.2" fill="#9f1239"/>
+    <circle cx="10" cy="22" r="4" fill="#881337"/>
+    <!-- Fresh Mint Leaves on Raspberry -->
+    <path d="M 10,6 C 14,-4 26,-2 25,6 C 20,8 14,8 10,6 Z" fill="#22c55e"/>
+    <path d="M 8,6 C 4,-2 -6,2 -2,8 C 2,9 6,8 8,6 Z" fill="#16a34a"/>
+  </g>
+
+  <!-- Golden Dessert Spoon Resting on Plate -->
+  <g id="goldenSpoon" transform="rotate(-32, 290, 270)">
+    <ellipse cx="290" cy="235" rx="16" ry="24" fill="url(#goldSpoon)"/>
+    <ellipse cx="288" cy="233" rx="12" ry="18" fill="#fde047" opacity="0.8"/>
+    <rect x="286" y="255" width="8" height="90" rx="4" fill="url(#goldSpoon)"/>
+  </g>
+
+  <!-- Golden Sparkles & Floating Cocoa Stars -->
+  <polygon points="90,160 93,168 101,171 93,174 90,182 87,174 79,171 87,168" fill="#f59e0b" opacity="0.9"/>
+  <polygon points="320,150 322,156 328,158 322,160 320,166 318,160 312,158 318,156" fill="#ec4899" opacity="0.85"/>
+  <polygon points="120,105 122,110 127,112 122,114 120,119 118,114 113,112 118,110" fill="#fde047" opacity="0.8"/>
+</svg>

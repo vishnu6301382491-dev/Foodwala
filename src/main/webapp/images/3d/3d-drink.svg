@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="drinkShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(15,23,42,0.3)"/>
+      <stop offset="60%" stop-color="rgba(15,23,42,0.12)"/>
+      <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+    </radialGradient>
+    <linearGradient id="glassBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.7)"/>
+      <stop offset="15%" stop-color="rgba(255,255,255,0.2)"/>
+      <stop offset="80%" stop-color="rgba(255,255,255,0.1)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.5)"/>
+    </linearGradient>
+    <linearGradient id="juiceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="35%" stop-color="#f97316"/>
+      <stop offset="70%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+    <linearGradient id="creamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="strawGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="iceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.85)"/>
+      <stop offset="50%" stop-color="rgba(224,242,254,0.6)"/>
+      <stop offset="100%" stop-color="rgba(186,230,253,0.4)"/>
+    </linearGradient>
+    <filter id="glassReflect" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient Shadow -->
+  <ellipse cx="200" cy="360" rx="95" ry="24" fill="url(#drinkShadow)"/>
+
+  <!-- Straw (Back Segment) -->
+  <g transform="rotate(-18, 200, 160)">
+    <rect x="220" y="30" width="18" height="180" rx="9" fill="url(#strawGrad)"/>
+    <!-- Diagonal Stripes -->
+    <path d="M 220,50 L 238,65 M 220,80 L 238,95 M 220,110 L 238,125 M 220,140 L 238,155" stroke="#be123c" stroke-width="6"/>
+  </g>
+
+  <!-- Glass Tumbler Outline & Base -->
+  <!-- Glass Base Thickness -->
+  <path d="M 140,320 C 140,340 260,340 260,320 L 255,340 C 255,355 145,355 145,340 Z" fill="rgba(226,232,240,0.8)"/>
+  
+  <!-- Smoothie / Juice Body -->
+  <path d="M 125,160 L 140,325 C 140,345 260,345 260,325 L 275,160 C 275,175 125,175 125,160 Z" fill="url(#juiceGrad)"/>
+
+  <!-- Layered Smoothie Swirls / Depth -->
+  <path d="M 130,220 C 170,240 230,205 270,225 L 265,270 C 220,250 170,280 135,260 Z" fill="#fbbf24" opacity="0.35"/>
+  <path d="M 136,275 C 180,295 220,265 264,285 L 258,325 C 220,335 180,335 142,325 Z" fill="#b45309" opacity="0.4"/>
+
+  <!-- 3D Boba Pearls / Jellies Floating Inside -->
+  <g id="bobaPearls">
+    <circle cx="160" cy="305" r="11" fill="#451a03"/>
+    <circle cx="157" cy="302" r="3.5" fill="#fde68a" opacity="0.8"/>
+
+    <circle cx="200" cy="315" r="12" fill="#3b0764"/>
+    <circle cx="197" cy="312" r="4" fill="#e9d5ff" opacity="0.75"/>
+
+    <circle cx="235" cy="300" r="10.5" fill="#451a03"/>
+    <circle cx="232" cy="297" r="3" fill="#fde68a" opacity="0.8"/>
+
+    <circle cx="175" cy="275" r="10" fill="#3b0764"/>
+    <circle cx="172" cy="272" r="3" fill="#f5d0fe" opacity="0.7"/>
+
+    <circle cx="220" cy="265" r="11" fill="#451a03"/>
+    <circle cx="217" cy="262" r="3.5" fill="#fef08a" opacity="0.85"/>
+
+    <circle cx="150" cy="245" r="9" fill="#3b0764"/>
+    <circle cx="148" cy="243" r="2.5" fill="#e9d5ff" opacity="0.7"/>
+  </g>
+
+  <!-- 3D Ice Cubes Floating in Smoothie -->
+  <g id="iceCubes">
+    <!-- Ice Cube 1 -->
+    <polygon points="150,155 175,142 198,154 172,168" fill="url(#iceGrad)"/>
+    <polygon points="150,155 172,168 172,192 150,178" fill="rgba(186,230,253,0.7)"/>
+    <polygon points="172,168 198,154 198,178 172,192" fill="rgba(147,197,253,0.85)"/>
+
+    <!-- Ice Cube 2 -->
+    <polygon points="208,160 230,148 250,158 228,171" fill="url(#iceGrad)"/>
+    <polygon points="208,160 228,171 228,193 208,181" fill="rgba(186,230,253,0.7)"/>
+    <polygon points="228,171 250,158 250,180 228,193" fill="rgba(147,197,253,0.85)"/>
+  </g>
+
+  <!-- Frosted Glass Cylinder Layer -->
+  <path d="M 120,120 L 140,335 C 140,355 260,355 260,335 L 280,120 Z" fill="url(#glassBody)"/>
+  
+  <!-- Glass Rim Top Ellipse -->
+  <ellipse cx="200" cy="120" rx="80" ry="24" fill="none" stroke="#ffffff" stroke-width="4.5"/>
+  <ellipse cx="200" cy="120" rx="77" ry="22" fill="rgba(255,255,255,0.2)"/>
+
+  <!-- Luxurious Whipped Cream Swirl on Top -->
+  <g id="whippedCream" transform="translate(0, -10)">
+    <path d="M 140,125 C 130,95 180,90 190,110 C 205,80 260,85 255,120 C 265,130 250,145 200,140 C 150,145 135,135 140,125 Z" fill="url(#creamGrad)"/>
+    <!-- Top Peak Swirl -->
+    <path d="M 175,100 C 185,60 215,65 210,88 C 225,82 235,95 225,108 Z" fill="#ffffff"/>
+    <path d="M 195,65 Q 200,50 208,55 Q 202,68 195,65 Z" fill="#fffbeb"/>
+    <!-- Drizzle of Caramel / Berry syrup -->
+    <path d="M 160,110 Q 180,130 210,112 Q 235,135 248,118" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <circle cx="204" cy="52" r="8" fill="#e11d48"/>
+    <!-- Glaze highlight on cherry -->
+    <circle cx="202" cy="50" r="2.5" fill="#ffffff"/>
+  </g>
+
+  <!-- Fresh Mint Leaf Perched on Rim -->
+  <g transform="translate(130, 95) rotate(-25)">
+    <path d="M 0,20 C 10,0 35,0 40,20 C 35,40 10,40 0,20 Z" fill="#16a34a"/>
+    <path d="M 0,20 Q 20,20 40,20" stroke="#86efac" stroke-width="2" fill="none"/>
+    <path d="M 15,20 L 25,12 M 25,20 L 32,14 M 15,20 L 25,28" stroke="#15803d" stroke-width="1.2"/>
+  </g>
+
+  <!-- Glass Vertical Specular Reflection -->
+  <path d="M 136,140 L 150,325 L 160,325 L 146,140 Z" fill="#ffffff" opacity="0.45" filter="url(#glassReflect)"/>
+  <path d="M 264,140 L 252,325 L 246,325 L 258,140 Z" fill="#ffffff" opacity="0.3"/>
+
+  <!-- Condensation Droplets -->
+  <g fill="#ffffff" opacity="0.75">
+    <ellipse cx="170" cy="200" rx="3" ry="4.5"/>
+    <ellipse cx="168" cy="240" rx="2.5" ry="4"/>
+    <ellipse cx="230" cy="210" rx="3" ry="5"/>
+    <ellipse cx="235" cy="250" rx="2.5" ry="3.5"/>
+    <ellipse cx="195" cy="260" rx="3.5" ry="5"/>
+    <ellipse cx="215" cy="285" rx="2" ry="3"/>
+    <ellipse cx="155" cy="290" rx="2.5" ry="4"/>
+  </g>
+
+  <!-- Ambient Floating Fresh Bubbles / Refreshment Sparkles -->
+  <circle cx="95" cy="160" r="5" fill="#fde047" opacity="0.7"/>
+  <circle cx="310" cy="180" r="7" fill="#fb923c" opacity="0.6"/>
+  <circle cx="295" cy="120" r="4" fill="#f43f5e" opacity="0.8"/>
+  <polygon points="100,240 104,248 112,252 104,256 100,264 96,256 88,252 96,248" fill="#fbbf24" opacity="0.85"/>
+  <polygon points="305,280 308,286 314,289 308,292 305,298 302,292 296,289 302,286" fill="#f43f5e" opacity="0.85"/>
+</svg>

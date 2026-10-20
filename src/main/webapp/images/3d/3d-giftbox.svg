@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="boxShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(15,23,42,0.35)"/>
+      <stop offset="60%" stop-color="rgba(15,23,42,0.12)"/>
+      <stop offset="100%" stop-color="rgba(15,23,42,0)"/>
+    </radialGradient>
+    <linearGradient id="boxFrontLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#be123c"/>
+    </linearGradient>
+    <linearGradient id="boxFrontRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e11d48"/>
+      <stop offset="100%" stop-color="#881337"/>
+    </linearGradient>
+    <linearGradient id="boxInner" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4c0519"/>
+      <stop offset="100%" stop-color="#881337"/>
+    </linearGradient>
+    <linearGradient id="goldRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="40%" stop-color="#facc15"/>
+      <stop offset="70%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <linearGradient id="goldCoin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="30%" stop-color="#facc15"/>
+      <stop offset="80%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="burstGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient Floor Shadow -->
+  <ellipse cx="200" cy="355" rx="140" ry="32" fill="url(#boxShadow)"/>
+
+  <!-- Golden Light Burst from inside the Box -->
+  <g opacity="0.65" filter="url(#burstGlow)">
+    <polygon points="200,240 120,130 140,110" fill="#fef08a"/>
+    <polygon points="200,240 190,80 220,80" fill="#fde047"/>
+    <polygon points="200,240 270,110 290,130" fill="#fef08a"/>
+    <circle cx="200" cy="220" r="45" fill="#fde047" opacity="0.8"/>
+  </g>
+
+  <!-- Gift Box Base Body (Isometric Cube) -->
+  <!-- Inner Cavity (Open top) -->
+  <polygon points="200,230 115,185 200,150 285,185" fill="url(#boxInner)"/>
+  
+  <!-- Box Left Face -->
+  <polygon points="115,185 200,230 200,335 115,285" fill="url(#boxFrontLeft)"/>
+  <!-- Gold Ribbon on Left Face -->
+  <polygon points="152,205 168,213 168,317 152,307" fill="url(#goldRibbon)"/>
+
+  <!-- Box Right Face -->
+  <polygon points="200,230 285,185 285,285 200,335" fill="url(#boxFrontRight)"/>
+  <!-- Gold Ribbon on Right Face -->
+  <polygon points="232,213 248,205 248,307 232,317" fill="url(#goldRibbon)"/>
+
+  <!-- Box Edges Highlights -->
+  <line x1="200" y1="230" x2="200" y2="335" stroke="#fda4af" stroke-width="2.5" opacity="0.7"/>
+  <line x1="115" y1="185" x2="200" y2="230" stroke="#fda4af" stroke-width="2" opacity="0.6"/>
+  <line x1="200" y1="230" x2="285" y2="185" stroke="#fda4af" stroke-width="2" opacity="0.4"/>
+
+  <!-- Popped-Off Floating 3D Lid (Angled back left) -->
+  <g id="poppedLid" transform="translate(40, -45) rotate(-22, 170, 140)">
+    <!-- Lid Shadow -->
+    <polygon points="140,165 70,130 140,105 210,130" fill="rgba(0,0,0,0.2)"/>
+    <!-- Lid Top Face -->
+    <polygon points="140,145 70,110 140,85 210,110" fill="#fb7185"/>
+    <!-- Lid Left Skirt -->
+    <polygon points="70,110 140,145 140,160 70,125" fill="#e11d48"/>
+    <!-- Lid Right Skirt -->
+    <polygon points="140,145 210,110 210,125 140,160" fill="#be123c"/>
+    <!-- Lid Gold Ribbons -->
+    <polygon points="132,89 148,97 148,155 132,150" fill="url(#goldRibbon)"/>
+    <polygon points="98,124 106,128 174,96 166,92" fill="url(#goldRibbon)"/>
+    
+    <!-- 3D Big Golden Ribbon Bow on Lid -->
+    <!-- Bow Loops -->
+    <path d="M 140,90 C 110,60 100,85 135,92 Z" fill="url(#goldRibbon)"/>
+    <path d="M 140,90 C 170,60 180,85 145,92 Z" fill="url(#goldRibbon)"/>
+    <path d="M 140,90 C 130,55 155,55 142,88 Z" fill="#fef08a"/>
+    <!-- Center knot -->
+    <ellipse cx="140" cy="90" rx="9" ry="7" fill="#ca8a04"/>
+    <ellipse cx="139" cy="89" rx="6" ry="4" fill="#fef08a"/>
+  </g>
+
+  <!-- Bursting Floating Discount Coins (3D Isometric Coins) -->
+  <!-- Coin 1 (Center Top - 50% OFF) -->
+  <g transform="translate(160, 60) rotate(12)">
+    <ellipse cx="40" cy="40" rx="34" ry="22" fill="#ca8a04"/>
+    <ellipse cx="40" cy="36" rx="34" ry="22" fill="url(#goldCoin)"/>
+    <ellipse cx="40" cy="36" rx="27" ry="17" fill="none" stroke="#fef08a" stroke-width="2"/>
+    <text x="40" y="42" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#78350f" text-anchor="middle">50%</text>
+  </g>
+
+  <!-- Coin 2 (Left Floating - ₹100) -->
+  <g transform="translate(60, 110) rotate(-18)">
+    <ellipse cx="30" cy="30" rx="26" ry="17" fill="#ca8a04"/>
+    <ellipse cx="30" cy="27" rx="26" ry="17" fill="url(#goldCoin)"/>
+    <ellipse cx="30" cy="27" rx="20" ry="13" fill="none" stroke="#fef08a" stroke-width="1.8"/>
+    <text x="30" y="32" font-family="Arial, sans-serif" font-weight="900" font-size="12" fill="#78350f" text-anchor="middle">₹100</text>
+  </g>
+
+  <!-- Coin 3 (Right Floating - FREE) -->
+  <g transform="translate(265, 120) rotate(24)">
+    <ellipse cx="28" cy="28" rx="24" ry="16" fill="#ca8a04"/>
+    <ellipse cx="28" cy="25" rx="24" ry="16" fill="url(#goldCoin)"/>
+    <ellipse cx="28" cy="25" rx="18" ry="12" fill="none" stroke="#fef08a" stroke-width="1.6"/>
+    <text x="28" y="29" font-family="Arial, sans-serif" font-weight="900" font-size="10" fill="#78350f" text-anchor="middle">FREE</text>
+  </g>
+
+  <!-- Bursting Colorful 3D Confetti Ribbons & Sparkles -->
+  <polygon points="100,90 112,85 118,97 106,102" fill="#3b82f6" transform="rotate(25, 109, 93)"/>
+  <polygon points="290,95 304,90 310,102 296,107" fill="#10b981" transform="rotate(-35, 300, 98)"/>
+  <polygon points="135,165 145,158 152,168 142,175" fill="#ec4899" transform="rotate(40, 143, 166)"/>
+  <polygon points="260,170 270,165 274,174 264,180" fill="#8b5cf6" transform="rotate(-20, 267, 172)"/>
+  
+  <!-- Confetti Streamers -->
+  <path d="M 110,65 Q 125,40 105,25 Q 90,10 100,0" stroke="#f43f5e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M 285,60 Q 305,35 290,15 Q 275,0 288,-15" stroke="#f59e0b" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Golden 4-point Starbursts -->
+  <polygon points="200,20 204,32 216,36 204,40 200,52 196,40 184,36 196,32" fill="#fde047"/>
+  <polygon points="80,180 82,188 90,191 82,194 80,202 78,194 70,191 78,188" fill="#facc15"/>
+  <polygon points="330,190 332,197 339,199 332,201 330,208 328,201 321,199 328,197" fill="#fde047"/>
+</svg>

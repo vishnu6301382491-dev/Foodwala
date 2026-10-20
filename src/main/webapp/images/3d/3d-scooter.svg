@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <!-- 3D Vehicle Shadows -->
+    <filter id="scooter-shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="16" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.35"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+
+    <!-- Red Sport Bodywork Gradient -->
+    <linearGradient id="scooterRed" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="35%" stop-color="#ef4444"/>
+      <stop offset="75%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+
+    <!-- Metallic Steel / Chrome Gradient -->
+    <linearGradient id="metalChrome" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <!-- Wheel Rim & Tire Gradients -->
+    <radialGradient id="tireGrad" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </radialGradient>
+    <radialGradient id="rimGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </radialGradient>
+
+    <!-- Thermal Delivery Box Gradient -->
+    <linearGradient id="deliveryBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="30%" stop-color="#d97706"/>
+      <stop offset="85%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Speed Motion Trails -->
+  <path d="M 20,225 L 80,225" stroke="#ef4444" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
+  <path d="M 40,245 L 90,245" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 30,265 L 75,265" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Ground Shadows -->
+  <ellipse cx="140" cy="350" rx="42" ry="12" fill="#000000" opacity="0.3" filter="blur(4px)"/>
+  <ellipse cx="280" cy="350" rx="42" ry="12" fill="#000000" opacity="0.3" filter="blur(4px)"/>
+  <ellipse cx="210" cy="355" rx="130" ry="16" fill="#000000" opacity="0.18" filter="blur(6px)"/>
+
+  <g filter="url(#scooter-shadow)">
+
+    <!-- 1. Rear Wheel -->
+    <circle cx="140" cy="310" r="42" fill="url(#tireGrad)"/>
+    <circle cx="140" cy="310" r="26" fill="url(#rimGrad)"/>
+    <circle cx="140" cy="310" r="12" fill="#334155"/>
+    <circle cx="140" cy="310" r="5" fill="#f8fafc"/>
+
+    <!-- 2. Front Wheel -->
+    <circle cx="285" cy="310" r="42" fill="url(#tireGrad)"/>
+    <circle cx="285" cy="310" r="26" fill="url(#rimGrad)"/>
+    <circle cx="285" cy="310" r="12" fill="#334155"/>
+    <circle cx="285" cy="310" r="5" fill="#f8fafc"/>
+
+    <!-- 3. Front Fork & Suspension (Chrome) -->
+    <path d="M 285,310 L 265,190 L 255,192 L 275,312 Z" fill="url(#metalChrome)"/>
+
+    <!-- 4. Thermal Insulated Food Delivery Box (Back Mounted) -->
+    <g id="delivery-bag">
+      <!-- Main Bag Box -->
+      <rect x="85" y="160" width="75" height="75" rx="14" fill="url(#deliveryBoxGrad)"/>
+      <!-- Bag Top Flap -->
+      <path d="M 82,175 C 82,165 163,165 163,175 L 163,185 L 82,185 Z" fill="#fde68a" opacity="0.35"/>
+      <rect x="85" y="160" width="75" height="15" rx="8" fill="#f59e0b"/>
+      
+      <!-- FoodWala Logo Emblem on Bag -->
+      <circle cx="122" cy="202" r="16" fill="#ffffff"/>
+      <path d="M 115,196 L 129,196 L 131,210 L 113,210 Z" fill="#dc2626"/>
+      <path d="M 118,196 C 118,190 126,190 126,196" stroke="#ffffff" stroke-width="2" fill="none"/>
+    </g>
+
+    <!-- 5. Main Aerodynamic Chassis / Bodywork -->
+    <path d="M 125,260 L 160,260 L 205,280 L 245,280 L 275,230 L 255,190 L 205,215 L 155,225 Z" fill="url(#scooterRed)"/>
+
+    <!-- Floorboard -->
+    <path d="M 185,280 L 245,280 L 235,295 L 175,295 Z" fill="#1e293b"/>
+
+    <!-- 6. Comfy Padded Rider Seat -->
+    <path d="M 145,225 C 145,210 215,210 215,225 C 215,235 145,235 145,225 Z" fill="#0f172a"/>
+
+    <!-- 7. Handlebars & Windshield -->
+    <path d="M 255,190 L 250,150 L 265,148 L 270,188 Z" fill="url(#metalChrome)"/>
+    <!-- Grips -->
+    <rect x="238" y="146" width="22" height="7" rx="3.5" fill="#0f172a"/>
+    <!-- Sleek Aero Front Fairing -->
+    <path d="M 260,165 C 275,160 300,180 295,220 L 270,240 Z" fill="url(#scooterRed)"/>
+
+    <!-- 8. Bright LED Headlight & High-Beam Glow -->
+    <ellipse cx="293" cy="200" rx="9" ry="15" fill="#fef08a"/>
+    <ellipse cx="292" cy="200" rx="5" ry="10" fill="#ffffff"/>
+    <!-- Beam Polygon -->
+    <polygon points="298,195 385,150 385,250 298,205" fill="url(#headlightBeam)" opacity="0.38"/>
+
+    <!-- Rider Helmet in 3D (Clean Stylized) -->
+    <g id="rider-helmet">
+      <circle cx="215" cy="140" r="28" fill="url(#scooterRed)"/>
+      <!-- Visor -->
+      <path d="M 225,125 C 242,128 245,148 230,152 Z" fill="#0f172a"/>
+      <!-- Visor Reflection -->
+      <path d="M 227,130 Q 235,134 230,144" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+    </g>
+
+  </g>
+
+  <defs>
+    <linearGradient id="headlightBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fef08a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

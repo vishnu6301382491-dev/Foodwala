@@ -100,27 +100,27 @@
     </div>
   </div>
 
-  <!-- Hero Section with 3D Floating Elements & Dynamic Lighting -->
-  <section class="hero-section hero-section-3d py-5 position-relative text-white" style="background: linear-gradient(135deg, #090d16 0%, #151b28 40%, #5c1111 80%, #991b1b 100%);">
+  <!-- Hero Section with 3D Culinary Showcase & Dynamic Lighting -->
+  <section class="hero-section hero-section-3d py-5 position-relative">
     <!-- Ambient 3D orbs for hero -->
-    <div class="fw-3d-orb fw-3d-orb-1" style="opacity: 0.45; top: -10%; left: -5%;"></div>
-    <div class="fw-3d-orb fw-3d-orb-2" style="opacity: 0.35; bottom: -15%; right: -5%;"></div>
+    <div class="fw-3d-orb fw-3d-orb-1" style="opacity: 0.28; top: -10%; left: -5%;"></div>
+    <div class="fw-3d-orb fw-3d-orb-2" style="opacity: 0.22; bottom: -15%; right: -5%;"></div>
 
     <div class="container py-4 position-relative" style="z-index: 2;">
       <div class="row align-items-center g-4">
         <div class="col-lg-7">
-          <div class="badge bg-danger bg-opacity-75 text-white px-3 py-2 rounded-pill mb-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
-            <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Fast Delivery across 14+ Bengaluru Hubs
+          <div class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 px-3 py-2 rounded-pill mb-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1">
+            <i class="bi bi-lightning-charge-fill text-danger me-1"></i> Fast Delivery across 14+ Bengaluru Hubs
           </div>
-          <h1 class="display-4 fw-extrabold mb-3 lh-sm text-white">
-            Craving something <span class="text-warning text-gradient">extraordinary?</span>
+          <h1 class="display-4 fw-extrabold mb-3 lh-sm text-dark">
+            Craving something <span class="text-danger text-gradient">extraordinary?</span>
           </h1>
-          <p class="lead text-light opacity-75 mb-4">
+          <p class="lead text-secondary opacity-90 mb-4">
             Order from 105+ iconic Bengaluru restaurants — from legendary Donne & Dum Biryanis to authentic Benne Dosa, woodfired pizzas, and gourmet burgers.
           </p>
 
           <!-- Search Box with Glow Shadow -->
-          <div class="bg-white p-2 rounded-4 shadow-lg position-relative text-dark fw-3d-search-box" style="box-shadow: 0 15px 40px -10px rgba(220, 38, 38, 0.3) !important;">
+          <div class="bg-white p-2 rounded-4 shadow-lg position-relative text-dark fw-3d-search-box" style="box-shadow: 0 15px 40px -10px rgba(220, 38, 38, 0.2) !important; border: 1px solid rgba(0,0,0,0.06);">
             <form action="./restaurants.html" method="GET" class="d-flex align-items-center gap-2">
               <i class="bi bi-search text-danger fs-4 ms-3"></i>
               <input type="text" name="q" id="hero-search-input" class="form-control border-0 shadow-none fs-6 py-2" placeholder="Search restaurant, dish (e.g. biriyani, dosa, burger, paneer)..." autocomplete="off">
@@ -133,23 +133,44 @@
           </div>
 
           <!-- Quick Suggestion Tags -->
-          <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-light small">
-            <span class="opacity-75"><i class="bi bi-fire text-warning"></i> Popular:</span>
-            <a href="./restaurants.html?q=biryani" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Biryani</a>
-            <a href="./restaurants.html?q=dosa" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Benne Dosa</a>
-            <a href="./restaurants.html?q=pizza" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Pizza</a>
-            <a href="./restaurants.html?q=burger" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Burgers</a>
-            <a href="./restaurants.html?q=paneer" class="badge bg-white bg-opacity-20 text-white text-decoration-none rounded-pill px-3 py-1 hover-lift">Paneer</a>
+          <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-secondary small">
+            <span class="fw-bold text-dark"><i class="bi bi-fire text-danger"></i> Popular:</span>
+            <a href="./restaurants.html?q=biryani" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Biryani</a>
+            <a href="./restaurants.html?q=dosa" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Benne Dosa</a>
+            <a href="./restaurants.html?q=pizza" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Pizza</a>
+            <a href="./restaurants.html?q=burger" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Burgers</a>
+            <a href="./restaurants.html?q=paneer" class="badge bg-white text-dark border border-secondary border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift">Paneer</a>
           </div>
         </div>
 
-                <div class="col-lg-5 text-center position-relative">
-          <div class="hero-image-3d-wrapper js-3d-tilt" style="transform-style: preserve-3d; perspective: 1200px;">
-            <!-- Glowing Dish Aura -->
-            <div class="position-absolute rounded-circle bg-danger bg-opacity-25" style="width: 320px; height: 320px; filter: blur(55px); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0; pointer-events: none;"></div>
+        <div class="col-lg-5 text-center position-relative">
+          <!-- 3D Interactive Culinary Showcase Stage -->
+          <div class="hero-3d-stage js-3d-tilt">
+            <!-- Glowing Food Aura -->
+            <div class="position-absolute rounded-circle" style="width: 280px; height: 280px; filter: blur(55px); background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, rgba(220, 38, 38, 0.22) 60%, transparent 100%); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; pointer-events: none;"></div>
 
-            <!-- 3D Floating Badges around hero image -->
-            <div class="hero-3d-badge-floating hero-badge-1 d-flex align-items-center gap-2 shadow-lg" style="z-index: 10;">
+            <!-- Orbiting 3D Dish 1: 3D Smash Burger -->
+            <div class="hero-3d-orbit-dish hero-orbit-burger js-3d-tilt" title="3D Gourmet Smash Burger">
+              <img src="./images/3d/3d-burger.svg" alt="3D Burger" width="125" height="125">
+            </div>
+
+            <!-- Orbiting 3D Dish 2: 3D Woodfired Pizza -->
+            <div class="hero-3d-orbit-dish hero-orbit-pizza js-3d-tilt" title="3D Woodfired Pepperoni Pizza">
+              <img src="./images/3d/3d-pizza.svg" alt="3D Pizza" width="130" height="130">
+            </div>
+
+            <!-- Orbiting 3D Dish 3: 3D Crispy Masala Dosa -->
+            <div class="hero-3d-orbit-dish hero-orbit-dosa js-3d-tilt" title="3D Crispy Benne Dosa">
+              <img src="./images/3d/3d-dosa.svg" alt="3D Masala Dosa" width="135" height="135">
+            </div>
+
+            <!-- Centerpiece: 3D Hyderabadi Dum Biryani Handi with Steam -->
+            <div class="hero-3d-centerpiece" title="3D Saffron Dum Biryani Handi">
+              <img src="./images/3d/3d-biryani.svg" alt="3D Biryani Handi" width="250" height="250">
+            </div>
+
+            <!-- 3D Floating Badges around hero stage -->
+            <div class="hero-3d-badge-floating hero-badge-1 d-flex align-items-center gap-2 shadow-lg">
               <span class="fs-4">🔥</span>
               <div class="text-start">
                 <span class="fw-bold d-block text-dark lh-1" style="font-size: 0.85rem;">50% Flat Off</span>
@@ -157,7 +178,7 @@
               </div>
             </div>
 
-            <div class="hero-3d-badge-floating hero-badge-2 d-flex align-items-center gap-2 shadow-lg" style="z-index: 10;">
+            <div class="hero-3d-badge-floating hero-badge-2 d-flex align-items-center gap-2 shadow-lg">
               <span class="fs-4">⚡</span>
               <div class="text-start">
                 <span class="fw-bold d-block text-dark lh-1" style="font-size: 0.85rem;">24 Min Delivery</span>
@@ -165,22 +186,13 @@
               </div>
             </div>
 
-            <div class="hero-3d-badge-floating hero-badge-3 d-flex align-items-center gap-2 shadow-lg" style="z-index: 10;">
+            <div class="hero-3d-badge-floating hero-badge-3 d-flex align-items-center gap-2 shadow-lg">
               <span class="fs-4">⭐</span>
               <div class="text-start">
-                <span class="fw-bold d-block text-dark lh-1" style="font-size: 0.85rem;">4.9 Foodie Rating</span>
+                <span class="fw-bold d-block text-dark lh-1" style="font-size: 0.85rem;">4.9 Rating</span>
                 <small class="text-muted fw-semibold" style="font-size: 0.7rem;">105+ Iconic Spots</small>
               </div>
             </div>
-
-            <!-- 4 Floating 3D Food Chips -->
-            <div class="hero-3d-chip hero-chip-pizza" title="Woodfired Pizza">🍕</div>
-            <div class="hero-3d-chip hero-chip-burger" title="Gourmet Burger">🍔</div>
-            <div class="hero-3d-chip hero-chip-biryani" title="Hyderabadi Biryani">🍚</div>
-            <div class="hero-3d-chip hero-chip-dimsum" title="Fresh Dimsum">🥟</div>
-
-            <!-- Main High-Definition Platter Image -->
-            <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=700&auto=format&fit=crop&q=80" alt="Gourmet Bengaluru Feast" class="img-fluid hero-image-3d shadow-2xl rounded-circle position-relative" width="360" height="360" fetchpriority="high" decoding="async" style="width: 340px; height: 340px; object-fit: cover; border: 6px solid rgba(255, 255, 255, 0.15); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75); z-index: 5;">
           </div>
         </div>
       </div>
@@ -202,7 +214,8 @@
         <div class="col">
           <a href="./restaurants.html?q=pizza" class="category-card-3d cat-pizza js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Pizza">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-pizza.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Pizza">
             </div>
             <span class="cat-label">Pizza</span>
           </a>
@@ -210,7 +223,8 @@
         <div class="col">
           <a href="./restaurants.html?q=burger" class="category-card-3d cat-burger js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Burgers">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-burger.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Burgers">
             </div>
             <span class="cat-label">Burger</span>
           </a>
@@ -218,7 +232,8 @@
         <div class="col">
           <a href="./restaurants.html?q=biryani" class="category-card-3d cat-biryani js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Biryani">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-biryani.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Biryani">
             </div>
             <span class="cat-label">Biryani</span>
           </a>
@@ -226,7 +241,8 @@
         <div class="col">
           <a href="./restaurants.html?cuisine=Chinese" class="category-card-3d cat-chinese js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Chinese">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-biryani.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Asian Wok">
             </div>
             <span class="cat-label">Chinese</span>
           </a>
@@ -234,7 +250,8 @@
         <div class="col">
           <a href="./restaurants.html?cuisine=South+Indian" class="category-card-3d cat-south-indian js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="South Indian">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-dosa.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D South Indian Dosa">
             </div>
             <span class="cat-label">South Indian</span>
           </a>
@@ -242,7 +259,8 @@
         <div class="col">
           <a href="./restaurants.html?cuisine=Beverages" class="category-card-3d cat-beverages js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1544145945-f90425340c7e?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Beverages">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-drink.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Beverages">
             </div>
             <span class="cat-label">Beverages</span>
           </a>
@@ -250,7 +268,8 @@
         <div class="col">
           <a href="./restaurants.html?q=dessert" class="category-card-3d cat-desserts js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Desserts">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-dessert.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Desserts">
             </div>
             <span class="cat-label">Desserts</span>
           </a>
@@ -258,7 +277,8 @@
         <div class="col">
           <a href="./restaurants.html?q=roll" class="category-card-3d cat-rolls js-3d-tilt">
             <div class="cat-img-wrap">
-              <img src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=180&auto=format&fit=crop&q=75" width="86" height="86" loading="lazy" decoding="async" alt="Rolls">
+              <div class="cat-pedestal"></div>
+              <img src="./images/3d/3d-dosa.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Rolls">
             </div>
             <span class="cat-label">Rolls</span>
           </a>
@@ -270,18 +290,18 @@
   <!-- ==========================================================================
        SESSION 3: 3D LIVE ORDER TRACKING & TURN-BY-TURN DELIVERY SECTION
        ========================================================================== -->
-  <section class="fw-3d-tracking-section py-5 text-white">
+  <section class="fw-3d-tracking-section py-5">
     <div class="container py-3">
       <div class="row align-items-center g-5">
         <div class="col-lg-6">
-          <div class="badge bg-emerald-500 bg-opacity-20 text-success border border-success border-opacity-30 px-3 py-1.5 rounded-pill mb-3 fw-bold small d-inline-flex align-items-center gap-2" style="color: #34d399 !important;">
+          <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1.5 rounded-pill mb-3 fw-bold small d-inline-flex align-items-center gap-2">
             <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
             <span>Live GPS Order Tracking Active</span>
           </div>
-          <h2 class="display-6 fw-extrabold text-white mb-3">
-            Hyper-Local Speed. <span class="text-transparent bg-clip-text text-warning" style="background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Turn-by-Turn Precision.</span>
+          <h2 class="display-6 fw-extrabold text-dark mb-3">
+            Hyper-Local Speed. <span class="text-danger">Turn-by-Turn Precision.</span>
           </h2>
-          <p class="text-light text-opacity-75 mb-4">
+          <p class="text-secondary opacity-90 mb-4">
             From our kitchen hubs in Maruthi Nagar, Koramangala, and across 14+ Bengaluru hubs straight to your doorstep in an average of 24 minutes.
           </p>
 
@@ -289,38 +309,38 @@
             <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
               <div class="fw-3d-milestone-dot bg-danger text-white">🍳</div>
               <div>
-                <span class="fw-bold text-white small d-block">1. Fresh Kitchen Prep</span>
-                <small class="text-light text-opacity-50">Cooked to order with tamper-proof thermal packaging.</small>
+                <span class="fw-bold text-dark small d-block">1. Fresh Kitchen Prep</span>
+                <small class="text-muted">Cooked to order with tamper-proof thermal packaging.</small>
               </div>
             </div>
             <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
               <div class="fw-3d-milestone-dot bg-warning text-dark">🛵</div>
               <div>
-                <span class="fw-bold text-white small d-block">2. Valet Live Dispatch</span>
-                <small class="text-light text-opacity-50">Assigned immediately with turn-by-turn motorcycle telemetry.</small>
+                <span class="fw-bold text-dark small d-block">2. Valet Live Dispatch</span>
+                <small class="text-muted">Assigned immediately with turn-by-turn motorcycle telemetry.</small>
               </div>
             </div>
             <div class="fw-3d-tracking-milestone d-flex align-items-center gap-3">
               <div class="fw-3d-milestone-dot bg-success text-white">📍</div>
               <div>
-                <span class="fw-bold text-white small d-block">3. Live GPS Arrival at Maruthi Nagar / BLR</span>
-                <small class="text-light text-opacity-50">Watch your delivery partner arrive live on map in 24 mins.</small>
+                <span class="fw-bold text-dark small d-block">3. Live GPS Arrival at Maruthi Nagar / BLR</span>
+                <small class="text-muted">Watch your delivery partner arrive live on map in 24 mins.</small>
               </div>
             </div>
           </div>
 
           <div class="d-flex gap-3">
-            <a href="./orders.html" class="btn btn-danger btn-danger-shimmer px-4 py-2.5 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow">
+            <a href="./orders.html" class="btn btn-danger btn-danger-shimmer px-4 py-2.5 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
               <i class="bi bi-geo-alt-fill"></i> Track Live Orders
             </a>
-            <a href="./restaurants.html" class="btn btn-outline-light px-4 py-2.5 rounded-pill fw-bold">
+            <a href="./restaurants.html" class="btn btn-outline-danger px-4 py-2.5 rounded-pill fw-bold">
               Explore Menu
             </a>
           </div>
         </div>
 
         <div class="col-lg-6">
-          <div class="p-4 bg-dark bg-opacity-60 rounded-4 border border-secondary border-opacity-25 shadow-2xl">
+          <div class="p-4 bg-white rounded-4 border border-light shadow-lg">
             <!-- 3D Road Stage -->
             <div class="fw-3d-road-stage mb-3">
               <div class="fw-3d-sky-glow"></div>
@@ -334,22 +354,21 @@
               <div class="fw-3d-scooter-anchor">
                 <div class="fw-3d-scooter-pulse-ring"></div>
                 <div class="fw-3d-scooter-vehicle">
-                  <span>🛵</span>
-                  <div class="fw-3d-headlight-beam"></div>
+                  <img src="./images/3d/3d-scooter.svg" alt="3D FoodWala Delivery Scooter" class="fw-3d-scooter-svg-model">
                 </div>
                 <div class="fw-3d-scooter-shadow"></div>
               </div>
             </div>
 
             <!-- Live Telemetry Card -->
-            <div class="bg-dark bg-opacity-90 p-3 rounded-3 border border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+            <div class="bg-light p-3 rounded-3 border d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-3">
-                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
                   <i class="bi bi-shield-check fs-5"></i>
                 </div>
                 <div>
-                  <span class="fw-bold text-white d-block small">Valet: Suresh Kumar</span>
-                  <small class="text-success fw-semibold"><i class="bi bi-record-circle me-1"></i>En Route: Maruthi Nagar (14 min)</small>
+                  <span class="fw-bold text-dark d-block small">Valet: Suresh Kumar</span>
+                  <small class="text-success fw-bold"><i class="bi bi-record-circle me-1"></i>En Route: Maruthi Nagar (14 min)</small>
                 </div>
               </div>
               <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold">SPEED: 32 km/h</span>
@@ -460,7 +479,7 @@
     <!-- ==========================================================================
        SESSION 5: 3D HOLOGRAPHIC GOURMET DEALS & OFFERS BANNER
        ========================================================================== -->
-  <section class="fw-3d-deals-section py-5 text-white">
+  <section class="fw-3d-deals-section py-5">
     <div class="container py-3">
       <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -468,28 +487,28 @@
             <div class="fw-3d-holo-shimmer"></div>
             <div class="row align-items-center g-4 position-relative" style="z-index: 5;">
               <div class="col-md-8">
-                <div class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-40 px-3 py-1.5 rounded-pill mb-2 fw-bold small">
+                <div class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 px-3 py-1.5 rounded-pill mb-2 fw-bold small">
                   ⭐ DAILY CHEF SPECIAL OFFER
                 </div>
-                <h3 class="display-6 fw-black text-white mb-2">
-                  FLAT 50% OFF <span class="text-warning">EVERY ORDER</span>
+                <h3 class="display-6 fw-extrabold text-dark mb-2">
+                  FLAT 50% OFF <span class="text-danger">ON EVERY ORDER</span>
                 </h3>
-                <p class="text-light text-opacity-75 mb-3 small">
+                <p class="text-secondary opacity-90 mb-3 small">
                   Apply coupon code on your favourite Biryani, Woodfired Pizza, Gourmet Burgers, and Desserts across Bengaluru.
                 </p>
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                  <div class="bg-dark bg-opacity-75 px-3 py-2 rounded-3 border border-warning border-opacity-50 text-warning font-monospace fw-bold fs-6 tracking-wide">
+                  <div class="bg-white px-3 py-2 rounded-3 border border-warning border-2 text-danger font-monospace fw-bold fs-6 shadow-sm">
                     FOODWALA50
                   </div>
-                  <button type="button" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow" onclick="navigator.clipboard && navigator.clipboard.writeText('FOODWALA50'); FoodWalaApp && FoodWalaApp.showToast('Coupon code FOODWALA50 copied to clipboard!', 'success');">
+                  <button type="button" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm" onclick="navigator.clipboard && navigator.clipboard.writeText('FOODWALA50'); FoodWalaApp && FoodWalaApp.showToast('Coupon code FOODWALA50 copied to clipboard!', 'success');">
                     <i class="bi bi-copy me-1"></i> Copy Code
                   </button>
-                  <small class="text-light text-opacity-50 ms-2">Valid across all 105+ restaurants</small>
+                  <small class="text-muted ms-2 fw-semibold">Valid across all 105+ restaurants</small>
                 </div>
               </div>
               <div class="col-md-4 text-center">
-                <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-20 rounded-circle p-4 border border-warning border-opacity-30 shadow-2xl" style="width: 140px; height: 140px;">
-                  <span class="display-2">🎁</span>
+                <div class="position-relative d-inline-block">
+                  <img src="./images/3d/3d-giftbox.svg" alt="3D Special Offer Gift Box" class="fw-3d-giftbox-model">
                 </div>
               </div>
             </div>
