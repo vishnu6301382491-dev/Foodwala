@@ -409,6 +409,18 @@
   animation-duration: 6.5s;
   animation-delay: -2.8s;
 }
+.hero-chip-biryani {
+  top: 25%;
+  left: -20px;
+  animation-duration: 5.8s;
+  animation-delay: -1.5s;
+}
+.hero-chip-dimsum {
+  bottom: 25%;
+  right: -20px;
+  animation-duration: 6.2s;
+  animation-delay: -3.2s;
+}
 
 @keyframes fwHeroChipBob {
   0%, 100% {
@@ -523,6 +535,16 @@
   --cat-accent: rgba(139, 92, 246, 0.2);
   --cat-shadow: rgba(139, 92, 246, 0.3);
   --cat-glow: rgba(139, 92, 246, 0.25);
+}
+.cat-desserts {
+  --cat-accent: rgba(236, 72, 153, 0.2);
+  --cat-shadow: rgba(236, 72, 153, 0.3);
+  --cat-glow: rgba(236, 72, 153, 0.25);
+}
+.cat-rolls {
+  --cat-accent: rgba(245, 158, 11, 0.2);
+  --cat-shadow: rgba(245, 158, 11, 0.3);
+  --cat-glow: rgba(245, 158, 11, 0.25);
 }
 
 /* ==========================================================================
@@ -1048,4 +1070,90 @@
     transform: none !important;
     transition: box-shadow 0.2s ease !important;
   }
+}
+
+/* ==========================================================================
+   3D LIVE ORDER TRACKING SECTION STYLES
+   ========================================================================== */
+.fw-3d-tracking-section {
+  background: linear-gradient(135deg, #090d16 0%, #151b28 50%, #1a1528 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fw-3d-tracking-milestone {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 0.9rem 1.15rem;
+  transition: all 0.25s ease;
+}
+
+.fw-3d-tracking-milestone:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(220, 38, 38, 0.35);
+  transform: translateX(6px);
+}
+
+.fw-3d-milestone-dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   3D HOLOGRAPHIC GOURMET DEALS SECTION STYLES
+   ========================================================================== */
+.fw-3d-deals-section {
+  background: linear-gradient(135deg, #1c1917 0%, #292524 50%, #451a03 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(245, 158, 11, 0.15);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.fw-3d-deal-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(220, 38, 38, 0.18) 50%, rgba(139, 92, 246, 0.12) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 28px;
+  padding: 2.25rem;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.fw-3d-deal-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 30px 60px -12px rgba(245, 158, 11, 0.35), 0 0 35px rgba(220, 38, 38, 0.25);
+}
+
+.fw-3d-holo-shimmer {
+  position: absolute;
+  inset: -100%;
+  background: linear-gradient(
+    45deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.16) 50%,
+    transparent 65%
+  );
+  transform: rotate(25deg);
+  animation: fwHoloSweep 6s infinite;
+  pointer-events: none;
+}
+
+@keyframes fwHoloSweep {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  35%, 100% { transform: translateX(100%) rotate(25deg); }
 }

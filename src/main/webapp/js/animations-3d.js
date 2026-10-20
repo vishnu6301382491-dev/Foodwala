@@ -24,6 +24,8 @@
       '.fw-feature-3d-card',
       '.fw-3d-restaurant-card',
       '.fw-3d-menu-card',
+      '.fw-3d-deal-card',
+      '.hero-image-3d-wrapper',
       '.rider-card'
     ].join(', ');
 
