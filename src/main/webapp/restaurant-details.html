@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
   <link rel="stylesheet" href="./css/style.min.css">
   <link rel="stylesheet" href="./css/ui.css">
+  <link rel="stylesheet" href="./css/animations-3d.css">
 </head>
 <body class="bg-light d-flex flex-column min-vh-100 pb-5">
 
@@ -99,27 +100,9 @@
 
   <!-- MAIN CONTAINER -->
   <main class="container my-4 flex-grow-1">
-    
-    <!-- Restaurant Manager Quick Access Banner (Visible only to Restaurant Managers) -->
-    <div id="rest-manager-alert" class="alert alert-warning border-warning shadow-sm rounded-4 mb-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-3" style="display: none;">
-      <div class="d-flex align-items-center gap-3">
-        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center p-2" style="width: 44px; height: 44px;">
-          <i class="bi bi-shop fs-4"></i>
-        </div>
-        <div>
-          <strong class="d-block text-dark">👨‍🍳 You are logged in as Restaurant Manager</strong>
-          <small class="text-muted">You are currently viewing the customer storefront. Go to your partner dashboard to edit prices, dishes, or stock.</small>
-        </div>
-      </div>
-      <div class="d-flex gap-2">
-        <a href="./restaurant-dashboard.html" class="btn btn-warning btn-sm rounded-pill px-3 py-2 fw-bold text-dark shadow-sm">
-          <i class="bi bi-pencil-square me-1"></i> Open Restaurant Dashboard (Edit Menu & Prices) &rarr;
-        </a>
-      </div>
-    </div>
 
     <!-- Restaurant Banner Header -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+    <div class="card border-0 fw-3d-tilt-card js-3d-tilt rounded-4 bg-white p-4 mb-4">
       <div class="row align-items-center g-4">
         <div class="col-md-3 text-center text-md-start">
           <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=500&q=75" id="rest-img" class="rounded-4 shadow-sm w-100" width="300" height="180" fetchpriority="high" decoding="async" style="max-height: 180px; object-fit: cover;" alt="Restaurant">
@@ -265,7 +248,7 @@
   <script src="./js/adapters/liveAdapter.js" defer></script>
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
-  <script src="./js/app.js?v=20261016_06" defer></script>
+  <script src="./js/app.js?v=20261017_02" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -273,16 +256,6 @@
       
       const urlParams = new URLSearchParams(window.location.search);
       const restId = parseInt(urlParams.get('id') || '1');
-
-      // Check if logged-in user is a restaurant manager
-      const currentUser = (window.FoodWalaApp && FoodWalaApp.Auth) ? FoodWalaApp.Auth.getCurrentUser() : null;
-      if (currentUser) {
-        const role = (currentUser.role || '').toLowerCase();
-        if (role === 'restaurant' || role === 'restaurant_admin' || role === 'manager') {
-          const banner = document.getElementById('rest-manager-alert');
-          if (banner) banner.style.display = 'flex';
-        }
-      }
 
       const restaurants = FoodWalaApp.getRestaurants();
       const restaurant = restaurants.find(r => (r.id === restId || r.restaurantId === restId)) || restaurants[0];
@@ -363,7 +336,7 @@
 
           return `
             <div class="col-md-6">
-              <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white d-flex flex-row justify-content-between align-items-center gap-3">
+              <div class="card border-0 fw-3d-menu-card js-3d-tilt p-3 h-100 bg-white d-flex flex-row justify-content-between align-items-center gap-3">
                 <div class="flex-grow-1">
                   <div class="d-flex align-items-center gap-2 mb-1">
                     <span class="badge ${isVeg ? 'bg-success' : 'bg-danger'} rounded-circle p-1" style="width: 10px; height: 10px;"></span>
@@ -371,12 +344,12 @@
                     ${!isAvail ? '<span class="badge bg-danger-subtle text-danger rounded-pill small px-2 py-0 fw-semibold">Unavailable</span>' : ''}
                   </div>
                   <h6 class="fw-bold text-dark mb-1 ${!isAvail ? 'text-muted' : ''}">${item.name || item.itemName || item.item_name}</h6>
-                  <div class="fw-bold text-danger mb-2">₹${price.toFixed(2)}</div>
+                  <div class="menu-price-badge-3d mb-2">₹${price.toFixed(2)}</div>
                   <small class="text-muted d-block line-clamp-2">${item.description || 'Prepared fresh with authentic spices.'}</small>
                 </div>
 
                 <div class="text-center position-relative" style="width: 110px;">
-                  <img src="${itemImg}" class="rounded-3 mb-2 ${!isAvail ? 'opacity-50' : ''}" width="100" height="80" loading="lazy" decoding="async" style="width: 100px; height: 80px; object-fit: cover;" alt="${item.name || item.itemName}">
+                  <img src="${itemImg}" class="menu-img-3d mb-2 ${!isAvail ? 'opacity-50' : ''}" width="100" height="80" loading="lazy" decoding="async" style="width: 100px; height: 80px; object-fit: cover;" alt="${item.name || item.itemName}">
                   
                   <div class="mt-1">
                     ${!isAvail ? `
@@ -400,6 +373,10 @@
             </div>
           `;
         }).join('');
+
+        if (window.init3DCardTilt) {
+          window.init3DCardTilt(grid);
+        }
 
         // Bind Stepper Buttons
         grid.querySelectorAll('.js-add-item-btn').forEach(btn => {
@@ -477,5 +454,6 @@
       updateFloatingCart();
     });
   </script>
+  <script src="./js/animations-3d.js" defer></script>
 </body>
 </html>

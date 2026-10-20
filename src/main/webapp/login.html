@@ -373,21 +373,7 @@
 
               <div class="text-center mb-3">
                 <h5 class="fw-bold text-dark mb-1">Enter OTP</h5>
-                <div id="login-otp-demo-notice" class="alert alert-info py-2 px-3 small rounded-3 mt-2 mb-0 text-start border-0 shadow-sm">
-                  <div class="d-flex align-items-center justify-content-between mb-1">
-                    <div>
-                      <i class="bi bi-shield-check text-primary me-1"></i>
-                      <strong>Verification Code:</strong> 
-                      <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white" id="login-otp-code-badge">123456</span>
-                    </div>
-                    <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="autofill-login-otp-btn">
-                      Auto-Fill
-                    </button>
-                  </div>
-                  <div class="text-muted" style="font-size: 0.77rem;">
-                    <i class="bi bi-info-circle me-1"></i> SMS Gateway Simulation: In testing sandbox, code <strong id="login-otp-code-text">123456</strong> is auto-filled below. You can also enter <strong>123456</strong>.
-                  </div>
-                </div>
+                <p class="text-muted small mt-2 mb-0">Enter the 6-digit verification code sent to your mobile number.</p>
               </div>
 
               <form id="otp-verify-form">
@@ -886,7 +872,7 @@
           stepVerify.style.display = 'block';
           stepRegister.style.display = 'none';
 
-          clearOtpBoxes((res && (res.otp || res.code)) || null);
+          clearOtpBoxes();
           FoodWalaApp.showToast('OTP sent successfully to your mobile number!', 'success');
           otpBoxes[0].focus();
           startResendCountdown(30);
@@ -897,48 +883,10 @@
       });
 
       // 2. 6-Box OTP Input Management (Auto advance, backspace, paste)
-      function clearOtpBoxes(receivedOtp) {
+      function clearOtpBoxes() {
         otpBoxes.forEach(box => box.value = '');
         otpError.style.display = 'none';
-
-        let codeToShow = receivedOtp || '';
-        if (!codeToShow) {
-          try {
-            const activeOtp = JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}');
-            if (activeOtp && activeOtp.code) codeToShow = activeOtp.code;
-          } catch (e) {}
-        }
-        if (!codeToShow) codeToShow = '123456';
-
-        const notice = document.getElementById('login-otp-demo-notice');
-        if (notice) {
-          notice.className = 'alert alert-info py-2 px-3 small text-center mt-2 mb-0 rounded-3 border-0 shadow-sm';
-          notice.innerHTML = `
-            <div class="d-flex align-items-center justify-content-between mb-1">
-              <div>
-                <i class="bi bi-shield-check text-primary me-1"></i>
-                <strong>Verification Code:</strong> 
-                <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white">${codeToShow}</span>
-              </div>
-              <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="autofill-login-otp-btn">
-                Auto-Fill
-              </button>
-            </div>
-            <div class="text-muted" style="font-size: 0.77rem;">
-              <i class="bi bi-info-circle me-1"></i> SMS Gateway is simulated in testing sandbox. Code <strong>${codeToShow}</strong> is auto-filled below. You can also enter <strong>123456</strong>.
-            </div>
-          `;
-          notice.style.display = 'block';
-
-          const btnFill = notice.querySelector('#autofill-login-otp-btn');
-          if (btnFill) {
-            btnFill.addEventListener('click', () => {
-              codeToShow.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
-            });
-          }
-        }
-
-        codeToShow.split('').forEach((d, i) => { if (otpBoxes[i]) otpBoxes[i].value = d; });
+        if (otpBoxes[0]) setTimeout(() => otpBoxes[0].focus(), 100);
       }
 
       otpBoxes.forEach((box, index) => {
@@ -1066,7 +1014,7 @@
         resendOtpBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resend OTP';
 
         if (res.success) {
-          clearOtpBoxes((res && (res.otp || res.code)) || null);
+          clearOtpBoxes();
           otpBoxes[0].focus();
           startResendCountdown(30);
           FoodWalaApp.showToast('New OTP sent successfully!', 'success');
@@ -1109,9 +1057,6 @@
       const forgotGetOtpBtn = document.getElementById('forgot-get-otp-btn');
       const forgotResetBtn = document.getElementById('forgot-reset-btn');
       const forgotBackBtn = document.getElementById('forgot-back-btn');
-      const forgotSandboxNotice = document.getElementById('forgot-otp-sandbox-notice');
-      const forgotSandboxBadge = document.getElementById('forgot-sandbox-otp-badge');
-      const autofillForgotOtpBtn = document.getElementById('autofill-forgot-otp-btn');
       const forgotResendTimerWrap = document.getElementById('forgot-resend-timer-wrap');
       const forgotResendCountdown = document.getElementById('forgot-resend-countdown');
       const forgotResendLink = document.getElementById('forgot-resend-otp-link');
@@ -1205,20 +1150,10 @@
               const safeId = email.replace(/[^\w@.+ -]/g, '');
               forgotStep2Info.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> A 6-digit verification code has been dispatched to <strong>${safeId}</strong>! (Valid for 15 mins).`;
 
-              const otpCode = res.code || res.otp || '123456';
-              if (forgotSandboxBadge) forgotSandboxBadge.textContent = otpCode;
-              if (forgotSandboxNotice) forgotSandboxNotice.style.display = 'block';
-
               const otpInput = document.getElementById('forgot-otp');
               if (otpInput) {
-                otpInput.value = otpCode;
+                otpInput.value = '';
                 setTimeout(() => otpInput.focus(), 200);
-              }
-
-              if (autofillForgotOtpBtn) {
-                autofillForgotOtpBtn.onclick = () => {
-                  if (otpInput) otpInput.value = otpCode;
-                };
               }
 
               startForgotResendTimer(60);
@@ -1262,10 +1197,11 @@
           forgotResendLink.disabled = false;
           forgotResendLink.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Resend OTP';
           if (res && res.success) {
-            const newCode = res.code || res.otp || '123456';
-            if (forgotSandboxBadge) forgotSandboxBadge.textContent = newCode;
             const otpInput = document.getElementById('forgot-otp');
-            if (otpInput) otpInput.value = newCode;
+            if (otpInput) {
+              otpInput.value = '';
+              otpInput.focus();
+            }
             startForgotResendTimer(60);
             FoodWalaApp.showToast('New verification code sent to your email!', 'success');
           }
@@ -1401,23 +1337,6 @@
           <div class="modal-body">
             <div class="alert alert-success py-2 px-3 small rounded-3 mb-2" id="forgot-step2-info">
               <i class="bi bi-check-circle-fill me-1"></i> Verification code dispatched! Please check your email inbox and spam folder.
-            </div>
-
-            <!-- Testing Sandbox Helper Notice -->
-            <div id="forgot-otp-sandbox-notice" class="alert alert-info py-2 px-3 small rounded-3 mb-3 border-0 shadow-sm" style="display: none;">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <div>
-                  <i class="bi bi-shield-check text-primary me-1"></i>
-                  <strong>Verification Code:</strong> 
-                  <span class="badge bg-primary fs-6 px-2 py-1 ms-1 text-white" id="forgot-sandbox-otp-badge">123456</span>
-                </div>
-                <button type="button" class="btn btn-xs btn-outline-primary rounded-pill px-2 py-0 fw-bold" id="autofill-forgot-otp-btn">
-                  Auto-Fill
-                </button>
-              </div>
-              <div class="text-muted" style="font-size: 0.77rem;">
-                <i class="bi bi-info-circle me-1"></i> For testing sandbox convenience, code is shown above. You can also enter <strong>123456</strong>.
-              </div>
             </div>
 
             <div id="forgot-step2-error" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;"></div>

@@ -187,7 +187,7 @@
 }
 
 /* ==========================================================================
-   3. 3D INTERACTIVE TILT CARD (For Auth & Hero Cards)
+   3. 3D INTERACTIVE TILT CARD SYSTEM (For Auth, Hero & Feature Cards)
    ========================================================================== */
 
 .fw-3d-stage {
@@ -195,7 +195,7 @@
   transform-style: preserve-3d;
 }
 
-.fw-3d-card {
+.fw-3d-card, .fw-3d-tilt-card {
   position: relative;
   background: rgba(255, 255, 255, 0.94) !important;
   backdrop-filter: blur(20px);
@@ -256,8 +256,56 @@
   left: 140%;
 }
 
+/* Dynamic Interactive Glare that follows cursor */
+.fw-card-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 6;
+  mix-blend-mode: overlay;
+}
+
+.fw-3d-card:hover .fw-card-glare,
+.fw-3d-tilt-card:hover .fw-card-glare,
+.fw-3d-restaurant-card:hover .fw-card-glare,
+.category-card-3d:hover .fw-card-glare,
+.fw-feature-3d-card:hover .fw-card-glare,
+.fw-3d-menu-card:hover .fw-card-glare {
+  opacity: 1;
+}
+
+/* Z-Depth Layering Utility Classes */
+.fw-3d-layer-base {
+  transform: translateZ(0);
+}
+.fw-3d-layer-float {
+  transform: translateZ(20px);
+  transform-style: preserve-3d;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.fw-3d-layer-pop {
+  transform: translateZ(35px);
+  transform-style: preserve-3d;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+*:hover > .fw-3d-layer-float {
+  transform: translateZ(28px);
+}
+*:hover > .fw-3d-layer-pop {
+  transform: translateZ(48px);
+}
+
 /* ==========================================================================
-   4. HOME PAGE HERO 3D ENHANCEMENTS
+   4. HOME PAGE HERO 3D ENHANCEMENTS & DEPTH LAYERING
    ========================================================================== */
 
 .hero-section-3d {
@@ -267,21 +315,41 @@
   perspective: 1200px;
 }
 
-.hero-3d-badge-floating {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border-radius: 20px;
-  padding: 10px 16px;
-  color: #0f172a;
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(245, 158, 11, 0.25);
-  z-index: 10;
-  animation: fwHeroBadgeBob 5s ease-in-out infinite;
+.hero-image-3d-wrapper {
+  position: relative;
+  display: inline-block;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+  transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  will-change: transform;
+}
+
+.hero-image-3d {
+  border-radius: 28px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 45px rgba(220, 38, 38, 0.35) !important;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  transform: translateZ(10px);
   transform-style: preserve-3d;
 }
 
+.hero-3d-badge-floating {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 10px 18px;
+  color: #0f172a;
+  box-shadow: 0 16px 35px -5px rgba(0, 0, 0, 0.35), 0 0 18px rgba(245, 158, 11, 0.25);
+  z-index: 10;
+  animation: fwHeroBadgeBob 5s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
 .hero-badge-1 {
-  top: 10%;
+  top: 8%;
   left: -20px;
   animation-duration: 5.5s;
 }
@@ -293,35 +361,533 @@
   animation-delay: -2s;
 }
 
+.hero-badge-3 {
+  top: 52%;
+  left: -30px;
+  animation-duration: 6.8s;
+  animation-delay: -3.5s;
+}
+
 @keyframes fwHeroBadgeBob {
   0%, 100% {
-    transform: translate3d(0, 0, 40px) rotateX(3deg) rotateY(-5deg);
+    transform: translate3d(0, 0, 45px) rotateX(3deg) rotateY(-5deg);
   }
   50% {
-    transform: translate3d(0, -14px, 70px) rotateX(-3deg) rotateY(5deg);
+    transform: translate3d(0, -14px, 75px) rotateX(-3deg) rotateY(5deg);
   }
 }
 
-.hero-image-3d-wrapper {
-  position: relative;
-  display: inline-block;
+/* Floating 3D food chips around Hero */
+.hero-3d-chip {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.3), 0 0 15px rgba(249, 115, 22, 0.25);
+  font-size: 1.6rem;
+  z-index: 9;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  animation: fwHeroChipBob 6s ease-in-out infinite;
   transform-style: preserve-3d;
-  perspective: 1000px;
-  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  will-change: transform;
 }
 
-.hero-image-3d-wrapper:hover {
-  transform: rotateY(-6deg) rotateX(4deg) scale(1.02);
+.hero-chip-pizza {
+  top: -12px;
+  right: 18%;
+  animation-duration: 5.2s;
 }
 
-.hero-image-3d {
-  border-radius: 28px !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(220, 38, 38, 0.3) !important;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+.hero-chip-burger {
+  bottom: -15px;
+  left: 22%;
+  animation-duration: 6.5s;
+  animation-delay: -2.8s;
+}
+
+@keyframes fwHeroChipBob {
+  0%, 100% {
+    transform: translate3d(0, 0, 50px) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -16px, 75px) rotate(16deg);
+  }
 }
 
 /* ==========================================================================
-   5. VIBRANT BUTTONS & MICRO-ANIMATIONS
+   5. 3D CATEGORY BADGES (Pizza, Burger, Biryani, Chinese, South Indian, Beverages)
+   ========================================================================== */
+
+.category-card-3d {
+  position: relative;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 1.35rem 0.85rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+  transform-style: preserve-3d;
+  perspective: 900px;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+  will-change: transform;
+  text-decoration: none !important;
+  color: #1e293b;
+  display: block;
+  overflow: hidden;
+}
+
+.category-card-3d::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 20%, var(--cat-accent, rgba(220, 38, 38, 0.12)), transparent 70%);
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.category-card-3d:hover {
+  transform: translateY(-10px) scale(1.05) rotateX(6deg) rotateY(-4deg);
+  box-shadow: 0 22px 40px -8px var(--cat-shadow, rgba(220, 38, 38, 0.25)), 0 0 20px var(--cat-glow, rgba(245, 158, 11, 0.2));
+}
+
+.category-card-3d .cat-img-wrap {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  margin: 0 auto 0.85rem auto;
+  border-radius: 50%;
+  transform: translateZ(24px);
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.category-card-3d:hover .cat-img-wrap {
+  transform: translateZ(38px) scale(1.1) rotateZ(-3deg);
+}
+
+.category-card-3d .cat-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.2);
+  border: 3px solid #ffffff;
+}
+
+.category-card-3d .cat-label {
+  font-weight: 800;
+  font-size: 0.92rem;
+  transform: translateZ(16px);
+  display: block;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.category-card-3d:hover .cat-label {
+  color: var(--fw-primary);
+  transform: translateZ(24px);
+}
+
+/* Category Accent Variants */
+.cat-biryani {
+  --cat-accent: rgba(245, 158, 11, 0.2);
+  --cat-shadow: rgba(245, 158, 11, 0.3);
+  --cat-glow: rgba(245, 158, 11, 0.25);
+}
+.cat-pizza {
+  --cat-accent: rgba(220, 38, 38, 0.2);
+  --cat-shadow: rgba(220, 38, 38, 0.3);
+  --cat-glow: rgba(249, 115, 22, 0.25);
+}
+.cat-burger {
+  --cat-accent: rgba(249, 115, 22, 0.2);
+  --cat-shadow: rgba(249, 115, 22, 0.3);
+  --cat-glow: rgba(245, 158, 11, 0.25);
+}
+.cat-chinese {
+  --cat-accent: rgba(239, 68, 68, 0.2);
+  --cat-shadow: rgba(239, 68, 68, 0.3);
+  --cat-glow: rgba(220, 38, 38, 0.25);
+}
+.cat-south-indian {
+  --cat-accent: rgba(16, 185, 129, 0.2);
+  --cat-shadow: rgba(16, 185, 129, 0.3);
+  --cat-glow: rgba(16, 185, 129, 0.25);
+}
+.cat-beverages {
+  --cat-accent: rgba(139, 92, 246, 0.2);
+  --cat-shadow: rgba(139, 92, 246, 0.3);
+  --cat-glow: rgba(139, 92, 246, 0.25);
+}
+
+/* ==========================================================================
+   6. 3D RESTAURANT & FOOD DISH CARDS (Dynamic Glare & 3D Pop)
+   ========================================================================== */
+
+.fw-3d-restaurant-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+  transform-style: preserve-3d;
+  transition: transform 0.24s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.24s ease;
+  will-change: transform;
+  overflow: hidden;
+}
+
+.fw-3d-restaurant-card:hover {
+  transform: translateY(-8px) scale(1.025);
+  box-shadow: 0 24px 50px -10px rgba(220, 38, 38, 0.22), 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.fw-3d-restaurant-card .card-img-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px 22px 0 0;
+  transform-style: preserve-3d;
+}
+
+.fw-3d-restaurant-card .card-img-wrapper img {
+  transition: transform 0.4s ease;
+}
+
+.fw-3d-restaurant-card:hover .card-img-wrapper img {
+  transform: scale(1.06);
+}
+
+.fw-3d-restaurant-card .card-badge-3d {
+  transform: translateZ(28px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s ease;
+}
+
+.fw-3d-restaurant-card:hover .card-badge-3d {
+  transform: translateZ(40px) scale(1.05);
+}
+
+/* ==========================================================================
+   7. 3D "WHY CHOOSE FOODWALA" / FEATURES SECTION
+   ========================================================================== */
+
+.fw-features-3d-section {
+  position: relative;
+  padding: 5rem 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #fef2f2 100%);
+  overflow: hidden;
+}
+
+.fw-feature-3d-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  padding: 2.2rem 1.75rem;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  transform-style: preserve-3d;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  will-change: transform;
+  height: 100%;
+}
+
+.fw-feature-3d-card:hover {
+  transform: translateY(-12px) rotateX(4deg) rotateY(-4deg) scale(1.03);
+  box-shadow: 0 25px 50px -10px var(--feat-shadow, rgba(220, 38, 38, 0.25)), 0 0 25px var(--feat-glow, rgba(245, 158, 11, 0.2));
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.feature-3d-icon-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+  transform: translateZ(26px) rotateX(12deg) rotateY(-12deg);
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 14px 28px -6px var(--feat-icon-shadow, rgba(220, 38, 38, 0.35)),
+              inset 0 2px 3px rgba(255, 255, 255, 0.7);
+  animation: fwFeatureBob 5s ease-in-out infinite;
+}
+
+.fw-feature-3d-card:hover .feature-3d-icon-box {
+  transform: translateZ(45px) rotateX(0deg) rotateY(0deg) scale(1.15);
+}
+
+@keyframes fwFeatureBob {
+  0%, 100% {
+    transform: translateZ(26px) rotateX(12deg) rotateY(-12deg) translateY(0);
+  }
+  50% {
+    transform: translateZ(36px) rotateX(6deg) rotateY(6deg) translateY(-8px);
+  }
+}
+
+.feature-fast-delivery {
+  --feat-shadow: rgba(239, 68, 68, 0.28);
+  --feat-glow: rgba(249, 115, 22, 0.22);
+  --feat-icon-shadow: rgba(239, 68, 68, 0.4);
+}
+.feature-live-tracking {
+  --feat-shadow: rgba(59, 130, 246, 0.28);
+  --feat-glow: rgba(14, 165, 233, 0.22);
+  --feat-icon-shadow: rgba(59, 130, 246, 0.4);
+}
+.feature-best-offers {
+  --feat-shadow: rgba(245, 158, 11, 0.28);
+  --feat-glow: rgba(251, 191, 36, 0.22);
+  --feat-icon-shadow: rgba(245, 158, 11, 0.4);
+}
+.feature-curated-spots {
+  --feat-shadow: rgba(16, 185, 129, 0.28);
+  --feat-glow: rgba(5, 150, 105, 0.22);
+  --feat-icon-shadow: rgba(16, 185, 129, 0.4);
+}
+
+/* ==========================================================================
+   8. 3D MENU ITEM CARDS (restaurant-details.html & menu.html)
+   ========================================================================== */
+
+.fw-3d-menu-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.05);
+  transform-style: preserve-3d;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.25s ease;
+  will-change: transform;
+  overflow: hidden;
+}
+
+.fw-3d-menu-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 18px 36px -8px rgba(220, 38, 38, 0.18), 0 6px 14px -3px rgba(0, 0, 0, 0.06);
+}
+
+.fw-3d-menu-card .menu-price-badge-3d {
+  display: inline-block;
+  transform: translateZ(20px);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #0f172a;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.fw-3d-menu-card:hover .menu-price-badge-3d {
+  transform: translateZ(32px) scale(1.08);
+  color: var(--fw-primary);
+}
+
+.fw-3d-menu-card .menu-img-3d {
+  transform: translateZ(14px);
+  border-radius: 14px;
+  box-shadow: 0 6px 16px -3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.25s ease;
+}
+
+.fw-3d-menu-card:hover .menu-img-3d {
+  transform: translateZ(26px) scale(1.04);
+}
+
+/* ==========================================================================
+   9. 3D DELIVERY SCOOTER & PERSPECTIVE ROAD EFFECT (Order Tracking & Cart)
+   ========================================================================== */
+
+.fw-3d-road-stage {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #090d16 0%, #171d2b 100%);
+  perspective: 750px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px -8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  margin-bottom: 1.5rem;
+}
+
+.fw-3d-sky-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(220, 38, 38, 0.4) 0%, rgba(249, 115, 22, 0.2) 50%, transparent 80%);
+  pointer-events: none;
+}
+
+.fw-3d-road-plane {
+  position: absolute;
+  bottom: -40px;
+  left: -20%;
+  width: 140%;
+  height: 170px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  transform: rotateX(58deg);
+  transform-origin: 50% 100%;
+  border-top: 3px solid #334155;
+  box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.85);
+}
+
+.fw-3d-road-dashes {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 6px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(
+    180deg,
+    #f59e0b 0px,
+    #f59e0b 24px,
+    transparent 24px,
+    transparent 48px
+  );
+  animation: fwRoadDashesMove 0.8s linear infinite;
+}
+
+@keyframes fwRoadDashesMove {
+  0% { background-position-y: 0px; }
+  100% { background-position-y: 48px; }
+}
+
+.fw-3d-road-curbs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fw-3d-road-curb {
+  width: 12px;
+  height: 100%;
+  background: repeating-linear-gradient(
+    180deg,
+    #ef4444 0px,
+    #ef4444 20px,
+    #ffffff 20px,
+    #ffffff 40px
+  );
+  animation: fwRoadDashesMove 0.8s linear infinite;
+}
+
+/* Scooter & Valet Model in 3D */
+.fw-3d-scooter-anchor {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.fw-3d-scooter-pulse-ring {
+  position: absolute;
+  bottom: -4px;
+  width: 84px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #ef4444;
+  opacity: 0.85;
+  animation: fwRadarPulse 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.fw-3d-scooter-shadow {
+  width: 74px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.68);
+  filter: blur(4px);
+  animation: fwShadowPulse 1.2s ease-in-out infinite alternate;
+}
+
+.fw-3d-scooter-vehicle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.4rem;
+  line-height: 1;
+  animation: fwScooterBounce 1.2s ease-in-out infinite alternate;
+  transform-origin: 50% 90%;
+  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.65));
+}
+
+.fw-3d-headlight-beam {
+  position: absolute;
+  top: 18px;
+  right: -58px;
+  width: 80px;
+  height: 36px;
+  background: linear-gradient(90deg, rgba(254, 240, 138, 0.75) 0%, transparent 100%);
+  clip-path: polygon(0 40%, 100% 0, 100% 100%, 0 60%);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+@keyframes fwScooterBounce {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1.5deg); }
+  100% { transform: translateY(-2px) rotate(-1deg); }
+}
+
+@keyframes fwShadowPulse {
+  0% { transform: scale(1); opacity: 0.75; }
+  100% { transform: scale(0.85); opacity: 0.45; }
+}
+
+@keyframes fwRadarPulse {
+  0% { transform: scale(0.6); opacity: 0.95; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+
+/* ==========================================================================
+   10. 3D CONFETTI CELEBRATION SYSTEM
+   ========================================================================== */
+
+.fw-3d-confetti-stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99999;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.fw-3d-confetti-piece {
+  position: absolute;
+  width: 12px;
+  height: 16px;
+  opacity: 0.95;
+  will-change: transform, opacity;
+  animation: fwConfetti3DFall linear forwards;
+}
+
+@keyframes fwConfetti3DFall {
+  0% {
+    transform: translate3d(var(--x-start), -50px, var(--z-depth)) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--x-end), 105vh, var(--z-depth)) rotateX(var(--rot-x)) rotateY(var(--rot-y)) rotateZ(var(--rot-z));
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   11. VIBRANT BUTTONS & MICRO-ANIMATIONS
    ========================================================================== */
 
 /* Shimmer pulse on primary buttons */
@@ -421,7 +987,10 @@
   box-shadow: 0 18px 35px -8px rgba(220, 38, 38, 0.22), 0 0 15px rgba(245, 158, 11, 0.15) !important;
 }
 
-/* Responsive adjustment for small screens */
+/* ==========================================================================
+   12. RESPONSIVENESS & ACCESSIBILITY (prefers-reduced-motion)
+   ========================================================================== */
+
 @media (max-width: 768px) {
   .fw-3d-floating-food {
     display: none !important;
@@ -429,5 +998,54 @@
   .fw-3d-orb {
     filter: blur(40px);
     opacity: 0.5;
+  }
+  .hero-3d-badge-floating {
+    padding: 6px 12px;
+  }
+  .hero-badge-1 {
+    left: 0;
+    top: 5%;
+  }
+  .hero-badge-2 {
+    right: 0;
+    bottom: 5%;
+  }
+  .hero-badge-3 {
+    display: none;
+  }
+  .hero-3d-chip {
+    display: none;
+  }
+  .category-card-3d:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+  .fw-feature-3d-card:hover {
+    transform: translateY(-6px) scale(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fw-3d-ambient-mesh,
+  .fw-3d-orb,
+  .fw-3d-floating-food,
+  .hero-3d-badge-floating,
+  .hero-3d-chip,
+  .feature-3d-icon-box,
+  .fw-3d-road-dashes,
+  .fw-3d-road-curb,
+  .fw-3d-scooter-vehicle,
+  .fw-3d-scooter-shadow,
+  .fw-3d-scooter-pulse-ring,
+  .fw-3d-confetti-piece {
+    animation: none !important;
+  }
+  .category-card-3d,
+  .fw-3d-restaurant-card,
+  .fw-feature-3d-card,
+  .fw-3d-menu-card,
+  .fw-3d-card,
+  .hero-image-3d-wrapper {
+    transform: none !important;
+    transition: box-shadow 0.2s ease !important;
   }
 }
