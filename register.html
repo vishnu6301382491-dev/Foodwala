@@ -570,7 +570,7 @@
             role: (regRoleInput && regRoleInput.value) ? regRoleInput.value : 'customer'
           };
 
-          showRegOtpModal(normalizedPhone);
+          showRegOtpModal(normalizedPhone, otpRes.code || otpRes.otp);
         } catch (err) {
           regSubmitBtn.disabled = false;
           regSubmitBtn.innerHTML = 'Create Account';
@@ -587,13 +587,72 @@
       const regOtpError = document.getElementById('reg-otp-error-msg');
       const regVerifyBtn = document.getElementById('reg-verify-otp-btn');
 
-      function showRegOtpModal(phoneNum) {
+      const regResendTimerWrap = document.getElementById('reg-resend-timer-wrap');
+      const regResendCountdown = document.getElementById('reg-resend-countdown');
+      const regResendOtpBtn = document.getElementById('reg-resend-otp-btn');
+      let regResendTimer = null;
+
+      function startRegResendTimer(seconds = 30) {
+        if (regResendTimer) clearInterval(regResendTimer);
+        let rem = seconds;
+        if (regResendTimerWrap) regResendTimerWrap.style.display = 'block';
+        if (regResendOtpBtn) regResendOtpBtn.style.display = 'none';
+        if (regResendCountdown) regResendCountdown.textContent = rem;
+
+        regResendTimer = setInterval(() => {
+          rem -= 1;
+          if (regResendCountdown) regResendCountdown.textContent = rem;
+          if (rem <= 0) {
+            clearInterval(regResendTimer);
+            if (regResendTimerWrap) regResendTimerWrap.style.display = 'none';
+            if (regResendOtpBtn) regResendOtpBtn.style.display = 'inline-block';
+          }
+        }, 1000);
+      }
+
+      function showRegOtpModal(phoneNum, otpCode) {
         if (regOtpPhoneDisplay) regOtpPhoneDisplay.textContent = '+91 ' + phoneNum;
         if (regOtpError) regOtpError.style.display = 'none';
         regOtpBoxes.forEach(b => b.value = '');
 
+        const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
+        const codeToDisplay = otpCode || activeOtpObj.code || '123456';
+        const regBadge = document.getElementById('reg-sandbox-otp-badge');
+        const regNotice = document.getElementById('reg-otp-sandbox-notice');
+        if (regBadge) regBadge.textContent = codeToDisplay;
+        if (regNotice) regNotice.style.display = 'block';
+
+        startRegResendTimer(30);
+
         if (regOtpModal) regOtpModal.show();
         if (regOtpBoxes[0]) setTimeout(() => regOtpBoxes[0].focus(), 300);
+      }
+
+      if (regResendOtpBtn) {
+        regResendOtpBtn.addEventListener('click', async () => {
+          if (!pendingRegistrationData || !pendingRegistrationData.phone) return;
+          regResendOtpBtn.disabled = true;
+          regResendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Resending...';
+          const res = await FoodWalaApp.Auth.sendOtp(pendingRegistrationData.phone);
+          regResendOtpBtn.disabled = false;
+          regResendOtpBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resend OTP';
+
+          if (res && res.success) {
+            regOtpBoxes.forEach(b => b.value = '');
+            if (regOtpBoxes[0]) regOtpBoxes[0].focus();
+            const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
+            const activeCode = res.code || (res.otp ? String(res.otp) : null) || activeOtpObj.code || '123456';
+            const regBadge = document.getElementById('reg-sandbox-otp-badge');
+            if (regBadge) regBadge.textContent = activeCode;
+            startRegResendTimer(30);
+            FoodWalaApp.showToast('New verification OTP sent to your phone!', 'success');
+          } else {
+            if (regOtpError) {
+              regOtpError.textContent = (res && res.message) || 'Unable to resend OTP. Please try again.';
+              regOtpError.style.display = 'block';
+            }
+          }
+        });
       }
 
       regOtpBoxes.forEach((box, index) => {
@@ -1113,6 +1172,15 @@
             <span>Verify & Create Account</span>
             <i class="bi bi-arrow-right"></i>
           </button>
+          <div class="text-center small mt-3">
+            <span class="text-muted">Didn't receive OTP?</span>
+            <div id="reg-resend-timer-wrap" class="mt-1">
+              <span class="text-muted">Resend in <strong id="reg-resend-countdown" class="text-danger">30</strong>s</span>
+            </div>
+            <button type="button" id="reg-resend-otp-btn" class="btn btn-link text-danger fw-bold p-0 text-decoration-none mt-1" style="display: none;">
+              <i class="bi bi-arrow-repeat me-1"></i> Resend OTP
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -342,7 +342,7 @@
 
               <div class="text-center mb-3">
                 <h5 class="fw-bold text-dark mb-1">Enter OTP</h5>
-                <p class="text-muted small mt-2 mb-0">Enter the 6-digit verification code sent to your mobile number.</p>
+                <p class="text-muted small mt-2 mb-0">Enter the 6-digit verification code sent to <strong id="display-otp-phone" class="text-dark">+91 XXXXXXXXXX</strong>.</p>
               </div>
 
                             <!-- Mobile OTP Testing & Sandbox Helper Card -->
@@ -825,7 +825,17 @@
 
         if (res.success) {
           activeMobilePhone = normalized;
-          displayPhoneEl.textContent = '+91 ' + normalized;
+          if (displayPhoneEl) {
+            displayPhoneEl.textContent = '+91 ' + normalized;
+          }
+
+          // Show Sandbox OTP notice and badge for convenient testing
+          const sandboxNotice = document.getElementById('mobile-otp-sandbox-notice');
+          const sandboxBadge = document.getElementById('mobile-sandbox-otp-badge');
+          const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
+          const activeCode = res.code || (res.otp ? String(res.otp) : null) || activeOtpObj.code || '123456';
+          if (sandboxBadge) sandboxBadge.textContent = activeCode;
+          if (sandboxNotice) sandboxNotice.style.display = 'block';
 
           stepPhone.style.display = 'none';
           stepVerify.style.display = 'block';
@@ -951,7 +961,7 @@
 
         const newUser = FoodWalaApp.Auth.registerWithMobile(activeMobilePhone, name, email, address);
         FoodWalaApp.showToast(`Welcome to FoodWala, ${newUser.name}!`, 'success');
-        handlePostLoginNavigation();
+        handlePostLoginNavigation(newUser);
       });
 
       // 5. Back to Phone Number
@@ -993,6 +1003,13 @@
         resendOtpBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Resend OTP';
 
         if (res.success) {
+          const sandboxNotice = document.getElementById('mobile-otp-sandbox-notice');
+          const sandboxBadge = document.getElementById('mobile-sandbox-otp-badge');
+          const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
+          const activeCode = res.code || (res.otp ? String(res.otp) : null) || activeOtpObj.code || '123456';
+          if (sandboxBadge) sandboxBadge.textContent = activeCode;
+          if (sandboxNotice) sandboxNotice.style.display = 'block';
+
           clearOtpBoxes();
           otpBoxes[0].focus();
           startResendCountdown(30);
