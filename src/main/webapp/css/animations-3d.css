@@ -525,21 +525,63 @@
    5. 3D CATEGORY BADGES (Pizza, Burger, Biryani, Chinese, South Indian, Beverages)
    ========================================================================== */
 
+.fw-categories-section-3d {
+  position: relative;
+  background: radial-gradient(circle at 10% 20%, rgba(254, 215, 170, 0.35) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(254, 202, 202, 0.35) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(254, 243, 199, 0.25) 0%, transparent 60%),
+              linear-gradient(180deg, #fffaf5 0%, #fff4ed 50%, #ffffff 100%) !important;
+  border-top: 1px solid rgba(249, 115, 22, 0.1);
+  border-bottom: 1px solid rgba(249, 115, 22, 0.1);
+}
+
+.fw-category-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 158, 11, 0.15) 100%);
+  color: #dc2626;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  margin-bottom: 6px;
+}
+
 .category-card-3d {
   position: relative;
   background: #ffffff;
   border-radius: 24px;
-  padding: 1.35rem 0.85rem;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+  padding: 1.25rem 0.75rem 1rem 0.75rem;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
   transform-style: preserve-3d;
   perspective: 900px;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease, background 0.28s ease;
   will-change: transform;
   text-decoration: none !important;
   color: #1e293b;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: visible;
+}
+
+.category-card-3d::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 22%;
+  right: 22%;
+  height: 3.5px;
+  border-radius: 0 0 6px 6px;
+  background: var(--cat-top-bar, #ef4444);
+  transition: all 0.3s ease;
+  transform: translateZ(5px);
 }
 
 .category-card-3d::before {
@@ -548,22 +590,29 @@
   inset: 0;
   border-radius: 24px;
   background: radial-gradient(circle at 50% 25%, var(--cat-accent, rgba(220, 38, 38, 0.12)), transparent 70%);
-  opacity: 0.55;
+  opacity: 0.65;
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
 .category-card-3d:hover {
   transform: translateY(-10px) scale(1.05) rotateX(6deg) rotateY(-3deg);
-  box-shadow: 0 24px 45px -8px var(--cat-shadow, rgba(220, 38, 38, 0.22)), 0 0 20px var(--cat-glow, rgba(245, 158, 11, 0.18));
-  border-color: rgba(220, 38, 38, 0.2);
+  box-shadow: 0 24px 45px -8px var(--cat-shadow, rgba(220, 38, 38, 0.25)), 0 0 25px var(--cat-glow, rgba(245, 158, 11, 0.22));
+  border-color: var(--cat-border, rgba(220, 38, 38, 0.35));
+}
+
+.category-card-3d:hover::after {
+  left: 12%;
+  right: 12%;
+  height: 4.5px;
+  box-shadow: 0 2px 10px var(--cat-top-bar, #ef4444);
 }
 
 .category-card-3d .cat-img-wrap {
   position: relative;
   width: 90px;
   height: 90px;
-  margin: 0 auto 0.85rem auto;
+  margin: 0 auto 0.75rem auto;
   transform: translateZ(24px);
   transform-style: preserve-3d;
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -578,7 +627,7 @@
   width: 72px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 50%, var(--cat-accent, rgba(220, 38, 38, 0.2)) 0%, transparent 75%);
+  background: radial-gradient(ellipse at 50% 50%, var(--cat-accent, rgba(220, 38, 38, 0.25)) 0%, transparent 75%);
   filter: blur(2px);
   transform: translateZ(5px);
   pointer-events: none;
@@ -586,8 +635,8 @@
 }
 
 .category-card-3d:hover .cat-pedestal {
-  transform: translateZ(10px) scale(1.2);
-  opacity: 0.85;
+  transform: translateZ(10px) scale(1.25);
+  opacity: 0.95;
 }
 
 .category-card-3d .cat-img-wrap img {
@@ -603,15 +652,16 @@
 
 .category-card-3d:hover .cat-img-wrap img {
   transform: translateZ(42px) translateY(-8px) scale(1.22);
-  filter: drop-shadow(0 20px 24px rgba(220, 38, 38, 0.32));
+  filter: drop-shadow(0 20px 24px var(--cat-shadow, rgba(220, 38, 38, 0.32)));
 }
 
 .category-card-3d .cat-label {
   font-weight: 800;
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   transform: translateZ(16px);
   display: block;
   transition: color 0.2s ease, transform 0.2s ease;
+  line-height: 1.2;
 }
 
 .category-card-3d:hover .cat-label {
@@ -619,46 +669,143 @@
   transform: translateZ(26px);
 }
 
-/* Category Accent Variants */
-.cat-biryani {
-  --cat-accent: rgba(245, 158, 11, 0.2);
-  --cat-shadow: rgba(245, 158, 11, 0.3);
-  --cat-glow: rgba(245, 158, 11, 0.25);
+.cat-badge-pill {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  transform: translateZ(12px);
+  white-space: nowrap;
+  transition: transform 0.2s ease;
 }
+
+.category-card-3d:hover .cat-badge-pill {
+  transform: translateZ(22px) scale(1.05);
+}
+
+/* Category Accent Variants with Rich Appetizing Gradients */
 .cat-pizza {
-  --cat-accent: rgba(220, 38, 38, 0.2);
-  --cat-shadow: rgba(220, 38, 38, 0.3);
+  background: linear-gradient(160deg, #ffffff 0%, #fff1f2 100%) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  --cat-top-bar: #ef4444;
+  --cat-accent: rgba(239, 68, 68, 0.25);
+  --cat-shadow: rgba(239, 68, 68, 0.32);
   --cat-glow: rgba(249, 115, 22, 0.25);
+  --cat-border: rgba(239, 68, 68, 0.4);
 }
+.cat-pizza .cat-badge-pill {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
 .cat-burger {
-  --cat-accent: rgba(249, 115, 22, 0.2);
-  --cat-shadow: rgba(249, 115, 22, 0.3);
+  background: linear-gradient(160deg, #ffffff 0%, #fffbeb 100%) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+  --cat-top-bar: #f59e0b;
+  --cat-accent: rgba(245, 158, 11, 0.25);
+  --cat-shadow: rgba(245, 158, 11, 0.32);
   --cat-glow: rgba(245, 158, 11, 0.25);
+  --cat-border: rgba(245, 158, 11, 0.4);
 }
+.cat-burger .cat-badge-pill {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+.cat-biryani {
+  background: linear-gradient(160deg, #ffffff 0%, #fff7ed 100%) !important;
+  border-color: rgba(249, 115, 22, 0.25) !important;
+  --cat-top-bar: #ea580c;
+  --cat-accent: rgba(249, 115, 22, 0.25);
+  --cat-shadow: rgba(249, 115, 22, 0.32);
+  --cat-glow: rgba(245, 158, 11, 0.25);
+  --cat-border: rgba(249, 115, 22, 0.4);
+}
+.cat-biryani .cat-badge-pill {
+  background: rgba(249, 115, 22, 0.12);
+  color: #c2410c;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
 .cat-chinese {
-  --cat-accent: rgba(239, 68, 68, 0.2);
-  --cat-shadow: rgba(239, 68, 68, 0.3);
-  --cat-glow: rgba(220, 38, 38, 0.25);
+  background: linear-gradient(160deg, #ffffff 0%, #fef2f2 100%) !important;
+  border-color: rgba(220, 38, 38, 0.25) !important;
+  --cat-top-bar: #dc2626;
+  --cat-accent: rgba(220, 38, 38, 0.25);
+  --cat-shadow: rgba(220, 38, 38, 0.32);
+  --cat-glow: rgba(239, 68, 68, 0.25);
+  --cat-border: rgba(220, 38, 38, 0.4);
 }
+.cat-chinese .cat-badge-pill {
+  background: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
 .cat-south-indian {
-  --cat-accent: rgba(16, 185, 129, 0.2);
-  --cat-shadow: rgba(16, 185, 129, 0.3);
-  --cat-glow: rgba(16, 185, 129, 0.25);
+  background: linear-gradient(160deg, #ffffff 0%, #f0fdf4 100%) !important;
+  border-color: rgba(34, 197, 94, 0.25) !important;
+  --cat-top-bar: #16a34a;
+  --cat-accent: rgba(34, 197, 94, 0.25);
+  --cat-shadow: rgba(34, 197, 94, 0.32);
+  --cat-glow: rgba(34, 197, 94, 0.25);
+  --cat-border: rgba(34, 197, 94, 0.4);
 }
+.cat-south-indian .cat-badge-pill {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
 .cat-beverages {
-  --cat-accent: rgba(139, 92, 246, 0.2);
-  --cat-shadow: rgba(139, 92, 246, 0.3);
-  --cat-glow: rgba(139, 92, 246, 0.25);
+  background: linear-gradient(160deg, #ffffff 0%, #f0fdfa 100%) !important;
+  border-color: rgba(20, 184, 166, 0.25) !important;
+  --cat-top-bar: #0d9488;
+  --cat-accent: rgba(20, 184, 166, 0.25);
+  --cat-shadow: rgba(20, 184, 166, 0.32);
+  --cat-glow: rgba(20, 184, 166, 0.25);
+  --cat-border: rgba(20, 184, 166, 0.4);
 }
+.cat-beverages .cat-badge-pill {
+  background: rgba(20, 184, 166, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(20, 184, 166, 0.2);
+}
+
 .cat-desserts {
-  --cat-accent: rgba(236, 72, 153, 0.2);
-  --cat-shadow: rgba(236, 72, 153, 0.3);
-  --cat-glow: rgba(236, 72, 153, 0.25);
+  background: linear-gradient(160deg, #ffffff 0%, #faf5ff 100%) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+  --cat-top-bar: #9333ea;
+  --cat-accent: rgba(168, 85, 247, 0.25);
+  --cat-shadow: rgba(168, 85, 247, 0.32);
+  --cat-glow: rgba(168, 85, 247, 0.25);
+  --cat-border: rgba(168, 85, 247, 0.4);
 }
+.cat-desserts .cat-badge-pill {
+  background: rgba(168, 85, 247, 0.12);
+  color: #7e22ce;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
 .cat-rolls {
-  --cat-accent: rgba(245, 158, 11, 0.2);
-  --cat-shadow: rgba(245, 158, 11, 0.3);
-  --cat-glow: rgba(245, 158, 11, 0.25);
+  background: linear-gradient(160deg, #ffffff 0%, #fefce8 100%) !important;
+  border-color: rgba(202, 138, 4, 0.25) !important;
+  --cat-top-bar: #ca8a04;
+  --cat-accent: rgba(202, 138, 4, 0.25);
+  --cat-shadow: rgba(202, 138, 4, 0.32);
+  --cat-glow: rgba(202, 138, 4, 0.25);
+  --cat-border: rgba(202, 138, 4, 0.4);
+}
+.cat-rolls .cat-badge-pill {
+  background: rgba(202, 138, 4, 0.12);
+  color: #a16207;
+  border: 1px solid rgba(202, 138, 4, 0.2);
 }
 
 /* ==========================================================================
@@ -1317,18 +1464,19 @@
   min-height: 100%;
   width: auto;
   height: auto;
-  transform: translate(-50%, -50%) scale(1.02);
+  transform: translate(-50%, -50%);
   object-fit: cover;
-  filter: brightness(0.85) contrast(1.08) saturate(1.15);
+  filter: brightness(0.95) contrast(1.06) saturate(1.15);
   transition: opacity 0.5s ease;
 }
 
 .hero-video-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 45%, rgba(28, 8, 8, 0.35) 0%, rgba(15, 3, 3, 0.72) 100%),
-              linear-gradient(180deg, rgba(226, 55, 68, 0.15) 0%, rgba(0, 0, 0, 0.65) 100%);
+  background: radial-gradient(ellipse at 50% 45%, rgba(28, 8, 8, 0.12) 0%, rgba(15, 3, 3, 0.45) 100%),
+              linear-gradient(180deg, rgba(226, 55, 68, 0.10) 0%, rgba(0, 0, 0, 0.48) 100%);
   z-index: 1;
+  pointer-events: none;
 }
 
 .hero-video-controls {
@@ -1337,7 +1485,47 @@
   right: 20px;
   z-index: 15;
   display: flex;
+  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hero-video-switcher {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.hero-video-switcher-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hero-video-switcher-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.hero-video-switcher-btn.active {
+  background: #e23744;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(226, 55, 68, 0.5);
 }
 
 .hero-video-btn {
@@ -1360,6 +1548,28 @@
 .hero-video-btn:hover {
   background: #e23744;
   border-color: #e23744;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(226, 55, 68, 0.4);
+}
+
+/* Popular Search Quick Tags with High Contrast */
+.fw-search-popular-pill {
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.fw-search-popular-pill:hover {
+  background: #e23744 !important;
+  border-color: #e23744 !important;
+  color: #ffffff !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(226, 55, 68, 0.4);
 }

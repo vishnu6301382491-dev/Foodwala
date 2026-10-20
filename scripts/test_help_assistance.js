@@ -91,6 +91,25 @@ const trackIndex = indexHtml.indexOf('fw-3d-tracking-section');
 assert(restIndex !== -1 && trackIndex !== -1 && restIndex < trackIndex, 'Featured Restaurants appears BEFORE Live GPS Tracking section in index.html.');
 assert(indexHtml.includes('videos/food-hero.webm'), 'index.html points to local ./videos/food-hero.webm.');
 
+// Test 7: Verify 1080p / 4K Video Suite & Vibrant Categories Section
+console.log('\nTest 7: Verifying 1080p/4K Video Suite & Vibrant Categories Section...');
+const pizzaPath = path.join(PROJECT_ROOT, 'videos', 'pizza-hd-1080p.webm');
+const wokPath = path.join(PROJECT_ROOT, 'videos', 'wok-hd-1080p.webm');
+const burgerPath = path.join(PROJECT_ROOT, 'videos', 'burger-4k.webm');
+
+assert(fs.existsSync(pizzaPath) && fs.statSync(pizzaPath).size > 10000000, '1080p Pizza video exists and is >10MB Full HD.');
+assert(fs.existsSync(wokPath) && fs.statSync(wokPath).size > 10000000, '1080p Wok video exists and is >10MB Full HD.');
+assert(fs.existsSync(burgerPath) && fs.statSync(burgerPath).size > 5000000, '4K Burger video exists and is >5MB UHD.');
+
+assert(indexHtml.includes('hero-video-switcher'), 'index.html includes culinary scene switcher buttons.');
+assert(homeHtml.includes('hero-video-switcher'), 'home.html includes culinary scene switcher buttons.');
+assert(indexHtml.includes('fw-search-popular-pill'), 'index.html includes high-contrast popular search pills.');
+
+assert(indexHtml.includes('fw-categories-section-3d'), 'index.html uses .fw-categories-section-3d styling.');
+assert(homeHtml.includes('fw-categories-section-3d'), 'home.html uses .fw-categories-section-3d styling.');
+assert(cssContent.includes('.fw-categories-section-3d'), 'CSS defines warm ambient .fw-categories-section-3d.');
+assert(indexHtml.includes('cat-badge-pill'), 'index.html includes .cat-badge-pill on category cards.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');

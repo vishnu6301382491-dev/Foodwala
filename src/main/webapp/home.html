@@ -109,17 +109,30 @@
 
   <!-- Hero Section with Zomato-Style Cinematic 4K Culinary Video Backdrop -->
   <section class="hero-section hero-section-3d py-5 position-relative overflow-hidden text-white" style="min-height: 540px;">
-    <!-- 4K Looping Culinary Food Video Backdrop & Cinematic Overlay -->
+    <!-- 4K / 1080p Looping Culinary Food Video Backdrop & Cinematic Overlay -->
     <div class="hero-video-box">
-      <video id="hero-food-video" class="hero-video-elem" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&auto=format&fit=crop&q=80">
+      <video id="hero-food-video" class="hero-video-elem" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1600&auto=format&fit=crop&q=80">
+        <source src="./videos/pizza-hd-1080p.webm" type="video/webm">
         <source src="./videos/food-hero.webm" type="video/webm">
-        <source src="https://upload.wikimedia.org/wikipedia/commons/2/22/Bubbling_baking_pizza.webm" type="video/webm">
+        <source src="./videos/wok-hd-1080p.webm" type="video/webm">
+        <source src="./videos/burger-4k.webm" type="video/webm">
       </video>
       <div class="hero-video-overlay"></div>
     </div>
 
-    <!-- Video Play/Pause & Audio Toggle Controls -->
+    <!-- Video Play/Pause, Audio & Scene Controls -->
     <div class="hero-video-controls">
+      <div class="hero-video-switcher me-2" role="group" aria-label="Culinary Video Scenes">
+        <button type="button" class="hero-video-switcher-btn active" data-video-src="./videos/pizza-hd-1080p.webm" data-video-poster="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1600&auto=format&fit=crop&q=80" title="1080p Crisp Woodfired Pizza">
+          🍕 Pizza HD
+        </button>
+        <button type="button" class="hero-video-switcher-btn" data-video-src="./videos/wok-hd-1080p.webm" data-video-poster="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600&auto=format&fit=crop&q=80" title="1080p Sizzling Wok Cooking">
+          🍳 Wok HD
+        </button>
+        <button type="button" class="hero-video-switcher-btn" data-video-src="./videos/burger-4k.webm" data-video-poster="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1600&auto=format&fit=crop&q=80" title="4K Gourmet Burger & Fries">
+          🍔 Burger 4K
+        </button>
+      </div>
       <button type="button" class="hero-video-btn" id="btn-hero-video-play" title="Toggle Video Play/Pause">
         <i class="bi bi-pause-fill" id="hero-video-play-icon"></i>
         <span id="hero-video-play-text">Pause</span>
@@ -156,14 +169,14 @@
             <div id="hero-search-dropdown" class="search-autocomplete-dropdown shadow-lg rounded-3 bg-white" style="display:none; position:absolute; left:0; right:0; top:100%; z-index:1000; margin-top:8px;"></div>
           </div>
 
-          <!-- Quick Suggestion Tags -->
+          <!-- Quick Suggestion Tags (High Contrast Crisp Pills) -->
           <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-1 text-light small">
             <span class="fw-bold text-white"><i class="bi bi-fire text-warning"></i> Popular:</span>
-            <a href="./restaurants.html?q=biryani" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Biryani</a>
-            <a href="./restaurants.html?q=dosa" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Benne Dosa</a>
-            <a href="./restaurants.html?q=pizza" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Pizza</a>
-            <a href="./restaurants.html?q=burger" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Burgers</a>
-            <a href="./restaurants.html?q=paneer" class="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 text-decoration-none rounded-pill px-3 py-1.5 shadow-sm hover-lift backdrop-blur">Paneer</a>
+            <a href="./restaurants.html?q=biryani" class="badge fw-search-popular-pill rounded-pill px-3 py-1.5 shadow-sm">Biryani</a>
+            <a href="./restaurants.html?q=dosa" class="badge fw-search-popular-pill rounded-pill px-3 py-1.5 shadow-sm">Benne Dosa</a>
+            <a href="./restaurants.html?q=pizza" class="badge fw-search-popular-pill rounded-pill px-3 py-1.5 shadow-sm">Woodfired Pizza</a>
+            <a href="./restaurants.html?q=burger" class="badge fw-search-popular-pill rounded-pill px-3 py-1.5 shadow-sm">Gourmet Burger</a>
+            <a href="./restaurants.html?q=rolls" class="badge fw-search-popular-pill rounded-pill px-3 py-1.5 shadow-sm">Kathi Rolls</a>
           </div>
         </div>
 
@@ -223,88 +236,97 @@
     </div>
   </section>
 
-    <!-- Categories Section -->
-  <section class="py-5 bg-white">
+    <!-- Popular Food Categories Section (Rich Vibrant Appetizing Themes) -->
+  <section class="py-5 fw-categories-section-3d">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-end mb-4">
+      <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
         <div>
-          <span class="text-danger fw-bold text-uppercase small letter-spacing-1">Inspiration for your order</span>
-          <h2 class="fw-extrabold text-dark mb-0">Popular Food Categories</h2>
+          <span class="fw-category-pill-tag"><i class="bi bi-stars text-warning me-1"></i> Fresh & Craved Flavors</span>
+          <h2 class="fw-extrabold text-dark mb-1">Popular Food Categories</h2>
+          <p class="text-muted small mb-0">Bengaluru's top culinary choices crafted by master chefs & cloud kitchens</p>
         </div>
-        <a href="./restaurants.html" class="btn btn-outline-danger btn-sm rounded-pill fw-bold">View All Categories &rarr;</a>
+        <a href="./restaurants.html" class="btn btn-outline-danger btn-sm rounded-pill fw-bold shadow-sm">View All Categories &rarr;</a>
       </div>
 
       <div class="row row-cols-2 row-cols-md-4 row-cols-lg-8 g-3 text-center">
         <div class="col">
-          <a href="./restaurants.html?q=pizza" class="category-card-3d cat-pizza js-3d-tilt">
+          <a href="./restaurants.html?q=pizza" class="category-card-3d cat-pizza js-3d-tilt" title="Order Gourmet Pizza">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-pizza.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Pizza">
             </div>
             <span class="cat-label">Pizza</span>
+            <span class="cat-badge-pill">35+ Spots</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=burger" class="category-card-3d cat-burger js-3d-tilt">
+          <a href="./restaurants.html?q=burger" class="category-card-3d cat-burger js-3d-tilt" title="Order Juicy Burgers">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-burger.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Burgers">
             </div>
             <span class="cat-label">Burger</span>
+            <span class="cat-badge-pill">Gourmet</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=biryani" class="category-card-3d cat-biryani js-3d-tilt">
+          <a href="./restaurants.html?q=biryani" class="category-card-3d cat-biryani js-3d-tilt" title="Order Authentic Biryani">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-biryani.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Biryani">
             </div>
             <span class="cat-label">Biryani</span>
+            <span class="cat-badge-pill">Dum & Donne</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?cuisine=Chinese" class="category-card-3d cat-chinese js-3d-tilt">
+          <a href="./restaurants.html?cuisine=Chinese" class="category-card-3d cat-chinese js-3d-tilt" title="Order Asian & Chinese">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-biryani.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Asian Wok">
             </div>
             <span class="cat-label">Chinese</span>
+            <span class="cat-badge-pill">Wok Tossed</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?cuisine=South+Indian" class="category-card-3d cat-south-indian js-3d-tilt">
+          <a href="./restaurants.html?cuisine=South+Indian" class="category-card-3d cat-south-indian js-3d-tilt" title="Order Benne Dosa & South Indian">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-dosa.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D South Indian Dosa">
             </div>
             <span class="cat-label">South Indian</span>
+            <span class="cat-badge-pill">Benne Dosa</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?cuisine=Beverages" class="category-card-3d cat-beverages js-3d-tilt">
+          <a href="./restaurants.html?cuisine=Beverages" class="category-card-3d cat-beverages js-3d-tilt" title="Order Chilled Drinks & Shakes">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-drink.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Beverages">
             </div>
             <span class="cat-label">Beverages</span>
+            <span class="cat-badge-pill">Chilled & Cold</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=dessert" class="category-card-3d cat-desserts js-3d-tilt">
+          <a href="./restaurants.html?q=dessert" class="category-card-3d cat-desserts js-3d-tilt" title="Order Cakes & Desserts">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-dessert.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Desserts">
             </div>
             <span class="cat-label">Desserts</span>
+            <span class="cat-badge-pill">Sweet Velvet</span>
           </a>
         </div>
         <div class="col">
-          <a href="./restaurants.html?q=roll" class="category-card-3d cat-rolls js-3d-tilt">
+          <a href="./restaurants.html?q=roll" class="category-card-3d cat-rolls js-3d-tilt" title="Order Kathi Rolls & Wraps">
             <div class="cat-img-wrap">
               <div class="cat-pedestal"></div>
               <img src="./images/3d/3d-dosa.svg" width="86" height="86" loading="lazy" decoding="async" alt="3D Rolls">
             </div>
             <span class="cat-label">Rolls</span>
+            <span class="cat-badge-pill">Kathi Wraps</span>
           </a>
         </div>
       </div>
@@ -848,6 +870,33 @@
               if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
               if (textMute) textMute.textContent = 'Sound On';
             }
+          });
+        }
+
+        // Culinary Video Scene Switcher
+        const switcherBtns = document.querySelectorAll('.hero-video-switcher-btn');
+        if (switcherBtns.length > 0) {
+          switcherBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+              const newSrc = btn.getAttribute('data-video-src');
+              const newPoster = btn.getAttribute('data-video-poster');
+              if (!newSrc) return;
+
+              switcherBtns.forEach((b) => b.classList.remove('active'));
+              btn.classList.add('active');
+
+              if (newPoster) foodVideo.poster = newPoster;
+              foodVideo.src = newSrc;
+              foodVideo.load();
+              foodVideo.muted = true;
+              const p = foodVideo.play();
+              if (p !== undefined) {
+                p.then(() => {
+                  if (iconPlay) iconPlay.className = 'bi bi-pause-fill';
+                  if (textPlay) textPlay.textContent = 'Pause';
+                }).catch(() => {});
+              }
+            });
           });
         }
       }
