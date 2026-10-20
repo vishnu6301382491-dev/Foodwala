@@ -202,6 +202,7 @@
     { name: 'Malleshwaram', pincode: '560003', zone: 'North' },
     { name: 'Marathahalli', pincode: '560037', zone: 'East' },
     { name: 'Marenahalli', pincode: '560040', zone: 'South' },
+    { name: 'Maruthi Nagar', pincode: '560068', zone: 'South' },
     { name: 'Mathikere', pincode: '560054', zone: 'North' },
     { name: 'Medahalli', pincode: '560049', zone: 'East' },
     { name: 'Meenakshi Layout', pincode: '560076', zone: 'South' },

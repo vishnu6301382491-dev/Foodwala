@@ -30,9 +30,12 @@ const FoodWalaApp = (function () {
   const individualMenuCache = new Map();
   let dataReadyPromise = null;
 
-  // 14 Bengaluru Delivery Hubs (Used for manual location selection & landmark geocoding)
+  // Comprehensive Bengaluru Delivery Hubs (Used for manual selection, GPS matching & reverse geocoding)
   const BENGALURU_LOCATIONS = [
+    { id: 'maruthi_nagar', name: 'Maruthi Nagar, Bengaluru', shortName: 'Maruthi Nagar', lat: 12.9238, lng: 77.6186, landmark: 'Near Madiwala / Christ University / Tavarekere' },
     { id: 'koramangala', name: 'Koramangala, Bengaluru', shortName: 'Koramangala', lat: 12.9352, lng: 77.6245, landmark: '5th Block, near Sony World Signal' },
+    { id: 'btm_layout', name: 'BTM Layout, Bengaluru', shortName: 'BTM Layout', lat: 12.9166, lng: 77.6101, landmark: 'Near Udupi Garden / Outer Ring Rd' },
+    { id: 'madiwala', name: 'Madiwala, Bengaluru', shortName: 'Madiwala', lat: 12.9226, lng: 77.6200, landmark: 'Near Total Mall / Market' },
     { id: 'indiranagar', name: 'Indiranagar, Bengaluru', shortName: 'Indiranagar', lat: 12.9784, lng: 77.6408, landmark: '100ft Road, near Metro Station' },
     { id: 'whitefield', name: 'Whitefield, Bengaluru', shortName: 'Whitefield', lat: 12.9698, lng: 77.7500, landmark: 'ITPL Main Road' },
     { id: 'mg_road', name: 'MG Road, Bengaluru', shortName: 'MG Road', lat: 12.9756, lng: 77.6066, landmark: 'Brigade Road Junction' },
@@ -45,7 +48,10 @@ const FoodWalaApp = (function () {
     { id: 'marathahalli', name: 'Marathahalli, Bengaluru', shortName: 'Marathahalli', lat: 12.9591, lng: 77.6974, landmark: 'Innovative Multiplex Junction' },
     { id: 'hebbal', name: 'Hebbal, Bengaluru', shortName: 'Hebbal', lat: 13.0358, lng: 77.5970, landmark: 'Hebbal Flyover, Esteem Mall' },
     { id: 'basavanagudi', name: 'Basavanagudi, Bengaluru', shortName: 'Basavanagudi', lat: 12.9421, lng: 77.5754, landmark: 'Gandhi Bazaar Main Road' },
-    { id: 'rajajinagar', name: 'Rajajinagar, Bengaluru', shortName: 'Rajajinagar', lat: 12.9915, lng: 77.5526, landmark: '1st Block, Dr. Rajkumar Road' }
+    { id: 'rajajinagar', name: 'Rajajinagar, Bengaluru', shortName: 'Rajajinagar', lat: 12.9915, lng: 77.5526, landmark: '1st Block, Dr. Rajkumar Road' },
+    { id: 'kalyan_nagar', name: 'Kalyan Nagar, Bengaluru', shortName: 'Kalyan Nagar', lat: 13.0280, lng: 77.6400, landmark: 'HRBR Layout, CMR Road' },
+    { id: 'banashankari', name: 'Banashankari, Bengaluru', shortName: 'Banashankari', lat: 12.9255, lng: 77.5468, landmark: 'Near BDA Complex' },
+    { id: 'sarjapur_road', name: 'Sarjapur Road, Bengaluru', shortName: 'Sarjapur Road', lat: 12.9110, lng: 77.6850, landmark: 'Near Wipro Corporate Office' }
   ];
 
   // Coupons
@@ -79,13 +85,17 @@ const FoodWalaApp = (function () {
       // Clean obsolete key 'foodwala_user' if present
       localStorage.removeItem('foodwala_user');
       
-      // Clean obsolete fake default location if it has the old dummy format
+      // Clean obsolete fake default location or fix cached Koramangala false-positives for Maruthi Nagar
       const locStr = localStorage.getItem(STORAGE_KEYS.LOCATION);
       if (locStr) {
         try {
           const loc = JSON.parse(locStr);
           if (loc && ((loc.id === 'koramangala' && !loc.source) || (loc.landmark && loc.landmark.includes('GPS Accuracy ~83m')))) {
             localStorage.removeItem(STORAGE_KEYS.LOCATION);
+          } else if (loc && loc.shortName === 'Koramangala' && loc.latitude >= 12.9180 && loc.latitude <= 12.9280 && loc.longitude >= 77.6110 && loc.longitude <= 77.6225) {
+            loc.shortName = 'Maruthi Nagar';
+            loc.address = 'Maruthi Nagar, Bengaluru (Near Madiwala / Christ University)';
+            localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(loc));
           }
         } catch(e) {}
       }
@@ -390,23 +400,65 @@ const FoodWalaApp = (function () {
             accuracy: accuracy
           });
 
-          // Instantly match to closest Bengaluru Hub to avoid slow/failing external reverse-geocoders
-          let shortName = "Current Location";
-          let fullAddress = `Live GPS Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+          let shortName = null;
+          let fullAddress = null;
 
-          let closestHub = null;
-          let minDistance = Infinity;
-          for (const hub of BENGALURU_LOCATIONS) {
-            const dist = Math.hypot(hub.lat - lat, hub.lng - lng);
-            if (dist < minDistance) {
-              minDistance = dist;
-              closestHub = hub;
+          // 1. High-Precision Micro-zone check: Maruthi Nagar (Madiwala / BTM 1st / Tavarekere boundary)
+          if (lat >= 12.9180 && lat <= 12.9280 && lng >= 77.6110 && lng <= 77.6225) {
+            shortName = "Maruthi Nagar";
+            fullAddress = "Maruthi Nagar, Bengaluru (Near Madiwala / Christ University)";
+          }
+
+          // 2. Real reverse-geocoding via OpenStreetMap Nominatim with fast timeout
+          if (!shortName) {
+            try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 2500);
+              const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+              const res = await fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
+              clearTimeout(timeoutId);
+              if (res.ok) {
+                const data = await res.json();
+                if (data && data.address) {
+                  const addr = data.address;
+                  const allStr = JSON.stringify(addr).toLowerCase();
+                  if (allStr.includes('maruthi nagar') || allStr.includes('maruthi nagara')) {
+                    shortName = 'Maruthi Nagar';
+                    fullAddress = `Maruthi Nagar, ${addr.suburb || addr.quarter || 'Bengaluru'}`;
+                  } else {
+                    let area = addr.neighbourhood || addr.suburb || addr.quarter || addr.residential || addr.road;
+                    if (area) {
+                      area = area.replace(/ Nagara$/i, ' Nagar').replace(/ East| West| North| South/gi, '');
+                      shortName = area;
+                      fullAddress = `${addr.road ? addr.road + ', ' : ''}${area}, ${addr.city || 'Bengaluru'}`;
+                    }
+                  }
+                }
+              }
+            } catch (revErr) {
+              console.warn('[FoodWala] Reverse geocode network notice:', revErr);
             }
           }
 
-          if (closestHub && minDistance < 0.15) {
-            shortName = closestHub.shortName;
-            fullAddress = `${closestHub.name} (Near ${closestHub.landmark})`;
+          // 3. Fallback to closest Bengaluru Hub in BENGALURU_LOCATIONS
+          if (!shortName) {
+            let closestHub = null;
+            let minDistance = Infinity;
+            for (const hub of BENGALURU_LOCATIONS) {
+              const dist = Math.hypot(hub.lat - lat, hub.lng - lng);
+              if (dist < minDistance) {
+                minDistance = dist;
+                closestHub = hub;
+              }
+            }
+
+            if (closestHub && minDistance < 0.15) {
+              shortName = closestHub.shortName;
+              fullAddress = `${closestHub.name} (Near ${closestHub.landmark})`;
+            } else {
+              shortName = "Current Location";
+              fullAddress = `Live GPS Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            }
           }
 
           const locationState = {
