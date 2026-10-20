@@ -317,6 +317,30 @@ assert(animCssContent.includes('[data-bs-theme="dark"] .order-item-chip') && ani
 assert(animCssContent.includes('[data-bs-theme="dark"] .js-login-tab-btn.active') && animCssContent.includes('#FF705D'), 'CSS defines coral active state #FF705D for login segmented switcher.');
 assert(animCssContent.includes('[data-bs-theme="dark"] #role-info-card'), 'CSS defines dark container for #role-info-card in login.html.');
 
+// Test 15: Verify Role Isolation, Customer Auth Privacy, and Private Admin Portal Gate
+console.log('\nTest 15: Verifying Role Isolation, Customer Auth Privacy & Private Admin Portal Gate...');
+const loginContent = fs.readFileSync(path.join(PROJECT_ROOT, 'login.html'), 'utf8');
+const registerContent = fs.readFileSync(path.join(PROJECT_ROOT, 'register.html'), 'utf8');
+const restDashContent = fs.readFileSync(path.join(PROJECT_ROOT, 'restaurant-dashboard.html'), 'utf8');
+const indexContent = fs.readFileSync(path.join(PROJECT_ROOT, 'index.html'), 'utf8');
+
+// 1. Customer Login View Isolation
+assert(!loginContent.includes('data-role="admin"') || loginContent.includes('role-selector-container" style="display: none !important;"'), 'login.html does not display public role selection buttons in customer view.');
+assert(!loginContent.includes('customer@foodwala.com') || loginContent.includes('style="display: none !important;"'), 'login.html does not display public auto-fill credential chips in customer view.');
+assert(loginContent.includes('admin-portal-banner'), 'login.html implements #admin-portal-banner for staff portal mode.');
+assert(loginContent.includes('portalMode === \'admin\''), 'login.html implements secure ?portal=admin routing.');
+
+// 2. Customer Registration Isolation
+assert(!registerContent.includes('id="reg-role-group"'), 'register.html completely removed partner/restaurant role selection tabs.');
+assert(registerContent.includes('value="customer"'), 'register.html locks registration strictly to customer role.');
+
+// 3. Elimination of Hardcoded Password Leaks
+assert(!restDashContent.includes('value="restaurant@foodwala.com"'), 'restaurant-dashboard.html removed hardcoded manager email value.');
+assert(!restDashContent.includes('value="Restaurant@123"'), 'restaurant-dashboard.html removed hardcoded manager password value.');
+
+// 4. Discreet Staff Portal Access
+assert(indexContent.includes('login.html?portal=admin'), 'index.html provides discreet Staff Portal link in footer.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');

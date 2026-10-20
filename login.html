@@ -183,61 +183,21 @@
             <p class="text-muted small">Sign in to track orders, save addresses, and get offers.</p>
           </div>
 
-          <!-- Top Role Selection & Quick Fill -->
-          <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="small fw-bold text-uppercase text-muted" style="font-size:0.75rem;">
-                <i class="bi bi-people-fill text-danger me-1"></i>Select Account Role
-              </span>
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold" id="current-role-badge">Customer</span>
-            </div>
-            <div class="row g-2 mb-3" id="role-selector-group">
-              <div class="col-6 col-sm-3">
-                <button type="button" class="btn btn-danger btn-sm w-100 rounded-3 py-2 text-center js-role-select-btn active shadow-sm" data-role="customer" title="Customer Account">
-                  <i class="bi bi-person-fill d-block fs-5 mb-1"></i>
-                  <span class="small fw-bold">Customer</span>
-                </button>
-              </div>
-              <div class="col-6 col-sm-3">
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-role-select-btn" data-role="partner" title="Delivery Partner Account">
-                  <i class="bi bi-bicycle d-block fs-5 mb-1"></i>
-                  <span class="small fw-bold">Delivery</span>
-                </button>
-              </div>
-              <div class="col-6 col-sm-3">
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-role-select-btn" data-role="restaurant" title="Restaurant Manager Account">
-                  <i class="bi bi-shop d-block fs-5 mb-1"></i>
-                  <span class="small fw-bold">Restaurant</span>
-                </button>
-              </div>
-              <div class="col-6 col-sm-3">
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-role-select-btn" data-role="admin" title="Administrator Account">
-                  <i class="bi bi-shield-lock-fill d-block fs-5 mb-1"></i>
-                  <span class="small fw-bold">Admin</span>
-                </button>
+          <!-- Staff & Admin Security Notice (Shown ONLY when accessing ?portal=admin) -->
+          <div id="admin-portal-banner" class="mb-4" style="display: none;">
+            <div class="alert alert-warning-subtle border border-warning-subtle rounded-3 py-2 px-3 small d-flex align-items-center gap-2 mb-0" style="background: rgba(255, 180, 84, 0.1); color: #FFB454;">
+              <i class="bi bi-shield-lock-fill fs-5"></i>
+              <div>
+                <strong>Administrator Access Gate</strong>
+                <div class="small opacity-75">Public signup and auto-fill credentials are disabled.</div>
               </div>
             </div>
+          </div>
 
-            <!-- Role Details & 1-Click Fill Card -->
-            <div class="card bg-light border rounded-4 p-3 shadow-none position-relative" id="role-info-card">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-danger text-white rounded-pill px-2" id="role-card-badge">Customer</span>
-                  <strong class="text-dark small" id="role-card-title">Rahul Sharma / Vishnu</strong>
-                </div>
-                <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm" id="auto-fill-role-btn" style="font-size: 0.76rem;">
-                  <i class="bi bi-magic me-1"></i>Quick Fill
-                </button>
-              </div>
-              <p class="text-muted small mb-2 lh-sm" id="role-card-desc" style="font-size: 0.8rem;">
-                Browse iconic Bengaluru restaurants, order food & track live deliveries.
-              </p>
-              <div class="d-flex flex-wrap gap-2 small pt-1 border-top" style="font-size: 0.76rem;">
-                <span class="badge bg-white text-dark border"><i class="bi bi-envelope text-danger me-1"></i><span id="role-card-email">customer@foodwala.com</span></span>
-                <span class="badge bg-white text-dark border"><i class="bi bi-telephone text-success me-1"></i><span id="role-card-phone">9876543210</span></span>
-                <span class="badge bg-white text-dark border"><i class="bi bi-key text-warning me-1"></i><span id="role-card-pwd">Password@123</span></span>
-              </div>
-            </div>
+          <!-- Legacy role container hidden permanently from public customer view -->
+          <div id="role-selector-container" style="display: none !important;">
+            <div id="role-selector-group"></div>
+            <div id="role-info-card"></div>
           </div>
 
           <!-- Top Login Mode Switcher Pills -->
@@ -584,105 +544,64 @@
         }, 150);
       }
 
-      // --- Role Switcher & Quick Fill Manager ---
-      const roleProfiles = {
-        customer: {
-          badge: 'Customer',
-          name: 'Rahul Sharma / Vishnu',
-          email: 'customer@foodwala.com',
-          phone: '9876543210',
-          password: 'Password@123',
-          desc: 'Browse iconic Bengaluru restaurants, order food & track live deliveries.',
-          redirect: './index.html'
-        },
-        partner: {
-          badge: 'Delivery Partner',
-          name: 'Ramesh Kumar (Delivery)',
-          email: 'delivery@foodwala.com',
-          phone: '9876543230',
-          password: 'Partner@123',
-          desc: 'Access assigned deliveries, navigation routes, status updates, and daily earnings.',
-          redirect: './orders.html'
-        },
-        restaurant: {
-          badge: 'Restaurant Manager',
-          name: 'Vidyarthi Bhavan Manager',
-          email: 'restaurant@foodwala.com',
-          phone: '9876543231',
-          password: 'Restaurant@123',
-          desc: 'Manage restaurant menus, kitchen order queues, and store availability.',
-          redirect: './restaurant-dashboard.html'
-        },
-        admin: {
-          badge: 'Administrator',
-          name: 'FoodWala Administrator',
-          email: 'admin@foodwala.com',
-          phone: '9876543222',
-          password: 'Admin@123',
-          desc: 'Full administrative access to manage users, restaurants, menu items, and system logs.',
-          redirect: './admin.html'
-        }
-      };
-
+      // --- Secure Portal Routing & Role Isolation ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const portalMode = (urlParams.get('portal') || urlParams.get('role') || '').toLowerCase();
       let selectedRole = 'customer';
 
-      function applyRoleSelection(roleKey) {
-        selectedRole = roleKey;
-        const profile = roleProfiles[roleKey] || roleProfiles.customer;
+      const loginHeaderTitle = document.querySelector('.card .text-center h3');
+      const loginHeaderDesc = document.querySelector('.card .text-center p');
+      const loginIconBox = document.querySelector('.card .text-center .rounded-circle');
+      const loginIcon = loginIconBox ? loginIconBox.querySelector('i') : null;
+      const adminBanner = document.getElementById('admin-portal-banner');
+      const emailLabel = document.querySelector('label[for="email-input"]');
+      const emailInput = document.getElementById('email-input');
+      const loginSubmitBtn = document.getElementById('login-submit-btn');
+      const signupPrompt = document.querySelector('.card .text-center.small.text-muted');
 
-        // Update Role Buttons
-        document.querySelectorAll('.js-role-select-btn').forEach(btn => {
-          if (btn.getAttribute('data-role') === roleKey) {
-            btn.className = 'btn btn-danger btn-sm w-100 rounded-3 py-2 text-center js-role-select-btn active shadow-sm';
-          } else {
-            btn.className = 'btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-role-select-btn';
-          }
-        });
+      if (portalMode === 'admin') {
+        selectedRole = 'admin';
+        if (loginHeaderTitle) loginHeaderTitle.textContent = 'Administration Portal';
+        if (loginHeaderDesc) loginHeaderDesc.textContent = 'Authorized operations and executive staff only.';
+        if (loginIconBox) {
+          loginIconBox.style.background = '#1B2228';
+          loginIconBox.style.border = '2px solid #FFB454';
+        }
+        if (loginIcon) loginIcon.className = 'bi bi-shield-lock-fill fs-3 text-warning';
+        if (adminBanner) adminBanner.style.display = 'block';
+        if (emailLabel) emailLabel.textContent = 'Administrator Email or Username';
+        if (emailInput) emailInput.placeholder = 'admin@foodwala.com';
+        if (loginSubmitBtn) loginSubmitBtn.textContent = 'Access Administration Console';
 
-        // Update Role Info Card Elements
-        const badgeEl = document.getElementById('current-role-badge');
-        const cardBadgeEl = document.getElementById('role-card-badge');
-        const titleEl = document.getElementById('role-card-title');
-        const descEl = document.getElementById('role-card-desc');
-        const emailEl = document.getElementById('role-card-email');
-        const phoneEl = document.getElementById('role-card-phone');
-        const pwdEl = document.getElementById('role-card-pwd');
-
-        if (badgeEl) badgeEl.textContent = profile.badge;
-        if (cardBadgeEl) cardBadgeEl.textContent = profile.badge;
-        if (titleEl) titleEl.textContent = profile.name;
-        if (descEl) descEl.textContent = profile.desc;
-        if (emailEl) emailEl.textContent = profile.email;
-        if (phoneEl) phoneEl.textContent = profile.phone;
-        if (pwdEl) pwdEl.textContent = profile.password;
-      }
-
-      function quickFillActiveRole() {
-        const profile = roleProfiles[selectedRole] || roleProfiles.customer;
-        const emailInput = document.getElementById('email-input');
-        const pwdInput = document.getElementById('password-input');
-        const mobileInput = document.getElementById('mobile-number-input');
-
-        if (emailInput) emailInput.value = profile.email;
-        if (pwdInput) pwdInput.value = profile.password;
-        if (mobileInput) mobileInput.value = profile.phone;
-
-        FoodWalaApp.showToast(`Auto-filled ${profile.badge} credentials!`, 'info');
-      }
-
-      document.querySelectorAll('.js-role-select-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const role = btn.getAttribute('data-role');
-          applyRoleSelection(role);
-          quickFillActiveRole();
-        });
-      });
-
-      const autoFillBtn = document.getElementById('auto-fill-role-btn');
-      if (autoFillBtn) {
-        autoFillBtn.addEventListener('click', () => {
-          quickFillActiveRole();
-        });
+        // Admin portal has NO public signup button (as requested)
+        if (signupPrompt) {
+          signupPrompt.innerHTML = 'Staff access only &bull; <a href="./login.html" class="text-secondary fw-semibold">Customer Sign In</a>';
+        }
+      } else if (portalMode === 'restaurant') {
+        selectedRole = 'restaurant';
+        if (loginHeaderTitle) loginHeaderTitle.textContent = 'Restaurant Partner Hub';
+        if (loginHeaderDesc) loginHeaderDesc.textContent = 'Authorized restaurant partners and kitchen managers only.';
+        if (loginIconBox) {
+          loginIconBox.style.background = '#1B2228';
+          loginIconBox.style.border = '2px solid #FF705D';
+        }
+        if (loginIcon) loginIcon.className = 'bi bi-shop fs-3 text-danger';
+        if (adminBanner) {
+          adminBanner.style.display = 'block';
+          adminBanner.innerHTML = `<div class="alert alert-danger-subtle border border-danger-subtle rounded-3 py-2 px-3 small d-flex align-items-center gap-2 mb-0" style="background: rgba(255, 112, 93, 0.1); color: #FF705D;"><i class="bi bi-shop fs-5"></i><div><strong>Partner Console Gate</strong><div class="small opacity-75">Public signup is disabled.</div></div></div>`;
+        }
+        if (emailLabel) emailLabel.textContent = 'Restaurant Manager Email or Store ID';
+        if (emailInput) emailInput.placeholder = 'restaurant@foodwala.com';
+        if (loginSubmitBtn) loginSubmitBtn.textContent = 'Access Partner Dashboard';
+        if (signupPrompt) {
+          signupPrompt.innerHTML = 'Partner access only &bull; <a href="./login.html" class="text-secondary fw-semibold">Customer Sign In</a>';
+        }
+      } else {
+        // DEFAULT: Pure Customer Sign In View
+        selectedRole = 'customer';
+        if (loginHeaderTitle) loginHeaderTitle.textContent = 'Welcome to FoodWala';
+        if (loginHeaderDesc) loginHeaderDesc.textContent = 'Sign in to track orders, save addresses, and get offers.';
+        if (adminBanner) adminBanner.style.display = 'none';
       }
 
       // --- Tab Switching: Email Login vs Mobile OTP ---
