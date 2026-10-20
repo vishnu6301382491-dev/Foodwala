@@ -2270,3 +2270,242 @@
   color: #fbbf24;
 }
 
+/* ==========================================================================
+   GLOBAL FOOTER TEXT VISIBILITY & CONTRAST
+   ========================================================================== */
+footer,
+footer .text-muted,
+footer .list-unstyled li,
+footer .list-unstyled a {
+  color: #94a3b8 !important;
+}
+
+footer a.text-muted:hover,
+footer .list-unstyled a:hover {
+  color: #f8fafc !important;
+  text-decoration: underline !important;
+}
+
+footer i.bi-geo-alt {
+  color: #ef4444 !important;
+}
+
+/* ==========================================================================
+   CHECKOUT PAGE STYLING & 3D CARDS
+   ========================================================================== */
+.fw-checkout-page {
+  background: radial-gradient(circle at 10% 15%, rgba(254, 215, 170, 0.25) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(254, 202, 202, 0.25) 0%, transparent 45%),
+              linear-gradient(180deg, #faf7f2 0%, #fffcf8 50%, #fbf8f3 100%) !important;
+}
+
+[data-bs-theme="dark"] .fw-checkout-page {
+  background: radial-gradient(circle at 10% 15%, rgba(234, 88, 12, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(220, 38, 38, 0.12) 0%, transparent 45%),
+              linear-gradient(180deg, #0b0f19 0%, #111827 50%, #0b0f19 100%) !important;
+}
+
+.checkout-card-location {
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
+  border: 2px solid #f97316 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.12) !important;
+  transition: all 0.25s ease;
+}
+
+.checkout-card-notes {
+  background: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%) !important;
+  border: 2px solid #06b6d4 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.12) !important;
+  transition: all 0.25s ease;
+}
+
+.checkout-card-payment {
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
+  border: 2px solid #3b82f6 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12) !important;
+  transition: all 0.25s ease;
+}
+
+.checkout-card-summary {
+  background: #ffffff !important;
+  border: 2.5px solid #ef4444 !important;
+  border-radius: 22px !important;
+  box-shadow: 0 14px 34px -6px rgba(239, 68, 68, 0.18) !important;
+  transition: all 0.25s ease;
+}
+
+[data-bs-theme="dark"] .checkout-card-location {
+  background: linear-gradient(135deg, #1e293b 0%, #3f1a05 100%) !important;
+  border-color: #f97316 !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .checkout-card-notes {
+  background: linear-gradient(135deg, #1e293b 0%, #042f2e 100%) !important;
+  border-color: #06b6d4 !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .checkout-card-payment {
+  background: linear-gradient(135deg, #1e293b 0%, #082f49 100%) !important;
+  border-color: #3b82f6 !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .checkout-card-summary {
+  background: #1e293b !important;
+  border-color: #ef4444 !important;
+  color: #f8fafc !important;
+}
+
+/* ==========================================================================
+   ORDER CONFIRMATION & CELEBRATION
+   ========================================================================== */
+.fw-confirmation-page {
+  background: radial-gradient(circle at 10% 15%, rgba(34, 197, 94, 0.15) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(245, 158, 11, 0.15) 0%, transparent 45%),
+              linear-gradient(180deg, #faf7f2 0%, #fffcf8 50%, #fbf8f3 100%) !important;
+}
+
+[data-bs-theme="dark"] .fw-confirmation-page {
+  background: radial-gradient(circle at 10% 15%, rgba(34, 197, 94, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+              linear-gradient(180deg, #0b0f19 0%, #111827 50%, #0b0f19 100%) !important;
+}
+
+.fw-celebration-box {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #e23744 0%, #f59e0b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.2rem;
+  box-shadow: 0 16px 36px rgba(226, 55, 68, 0.35);
+  animation: fwFloatGift 3s ease-in-out infinite;
+}
+
+@keyframes fwFloatGift {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(-12px) rotate(4deg) scale(1.06); }
+}
+
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -20px;
+  border-radius: 3px;
+  animation: confettiFall 4s linear infinite;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+}
+
+.confirmation-receipt-card {
+  background: #ffffff;
+  border: 2px solid #22c55e;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px -10px rgba(34, 197, 94, 0.22);
+}
+
+[data-bs-theme="dark"] .confirmation-receipt-card {
+  background: #1e293b !important;
+  border-color: #22c55e !important;
+  color: #f8fafc !important;
+}
+
+/* ==========================================================================
+   ORDER TRACKING PAGE & LIVE TRACKING POP TOASTS
+   ========================================================================== */
+.fw-tracking-page {
+  background: radial-gradient(circle at 10% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(239, 68, 68, 0.12) 0%, transparent 45%),
+              linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%) !important;
+}
+
+[data-bs-theme="dark"] .fw-tracking-page {
+  background: radial-gradient(circle at 10% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(239, 68, 68, 0.14) 0%, transparent 45%),
+              linear-gradient(180deg, #0b0f19 0%, #0f172a 50%, #0b0f19 100%) !important;
+}
+
+.tracking-hero-card {
+  background: #ffffff;
+  border: 2px solid #ef4444;
+  border-radius: 24px;
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.12);
+}
+
+[data-bs-theme="dark"] .tracking-hero-card {
+  background: #1e293b !important;
+  border-color: #ef4444 !important;
+  color: #f8fafc !important;
+}
+
+.tracking-map-card {
+  border: 2.5px solid #f97316 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 14px 35px rgba(249, 115, 22, 0.18) !important;
+  overflow: hidden;
+}
+
+/* Floating Tracking Pop Toasts */
+.tracking-pop-toast-slot {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1050;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.tracking-pop-toast {
+  pointer-events: auto;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 18px 45px -8px rgba(0, 0, 0, 0.25), 0 0 15px rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: trackingToastSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .tracking-pop-toast {
+  background: #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 18px 45px -8px rgba(0, 0, 0, 0.6), 0 0 18px rgba(239, 68, 68, 0.35);
+}
+
+@keyframes trackingToastSlide {
+  0% { transform: translateY(40px) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.pop-toast-kitchen { border: 2px solid #ef4444; }
+.pop-toast-packed { border: 2px solid #f59e0b; }
+.pop-toast-rider { border: 2px solid #3b82f6; }
+.pop-toast-nearby { border: 2px solid #a855f7; }
+.pop-toast-arrival { border: 2px solid #22c55e; }
+.pop-toast-delivered { border: 2px solid #16a34a; }
+

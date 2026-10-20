@@ -15,8 +15,12 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/ui.css">
+  <!-- 3D Animations & Vibrant Themes -->
+  <link rel="stylesheet" href="./css/animations-3d.css">
+  <!-- Theme Controller (Dark / Light Mode) -->
+  <script src="./js/theme.js"></script>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="bg-light d-flex flex-column min-vh-100 fw-tracking-page">
 
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
@@ -68,6 +72,13 @@
               <span class="badge bg-danger rounded-pill js-cart-count" style="display: none;">0</span>
             </a>
           </li>
+          <!-- Dark / Light Theme Switcher Button -->
+          <li class="nav-item">
+            <button type="button" class="btn btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
+              <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
+              <span class="theme-toggle-label d-none d-xl-inline">Dark</span>
+            </button>
+          </li>
           <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
           <li class="nav-item ms-lg-2" id="navbar-user-slot">
             <div class="d-flex align-items-center gap-2">
@@ -106,7 +117,7 @@
     <!-- Top Status Banner -->
     <div class="row mb-4">
       <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 tracking-hero-card">
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
               <div class="d-flex align-items-center gap-2 mb-1">
@@ -122,6 +133,16 @@
               <div class="small text-success fw-semibold" id="distance-display"><i class="bi bi-geo-alt"></i> Calculating route...</div>
             </div>
           </div>
+          <!-- Live Pop Notification Milestone Trigger Controls -->
+          <div class="mt-3 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-danger rounded-pill px-2.5 py-1 small fw-bold"><i class="bi bi-broadcast me-1"></i> Live Pop Alerts</span>
+              <span class="small text-muted" id="tracking-milestone-hint">Automatic 3D pop notifications active at each milestone</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-sm" id="btn-trigger-pop" title="Test next live milestone pop message">
+              <i class="bi bi-bell-fill text-warning"></i> Show Next Pop Alert
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -133,7 +154,7 @@
       <div class="col-lg-8">
         
         <!-- Live Map Card -->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 tracking-map-card">
           <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
             <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
               <i class="bi bi-map text-danger"></i> Live Delivery Route (Bengaluru)
@@ -153,7 +174,7 @@
         </div>
 
         <!-- 5-Step Status Timeline Card -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 tracking-timeline-card" style="border: 2px solid #06b6d4 !important; border-radius: 24px !important;">
           <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-clock-history text-danger me-2"></i>Order Timeline</h5>
           <div class="tracking-timeline" id="tracking-timeline-container">
             <!-- Dynamically populated -->
@@ -166,7 +187,7 @@
       <div class="col-lg-4">
         
         <!-- Delivery Partner Card -->
-        <div class="rider-card mb-4 shadow-sm">
+        <div class="rider-card mb-4 shadow-sm" style="border: 2px solid #f59e0b !important; border-radius: 24px !important;">
           <div class="d-flex align-items-center justify-content-between mb-3">
             <span class="badge bg-warning text-dark fw-bold px-3 py-1 rounded-pill">Valet Assigned</span>
             <div class="text-warning small"><i class="bi bi-star-fill"></i> <span id="rider-rating">4.9</span> (500+ deliveries)</div>
@@ -193,7 +214,7 @@
         </div>
 
         <!-- Delivery Address Card -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 tracking-dest-card" style="border: 2px solid #a855f7 !important; border-radius: 20px !important;">
           <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Delivery Destination</h6>
           <p class="text-muted small mb-0 lh-base" id="delivery-destination-text">
             Loading delivery address...
@@ -201,7 +222,7 @@
         </div>
 
         <!-- Order Items & Bill Summary -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 tracking-summary-card" style="border: 2px solid #10b981 !important; border-radius: 24px !important;">
           <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-receipt text-danger me-1"></i> Order Items & Receipt</h6>
           
           <div id="order-items-list" class="d-flex flex-column gap-2 mb-3">
@@ -501,6 +522,21 @@
         const remainingMin = Math.max(0, Math.round(28 * (1 - fraction)));
 
         document.getElementById('eta-display').textContent = remainingMin > 0 ? `${remainingMin} mins` : 'Arrived!';
+        // Automatic Dynamic Live Milestone Pop Notifications
+        if (fraction < 0.15) {
+          if (!shownPops.has('kitchen')) { shownPops.add('kitchen'); window.showTrackingPop('kitchen'); }
+        } else if (fraction >= 0.15 && fraction < 0.35) {
+          if (!shownPops.has('packed')) { shownPops.add('packed'); window.showTrackingPop('packed'); }
+        } else if (fraction >= 0.35 && fraction < 0.65) {
+          if (!shownPops.has('rider')) { shownPops.add('rider'); window.showTrackingPop('rider'); }
+        } else if (fraction >= 0.65 && fraction < 0.85) {
+          if (!shownPops.has('nearby')) { shownPops.add('nearby'); window.showTrackingPop('nearby'); }
+        } else if (fraction >= 0.85 && fraction < 1.0) {
+          if (!shownPops.has('arrival')) { shownPops.add('arrival'); window.showTrackingPop('arrival'); }
+        } else if (fraction >= 1.0) {
+          if (!shownPops.has('delivered')) { shownPops.add('delivered'); window.showTrackingPop('delivered'); }
+        }
+
         document.getElementById('distance-display').innerHTML = remainingKm > 0 
           ? `<i class="bi bi-geo-alt"></i> ~${remainingKm} km away` 
           : `<i class="bi bi-check-circle-fill text-success"></i> Reached Destination`;
@@ -545,6 +581,115 @@
         }).join('');
       }
 
+      
+      // --- Dynamic Live Tracking Pop Messages Notification Engine ---
+      const trackingMilestones = {
+        kitchen: {
+          badge: 'KITCHEN SIZZLING',
+          badgeClass: 'bg-danger text-white',
+          title: '🍳 Chef is Sizzling Your Order!',
+          msg: 'Order accepted! Master chef has fired up the wok and is preparing your meal fresh with premium ingredients.',
+          borderClass: 'pop-toast-kitchen',
+          soundIcon: 'bi-fire text-danger'
+        },
+        packed: {
+          badge: 'THERMAL PACKED',
+          badgeClass: 'bg-warning text-dark',
+          title: '📦 Freshly Packed in Thermal Bags',
+          msg: 'Dishes are packed in insulated hot-lock containers and secured with tamper-proof FoodWala seal tape.',
+          borderClass: 'pop-toast-packed',
+          soundIcon: 'bi-box-seam-fill text-warning'
+        },
+        rider: {
+          badge: 'VALET DISPATCHED',
+          badgeClass: 'bg-primary text-white',
+          title: '🛵 Delivery Partner On The Move',
+          msg: 'Valet Ramesh Kumar has collected your package and is navigating the quickest route across Bengaluru!',
+          borderClass: 'pop-toast-rider',
+          soundIcon: 'bi-bicycle text-primary'
+        },
+        nearby: {
+          badge: 'NEARING STREET',
+          badgeClass: 'bg-purple text-white',
+          title: '📍 Rider Entering Your Neighborhood (<800m)',
+          msg: 'Delivery partner has turned onto your block. Expected arrival at your doorstep in under 3 minutes.',
+          borderClass: 'pop-toast-nearby',
+          soundIcon: 'bi-geo-alt-fill text-info'
+        },
+        arrival: {
+          badge: 'AT DOORSTEP',
+          badgeClass: 'bg-success text-white',
+          title: '🔔 Doorbell Alert! Valet has Arrived',
+          msg: 'Valet is waiting at your gate/doorstep. Please share delivery security OTP <strong class="text-danger">4892</strong>.',
+          borderClass: 'pop-toast-arrival',
+          soundIcon: 'bi-bell-fill text-success'
+        },
+        delivered: {
+          badge: 'ORDER DELIVERED',
+          badgeClass: 'bg-success text-white',
+          title: '🎉 Delicious Meal Delivered!',
+          msg: 'Food package successfully delivered into your hands! Bon Appetit & thank you for ordering with FoodWala Bengaluru.',
+          borderClass: 'pop-toast-delivered',
+          soundIcon: 'bi-check-circle-fill text-success'
+        }
+      };
+
+      const shownPops = new Set();
+
+      window.showTrackingPop = function(key) {
+        const data = trackingMilestones[key];
+        if (!data) return;
+        const slot = document.getElementById('tracking-pop-slot');
+        if (!slot) return;
+
+        const toast = document.createElement('div');
+        toast.className = `tracking-pop-toast ${data.borderClass} shadow-lg`;
+        toast.innerHTML = `
+          <div class="fs-2 lh-1 mt-1"><i class="bi ${data.soundIcon}"></i></div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="badge ${data.badgeClass} rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">${data.badge}</span>
+              <small class="text-muted" style="font-size: 0.72rem;">Just now</small>
+            </div>
+            <div class="fw-bold small text-dark">${data.title}</div>
+            <p class="mb-0 text-muted" style="font-size: 0.8rem; line-height: 1.35;">${data.msg}</p>
+          </div>
+          <button type="button" class="btn-close btn-close-sm ms-2 mt-1" aria-label="Close" style="font-size: 0.65rem;"></button>
+        `;
+
+        const closeBtn = toast.querySelector('.btn-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            setTimeout(() => toast.remove(), 250);
+          });
+        }
+
+        slot.appendChild(toast);
+
+        // Auto-dismiss after 6.5 seconds
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            setTimeout(() => toast.remove(), 300);
+          }
+        }, 6500);
+      };
+
+      // Wire up Manual "Show Next Pop Alert" Button
+      const milestoneKeys = ['kitchen', 'packed', 'rider', 'nearby', 'arrival', 'delivered'];
+      let manualPopIdx = 0;
+      const testPopBtn = document.getElementById('btn-trigger-pop');
+      if (testPopBtn) {
+        testPopBtn.addEventListener('click', () => {
+          const key = milestoneKeys[manualPopIdx % milestoneKeys.length];
+          manualPopIdx++;
+          window.showTrackingPop(key);
+        });
+      }
+
       updateStatusUI(currentStep);
 
       const simInterval = setInterval(() => {
@@ -567,5 +712,8 @@
 
     });
   </script>
+
+  <!-- Floating Dynamic Live Tracking Pop Messages Container -->
+  <div id="tracking-pop-slot" class="tracking-pop-toast-slot" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

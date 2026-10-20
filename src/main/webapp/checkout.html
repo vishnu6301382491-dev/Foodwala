@@ -15,8 +15,10 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/ui.css">
+  <link rel="stylesheet" href="./css/animations-3d.css">
+  <script src="./js/theme.js"></script>
 </head>
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="fw-checkout-page d-flex flex-column min-vh-100">
 
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-2">
@@ -69,7 +71,14 @@
             </a>
           </li>
           <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
-          <li class="nav-item ms-lg-2" id="navbar-user-slot">
+                    <!-- Dark / Light Theme Switcher Button -->
+          <li class="nav-item">
+            <button type="button" class="btn btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
+              <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
+              <span class="theme-toggle-label d-none d-xl-inline">Dark</span>
+            </button>
+          </li>
+<li class="nav-item ms-lg-2" id="navbar-user-slot">
             <div class="d-flex align-items-center gap-2">
               <a href="./login.html" class="btn btn-outline-danger btn-sm px-3 py-2 rounded-pill fw-semibold d-flex align-items-center gap-1">
                 <i class="bi bi-person"></i>
@@ -119,7 +128,7 @@
       <div class="col-lg-8">
         
         <!-- 1. Delivery Address Selection Card -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <div class="card checkout-card-location p-4 mb-4">
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
             <div>
               <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -143,7 +152,7 @@
         </div>
 
         <!-- 2. Delivery Instructions Card -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <div class="card checkout-card-notes p-4 mb-4">
           <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
             <span class="badge bg-secondary rounded-circle p-2">2</span> Delivery Notes / Instructions
           </h5>
@@ -171,7 +180,7 @@
         </div>
 
         <!-- 3. Customer Contact & Email Receipt Card -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <div class="card checkout-card-notes p-4 mb-4">
           <h5 class="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
             <span class="badge bg-danger rounded-circle p-2">3</span> Contact & Email Receipt
           </h5>
@@ -190,7 +199,7 @@
         </div>
 
         <!-- 4. Payment Method Selection Card -->
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+        <div class="card checkout-card-payment p-4 mb-4">
           <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
             <span class="badge bg-primary rounded-circle p-2">4</span> Payment Method
           </h5>
@@ -243,7 +252,7 @@
 
       <!-- Right Column: Order Review & Total -->
       <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 sticky-top" style="top: 90px;">
+        <div class="card checkout-card-summary p-4 sticky-top" style="top: 90px;">
           
           <div class="d-flex align-items-center gap-3 pb-3 mb-3 border-bottom">
             <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500" class="rounded-3" loading="lazy" decoding="async" style="width: 50px; height: 50px; object-fit: cover;" id="checkout-rest-img" alt="Restaurant">
@@ -991,7 +1000,7 @@
 
                 FoodWalaApp.showToast('Payment successful! Confirming your order...', 'success');
                 setTimeout(() => {
-                  window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
+                  window.location.href = `./order-confirmation.html?orderId=${newOrder.orderId}`;
                 }, 400);
               },
               modal: {
@@ -1051,7 +1060,7 @@
 
         FoodWalaApp.showToast(`Order placed successfully via ${paymentName}!`, 'success');
         setTimeout(() => {
-          window.location.href = `./order-tracking.html?orderId=${newOrder.orderId}`;
+          window.location.href = `./order-confirmation.html?orderId=${newOrder.orderId}`;
         }, 400);
       }
 

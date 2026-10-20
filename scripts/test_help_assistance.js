@@ -201,6 +201,42 @@ assert(updatedCssContent.includes('.feature-curated-spots') && updatedCssContent
 assert(updatedCssContent.includes('[data-bs-theme="dark"] .fw-3d-tracking-section') && updatedCssContent.includes('#0b0f19'), 'CSS defines deep obsidian surface for Dark Mode tracking section.');
 assert(updatedCssContent.includes('[data-bs-theme="dark"] .fw-features-3d-section') && updatedCssContent.includes('#0b0f19'), 'CSS defines deep obsidian surface for Dark Mode features section.');
 
+
+// Test 11: Verify Footer Contrast, Vibrant Checkout, 3D Order Confirmation Celebration & Tracking Pop Messages
+console.log('\nTest 11: Verifying Footer Contrast, Vibrant Checkout, 3D Order Confirmation & Live Tracking Pop Messages...');
+const checkoutHtml = fs.readFileSync(path.join(PROJECT_ROOT, 'checkout.html'), 'utf8');
+const orderConfirmHtml = fs.readFileSync(path.join(PROJECT_ROOT, 'order-confirmation.html'), 'utf8');
+const orderTrackingHtml = fs.readFileSync(path.join(PROJECT_ROOT, 'order-tracking.html'), 'utf8');
+const orderTrackHtml = fs.readFileSync(path.join(PROJECT_ROOT, 'order-track.html'), 'utf8');
+
+// 1. Footer High Contrast
+assert(updatedCssContent.includes('footer .list-unstyled a') && updatedCssContent.includes('#94a3b8 !important'), 'CSS enforces high-contrast #94a3b8 for footer links and text in both modes.');
+
+// 2. Checkout Vibrant Cards
+assert(checkoutHtml.includes('fw-checkout-page'), 'checkout.html applies fw-checkout-page ambient background.');
+assert(checkoutHtml.includes('checkout-card-location'), 'checkout.html has vibrant location card.');
+assert(checkoutHtml.includes('checkout-card-payment'), 'checkout.html has vibrant payment card.');
+assert(checkoutHtml.includes('checkout-card-summary'), 'checkout.html has vibrant order summary card.');
+assert(checkoutHtml.includes('fw-theme-toggle-btn'), 'checkout.html has theme toggle button.');
+
+// 3. Order Confirmation 3D Celebration
+assert(orderConfirmHtml.includes('fw-confirmation-page'), 'order-confirmation.html applies fw-confirmation-page.');
+assert(orderConfirmHtml.includes('3d-giftbox.svg'), 'order-confirmation.html contains 3D celebration gift box graphic.');
+assert(orderConfirmHtml.includes('confetti-holder') && orderConfirmHtml.includes('confetti-p'), 'order-confirmation.html has animated confetti celebration system.');
+assert(orderConfirmHtml.includes('confirm-otp') && orderConfirmHtml.includes('deliveryOtp'), 'order-confirmation.html displays delivery verification OTP.');
+assert(updatedCssContent.includes('fwFloatGift'), 'CSS defines 3D floating animation fwFloatGift for celebration box.');
+
+// 4. Live Order Tracking & Pop Messages
+assert(orderTrackingHtml.includes('fw-tracking-page'), 'order-tracking.html applies fw-tracking-page.');
+assert(orderTrackingHtml.includes('tracking-hero-card'), 'order-tracking.html applies tracking-hero-card with bright border.');
+assert(orderTrackingHtml.includes('tracking-map-card'), 'order-tracking.html applies tracking-map-card.');
+assert(orderTrackingHtml.includes('tracking-pop-slot'), 'order-tracking.html has tracking-pop-slot container.');
+assert(orderTrackingHtml.includes('window.showTrackingPop'), 'order-tracking.html defines showTrackingPop function.');
+assert(orderTrackingHtml.includes('btn-trigger-pop'), 'order-tracking.html provides manual trigger button for live pop alerts.');
+
+assert(orderTrackHtml.includes('tracking-pop-slot'), 'order-track.html also has tracking-pop-slot container.');
+assert(updatedCssContent.includes('.pop-toast-kitchen') && updatedCssContent.includes('.pop-toast-delivered'), 'CSS defines milestone pop toast border classes.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');
