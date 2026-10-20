@@ -54,7 +54,7 @@
     const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
 
     // 45s timeout on first request (Render free-tier sleep); 10s on subsequent requests
-    const timeoutMs = isFirstLiveRequest ? 45000 : 10000;
+    const timeoutMs = isFirstLiveRequest ? 4000 : 3500;
     isFirstLiveRequest = false;
 
     const controller = new AbortController();

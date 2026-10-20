@@ -16,6 +16,8 @@
 
   const isLocalHost = typeof window !== 'undefined' && window.location && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const isGitHubPages = typeof window !== 'undefined' && window.location && 
+    (window.location.hostname.endsWith('github.io') || window.location.hostname.includes('github.io'));
 
   // Explicit demo/mock mode check:
   // ONLY enable mock mode if ?mode=mock or ?demo=true in URL, or localStorage flag is set
@@ -23,7 +25,8 @@
     new URLSearchParams(window.location.search) : null;
   const isExplicitDemo = urlParams ? (urlParams.get('mode') === 'mock' || urlParams.get('demo') === 'true') : false;
   const isForcedMock = (typeof localStorage !== 'undefined') && localStorage.getItem('foodwala_force_mock') === 'true';
-  const shouldRunMock = isExplicitDemo || isForcedMock;
+  // On GitHub Pages static hosting or when demo flag is present, run verified mock engine
+  const shouldRunMock = isExplicitDemo || isForcedMock || isGitHubPages;
 
   window.FOODWALA_CONFIG = {
     MODE: shouldRunMock ? 'mock' : 'live',
