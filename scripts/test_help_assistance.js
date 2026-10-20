@@ -110,6 +110,45 @@ assert(homeHtml.includes('fw-categories-section-3d'), 'home.html uses .fw-catego
 assert(cssContent.includes('.fw-categories-section-3d'), 'CSS defines warm ambient .fw-categories-section-3d.');
 assert(indexHtml.includes('cat-badge-pill'), 'index.html includes .cat-badge-pill on category cards.');
 
+// Test 8: Verify Dark/Light Theme System and Bright Vivid Colors
+console.log('\nTest 8: Verifying Dark/Light Theme System & Vivid Category Styles...');
+const themeJsPath = path.join(PROJECT_ROOT, 'js', 'theme.js');
+assert(fs.existsSync(themeJsPath), 'js/theme.js exists on disk.');
+
+const themeJsContent = fs.readFileSync(themeJsPath, 'utf8');
+try {
+  const mockWindow = { matchMedia: () => ({ matches: false, addEventListener: () => {} }) };
+  const mockDoc = {
+    documentElement: { setAttribute: () => {}, classList: { add: () => {}, remove: () => {} } },
+    addEventListener: () => {},
+    getElementById: () => null,
+    querySelectorAll: () => []
+  };
+  const mockStorage = { getItem: () => null, setItem: () => {} };
+  vm.runInNewContext(themeJsContent, {
+    window: mockWindow,
+    document: mockDoc,
+    localStorage: mockStorage,
+    CustomEvent: function() {}
+  });
+  assert(typeof mockWindow.FoodWalaTheme === 'object', 'FoodWalaTheme global object created.');
+  assert(typeof mockWindow.FoodWalaTheme.toggleTheme === 'function', 'FoodWalaTheme.toggleTheme is a function.');
+  assert(typeof mockWindow.FoodWalaTheme.setTheme === 'function', 'FoodWalaTheme.setTheme is a function.');
+} catch (e) {
+  assert(false, `theme.js execution failed in VM: ${e.message}`);
+}
+
+assert(indexHtml.includes('fw-theme-toggle-btn'), 'index.html has #fw-theme-toggle-btn theme toggle.');
+assert(homeHtml.includes('fw-theme-toggle-btn'), 'home.html has #fw-theme-toggle-btn theme toggle.');
+assert(indexHtml.includes('js/theme.js'), 'index.html links js/theme.js in head.');
+assert(homeHtml.includes('js/theme.js'), 'home.html links js/theme.js in head.');
+
+assert(cssContent.includes('[data-bs-theme="dark"]'), 'CSS defines [data-bs-theme="dark"] dark mode overrides.');
+assert(cssContent.includes('.theme-toggle-btn'), 'CSS defines .theme-toggle-btn button styling.');
+assert(cssContent.includes('.cat-pizza') && cssContent.includes('#ef4444'), 'CSS defines vivid bright crimson border for Pizza category.');
+assert(cssContent.includes('.cat-burger') && cssContent.includes('#f59e0b'), 'CSS defines vivid bright amber border for Burger category.');
+assert(cssContent.includes('.cat-biryani') && cssContent.includes('#f97316'), 'CSS defines vivid bright orange border for Biryani category.');
+
 console.log('\n============================================================');
 if (allPassed) {
   console.log('🎉 ALL ZOMATO VIDEO HERO & 24/7 HELP ASSISTANCE TESTS PASSED!');

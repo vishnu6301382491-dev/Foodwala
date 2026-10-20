@@ -687,125 +687,133 @@
   transform: translateZ(22px) scale(1.05);
 }
 
-/* Category Accent Variants with Rich Appetizing Gradients */
+/* Category Accent Variants with Rich, Bright High-Visibility Colors */
 .cat-pizza {
-  background: linear-gradient(160deg, #ffffff 0%, #fff1f2 100%) !important;
-  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #fee2e2 60%, #fecaca 100%) !important;
+  border: 2px solid #ef4444 !important;
   --cat-top-bar: #ef4444;
-  --cat-accent: rgba(239, 68, 68, 0.25);
-  --cat-shadow: rgba(239, 68, 68, 0.32);
-  --cat-glow: rgba(249, 115, 22, 0.25);
-  --cat-border: rgba(239, 68, 68, 0.4);
+  --cat-accent: rgba(239, 68, 68, 0.4);
+  --cat-shadow: rgba(239, 68, 68, 0.35);
+  --cat-glow: rgba(239, 68, 68, 0.3);
+  --cat-border: #dc2626;
 }
 .cat-pizza .cat-badge-pill {
-  background: rgba(239, 68, 68, 0.12);
-  color: #dc2626;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  font-weight: 800;
 }
 
 .cat-burger {
-  background: linear-gradient(160deg, #ffffff 0%, #fffbeb 100%) !important;
-  border-color: rgba(245, 158, 11, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #fef3c7 60%, #fde68a 100%) !important;
+  border: 2px solid #f59e0b !important;
   --cat-top-bar: #f59e0b;
-  --cat-accent: rgba(245, 158, 11, 0.25);
-  --cat-shadow: rgba(245, 158, 11, 0.32);
-  --cat-glow: rgba(245, 158, 11, 0.25);
-  --cat-border: rgba(245, 158, 11, 0.4);
+  --cat-accent: rgba(245, 158, 11, 0.4);
+  --cat-shadow: rgba(245, 158, 11, 0.35);
+  --cat-glow: rgba(245, 158, 11, 0.3);
+  --cat-border: #d97706;
 }
 .cat-burger .cat-badge-pill {
-  background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
-  border: 1px solid rgba(245, 158, 11, 0.22);
+  background: #f59e0b !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+  font-weight: 800;
 }
 
 .cat-biryani {
-  background: linear-gradient(160deg, #ffffff 0%, #fff7ed 100%) !important;
-  border-color: rgba(249, 115, 22, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #ffedd5 60%, #fed7aa 100%) !important;
+  border: 2px solid #f97316 !important;
   --cat-top-bar: #ea580c;
-  --cat-accent: rgba(249, 115, 22, 0.25);
-  --cat-shadow: rgba(249, 115, 22, 0.32);
-  --cat-glow: rgba(245, 158, 11, 0.25);
-  --cat-border: rgba(249, 115, 22, 0.4);
+  --cat-accent: rgba(249, 115, 22, 0.4);
+  --cat-shadow: rgba(249, 115, 22, 0.35);
+  --cat-glow: rgba(249, 115, 22, 0.3);
+  --cat-border: #c2410c;
 }
 .cat-biryani .cat-badge-pill {
-  background: rgba(249, 115, 22, 0.12);
-  color: #c2410c;
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  background: #ea580c !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.4);
+  font-weight: 800;
 }
 
 .cat-chinese {
-  background: linear-gradient(160deg, #ffffff 0%, #fef2f2 100%) !important;
-  border-color: rgba(220, 38, 38, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #fee2e2 60%, #fca5a5 100%) !important;
+  border: 2px solid #dc2626 !important;
   --cat-top-bar: #dc2626;
-  --cat-accent: rgba(220, 38, 38, 0.25);
-  --cat-shadow: rgba(220, 38, 38, 0.32);
-  --cat-glow: rgba(239, 68, 68, 0.25);
-  --cat-border: rgba(220, 38, 38, 0.4);
+  --cat-accent: rgba(220, 38, 38, 0.4);
+  --cat-shadow: rgba(220, 38, 38, 0.35);
+  --cat-glow: rgba(220, 38, 38, 0.3);
+  --cat-border: #991b1b;
 }
 .cat-chinese .cat-badge-pill {
-  background: rgba(220, 38, 38, 0.12);
-  color: #b91c1c;
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+  font-weight: 800;
 }
 
 .cat-south-indian {
-  background: linear-gradient(160deg, #ffffff 0%, #f0fdf4 100%) !important;
-  border-color: rgba(34, 197, 94, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #dcfce7 60%, #bbf7d0 100%) !important;
+  border: 2px solid #22c55e !important;
   --cat-top-bar: #16a34a;
-  --cat-accent: rgba(34, 197, 94, 0.25);
-  --cat-shadow: rgba(34, 197, 94, 0.32);
-  --cat-glow: rgba(34, 197, 94, 0.25);
-  --cat-border: rgba(34, 197, 94, 0.4);
+  --cat-accent: rgba(34, 197, 94, 0.4);
+  --cat-shadow: rgba(34, 197, 94, 0.35);
+  --cat-glow: rgba(34, 197, 94, 0.3);
+  --cat-border: #15803d;
 }
 .cat-south-indian .cat-badge-pill {
-  background: rgba(34, 197, 94, 0.12);
-  color: #15803d;
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: #16a34a !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.4);
+  font-weight: 800;
 }
 
 .cat-beverages {
-  background: linear-gradient(160deg, #ffffff 0%, #f0fdfa 100%) !important;
-  border-color: rgba(20, 184, 166, 0.25) !important;
-  --cat-top-bar: #0d9488;
-  --cat-accent: rgba(20, 184, 166, 0.25);
-  --cat-shadow: rgba(20, 184, 166, 0.32);
-  --cat-glow: rgba(20, 184, 166, 0.25);
-  --cat-border: rgba(20, 184, 166, 0.4);
+  background: linear-gradient(150deg, #ffffff 0%, #ccfbf1 60%, #99f6e4 100%) !important;
+  border: 2px solid #06b6d4 !important;
+  --cat-top-bar: #0891b2;
+  --cat-accent: rgba(6, 182, 212, 0.4);
+  --cat-shadow: rgba(6, 182, 212, 0.35);
+  --cat-glow: rgba(6, 182, 212, 0.3);
+  --cat-border: #0e7490;
 }
 .cat-beverages .cat-badge-pill {
-  background: rgba(20, 184, 166, 0.12);
-  color: #0f766e;
-  border: 1px solid rgba(20, 184, 166, 0.2);
+  background: #0891b2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(8, 145, 178, 0.4);
+  font-weight: 800;
 }
 
 .cat-desserts {
-  background: linear-gradient(160deg, #ffffff 0%, #faf5ff 100%) !important;
-  border-color: rgba(168, 85, 247, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #f3e8ff 60%, #e9d5ff 100%) !important;
+  border: 2px solid #a855f7 !important;
   --cat-top-bar: #9333ea;
-  --cat-accent: rgba(168, 85, 247, 0.25);
-  --cat-shadow: rgba(168, 85, 247, 0.32);
-  --cat-glow: rgba(168, 85, 247, 0.25);
-  --cat-border: rgba(168, 85, 247, 0.4);
+  --cat-accent: rgba(168, 85, 247, 0.4);
+  --cat-shadow: rgba(168, 85, 247, 0.35);
+  --cat-glow: rgba(168, 85, 247, 0.3);
+  --cat-border: #7e22ce;
 }
 .cat-desserts .cat-badge-pill {
-  background: rgba(168, 85, 247, 0.12);
-  color: #7e22ce;
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: #9333ea !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(147, 51, 234, 0.4);
+  font-weight: 800;
 }
 
 .cat-rolls {
-  background: linear-gradient(160deg, #ffffff 0%, #fefce8 100%) !important;
-  border-color: rgba(202, 138, 4, 0.25) !important;
+  background: linear-gradient(150deg, #ffffff 0%, #fef9c3 60%, #fef08a 100%) !important;
+  border: 2px solid #eab308 !important;
   --cat-top-bar: #ca8a04;
-  --cat-accent: rgba(202, 138, 4, 0.25);
-  --cat-shadow: rgba(202, 138, 4, 0.32);
-  --cat-glow: rgba(202, 138, 4, 0.25);
-  --cat-border: rgba(202, 138, 4, 0.4);
+  --cat-accent: rgba(234, 179, 8, 0.4);
+  --cat-shadow: rgba(234, 179, 8, 0.35);
+  --cat-glow: rgba(234, 179, 8, 0.3);
+  --cat-border: #a16207;
 }
 .cat-rolls .cat-badge-pill {
-  background: rgba(202, 138, 4, 0.12);
-  color: #a16207;
-  border: 1px solid rgba(202, 138, 4, 0.2);
+  background: #ca8a04 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(202, 138, 4, 0.4);
+  font-weight: 800;
 }
 
 /* ==========================================================================
@@ -814,6 +822,8 @@
 
 .fw-restaurants-section-3d {
   position: relative;
+  padding-top: 3.5rem !important;
+  padding-bottom: 4rem !important;
   background: radial-gradient(circle at 10% 15%, rgba(254, 215, 170, 0.35) 0%, transparent 40%),
               radial-gradient(circle at 90% 85%, rgba(254, 202, 202, 0.35) 0%, transparent 40%),
               radial-gradient(circle at 50% 50%, rgba(254, 243, 199, 0.25) 0%, transparent 50%),
@@ -1839,5 +1849,202 @@
   border-color: #e23744;
   color: #e23744;
   transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   15. DARK MODE THEME SYSTEM ([data-bs-theme="dark"])
+   ========================================================================== */
+
+[data-bs-theme="dark"] body {
+  background-color: #0b0f19 !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .navbar {
+  background: rgba(15, 23, 42, 0.96) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link {
+  color: #e2e8f0 !important;
+}
+[data-bs-theme="dark"] .navbar .nav-link:hover {
+  color: #ef4444 !important;
+}
+
+[data-bs-theme="dark"] #navbar-location-display span {
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .btn-light {
+  background-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+/* Dark Mode Categories Section */
+[data-bs-theme="dark"] .fw-categories-section-3d {
+  background: radial-gradient(circle at 10% 20%, rgba(220, 38, 38, 0.16) 0%, transparent 45%),
+              radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.14) 0%, transparent 45%),
+              linear-gradient(180deg, #0b0f19 0%, #111827 50%, #0b0f19 100%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .category-card-3d {
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .cat-pizza {
+  background: linear-gradient(150deg, #1e293b 0%, #3f0a0a 100%) !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-burger {
+  background: linear-gradient(150deg, #1e293b 0%, #3f1a05 100%) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-biryani {
+  background: linear-gradient(150deg, #1e293b 0%, #3d1405 100%) !important;
+  border-color: #f97316 !important;
+  box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-chinese {
+  background: linear-gradient(150deg, #1e293b 0%, #3f0808 100%) !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-south-indian {
+  background: linear-gradient(150deg, #1e293b 0%, #052e16 100%) !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-beverages {
+  background: linear-gradient(150deg, #1e293b 0%, #042f2e 100%) !important;
+  border-color: #06b6d4 !important;
+  box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-desserts {
+  background: linear-gradient(150deg, #1e293b 0%, #2e1065 100%) !important;
+  border-color: #a855f7 !important;
+  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.3) !important;
+}
+[data-bs-theme="dark"] .cat-rolls {
+  background: linear-gradient(150deg, #1e293b 0%, #3a2205 100%) !important;
+  border-color: #eab308 !important;
+  box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.3) !important;
+}
+
+/* Dark Mode Featured Restaurants Section */
+[data-bs-theme="dark"] .fw-restaurants-section-3d {
+  background: radial-gradient(circle at 10% 15%, rgba(234, 88, 12, 0.14) 0%, transparent 45%),
+              radial-gradient(circle at 90% 85%, rgba(220, 38, 38, 0.16) 0%, transparent 45%),
+              linear-gradient(180deg, #0d121f 0%, #131b2e 50%, #0d121f 100%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .restaurant-filter-pill {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+[data-bs-theme="dark"] .restaurant-filter-pill:hover {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+[data-bs-theme="dark"] .restaurant-filter-pill.active {
+  background: linear-gradient(135deg, #e23744 0%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+[data-bs-theme="dark"] .fw-3d-restaurant-card {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+[data-bs-theme="dark"] .fw-3d-restaurant-card:hover {
+  border-color: rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 22px 42px -8px rgba(239, 68, 68, 0.3), 0 0 25px rgba(245, 158, 11, 0.2) !important;
+}
+[data-bs-theme="dark"] .fw-3d-restaurant-card h6 {
+  color: #ffffff !important;
+}
+[data-bs-theme="dark"] .fw-3d-restaurant-card .text-muted {
+  color: #94a3b8 !important;
+}
+[data-bs-theme="dark"] .fw-3d-restaurant-card .border-top {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark Mode Search & Controls */
+[data-bs-theme="dark"] .fw-3d-search-box {
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+[data-bs-theme="dark"] #hero-search-input {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+[data-bs-theme="dark"] #hero-search-dropdown {
+  background: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+[data-bs-theme="dark"] #hero-search-dropdown a {
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+[data-bs-theme="dark"] #hero-search-dropdown a:hover {
+  background: #334155 !important;
+}
+
+/* Dark Mode Deals & Footer */
+[data-bs-theme="dark"] .fw-3d-deal-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #ffffff !important;
+}
+[data-bs-theme="dark"] .fw-3d-deal-card h3 {
+  color: #ffffff !important;
+}
+[data-bs-theme="dark"] .fw-3d-deal-card p {
+  color: #94a3b8 !important;
+}
+[data-bs-theme="dark"] footer {
+  background: #080c14 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Theme Switcher Button Styling */
+.theme-toggle-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+  transition: all 0.25s ease;
+}
+.theme-toggle-btn:hover {
+  transform: scale(1.05);
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
+[data-bs-theme="dark"] .theme-toggle-btn {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+}
+[data-bs-theme="dark"] .theme-toggle-btn:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
 }
 

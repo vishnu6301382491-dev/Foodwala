@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./css/style.min.css">
   <link rel="stylesheet" href="./css/ui.css">
   <link rel="stylesheet" href="./css/animations-3d.css">
+  <script src="./js/theme.js"></script>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
@@ -73,6 +74,13 @@
             <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 js-open-247-help" title="FoodWala 24/7 Customer Help Assistance">
               <i class="bi bi-headset fs-6 text-danger"></i>
               <span>24/7 Help</span>
+            </button>
+          </li>
+          <!-- Dark / Light Theme Switcher Button -->
+          <li class="nav-item">
+            <button type="button" class="btn btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
+              <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
+              <span class="theme-toggle-label d-none d-xl-inline">Dark</span>
             </button>
           </li>
           <!-- User Slot (Populated dynamically from foodwala_current_user; default is Login) -->
