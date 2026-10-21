@@ -15,6 +15,17 @@ const https = require('https');
 const db = require('../db');
 
 class WhatsAppService {
+  constructor() {
+    this.sendWhatsAppMessage = this.sendWhatsAppMessage.bind(this);
+    this.sendTextMessage = this.sendTextMessage.bind(this);
+    this.normalizeSender = this.normalizeSender.bind(this);
+    this.verifySignature = this.verifySignature.bind(this);
+    this.checkHealth = this.checkHealth.bind(this);
+    this.getOrCreateConversation = this.getOrCreateConversation.bind(this);
+    this.logMessage = this.logMessage.bind(this);
+    this._postToGraphApi = this._postToGraphApi.bind(this);
+  }
+
   get phoneNumberId() {
     return process.env.WHATSAPP_PHONE_NUMBER_ID || '';
   }
