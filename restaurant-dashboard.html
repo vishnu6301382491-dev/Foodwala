@@ -109,23 +109,23 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <select id="restaurant-selector-dropdown" class="form-select form-select-sm rounded-pill fw-semibold border shadow-sm d-none d-sm-inline-block" style="width: auto; min-width: 170px;">
+        <select id="restaurant-selector-dropdown" class="form-select form-select-sm rounded-pill fw-semibold border shadow-sm" style="width: auto; min-width: 170px; display: none !important;">
           <option value="2">Vidyarthi Bhavan (#2)</option>
           <option value="1">CTR Shri Sagar (#1)</option>
           <option value="3">Mavalli Tiffin Room (MTR) (#3)</option>
           <option value="7">Meghana Foods (#7)</option>
         </select>
-        <button id="store-status-toggle-btn" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm">
+        <button id="store-status-toggle-btn" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-flex align-items-center gap-1 shadow-sm" style="display: none !important;">
           <i class="bi bi-circle-fill text-success" style="font-size: 0.65rem;"></i>
           <span id="store-status-text">Accepting Orders</span>
         </button>
         <button id="fw-theme-toggle-btn" class="btn btn-sm btn-outline-secondary rounded-pill px-2 me-1" type="button" aria-label="Toggle theme">
           <i class="bi bi-moon-stars-fill theme-icon-active" style="color: #FF9F1C;"></i>
         </button>
-        <a href="./restaurant-details.html?id=2" id="preview-store-btn" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold">
+        <a href="./restaurant-details.html?id=2" id="preview-store-btn" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" style="display: none !important;">
           <i class="bi bi-box-arrow-up-right me-1"></i> Preview Menu
         </a>
-        <button id="rest-logout-btn" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+        <button id="rest-logout-btn" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold" style="display: none !important;">
           <i class="bi bi-box-arrow-right me-1"></i> Logout
         </button>
       </div>
@@ -576,11 +576,23 @@
 
     function initRestaurantAuth() {
       const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      const restSelector = document.getElementById('restaurant-selector-dropdown');
+      const storeToggle = document.getElementById('store-status-toggle-btn');
+      const previewBtn = document.getElementById('preview-store-btn');
+      const logoutBtn = document.getElementById('rest-logout-btn');
+      const roleBadge = document.getElementById('partner-role-badge');
+      const adminBar = document.getElementById('super-admin-control-bar');
+
       if (!currentUser) {
         document.getElementById('rest-gate').style.display = 'block';
         document.getElementById('rest-dashboard').style.display = 'none';
-        const logoutBtn = document.getElementById('rest-logout-btn');
-        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (adminBar) adminBar.style.setProperty('display', 'none', 'important');
+        // STRICT ISOLATION: NEVER display restaurant switcher or store controls to unauthenticated visitors
+        if (restSelector) restSelector.style.setProperty('display', 'none', 'important');
+        if (storeToggle) storeToggle.style.setProperty('display', 'none', 'important');
+        if (previewBtn) previewBtn.style.setProperty('display', 'none', 'important');
+        if (logoutBtn) logoutBtn.style.setProperty('display', 'none', 'important');
+        if (roleBadge) roleBadge.classList.add('d-none');
         return;
       }
 
@@ -593,8 +605,9 @@
 
       document.getElementById('rest-gate').style.display = 'none';
       document.getElementById('rest-dashboard').style.display = 'block';
-      const logoutBtn = document.getElementById('rest-logout-btn');
-      if (logoutBtn) logoutBtn.style.display = 'inline-block';
+      if (logoutBtn) logoutBtn.style.setProperty('display', 'inline-block', 'important');
+      if (storeToggle) storeToggle.style.setProperty('display', 'inline-flex', 'important');
+      if (previewBtn) previewBtn.style.setProperty('display', 'inline-block', 'important');
       loadRestaurantDashboard();
     }
 
@@ -609,7 +622,8 @@
 
       if (!isAdmin) {
         // --- RESTAURANT MANAGER: Strictly bound to their own restaurant ---
-        const managerRestId = (currentUser && (currentUser.restaurantId || currentUser.restaurant_id)) || null;
+        // STRICT MANAGER ISOLATION: Manager can access ONLY their own restaurant!
+        let managerRestId = (currentUser && (currentUser.restaurantId || currentUser.restaurant_id)) || null;
         if (managerRestId) {
           currentRestId = parseInt(managerRestId, 10);
         } else {
@@ -619,6 +633,9 @@
         // HIDE restaurant switcher dropdown so managers cannot view or select other stores
         if (restSelector) {
           restSelector.style.setProperty('display', 'none', 'important');
+        }
+        if (adminBar) {
+          adminBar.style.setProperty('display', 'none', 'important');
         }
 
         // Update Manager badge

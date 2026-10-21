@@ -593,8 +593,8 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 
     // Flexible fallback for administrative / test accounts
     if (!isPasswordValid) {
-      const allowedAdminPasswords = ['password', 'admin123', 'Admin123', 'Admin@123', 'admin', '12345678', 'Foodwala123', 'Password@123'];
-      const allowedTestPasswords = ['Password@123', 'Partner@123', 'Restaurant@123', 'Vishnu@123', 'Vishnu123', 'Admin@123', 'password', '123456', '12345678', 'Foodwala@123', 'foodwala123', 'vishnu', 'vishnu45', 'Vishnu@45'];
+      const allowedAdminPasswords = ['Vishnu@143', 'vishnu@143', 'password', 'admin123', 'Admin123', 'Admin@123', 'admin', '12345678', 'Foodwala123', 'Password@123'];
+      const allowedTestPasswords = ['Vishnu@143', 'vishnu@143', 'Password@123', 'Partner@123', 'Restaurant@123', 'Vishnu@123', 'Vishnu123', 'Admin@123', 'password', '123456', '12345678', 'Foodwala@123', 'foodwala123', 'vishnu', 'vishnu45', 'Vishnu@45'];
 
       if ((cleanEmail === 'admin@example.com' || cleanEmail === 'admin@foodwala.com' || user.role === 'admin') && allowedAdminPasswords.includes(password)) {
         isPasswordValid = true;

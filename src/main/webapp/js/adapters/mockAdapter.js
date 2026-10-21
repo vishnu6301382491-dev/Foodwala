@@ -75,6 +75,33 @@
     return 'm_hash_' + Math.abs(hash).toString(16) + '_secure';
   }
 
+  // FoodWala Enterprise: Registry of all 105 Restaurant Managers
+  const ALL_RESTAURANT_MANAGERS = [{"id":1,"name":"Central Tiffin Room (CTR) - Shri Sagar","email":"centraltiffinroomshrisagar@gmail.com","area":"Malleshwaram","phone":"8023344838"},{"id":2,"name":"Vidyarthi Bhavan","email":"vidyarthibhavan@gmail.com","area":"Basavanagudi","phone":"8026677588"},{"id":3,"name":"Mavalli Tiffin Room (MTR)","email":"mavallitiffinroom@gmail.com","area":"Lalbagh","phone":"8022220022"},{"id":4,"name":"Corner House Ice Cream","email":"cornerhouseicecream@gmail.com","area":"Jayanagar","phone":"8026633456"},{"id":5,"name":"Shivaji Military Hotel","email":"shivajimilitaryhotel@gmail.com","area":"Jayanagar","phone":"9986356789"},{"id":6,"name":"Brahmin's Coffee Bar","email":"brahminscoffeebar@gmail.com","area":"Basavanagudi","phone":"8026601234"},{"id":7,"name":"Meghana Foods","email":"meghanafood@gmail.com","area":"Koramangala","phone":"8041105555"},{"id":8,"name":"Truffles","email":"truffles@gmail.com","area":"Koramangala","phone":"8041466565"},{"id":9,"name":"Veena Stores","email":"veenastores@gmail.com","area":"Malleshwaram","phone":"8023344839"},{"id":10,"name":"Halli Mane","email":"hallimane@gmail.com","area":"Malleshwaram","phone":"8041125678"},{"id":11,"name":"Janata Hotel","email":"janatahotel@gmail.com","area":"Malleshwaram","phone":"8023341122"},{"id":12,"name":"Sri Raghavendra Stores","email":"sriraghavendrastores@gmail.com","area":"Malleshwaram","phone":"8023447890"},{"id":13,"name":"Nalapaka","email":"nalapaka@gmail.com","area":"Rajajinagar","phone":"8023154567"},{"id":14,"name":"Paakashala","email":"paakashala@gmail.com","area":"Rajajinagar","phone":"8023129988"},{"id":15,"name":"Taaza Thindi","email":"taazathindi@gmail.com","area":"Jayanagar","phone":"8040992233"},{"id":16,"name":"Maiyas","email":"maiyas@gmail.com","area":"Jayanagar","phone":"8026564455"},{"id":17,"name":"Kamat Bugle Rock","email":"kamatbuglerock@gmail.com","area":"Basavanagudi","phone":"8026607788"},{"id":18,"name":"SLV Corner Restaurant","email":"slvcornerrestaurant@gmail.com","area":"Basavanagudi","phone":"8026673344"},{"id":19,"name":"VB Bakery","email":"vbbakery@gmail.com","area":"Basavanagudi","phone":"8026678899"},{"id":20,"name":"VV Puram Food Street","email":"vvpuramfoodstreet@gmail.com","area":"Basavanagudi","phone":"8026670011"},{"id":21,"name":"Chinita Real Mexican Food","email":"chinitarealmexicanfood@gmail.com","area":"Koramangala","phone":"8041103456"},{"id":22,"name":"The Hole in the Wall Cafe","email":"holeinwallcafe@gmail.com","area":"Koramangala","phone":"8040949494"},{"id":23,"name":"Nagarjuna - Koramangala","email":"nagarjunakoramangala@gmail.com","area":"Koramangala","phone":"8041100000"},{"id":24,"name":"Anjappar Chettinad Restaurant","email":"anjapparchettinadrestaurant@gmail.com","area":"Koramangala","phone":"8041218877"},{"id":25,"name":"Onesta - Koramangala","email":"onestakoramangala@gmail.com","area":"Koramangala","phone":"8040906060"},{"id":26,"name":"Empire Restaurant - Koramangala","email":"empirerestaurantkoramangala@gmail.com","area":"Koramangala","phone":"8040414041"},{"id":27,"name":"Smoor Chocolates & Cafe","email":"smoorchocolatescafe@gmail.com","area":"Indiranagar","phone":"8049652929"},{"id":28,"name":"Toit Brewpub & Kitchen","email":"toitbrewpubkitchen@gmail.com","area":"Indiranagar","phone":"9019713388"},{"id":29,"name":"Glen's Bakehouse - Indiranagar","email":"glensbakehouseindiranagar@gmail.com","area":"Indiranagar","phone":"8041228989"},{"id":30,"name":"Daddy - Casual Dining","email":"daddycasualdining@gmail.com","area":"Indiranagar","phone":"9591499990"},{"id":31,"name":"Smoke House Deli - Indiranagar","email":"smokehousedeliindiranagar@gmail.com","area":"Indiranagar","phone":"8025200087"},{"id":32,"name":"Phobidden Fruit","email":"phobiddenfruit@gmail.com","area":"Indiranagar","phone":"8041255175"},{"id":33,"name":"Milano Ice Cream","email":"milanoicecream@gmail.com","area":"Indiranagar","phone":"8041485566"},{"id":34,"name":"Indiranagar Club Kitchen","email":"indiranagarclubkitchen@gmail.com","area":"Indiranagar","phone":"8025282233"},{"id":35,"name":"Broadway - The Gourmet Theatre","email":"broadwaygourmettheatre@gmail.com","area":"HSR Layout","phone":"8049653030"},{"id":36,"name":"Vasudev Adigas - HSR","email":"vasudevadigashsr@gmail.com","area":"HSR Layout","phone":"8025724455"},{"id":37,"name":"Third Wave Coffee - HSR","email":"thirdwavecoffeehsr@gmail.com","area":"HSR Layout","phone":"8043707070"},{"id":38,"name":"Mishmash Cafe","email":"mishmashcafe@gmail.com","area":"HSR Layout","phone":"8041148877"},{"id":39,"name":"Kritunga Restaurant - HSR","email":"kritungarestauranthsr@gmail.com","area":"HSR Layout","phone":"8042001122"},{"id":40,"name":"Gufha Restaurant","email":"gufharestaurant@gmail.com","area":"Jayanagar","phone":"8041808080"},{"id":41,"name":"The Yellow Submarine","email":"yellowsubmarine@gmail.com","area":"JP Nagar","phone":"8049652525"},{"id":42,"name":"Brahmin Tiffin Centre","email":"brahmintiffincentre@gmail.com","area":"JP Nagar","phone":"8026589988"},{"id":43,"name":"Udupi Grand - Banashankari","email":"udupigrandbanashankari@gmail.com","area":"Banashankari","phone":"8026712233"},{"id":44,"name":"Donne Biryani Mane","email":"donnebiryanimane@gmail.com","area":"Banashankari","phone":"8026795566"},{"id":45,"name":"Sri Krishna Sagar - JP Nagar","email":"srikrishnasagarjpnagar@gmail.com","area":"JP Nagar","phone":"8026591100"},{"id":46,"name":"Mani's Dum Biryani","email":"manisdumbiryani@gmail.com","area":"BTM Layout","phone":"8041109988"},{"id":47,"name":"Al Daaz","email":"aldaaz@gmail.com","area":"BTM Layout","phone":"8041517766"},{"id":48,"name":"Biryani Zone - BTM","email":"biryanizonebtm@gmail.com","area":"BTM Layout","phone":"8041403344"},{"id":49,"name":"Anand Sweets and Savouries","email":"anandsweetsandsavouries@gmail.com","area":"JP Nagar","phone":"8041207788"},{"id":50,"name":"Thalassery Restaurant","email":"thalasseryrestaurant@gmail.com","area":"Electronic City","phone":"8041108899"},{"id":51,"name":"Nandhana Palace - E-City","email":"nandhanapalaceecity@gmail.com","area":"Electronic City","phone":"8041237766"},{"id":52,"name":"Republic of Noodles","email":"republicofnoodles@gmail.com","area":"Electronic City","phone":"8044232323"},{"id":53,"name":"Silicon Dhaba","email":"silicondhaba@gmail.com","area":"Electronic City","phone":"8041123344"},{"id":54,"name":"Windmills Craftworks","email":"windmillscraftworks@gmail.com","area":"Whitefield","phone":"8880233322"},{"id":55,"name":"Herbs & Spices","email":"herbsspices@gmail.com","area":"Whitefield","phone":"8028451818"},{"id":56,"name":"The Bier Library","email":"bierlibrary@gmail.com","area":"Koramangala","phone":"9108180000"},{"id":57,"name":"Mainland China - Whitefield","email":"mainlandchinawhitefield@gmail.com","area":"Whitefield","phone":"8041155555"},{"id":58,"name":"California Burrito - Marathahalli","email":"californiaburritomarathahalli@gmail.com","area":"Marathahalli","phone":"8049652211"},{"id":59,"name":"The Fisherman's Wharf","email":"fishermanswharf@gmail.com","area":"Sarjapur Road","phone":"8049652828"},{"id":60,"name":"Byg Brewski Brewing Company","email":"bygbrewskibrewingcompany@gmail.com","area":"Sarjapur Road","phone":"8046809797"},{"id":61,"name":"Zoey's Pizzeria & Cafe","email":"zoeyspizzeriacafe@gmail.com","area":"Sarjapur Road","phone":"8041221100"},{"id":62,"name":"Chai Point - Bellandur","email":"chaipointbellandur@gmail.com","area":"Bellandur","phone":"8040998877"},{"id":63,"name":"Koshy's Restaurant","email":"koshysrestaurant@gmail.com","area":"MG Road","phone":"8022213793"},{"id":64,"name":"Nagarjuna - Residency Road","email":"nagarjunaresidencyroad@gmail.com","area":"Residency Road","phone":"8025559848"},{"id":65,"name":"The Only Place","email":"onlyplace@gmail.com","area":"Church Street","phone":"8025588676"},{"id":66,"name":"Matteo Coffea","email":"matteocoffea@gmail.com","area":"Church Street","phone":"8043336000"},{"id":67,"name":"Plan B - Castle Street","email":"planbcastlestreet@gmail.com","area":"Richmond Road","phone":"8880022005"},{"id":68,"name":"Ebony - Fine Dining","email":"ebonyfinedining@gmail.com","area":"MG Road","phone":"8041783344"},{"id":69,"name":"Albert Bakery","email":"albertbakery@gmail.com","area":"Frazer Town","phone":"9886165349"},{"id":70,"name":"Karama Restaurant","email":"karamarestaurant@gmail.com","area":"Frazer Town","phone":"8041109900"},{"id":71,"name":"Thom's Bakery","email":"thomsbakery@gmail.com","area":"Frazer Town","phone":"8025484455"},{"id":72,"name":"Nandi Upachar","email":"nandiupachar@gmail.com","area":"Hebbal","phone":"8023634455"},{"id":73,"name":"Arirang Korean Restaurant","email":"arirangkoreanrestaurant@gmail.com","area":"Kalyan Nagar","phone":"8041732581"},{"id":74,"name":"Once Upon a Flame","email":"onceuponaflame@gmail.com","area":"Kalyan Nagar","phone":"8041257788"},{"id":75,"name":"Chetty's Corner","email":"chettyscorner@gmail.com","area":"Vasanth Nagar","phone":"8023340011"},{"id":76,"name":"The Fatty Bao - Indiranagar","email":"fattybaoindiranagar@gmail.com","area":"Indiranagar","phone":"8044114499"},{"id":77,"name":"Sukh Sagar","email":"sukhsagar@gmail.com","area":"Majestic","phone":"8022262626"},{"id":78,"name":"Kamath Hotel - Majestic","email":"kamathhotelmajestic@gmail.com","area":"Majestic","phone":"8022874455"},{"id":79,"name":"SGS Non-Veg Gundu Pulav","email":"sgsnonveggundupulav@gmail.com","area":"Majestic","phone":"9845011223"},{"id":80,"name":"Sankey's Cafe","email":"sankeyscafe@gmail.com","area":"Sadashivanagar","phone":"8023617788"},{"id":81,"name":"Pavithra Paradise","email":"pavithraparadise@gmail.com","area":"Vijayanagar","phone":"8023301122"},{"id":82,"name":"Adyar Ananda Bhavan (A2B) - Vijayanagar","email":"adyaranandabhavanvijayanagar@gmail.com","area":"Vijayanagar","phone":"8023389988"},{"id":83,"name":"Hotel Janatha - Vijayanagar","email":"hoteljanathavijayanagar@gmail.com","area":"Vijayanagar","phone":"8023354433"},{"id":84,"name":"Navayuga Family Restaurant","email":"navayugafamilyrestaurant@gmail.com","area":"Majestic","phone":"8022254488"},{"id":85,"name":"Beijing Bites - Malleshwaram","email":"beijingbitesmalleshwaram@gmail.com","area":"Malleshwaram","phone":"8023468877"},{"id":86,"name":"Windsor Pub - Vasanth Nagar","email":"windsorpubvasanthnagar@gmail.com","area":"Vasanth Nagar","phone":"8041149223"},{"id":87,"name":"Savoury Restaurant - Frazer Town","email":"savouryrestaurantfrazertown@gmail.com","area":"Frazer Town","phone":"8025488899"},{"id":88,"name":"The Pizza Bakery - Indiranagar","email":"pizzabakeryindiranagar@gmail.com","area":"Indiranagar","phone":"8043748877"},{"id":89,"name":"Chulha Chauki Da Dhaba","email":"chulhachaukidadhaba@gmail.com","area":"Mahadevapura","phone":"8041203344"},{"id":90,"name":"Absolute Barbecues (AB's) - Marathahalli","email":"absolutebarbecuesmarathahalli@gmail.com","area":"Marathahalli","phone":"8049652580"},{"id":91,"name":"Pasta Street - Whitefield","email":"pastastreetwhitefield@gmail.com","area":"Whitefield","phone":"8040997788"},{"id":92,"name":"Zoey's Desserts & Bakes","email":"zoeysdessertsbakes@gmail.com","area":"Brookefield","phone":"8041128899"},{"id":93,"name":"Royal Andhra Spice - Yelahanka","email":"royalandhraspiceyelahanka@gmail.com","area":"Yelahanka","phone":"8028563344"},{"id":94,"name":"Arogya Aahaara","email":"arogyaaahaara@gmail.com","area":"Indiranagar","phone":"8041152233"},{"id":95,"name":"Cheesecakes by Smoor","email":"cheesecakesbysmoor@gmail.com","area":"Koramangala","phone":"8041205544"},{"id":96,"name":"Urban Solace - Cafe for the Soul","email":"urbansolacecafeforsoul@gmail.com","area":"Ulsoor","phone":"9845015518"},{"id":97,"name":"Domlur Club Kitchen","email":"domlurclubkitchen@gmail.com","area":"Domlur","phone":"8025353344"},{"id":98,"name":"Kabab Magic - Basavanagudi","email":"kababmagicbasavanagudi@gmail.com","area":"Basavanagudi","phone":"8026612233"},{"id":99,"name":"Goli Vada Pav No. 1","email":"golivadapavno1@gmail.com","area":"Shivajinagar","phone":"8025591122"},{"id":100,"name":"Hotel Fanoos - Johnson Market","email":"hotelfanoosjohnsonmarket@gmail.com","area":"Richmond Road","phone":"8022211445"},{"id":101,"name":"Suryawanshi - Maharashtrian","email":"suryawanshimaharashtrian@gmail.com","area":"Whitefield","phone":"8041103300"},{"id":102,"name":"Mezzeh Mediterranean Kitchen","email":"mezzehmediterraneankitchen@gmail.com","area":"Indiranagar","phone":"8041557788"},{"id":103,"name":"Madurai Idly Shop - Indiranagar","email":"maduraiidlyshopindiranagar@gmail.com","area":"Indiranagar","phone":"8041256677"},{"id":104,"name":"Leon's Burgers & Wings","email":"leonsburgerswings@gmail.com","area":"Koramangala","phone":"8041239900"},{"id":105,"name":"The Filter Coffee - Koramangala","email":"filtercoffeekoramangala@gmail.com","area":"Koramangala","phone":"8040993322"}];
+
+  function findRestaurantManager(identifier) {
+    if (!identifier) return null;
+    const clean = String(identifier).trim().toLowerCase();
+    const isEmail = clean.includes('@');
+    if (isEmail) {
+      const exact = ALL_RESTAURANT_MANAGERS.find(m => m.email.toLowerCase() === clean);
+      if (exact) return exact;
+      const userPart = clean.split('@')[0].replace(/\bfoods\b/g, 'food').replace(/[^a-z0-9]/g, '');
+      return ALL_RESTAURANT_MANAGERS.find(m => {
+        const mgrPart = m.email.split('@')[0].replace(/\bfoods\b/g, 'food').replace(/[^a-z0-9]/g, '');
+        return mgrPart === userPart || mgrPart.includes(userPart) || userPart.includes(mgrPart);
+      });
+    } else {
+      const phoneDigits = clean.replace(/[^0-9]/g, '').slice(-10);
+      if (phoneDigits) {
+        return ALL_RESTAURANT_MANAGERS.find(m => {
+          const mPhone = (m.phone || '').replace(/[^0-9]/g, '').slice(-10);
+          return mPhone === phoneDigits || ('99' + String(m.id).padStart(8, '0')) === phoneDigits;
+        });
+      }
+    }
+    return null;
+  }
+
   // Pre-seed mock users if not present
   function initMockUsers() {
     let users = getLocal(STORAGE_KEYS.MOCK_USERS, null);
@@ -186,6 +213,28 @@
       }
     ];
 
+
+    // Auto-seed all 105 restaurant managers into mock directory
+    if (typeof ALL_RESTAURANT_MANAGERS !== 'undefined' && Array.isArray(ALL_RESTAURANT_MANAGERS)) {
+      for (const mgr of ALL_RESTAURANT_MANAGERS) {
+        defaultAccounts.push({
+          userId: 1000 + mgr.id,
+          name: mgr.name + ' Manager',
+          username: mgr.name + ' Manager',
+          email: mgr.email.toLowerCase(),
+          phone: mgr.phone ? mgr.phone.replace(/[^0-9]/g, '').slice(-10) : ('99' + String(mgr.id).padStart(8, '0')),
+          role: 'restaurant',
+          restaurantId: mgr.id,
+          restaurant_id: mgr.id,
+          restaurantName: mgr.name,
+          passwordHash: mockHash('Vishnu@143'),
+          address: mgr.area + ', Bengaluru',
+          memberSince: 'October 2026',
+          failedAttempts: 0,
+          lockedUntil: 0
+        });
+      }
+    }
     if (!users || !Array.isArray(users) || users.length === 0) {
       users = [...defaultAccounts];
       setLocal(STORAGE_KEYS.MOCK_USERS, users);
@@ -200,6 +249,9 @@
           users[idx].passwordHash = def.passwordHash;
           users[idx].phone = def.phone;
           users[idx].role = def.role;
+          users[idx].restaurantId = def.restaurantId || users[idx].restaurantId;
+          users[idx].restaurant_id = def.restaurant_id || users[idx].restaurant_id;
+          users[idx].restaurantName = def.restaurantName || users[idx].restaurantName;
           changed = true;
         }
       }
@@ -608,6 +660,32 @@
         return false;
       });
 
+
+      // Dynamic fallback for any of the 105 restaurant managers
+      if (userIndex === -1 && (cleanEmail || normalizedPhone) && typeof findRestaurantManager === 'function') {
+        const mgr = findRestaurantManager(cleanEmail || normalizedPhone);
+        if (mgr) {
+          const newMgrUser = {
+            userId: 1000 + mgr.id,
+            name: mgr.name + ' Manager',
+            username: mgr.name + ' Manager',
+            email: mgr.email.toLowerCase(),
+            phone: mgr.phone ? mgr.phone.replace(/[^0-9]/g, '').slice(-10) : ('99' + String(mgr.id).padStart(8, '0')),
+            role: 'restaurant',
+            restaurantId: mgr.id,
+            restaurant_id: mgr.id,
+            restaurantName: mgr.name,
+            passwordHash: mockHash('Vishnu@143'),
+            address: mgr.area + ', Bengaluru',
+            memberSince: 'October 2026',
+            failedAttempts: 0,
+            lockedUntil: 0
+          };
+          users.push(newMgrUser);
+          userIndex = users.length - 1;
+          setLocal(STORAGE_KEYS.MOCK_USERS, users);
+        }
+      }
       // User not found -> Generic error to prevent enumeration
       if (userIndex === -1) {
         logLoginAttempt(cleanId, 'FAILED', 'Unknown identifier');
@@ -678,6 +756,11 @@
         email: user.email,
         phone: user.phone,
         role: user.role || 'customer',
+        restaurantId: user.restaurantId || user.restaurant_id || null,
+        restaurant_id: user.restaurantId || user.restaurant_id || null,
+        restaurantName: user.restaurantName || user.restaurant_name || null,
+        partnerId: user.partnerId || user.partner_id || null,
+        partner_id: user.partnerId || user.partner_id || null,
         address: user.address || '',
         addresses: getLocal(`${STORAGE_KEYS.MOCK_ADDRESSES}_${user.userId}`, []),
         memberSince: user.memberSince || 'March 2026'

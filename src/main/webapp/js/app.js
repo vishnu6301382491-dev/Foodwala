@@ -917,6 +917,11 @@ const FoodWalaApp = (function () {
             email: data.user.email,
             phone: data.user.phone,
             role: data.user.role || 'CUSTOMER',
+            restaurantId: data.user.restaurantId || data.user.restaurant_id || null,
+            restaurant_id: data.user.restaurant_id || data.user.restaurantId || null,
+            restaurantName: data.user.restaurantName || data.user.restaurant_name || null,
+            partnerId: data.user.partnerId || data.user.partner_id || null,
+            partner_id: data.user.partner_id || data.user.partnerId || null,
             memberSince: data.user.memberSince || 'Active Member',
             addresses: data.user.addresses || []
           };
