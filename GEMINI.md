@@ -47,3 +47,35 @@ This file defines persistent engineering standards, architectural decisions, and
 - **Deduplication**: Cache incoming `wamid` message IDs in memory with TTL to suppress duplicate webhook deliveries.
 - **Loop Suppression**: Ignore messages originating from the business's own phone ID or hotline number (`SUPPORT_PHONE_NUMBER`).
 - **PII & Secret Protection**: Never print `WHATSAPP_ACCESS_TOKEN`, `AI_API_KEY`, or full unmasked customer phone numbers in logs. Always mask phone numbers (e.g. `+9198****53`).
+
+---
+
+## 6. Node.js Class Method Binding for Safe Destructuring
+- In modular Node.js architectures where singleton service classes are exported (`module.exports = new Service()`), developers frequently destructure methods:
+  ```javascript
+  const { sendWhatsAppMessage } = require('./services/whatsappService');
+  ```
+- **Rule**: ALWAYS bind all public instance methods to `this` inside the constructor:
+  ```javascript
+  constructor() {
+    this.sendWhatsAppMessage = this.sendWhatsAppMessage.bind(this);
+    this.normalizeSender = this.normalizeSender.bind(this);
+    this.verifySignature = this.verifySignature.bind(this);
+    this.checkHealth = this.checkHealth.bind(this);
+  }
+  ```
+- This prevents `TypeError: Cannot read properties of undefined` when methods are called out of context.
+
+---
+
+## 7. Meta WhatsApp Cloud API Development Sandbox Constraints
+- **Phone Allowlist Requirement (Error 131030)**: When using a Meta developer test phone number (e.g. `+1 555-196-0307`), Meta Cloud API rejects outbound messages to unverified numbers with code `131030` (`Recipient phone number not in allowed list`).
+  - **Rule**: Recipients must be explicitly added to the "Manage phone number list" in the Meta Developer Portal before sending messages in development mode.
+- **Token Expiration (Error 190 / 463)**: Temporary developer tokens expire every 24 hours. Production setups must use permanent System User access tokens from Meta Business Manager.
+
+---
+
+## 8. Render Blueprint (`render.yaml`) Environment Synchronization
+- When managing deployments via `render.yaml`, every critical runtime secret and environment variable must be explicitly declared in `envVars`:
+  - Declare third-party API keys (e.g., `WHATSAPP_ACCESS_TOKEN`, `META_ACCESS_TOKEN`, `AI_API_KEY`) with `sync: false` so that Render retains credentials entered in the dashboard across new deploys.
+  - Set `healthCheckPath: /api/health` and ensure `/api/health` returns HTTP 200 even when cloud database is initializing.

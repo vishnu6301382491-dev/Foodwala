@@ -37,3 +37,26 @@ services:
         value: fast2sms
       - key: FAST2SMS_API_KEY
         sync: false
+      # WhatsApp Cloud API & AI Customer Support Configuration
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_BUSINESS_ACCOUNT_ID
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: SUPPORT_PHONE_NUMBER
+        sync: false
+      - key: AI_PROVIDER
+        value: gemini
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL_NAME
+        value: gemini-3.8-flash
+      - key: META_GRAPH_API_VERSION
+        value: v21.0
