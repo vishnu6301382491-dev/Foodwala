@@ -114,8 +114,19 @@
    */
   function initHeroParallax() {
     if (prefersReducedMotion) return;
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
     const heroSection = document.querySelector('.hero-section-3d');
     if (!heroSection) return;
+
+    let isHeroVisible = true;
+    if (typeof IntersectionObserver !== 'undefined') {
+      const io = new IntersectionObserver((entries) => {
+        isHeroVisible = entries[0].isIntersecting;
+      }, { threshold: 0.05 });
+      io.observe(heroSection);
+    }
 
     const heroWrapper = heroSection.querySelector('.hero-image-3d-wrapper');
     const badge1 = heroSection.querySelector('.hero-badge-1');
@@ -135,6 +146,7 @@
     window.addEventListener('resize', updateHeroBounds, { passive: true });
 
     heroSection.addEventListener('mousemove', (e) => {
+      if (!isHeroVisible) return;
       if (!heroBounds) updateHeroBounds();
       if (!ticking) {
         requestAnimationFrame(() => {
@@ -285,20 +297,35 @@
   }
 
   /**
-   * Observe dynamically added cards and attach 3D tilt
+   * Observe dynamically added cards and attach 3D tilt with debouncing & recursion protection
    */
+  let _debounceTiltTimer = null;
   function observeDynamicCards() {
     if (typeof MutationObserver === 'undefined') return;
 
     const observer = new MutationObserver((mutations) => {
       let needsInit = false;
-      mutations.forEach(mutation => {
-        if (mutation.addedNodes.length > 0) {
-          needsInit = true;
+      for (let i = 0; i < mutations.length; i++) {
+        const added = mutations[i].addedNodes;
+        for (let j = 0; j < added.length; j++) {
+          const node = added[j];
+          if (node && node.nodeType === 1) {
+            // Ignore internal glare overlay and confetti nodes to avoid cascading loop
+            if (node.classList && (node.classList.contains('fw-card-glare') || node.classList.contains('fw-3d-confetti-piece'))) {
+              continue;
+            }
+            needsInit = true;
+            break;
+          }
         }
-      });
+        if (needsInit) break;
+      }
+
       if (needsInit) {
-        init3DCardTilt(document);
+        if (_debounceTiltTimer) clearTimeout(_debounceTiltTimer);
+        _debounceTiltTimer = setTimeout(() => {
+          init3DCardTilt(document);
+        }, 150);
       }
     });
 

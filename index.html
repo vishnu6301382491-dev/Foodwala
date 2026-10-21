@@ -195,22 +195,22 @@
 
             <!-- Orbiting 3D Dish 1: 3D Smash Burger -->
             <div class="hero-3d-orbit-dish hero-orbit-burger js-3d-tilt" title="3D Gourmet Smash Burger">
-              <img src="./images/3d/3d-burger.svg" alt="3D Burger" width="125" height="125">
+              <img src="./images/3d/3d-burger.svg" alt="3D Burger" width="125" height="125" decoding="async">
             </div>
 
             <!-- Orbiting 3D Dish 2: 3D Woodfired Pizza -->
             <div class="hero-3d-orbit-dish hero-orbit-pizza js-3d-tilt" title="3D Woodfired Pepperoni Pizza">
-              <img src="./images/3d/3d-pizza.svg" alt="3D Pizza" width="130" height="130">
+              <img src="./images/3d/3d-pizza.svg" alt="3D Pizza" width="130" height="130" decoding="async">
             </div>
 
             <!-- Orbiting 3D Dish 3: 3D Crispy Masala Dosa -->
             <div class="hero-3d-orbit-dish hero-orbit-dosa js-3d-tilt" title="3D Crispy Benne Dosa">
-              <img src="./images/3d/3d-dosa.svg" alt="3D Masala Dosa" width="135" height="135">
+              <img src="./images/3d/3d-dosa.svg" alt="3D Masala Dosa" width="135" height="135" decoding="async">
             </div>
 
             <!-- Centerpiece: 3D Hyderabadi Dum Biryani Handi with Steam -->
             <div class="hero-3d-centerpiece" title="3D Saffron Dum Biryani Handi">
-              <img src="./images/3d/3d-biryani.svg" alt="3D Biryani Handi" width="250" height="250">
+              <img src="./images/3d/3d-biryani.svg" alt="3D Biryani Handi" width="250" height="250" decoding="async">
             </div>
 
             <!-- 3D Floating Badges around hero stage -->
@@ -479,7 +479,7 @@
               </div>
               <div class="col-md-4 text-center">
                 <div class="position-relative d-inline-block">
-                  <img src="./images/3d/3d-giftbox.svg" alt="3D Special Offer Gift Box" class="fw-3d-giftbox-model">
+                  <img src="./images/3d/3d-giftbox.svg" alt="3D Special Offer Gift Box" class="fw-3d-giftbox-model" decoding="async">
                 </div>
               </div>
             </div>
@@ -556,7 +556,7 @@
               <div class="fw-3d-scooter-anchor">
                 <div class="fw-3d-scooter-pulse-ring"></div>
                 <div class="fw-3d-scooter-vehicle">
-                  <img src="./images/3d/3d-scooter.svg" alt="3D FoodWala Delivery Scooter" class="fw-3d-scooter-svg-model">
+                  <img src="./images/3d/3d-scooter.svg" alt="3D FoodWala Delivery Scooter" class="fw-3d-scooter-svg-model" decoding="async">
                 </div>
                 <div class="fw-3d-scooter-shadow"></div>
               </div>
@@ -779,7 +779,7 @@
           <div class="card h-100 border-0 fw-3d-restaurant-card js-3d-tilt">
             <a href="./restaurant-details.html?id=${r.id || r.restaurantId}" class="text-decoration-none text-dark d-flex flex-column h-100">
               <div class="card-img-wrapper position-relative">
-                <img src="${r.imagePath || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75'}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; width: 100%; object-fit: cover;" alt="${r.name}">
+                <img src="${getOptimizedFoodImg(r.imagePath || r.image, 400)}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; width: 100%; object-fit: cover;" alt="${r.name}">
                 <div class="card-img-vignette"></div>
                 <!-- Offer Ribbon -->
                 <div class="position-absolute top-0 start-0 m-2 card-badge-3d">
@@ -955,14 +955,18 @@
         }
 
         if (btnMute) {
-          btnMute.addEventListener('click', () => {
-            foodVideo.muted = !foodVideo.muted;
-            if (foodVideo.muted) {
-              if (iconMute) iconMute.className = 'bi bi-volume-mute-fill';
-              if (textMute) textMute.textContent = 'Muted';
+          btnMute.addEventListener('click', (e) => {
+            if (window.CulinaryAudio) {
+              window.CulinaryAudio.toggleMute();
             } else {
-              if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
-              if (textMute) textMute.textContent = 'Sound On';
+              foodVideo.muted = !foodVideo.muted;
+              if (foodVideo.muted) {
+                if (iconMute) iconMute.className = 'bi bi-volume-mute-fill';
+                if (textMute) textMute.textContent = 'Muted';
+              } else {
+                if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
+                if (textMute) textMute.textContent = 'Sound On';
+              }
             }
           });
         }
@@ -982,7 +986,9 @@
               if (newPoster) foodVideo.poster = newPoster;
               foodVideo.src = newSrc;
               foodVideo.load();
-              foodVideo.muted = true;
+              if (window.CulinaryAudio) {
+                window.CulinaryAudio.updateSceneFromVideo();
+              }
               const p = foodVideo.play();
               if (p !== undefined) {
                 p.then(() => {
@@ -996,6 +1002,7 @@
       }
     });
   </script>
+  <script src="./js/culinary-audio.js" defer></script>
   <script src="./js/animations-3d.js" defer></script>
   <script src="./js/help-assistance.js" defer></script>
 </body>
