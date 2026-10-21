@@ -1064,7 +1064,7 @@
         if (dupModal) {
           dupModal.show();
         } else {
-          alert('Phone number already registered. Please login or use a different number.');
+          if (window.FoodWalaApp && FoodWalaApp.showToast) { FoodWalaApp.showToast('Phone number already registered. Please login.', 'warning'); } else { console.warn('Phone exists'); }
         }
       }
 

@@ -124,6 +124,112 @@
     return toast;
   }
 
+  
+  // 3. Vibrant Animated Alert / Notification Modal
+  function showAlert(options = {}) {
+    if (typeof options === 'string') {
+      options = { message: options };
+    }
+    const {
+      title = 'FoodWala Notification',
+      message = '',
+      type = 'info', // 'success', 'danger', 'warning', 'info'
+      icon = null,
+      confirmText = 'OK',
+      cancelText = null,
+      onConfirm = null,
+      onCancel = null
+    } = options;
+
+    return new Promise((resolve) => {
+      const previouslyFocused = document.activeElement;
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      const backdrop = document.createElement('div');
+      backdrop.className = 'foodwala-modal-backdrop';
+      backdrop.setAttribute('role', 'presentation');
+
+      const card = document.createElement('div');
+      card.className = `foodwala-modal-card fw-theme-${type}`;
+      card.setAttribute('role', 'dialog');
+      card.setAttribute('aria-modal', 'true');
+      card.setAttribute('tabindex', '-1');
+
+      let iconClass = icon;
+      if (!iconClass) {
+        if (type === 'danger' || type === 'error') iconClass = 'bi-shield-lock-fill';
+        else if (type === 'success') iconClass = 'bi-check-circle-fill';
+        else if (type === 'warning') iconClass = 'bi-exclamation-triangle-fill';
+        else iconClass = 'bi-info-circle-fill';
+      }
+
+      let actionsHtml = `<button type="button" class="foodwala-btn-confirm" id="fw-alert-confirm">${confirmText}</button>`;
+      if (cancelText) {
+        actionsHtml = `
+          <button type="button" class="foodwala-btn-cancel" id="fw-alert-cancel">${cancelText}</button>
+          <button type="button" class="foodwala-btn-confirm" id="fw-alert-confirm">${confirmText}</button>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="foodwala-modal-icon ${type}">
+          <i class="bi ${iconClass}"></i>
+        </div>
+        <h3 class="foodwala-modal-title">${title}</h3>
+        <div class="foodwala-modal-message">${message}</div>
+        <div class="foodwala-modal-actions">
+          ${actionsHtml}
+        </div>
+      `;
+
+      backdrop.appendChild(card);
+      document.body.appendChild(backdrop);
+
+      const confirmBtn = card.querySelector('#fw-alert-confirm');
+      const cancelBtn = card.querySelector('#fw-alert-cancel');
+
+      function cleanup(result) {
+        document.removeEventListener('keydown', handleKeydown);
+        backdrop.classList.remove('show');
+        card.style.transform = 'scale(0.92)';
+        card.style.opacity = '0';
+
+        setTimeout(() => {
+          if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+          document.body.style.overflow = originalOverflow;
+          if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+            previouslyFocused.focus();
+          }
+          if (result && typeof onConfirm === 'function') onConfirm();
+          if (!result && typeof onCancel === 'function') onCancel();
+          resolve(result);
+        }, 220);
+      }
+
+      function handleKeydown(e) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          cleanup(false);
+        }
+      }
+
+      confirmBtn.addEventListener('click', () => cleanup(true));
+      if (cancelBtn) cancelBtn.addEventListener('click', () => cleanup(false));
+
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) cleanup(false);
+      });
+
+      document.addEventListener('keydown', handleKeydown);
+
+      requestAnimationFrame(() => {
+        backdrop.classList.add('show');
+        confirmBtn.focus();
+      });
+    });
+  }
+
   // 2. Accessible Confirm Modal
   function showConfirm(options = {}) {
     const {
@@ -233,10 +339,12 @@
   }
 
   // Expose to window and FoodWala namespace
+  window.showAlert = showAlert;
   window.showConfirm = showConfirm;
   window.showToast = showToast;
 
   if (window.FoodWalaApp) {
+    window.FoodWalaApp.showAlert = showAlert;
     window.FoodWalaApp.showConfirm = showConfirm;
     window.FoodWalaApp.showToast = showToast;
   }

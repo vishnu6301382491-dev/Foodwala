@@ -913,7 +913,7 @@
           if (newPriceStr === null) return;
           const newPrice = parseFloat(newPriceStr);
           if (isNaN(newPrice) || newPrice <= 0) {
-            alert('Please enter a valid price (greater than 0).');
+            if (window.FoodWalaApp && FoodWalaApp.showToast) { FoodWalaApp.showToast('Please enter a valid price (greater than 0).', 'warning'); } else { console.warn('Invalid price'); }
             return;
           }
 

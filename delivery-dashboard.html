@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/ui.css">
   <script src="./js/theme.js"></script>
+  <script src="./js/ui.js"></script>
   <style>
     :root {
       --hero-orange: #ff5200;
@@ -830,7 +831,20 @@
       } catch (e) {}
 
       if (!currentUser) {
-        window.location.href = './login.html?redirect=./delivery-dashboard.html';
+        if (typeof showAlert === 'function') {
+          showAlert({
+            title: 'Delivery Hero Sign In Required',
+            message: '<div class="py-1"><div class="badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30 rounded-pill px-3 py-1 mb-2 fw-bold">Rider Authentication</div><p class="text-dark dark:text-white mb-2 fw-semibold">Please authenticate to activate your live GPS navigation radar and shift wallet.</p></div>',
+            type: 'warning',
+            icon: 'bi-bicycle',
+            confirmText: 'Sign In as Delivery Hero',
+            cancelText: 'Back to Storefront',
+            onConfirm: () => { window.location.href = './login.html?portal=partner'; },
+            onCancel: () => { window.location.href = './index.html'; }
+          });
+        } else {
+          window.location.href = './login.html?portal=partner';
+        }
         return;
       }
 
@@ -839,8 +853,20 @@
       const isPartner = role === 'partner' || role === 'delivery_partner';
 
       if (!isAdmin && !isPartner) {
-        alert('Access denied. This portal is restricted to authorized Delivery Partners.');
-        window.location.href = './login.html';
+        if (typeof showAlert === 'function') {
+          showAlert({
+            title: 'Partner Portal Restricted',
+            message: '<div class="py-1"><div class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 rounded-pill px-3 py-1 mb-2 fw-bold">Security Alert</div><p class="text-dark dark:text-white mb-2 fw-semibold">This console is exclusively reserved for authorized FoodWala Delivery Heroes.</p><p class="small text-muted mb-0">Please sign in with your delivery fleet credentials.</p></div>',
+            type: 'danger',
+            icon: 'bi-shield-lock-fill',
+            confirmText: 'Sign In as Delivery Hero',
+            cancelText: 'Back to Storefront',
+            onConfirm: () => { window.location.href = './login.html?portal=partner'; },
+            onCancel: () => { window.location.href = './index.html'; }
+          });
+        } else {
+          window.location.href = './login.html?portal=partner';
+        }
         return;
       }
 
