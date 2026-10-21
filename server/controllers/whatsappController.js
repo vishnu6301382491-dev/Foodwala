@@ -156,7 +156,7 @@ class WhatsAppController {
 
     // 3. Send response via Meta Graph API
     console.log(`[WhatsApp] Sending WhatsApp response`);
-    const sendResult = await whatsappService.sendWhatsAppMessage(msg.fromWaId, replyText);
+    const sendResult = await whatsappService.sendWhatsAppMessage(msg.fromWaId, replyText, msg.phoneNumberId);
 
     // 4. Record outbound message in database
     try {

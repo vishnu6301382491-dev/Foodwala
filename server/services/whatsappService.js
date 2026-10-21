@@ -124,8 +124,8 @@ class WhatsAppService {
   /**
    * Dispatches outbound HTTP request to Meta Graph API
    */
-  async _postToGraphApi(endpoint, payload) {
-    const phoneId = this.phoneNumberId;
+  async _postToGraphApi(endpoint, payload, customPhoneId = null) {
+    const phoneId = customPhoneId || this.phoneNumberId;
     const token = this.accessToken;
 
     if (!phoneId || !token) {
@@ -210,10 +210,10 @@ class WhatsAppService {
   }
 
   /**
-   * Primary Reusable Function: sendWhatsAppMessage(to, message)
+   * Primary Reusable Function: sendWhatsAppMessage(to, message, customPhoneId)
    * Sends text message to customer via Meta WhatsApp Cloud API
    */
-  async sendWhatsAppMessage(to, message) {
+  async sendWhatsAppMessage(to, message, customPhoneId = null) {
     const { waId } = this.normalizeSender(to);
     const payload = {
       messaging_product: 'whatsapp',
@@ -223,7 +223,7 @@ class WhatsAppService {
         body: String(message || '').trim()
       }
     };
-    return await this._postToGraphApi('messages', payload);
+    return await this._postToGraphApi('messages', payload, customPhoneId);
   }
 
   /**
