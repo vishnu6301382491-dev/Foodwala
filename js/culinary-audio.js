@@ -191,6 +191,25 @@
       }
     }
 
+    fadeVolume(targetVol, duration = 300) {
+      if (!this.audioElem) return;
+      const startVol = this.audioElem.volume;
+      const diff = targetVol - startVol;
+      const steps = 10;
+      const stepTime = duration / steps;
+      let currentStep = 0;
+      const timer = setInterval(() => {
+        currentStep++;
+        if (this.audioElem) {
+          this.audioElem.volume = Math.max(0, Math.min(1, startVol + (diff * (currentStep / steps))));
+        }
+        if (currentStep >= steps) {
+          clearInterval(timer);
+          if (this.audioElem) this.audioElem.volume = targetVol;
+        }
+      }, stepTime);
+    }
+
     playAudio() {
       if (!this.audioElem) return;
       const playPromise = this.audioElem.play();
