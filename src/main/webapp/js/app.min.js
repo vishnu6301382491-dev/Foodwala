@@ -109,7 +109,9 @@ const FoodWalaApp = (function () {
 
   // Helper to optimize external Unsplash image URLs to modern WebP format and small dimensions
   function optimizeImageUrl(url, width = 400) {
-    if (!url || typeof url !== 'string') return url;
+    if (!url || typeof url !== 'string' || url === 'undefined' || url === 'null' || url.trim() === '') {
+      return 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=' + width + '&q=75';
+    }
     if (url.includes('images.unsplash.com')) {
       if (!url.includes('auto=format')) {
         const sep = url.includes('?') ? '&' : '?';
@@ -128,7 +130,21 @@ const FoodWalaApp = (function () {
       try {
         const dbRestaurants = await window.FoodWalaApi.getRestaurants();
         if (Array.isArray(dbRestaurants) && dbRestaurants.length >= 10) {
-          restaurantsCache = dbRestaurants;
+          restaurantsCache = dbRestaurants.map(r => {
+            const rawImg = r.image_path || r.image || r.imagePath || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=500&q=75';
+            const delNum = parseInt(r.delivery_time || r.deliveryTime, 10) || 30;
+            return {
+              ...r,
+              id: r.id || r.restaurant_id,
+              restaurantId: r.restaurant_id || r.id,
+              imagePath: rawImg,
+              image_path: rawImg,
+              image: rawImg,
+              deliveryTime: delNum + ' mins',
+              delivery_time: delNum,
+              cuisineType: r.cuisineType || r.cuisine_type || r.cuisine || 'Multi-Cuisine'
+            };
+          });
           try {
             sessionStorage.setItem(RESTAURANTS_CACHE_KEY, JSON.stringify(restaurantsCache));
           } catch (e) {}

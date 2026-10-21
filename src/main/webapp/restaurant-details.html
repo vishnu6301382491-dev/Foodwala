@@ -282,11 +282,12 @@
       document.getElementById('rest-name').textContent = restaurant.name;
       document.getElementById('rest-cuisines').textContent = restaurant.cuisineType || 'Multi-Cuisine';
       document.getElementById('rest-area').textContent = restaurant.area || restaurant.address || 'Bengaluru';
-      document.getElementById('rest-time').textContent = `${restaurant.deliveryTime || 30} mins`;
+      document.getElementById('rest-time').textContent = typeof restaurant.deliveryTime === 'string' && restaurant.deliveryTime.toLowerCase().includes('min') ? restaurant.deliveryTime : `${restaurant.deliveryTime || restaurant.delivery_time || 30} mins`;
       document.getElementById('rest-cost').textContent = restaurant.costForTwo || 400;
       document.getElementById('rest-rating').textContent = (restaurant.rating || 4.2).toFixed(1);
-      if (restaurant.imagePath) {
-        document.getElementById('rest-img').src = restaurant.imagePath;
+      const heroRestImg = restaurant.imagePath || restaurant.image_path || restaurant.image;
+      if (heroRestImg) {
+        document.getElementById('rest-img').src = heroRestImg;
       }
 
       // Load Restaurant Menu Items

@@ -1474,27 +1474,35 @@ app.get('/api/restaurants', async (req, res) => {
     );
 
     // Format fields to ensure backwards compatibility with UI
-    const formatted = rows.map(r => ({
-      id: r.restaurant_id,
-      restaurant_id: r.restaurant_id,
-      name: r.name,
-      cuisine: r.cuisine_type,
-      cuisine_type: r.cuisine_type,
-      rating: parseFloat(r.rating) || 4.2,
-      deliveryTime: r.delivery_time ? `${r.delivery_time} mins` : '30-40 mins',
-      delivery_time: r.delivery_time || 35,
-      priceForTwo: '₹400 for two',
-      address: r.address || `${r.area || 'Bengaluru Central'}, Bengaluru`,
-      area: r.area || 'Bengaluru Central',
-      city: r.city || 'Bengaluru',
-      image: r.image_path || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
-      image_path: r.image_path,
-      latitude: r.latitude,
-      longitude: r.longitude,
-      phone: r.phone,
-      isOpen: r.is_open === 1 || r.is_open === null,
-      deliveryFee: r.delivery_fee || 30
-    }));
+    const formatted = rows.map(r => {
+      const img = r.image_path || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5";
+      const delTimeNum = parseInt(r.delivery_time, 10) || 30;
+      return {
+        id: r.restaurant_id,
+        restaurant_id: r.restaurant_id,
+        restaurantId: r.restaurant_id,
+        name: r.name,
+        cuisine: r.cuisine_type,
+        cuisine_type: r.cuisine_type,
+        cuisineType: r.cuisine_type,
+        rating: parseFloat(r.rating) || 4.2,
+        deliveryTime: delTimeNum + " mins",
+        delivery_time: delTimeNum,
+        priceForTwo: "₹400 for two",
+        costForTwo: 400,
+        address: r.address || ((r.area || "Bengaluru Central") + ", Bengaluru"),
+        area: r.area || "Bengaluru Central",
+        city: r.city || "Bengaluru",
+        image: img,
+        image_path: img,
+        imagePath: img,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        phone: r.phone,
+        isOpen: r.is_open === 1 || r.is_open === null,
+        deliveryFee: r.delivery_fee || 30
+      };
+    });
 
     res.json(formatted);
   } catch (err) {
@@ -1519,18 +1527,25 @@ app.get('/api/restaurants/:id', async (req, res) => {
     }
 
     const r = rows[0];
+    const img = r.image_path || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5';
+    const delTimeNum = parseInt(r.delivery_time, 10) || 30;
     res.json({
       id: r.restaurant_id,
       restaurant_id: r.restaurant_id,
+      restaurantId: r.restaurant_id,
       name: r.name,
       cuisine: r.cuisine_type,
       cuisine_type: r.cuisine_type,
+      cuisineType: r.cuisine_type,
       rating: parseFloat(r.rating) || 4.2,
-      deliveryTime: r.delivery_time ? `${r.delivery_time} mins` : '30-40 mins',
+      deliveryTime: delTimeNum + ' mins',
+      delivery_time: delTimeNum,
       address: r.address,
       area: r.area,
       city: r.city,
-      image: r.image_path,
+      image: img,
+      image_path: img,
+      imagePath: img,
       latitude: r.latitude,
       longitude: r.longitude,
       phone: r.phone,

@@ -421,16 +421,18 @@
         }
 
         grid.innerHTML = results.restaurants.map(r => {
-          const imgUrl = window.FoodWalaApp && FoodWalaApp.optimizeImageUrl ? FoodWalaApp.optimizeImageUrl(r.imagePath, 400) : (r.imagePath || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75');
+          const rawImg = r.imagePath || r.image_path || r.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75';
+          const imgUrl = (window.FoodWalaApp && FoodWalaApp.optimizeImageUrl) ? FoodWalaApp.optimizeImageUrl(rawImg, 400) : rawImg;
+          const delTime = (typeof r.deliveryTime === 'string' && r.deliveryTime.toLowerCase().includes('min')) ? r.deliveryTime : ((r.deliveryTime || r.delivery_time || 30) + ' mins');
           return `
           <div class="col-md-6 col-lg-3">
             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-lift">
               <a href="./restaurant-details.html?id=${r.id || r.restaurantId}" class="text-decoration-none text-dark">
                 <div class="position-relative">
-                  <img src="${imgUrl}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; object-fit: cover;" alt="${r.name}">
+                  <img src="${imgUrl}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; object-fit: cover;" alt="${r.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75';">
                   <div class="position-absolute bottom-0 start-0 m-2">
                     <span class="badge bg-dark bg-opacity-75 text-white px-2 py-1 rounded-pill small">
-                      <i class="bi bi-clock me-1"></i> ${r.deliveryTime || 30} mins
+                      <i class="bi bi-clock me-1"></i> ${delTime}
                     </span>
                   </div>
                   ${r.isPureVeg ? '<div class="position-absolute top-0 end-0 m-2"><span class="badge bg-success px-2 py-1 rounded-pill">PURE VEG</span></div>' : ''}

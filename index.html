@@ -771,7 +771,7 @@
       
       let filtered = currentFeaturedList.slice(0, 8);
       if (currentFilter === 'fast') {
-        filtered = currentFeaturedList.filter(r => (r.deliveryTime || 30) <= 30).slice(0, 8);
+        filtered = currentFeaturedList.filter(r => parseInt(r.deliveryTime || r.delivery_time || 30, 10) <= 30).slice(0, 8);
       } else if (currentFilter === 'veg') {
         filtered = currentFeaturedList.filter(r => r.isPureVeg).slice(0, 8);
       } else if (currentFilter === 'rated') {
@@ -799,7 +799,7 @@
           <div class="card h-100 border-0 fw-3d-restaurant-card js-3d-tilt">
             <a href="./restaurant-details.html?id=${r.id || r.restaurantId}" class="text-decoration-none text-dark d-flex flex-column h-100">
               <div class="card-img-wrapper position-relative">
-                <img src="${getOptimizedFoodImg(r.imagePath || r.image, 400)}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; width: 100%; object-fit: cover;" alt="${r.name}">
+                <img src="${getOptimizedFoodImg(r.imagePath || r.image, 400)}" class="card-img-top" width="360" height="180" loading="lazy" decoding="async" style="height: 180px; width: 100%; object-fit: cover;" alt="${r.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=75';">
                 <div class="card-img-vignette"></div>
                 <!-- Offer Ribbon -->
                 <div class="position-absolute top-0 start-0 m-2 card-badge-3d">
@@ -814,7 +814,7 @@
                 <!-- Delivery Time -->
                 <div class="position-absolute bottom-0 start-0 m-2 card-badge-3d">
                   <span class="card-delivery-badge">
-                    <i class="bi bi-lightning-charge-fill text-warning"></i> ${r.deliveryTime || 30} mins
+                    <i class="bi bi-lightning-charge-fill text-warning"></i> ${typeof r.deliveryTime === 'string' && r.deliveryTime.toLowerCase().includes('min') ? r.deliveryTime : (r.deliveryTime || 30) + ' mins'}
                   </span>
                 </div>
               </div>
