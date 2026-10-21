@@ -547,8 +547,28 @@
         setTimeout(() => {
           if (role === "admin" || email.includes("adminfoodwala")) {
             window.location.href = "./admin.html";
-          } else if (role === "restaurant" || role === "restaurant_admin") {
-            window.location.href = "./restaurant-dashboard.html";
+          } else if (role === "restaurant" || role === "restaurant_admin" || role === "manager" || selectedRole === "restaurant") {
+            let restId = (loggedInUser && (loggedInUser.restaurantId || loggedInUser.restaurant_id)) || null;
+            if (!restId && email) {
+              const mgr = typeof findRestaurantManager === 'function' ? findRestaurantManager(email) : null;
+              if (mgr) {
+                restId = mgr.id;
+                if (loggedInUser) {
+                  loggedInUser.restaurantId = mgr.id;
+                  loggedInUser.restaurant_id = mgr.id;
+                  loggedInUser.restaurantName = mgr.name;
+                  try {
+                    localStorage.setItem("foodwala_current_user", JSON.stringify(loggedInUser));
+                    localStorage.setItem("foodwala_user", JSON.stringify(loggedInUser));
+                  } catch (e) {}
+                }
+              }
+            }
+            if (restId) {
+              window.location.href = `./restaurant-dashboard.html?id=${restId}`;
+            } else {
+              window.location.href = "./restaurant-dashboard.html";
+            }
           } else {
             window.location.href = redirectTarget;
           }
@@ -1389,5 +1409,6 @@
 
 <div id="recaptcha-container"></div>
   <script src="./js/animations-3d.js" defer></script>
+  <script src="./js/help-assistance.js" defer></script>
 </body>
 </html>

@@ -189,12 +189,12 @@
           </div>
           <div class="col">
             <div class="d-flex flex-wrap align-items-center gap-2">
-              <h3 class="fw-extrabold text-dark mb-0" id="dash-rest-name">Vidyarthi Bhavan</h3>
+              <h3 class="fw-extrabold text-dark mb-0" id="dash-rest-name">Restaurant Kitchen</h3>
               <span id="dash-status-badge" class="badge badge-soft-success rounded-pill px-3 py-1 fw-bold">
                 <i class="bi bi-check-circle-fill me-1"></i> Live & Accepting Orders
               </span>
             </div>
-            <p class="text-muted small mb-1 mt-1" id="dash-rest-cuisine">South Indian, Crispy Dosas, Breakfast Specials</p>
+            <p class="text-muted small mb-1 mt-1" id="dash-rest-cuisine">Partner Kitchen Hub</p>
             <div class="small text-muted d-flex flex-wrap align-items-center gap-3">
               <span><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span id="dash-rest-address">Gandhi Bazaar, Basavanagudi, Bengaluru</span></span>
               <span>&bull;</span>
@@ -619,15 +619,29 @@
 
       const restSelector = document.getElementById('restaurant-selector-dropdown');
       const roleBadge = document.getElementById('partner-role-badge');
+      const adminBar = document.getElementById('super-admin-control-bar');
 
       if (!isAdmin) {
         // --- RESTAURANT MANAGER: Strictly bound to their own restaurant ---
         // STRICT MANAGER ISOLATION: Manager can access ONLY their own restaurant!
         let managerRestId = (currentUser && (currentUser.restaurantId || currentUser.restaurant_id)) || null;
+        if (!managerRestId && currentUser && currentUser.email) {
+          const direct = typeof resolveManagerDirectly === 'function' ? resolveManagerDirectly(currentUser.email) : null;
+          if (direct) {
+            managerRestId = direct.id;
+            currentUser.restaurantId = direct.id;
+            currentUser.restaurant_id = direct.id;
+            if (!currentUser.restaurantName) currentUser.restaurantName = direct.name;
+            try {
+              localStorage.setItem('foodwala_current_user', JSON.stringify(currentUser));
+              localStorage.setItem('foodwala_user', JSON.stringify(currentUser));
+            } catch (e) {}
+          }
+        }
         if (managerRestId) {
           currentRestId = parseInt(managerRestId, 10);
         } else {
-          currentRestId = parseInt(urlParams.get('id') || '7', 10);
+          currentRestId = parseInt(urlParams.get('id') || '98', 10);
         }
 
         // HIDE restaurant switcher dropdown so managers cannot view or select other stores
@@ -638,11 +652,19 @@
           adminBar.style.setProperty('display', 'none', 'important');
         }
 
-        // Update Manager badge
+        // Update Manager badge immediately
         if (roleBadge) {
-          const storeName = (currentUser && currentUser.restaurantName) || 'Assigned Store';
+          const storeName = (currentUser && currentUser.restaurantName) || ('Store #' + currentRestId);
           roleBadge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block';
           roleBadge.innerHTML = `<i class="bi bi-shop me-1"></i> Manager: ${escapeHtml(storeName)}`;
+        }
+
+        // Fast title placeholder sync before async fetch
+        if (currentUser && currentUser.restaurantName) {
+          const nameElem = document.getElementById('dash-rest-name');
+          if (nameElem && (nameElem.textContent === 'Vidyarthi Bhavan' || nameElem.textContent === 'Restaurant Kitchen')) {
+            nameElem.textContent = currentUser.restaurantName;
+          }
         }
 
         // URL Tampering Protection: Keep URL synchronized with their store only
@@ -664,7 +686,6 @@
           roleBadge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block';
           roleBadge.innerHTML = `<i class="bi bi-gear-wide-connected me-1"></i> Super Admin Mode (All 105 Stores)`;
         }
-        const adminBar = document.getElementById('super-admin-control-bar');
         if (adminBar) adminBar.style.display = 'block';
       }
 
