@@ -75,7 +75,16 @@ This file defines persistent engineering standards, architectural decisions, and
 
 ---
 
-## 8. Render Blueprint (`render.yaml`) Environment Synchronization
-- When managing deployments via `render.yaml`, every critical runtime secret and environment variable must be explicitly declared in `envVars`:
-  - Declare third-party API keys (e.g., `WHATSAPP_ACCESS_TOKEN`, `META_ACCESS_TOKEN`, `AI_API_KEY`) with `sync: false` so that Render retains credentials entered in the dashboard across new deploys.
-  - Set `healthCheckPath: /api/health` and ensure `/api/health` returns HTTP 200 even when cloud database is initializing.
+## 9. Multi-Tenant Role Isolation: Store Managers vs. Platform Admins
+- **Manager Data Scoping**: When a restaurant manager logs in, the backend API (`/api/restaurant/*`) and frontend MUST strictly scope all data queries (orders, menus, inventory, settings) to their assigned entity (`WHERE admin_user_id = user_id`).
+- **Dropdown & Parameter Sanitization**:
+  - The restaurant selector dropdown (`#restaurant-selector-dropdown`) MUST remain completely hidden (`display: none !important`) for managers.
+  - Query parameter tampering (e.g. `?restaurantId=99` or `?id=12`) MUST be sanitized, stripped from the browser address bar via `window.history.replaceState`, and resolved server-side solely from the authenticated manager's session.
+- **Platform Admins**: Only authenticated users with `role = 'admin'` (e.g., `adminfoodwala@gmail.com`) are granted cross-store oversight to switch between all restaurants and inspect global platform analytics.
+
+---
+
+## 10. UI Credential Hygiene & Demo Account Suppression
+- **No Hardcoded Demo Buttons**: Never expose 1-click demo logins or hardcoded credentials on production or public-facing login portals (`login.html`, `admin.html`, `restaurant-dashboard.html`).
+- **Input Placeholders**: Input field placeholders should remain descriptive yet clean (e.g., `adminfoodwala@gmail.com` or `restaurantname@gmail.com`), requiring users and managers to enter authentic credentials.
+
