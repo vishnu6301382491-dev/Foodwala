@@ -719,7 +719,19 @@
   <script src="./js/app.min.js?v=20261020_03" defer></script>
   <script src="./js/smart-search.min.js" defer></script>
 
-  <script>
+    <script>
+    // Universal Unsplash image resizing helper (WebP, width-capped, eliminates blank cards)
+    function getOptimizedFoodImg(url, width = 400) {
+      if (!url || typeof url !== 'string') {
+        return 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=' + width + '&q=75';
+      }
+      if (url.includes('images.unsplash.com') && !url.includes('w=')) {
+        const sep = url.includes('?') ? '&' : '?';
+        return url + sep + 'auto=format&fit=crop&w=' + width + '&q=75';
+      }
+      return url;
+    }
+    window.getOptimizedFoodImg = getOptimizedFoodImg;
     let currentFeaturedList = [];
     let currentFilter = 'all';
 
@@ -840,8 +852,12 @@
     }
 
     // Fast-path instant render from seed dataset (0ms latency, eliminates blank section)
-    if (window.FOODWALA_FEATURED_8) {
-      renderFeaturedGrid(window.FOODWALA_FEATURED_8);
+    try {
+      if (window.FOODWALA_FEATURED_8 && Array.isArray(window.FOODWALA_FEATURED_8)) {
+        renderFeaturedGrid(window.FOODWALA_FEATURED_8);
+      }
+    } catch (err) {
+      console.warn('[index] Fast-path render failed:', err);
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -856,23 +872,13 @@
           const fullList = await FoodWalaApp.loadRestaurants();
           if (fullList && fullList.length) {
             renderFeaturedGrid(fullList);
-          } else {
-            renderFeaturedGrid([]);
+          } else if (window.FOODWALA_FEATURED_8) {
+            renderFeaturedGrid(window.FOODWALA_FEATURED_8);
           }
         } catch (err) {
-          console.error('[index] Error loading restaurants:', err);
-          const grid = document.getElementById('home-featured-grid');
-          if (grid) {
-            grid.innerHTML = `
-              <div class="col-12 text-center py-5">
-                <div class="bg-white p-5 rounded-4 shadow-sm">
-                  <i class="bi bi-exclamation-triangle text-danger fs-1 d-block mb-3"></i>
-                  <h5 class="fw-bold text-dark">Unable to load featured restaurants</h5>
-                  <p class="text-muted small">Could not retrieve restaurant data. Please check your connection.</p>
-                  <button class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold mt-2" onclick="location.reload()">Retry</button>
-                </div>
-              </div>
-            `;
+          console.warn('[index] Error loading restaurants, falling back to seed:', err);
+          if (window.FOODWALA_FEATURED_8) {
+            renderFeaturedGrid(window.FOODWALA_FEATURED_8);
           }
         }
       }
