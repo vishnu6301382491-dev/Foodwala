@@ -175,6 +175,13 @@
       <div class="col-md-6 col-lg-5 fw-3d-stage">
         <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white fw-3d-card position-relative">
           <div class="fw-3d-shine"></div>
+          <!-- Multi-Portal Quick Switcher -->
+          <div class="d-flex justify-content-center gap-1.5 mb-3 p-1 bg-light rounded-pill border">
+            <a href="./login.html" class="btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-decoration-none js-portal-link" style="font-size: 0.78rem;">Customer</a>
+            <a href="./login.html?portal=partner" class="btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-decoration-none js-portal-link text-warning" style="font-size: 0.78rem;"><i class="bi bi-bicycle me-1"></i>Delivery Hero</a>
+            <a href="./login.html?portal=restaurant" class="btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-decoration-none js-portal-link text-danger" style="font-size: 0.78rem;"><i class="bi bi-shop me-1"></i>Manager</a>
+            <a href="./login.html?portal=admin" class="btn btn-sm rounded-pill px-2.5 py-1 fw-bold text-decoration-none js-portal-link text-dark" style="font-size: 0.78rem;"><i class="bi bi-shield-lock me-1"></i>Admin</a>
+          </div>
           <div class="text-center mb-4">
             <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 54px; height: 54px;">
               <i class="bi bi-person-fill fs-3"></i>
@@ -592,6 +599,25 @@
         // Admin portal has NO public signup button (as requested)
         if (signupPrompt) {
           signupPrompt.innerHTML = 'Staff access only &bull; <a href="./login.html" class="text-secondary fw-semibold">Customer Sign In</a>';
+        }
+            } else if (portalMode === 'partner' || portalMode === 'delivery' || portalMode === 'delivery_partner') {
+        selectedRole = 'partner';
+        if (loginHeaderTitle) loginHeaderTitle.textContent = 'Delivery Hero Partner Portal';
+        if (loginHeaderDesc) loginHeaderDesc.textContent = 'Authorized FoodWala delivery fleet partners only.';
+        if (loginIconBox) {
+          loginIconBox.style.background = '#0f172a';
+          loginIconBox.style.border = '2px solid #ff5200';
+        }
+        if (loginIcon) loginIcon.className = 'bi bi-bicycle fs-3 text-warning';
+        if (adminBanner) {
+          adminBanner.style.display = 'block';
+          adminBanner.innerHTML = `<div class="alert alert-warning border border-warning rounded-3 py-2 px-3 small d-flex align-items-center gap-2 mb-0" style="background: rgba(255, 82, 0, 0.1); color: #c2410c;"><i class="bi bi-bicycle fs-4"></i><div><strong>Delivery Hero Console</strong><div class="small">Sign in to start your delivery shift.</div></div></div>`;
+        }
+        if (emailLabel) emailLabel.textContent = 'Delivery Partner Email or Phone';
+        if (emailInput) emailInput.placeholder = 'deliveryfoodwala@gmail.com';
+        if (loginSubmitBtn) loginSubmitBtn.textContent = 'Access Delivery Hero Dashboard';
+        if (signupPrompt) {
+          signupPrompt.innerHTML = 'Delivery fleet access &bull; <a href="./login.html" class="text-secondary fw-semibold">Customer Sign In</a>';
         }
       } else if (portalMode === 'restaurant') {
         selectedRole = 'restaurant';
