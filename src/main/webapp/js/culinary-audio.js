@@ -4,13 +4,6 @@
  * - Woodfired Pizza (22.09s): Hearth crackle, bubbly cheese sizzle
  * - Sizzling Wok (25.41s): High-heat flame roar, oil sizzle, stir-fry toss
  * - Gourmet Burger (10.01s): Flat-top griddle smash-patty sear & steam
- * 
- * Features:
- * - Exact video duration matching & loop resynchronization
- * - Smooth volume ramping (zero pop/click)
- * - Drift compensation (syncs to video.currentTime)
- * - Page Visibility auto-pause (saves battery on tab blur)
- * - Web Audio API + HTML5 Audio fallback
  */
 (function (window) {
   'use strict';
@@ -43,7 +36,7 @@
       this.audioElem = null;
       this.currentScene = 'pizza';
       this.isMuted = true;
-      this.targetVolume = 0.7;
+      this.targetVolume = 0.8;
       this.initialized = false;
       this.fadeInterval = null;
     }
@@ -59,22 +52,29 @@
 
       if (!this.videoElem) return;
 
-      // Create dedicated synchronized audio element
+      // Create dedicated synchronized audio element & append to DOM
       this.audioElem = document.createElement('audio');
+      this.audioElem.id = 'fw-culinary-audio-player';
       this.audioElem.preload = 'auto';
       this.audioElem.loop = true;
       this.audioElem.volume = 0;
+      this.audioElem.style.display = 'none';
       this.audioElem.src = AUDIO_MAP.pizza.file;
+
+      if (document.body) {
+        document.body.appendChild(this.audioElem);
+      }
 
       // Identify initial scene from video src
       this.updateSceneFromVideo();
 
-      // Bind mute button
+      // Bind mute button once with stopImmediatePropagation
       if (this.btnMute && !this.btnMute.dataset.culinaryBound) {
         this.btnMute.dataset.culinaryBound = 'true';
         this.btnMute.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
           this.toggleMute();
         });
       }
@@ -156,8 +156,8 @@
         this.audioElem.src = AUDIO_MAP[scene].file;
         this.syncTime();
         if (wasPlaying) {
+          this.audioElem.volume = this.targetVolume;
           this.playAudio();
-          this.fadeVolume(this.targetVolume, 250);
         }
         console.log(`[CulinaryAudio] Switched scene to: ${AUDIO_MAP[scene].label} (${AUDIO_MAP[scene].duration}s)`);
       }
@@ -176,13 +176,18 @@
       this.updateUI();
 
       if (this.isMuted) {
-        this.fadeVolume(0, 200, () => {
-          if (this.audioElem) this.audioElem.pause();
-        });
+        console.log('🔇 [CulinaryAudio] Sound Muted');
+        if (this.audioElem) {
+          this.audioElem.volume = 0;
+          this.audioElem.pause();
+        }
       } else {
+        console.log('🔊 [CulinaryAudio] Sound Unmuted: ' + AUDIO_MAP[this.currentScene].label);
         this.syncTime();
+        if (this.audioElem) {
+          this.audioElem.volume = this.targetVolume;
+        }
         this.playAudio();
-        this.fadeVolume(this.targetVolume, 300);
       }
     }
 
@@ -190,34 +195,12 @@
       if (!this.audioElem) return;
       const playPromise = this.audioElem.play();
       if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('[CulinaryAudio] Autoplay blocked, waiting for user gesture:', err.message);
+        playPromise.then(() => {
+          console.log('🎵 [CulinaryAudio] Audio playing successfully at volume ' + this.audioElem.volume);
+        }).catch((err) => {
+          console.warn('[CulinaryAudio] Audio playback waiting for user interaction:', err.message);
         });
       }
-    }
-
-    fadeVolume(target, durationMs, callback) {
-      if (!this.audioElem) return;
-      if (this.fadeInterval) clearInterval(this.fadeInterval);
-
-      const start = this.audioElem.volume;
-      const diff = target - start;
-      const steps = 15;
-      const stepDuration = durationMs / steps;
-      let currentStep = 0;
-
-      this.fadeInterval = setInterval(() => {
-        currentStep++;
-        const progress = currentStep / steps;
-        this.audioElem.volume = Math.max(0, Math.min(1, start + diff * progress));
-
-        if (currentStep >= steps) {
-          clearInterval(this.fadeInterval);
-          this.fadeInterval = null;
-          this.audioElem.volume = target;
-          if (callback) callback();
-        }
-      }, stepDuration);
     }
 
     updateUI() {

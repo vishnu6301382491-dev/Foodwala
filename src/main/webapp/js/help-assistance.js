@@ -20,7 +20,7 @@
     injectFloatingButton: function() {
       if (document.getElementById('fw-floating-help-btn')) return;
 
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '17116659122';
       var waUrl = 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent('Hi FoodWala, I need assistance with my order');
 
       // 1. Floating WhatsApp Assistance Button
@@ -31,7 +31,7 @@
       waBtn.target = '_blank';
       waBtn.rel = 'noopener noreferrer';
       waBtn.setAttribute('aria-label', 'Chat with FoodWala Support on WhatsApp');
-      waBtn.setAttribute('title', 'Direct WhatsApp AI Assistance (+91 85004 57005)');
+      waBtn.setAttribute('title', 'Direct WhatsApp AI Assistance (+1 (711) 665-9122)');
       waBtn.innerHTML = [
         '<i class="bi bi-whatsapp fs-5"></i>',
         '<span>WhatsApp</span>'
@@ -58,7 +58,7 @@
     injectModal: function() {
       if (document.getElementById('foodwalaHelpModal')) return;
 
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '17116659122';
       var waUrl = 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent('Hi FoodWala, I need assistance with my order');
 
       var modalHtml = [
@@ -243,7 +243,7 @@
     
     getSmartLocalReply: function(rawQuery, userName, userPhone) {
       var q = (rawQuery || '').toLowerCase().trim();
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '17116659122';
       var waUrl = 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent('Hi FoodWala, I need help: ' + rawQuery);
 
       // 1. Coupon / Promo / Discount
@@ -305,7 +305,7 @@
         return [
           '📲 <strong>Direct WhatsApp AI Assistance</strong><br><br>',
           'Our WhatsApp AI care desk is active 24/7! Send messages to check orders, browse menus, or connect with our support team.<br><br>',
-          '<a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp (+91 85004 57005)</a>'
+          '<a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp (+1 (711) 665-9122)</a>'
         ].join('');
       }
 

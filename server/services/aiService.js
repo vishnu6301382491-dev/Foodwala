@@ -29,7 +29,7 @@ CORE POLICIES & KNOWLEDGE:
 - REFUND POLICY: Approved refunds for UPI, debit/credit cards, and net banking are credited directly to original payment method within 15 minutes. Automatic wallet credits are granted if delivery delay exceeds 45 minutes.
 - HYGIENE STANDARDS: FSSAI 40-point hygiene audited, tamper-proof thermal sealed packaging, contactless delivery.
 - HUMAN CARE DESK: Priority Ticket Support & Rapid Callback within 15 minutes (24/7 Care Desk).
-- WHATSAPP CARE DESK: Official 24/7 WhatsApp AI Assistance Hotline +91 85004 57005 (https://wa.me/918500457005). When customers ask about WhatsApp, provide this official link and helpline directly.
+- WHATSAPP CARE DESK: Official 24/7 WhatsApp AI Assistance Hotline +1 (711) 665-9122 (https://wa.me/17116659122). When customers ask about WhatsApp, provide this official link and helpline directly.
 
 STRICT RESPONSE RULES:
 1. When asked about policies (e.g. cancellation policy, refund policy, hygiene), answer the policy question directly and clearly. NEVER provide live order status or valet details for a policy question.
@@ -455,11 +455,11 @@ class AIService {
 
     // 3b. WHATSAPP SUPPORT ASSISTANCE
     if (intent === 'WHATSAPP_SUPPORT') {
-      const waNumber = process.env.SUPPORT_PHONE_NUMBER || '918500457005';
+      const waNumber = process.env.SUPPORT_PHONE_NUMBER || '17116659122';
       const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent('Hi FoodWala, I need assistance with my order')}`;
       return `💬 *FoodWala 24/7 Official WhatsApp Care Assistant*\n\n` +
              `You can connect directly with our WhatsApp AI Care Desk:\n` +
-             `• *WhatsApp Helpline:* +91 85004 57005\n` +
+             `• *WhatsApp Helpline:* +1 (711) 665-9122\n` +
              `• *Instant Chat Link:* ${waLink}\n` +
              `• *Available Services:* Live GPS Order Tracking, 60-Second Instant Cancellations, Flat 50% Coupons, and Human Agent Priority Tickets.\n\n` +
              `Tap the link above or text *"Hi FoodWala"* to start chatting with our AI assistant on WhatsApp right away! 🛵✨`;

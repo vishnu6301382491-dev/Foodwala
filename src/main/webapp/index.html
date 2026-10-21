@@ -959,23 +959,8 @@
             }
           });
         }
+        // Sound & mute control delegated solely to window.CulinaryAudio
 
-        if (btnMute) {
-          btnMute.addEventListener('click', (e) => {
-            if (window.CulinaryAudio) {
-              window.CulinaryAudio.toggleMute();
-            } else {
-              foodVideo.muted = !foodVideo.muted;
-              if (foodVideo.muted) {
-                if (iconMute) iconMute.className = 'bi bi-volume-mute-fill';
-                if (textMute) textMute.textContent = 'Muted';
-              } else {
-                if (iconMute) iconMute.className = 'bi bi-volume-up-fill';
-                if (textMute) textMute.textContent = 'Sound On';
-              }
-            }
-          });
-        }
 
         // Culinary Video Scene Switcher
         const switcherBtns = document.querySelectorAll('.hero-video-switcher-btn');
