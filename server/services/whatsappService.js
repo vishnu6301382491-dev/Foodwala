@@ -51,7 +51,7 @@ class WhatsAppService {
   }
 
   get hotline() {
-    return process.env.SUPPORT_PHONE_NUMBER || '918500457005';
+    return process.env.SUPPORT_PHONE_NUMBER || '15551960307';
   }
 
   /**
@@ -125,7 +125,7 @@ class WhatsAppService {
    * Dispatches outbound HTTP request to Meta Graph API
    */
   async _postToGraphApi(endpoint, payload, customPhoneId = null) {
-    const phoneId = this.phoneNumberId || customPhoneId;
+    const phoneId = customPhoneId || this.phoneNumberId;
     const token = this.accessToken;
 
     if (!phoneId || !token) {
