@@ -125,7 +125,7 @@ class WhatsAppService {
    * Dispatches outbound HTTP request to Meta Graph API
    */
   async _postToGraphApi(endpoint, payload, customPhoneId = null) {
-    const phoneId = customPhoneId || this.phoneNumberId;
+    const phoneId = this.phoneNumberId || customPhoneId;
     const token = this.accessToken;
 
     if (!phoneId || !token) {
