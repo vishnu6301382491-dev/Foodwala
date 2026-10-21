@@ -822,7 +822,7 @@ const FoodWalaApp = (function () {
         name: cleanName,
         phone: normalized,
         email: cleanEmail,
-        role: 'CUSTOMER',
+        role: (cleanIdentifier.toLowerCase().includes("delivery") || cleanIdentifier.toLowerCase() === "deliveryfoodwala@gmail.com") ? "partner" : ((cleanIdentifier.toLowerCase().includes("admin") || cleanIdentifier.toLowerCase() === "adminfoodwala@gmail.com") ? "admin" : "customer"),
         memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
         addresses: address ? [
           {

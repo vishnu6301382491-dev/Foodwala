@@ -1025,6 +1025,18 @@
         }
       });
 
+      
+      function showCelebrationModal({ title, subtitle, amount, icon, buttonText }) {
+        if (title) document.getElementById("celeb-title").textContent = title;
+        if (subtitle) document.getElementById("celeb-subtitle").textContent = subtitle;
+        if (amount) document.getElementById("celeb-amount").textContent = amount;
+        if (icon) document.getElementById("celeb-icon").textContent = icon;
+        if (buttonText) document.getElementById("celeb-btn-text").textContent = buttonText;
+        const modalEl = document.getElementById("deliveryCelebrationModal");
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
+
       // Submit OTP & Finish Delivery
       document.getElementById('btn-submit-delivery-otp').addEventListener('click', () => {
         handoverModal.hide();
@@ -1036,7 +1048,13 @@
         pocket.textContent = '₹925.00';
         headerEarn.textContent = '₹925.00';
 
-        alert('🎉 Delivery Complete!\n₹85.00 has been credited to your FoodWala Wallet.');
+        showCelebrationModal({
+          title: "Delivery Complete!",
+          subtitle: "Customer OTP 1234 verified. Payout credited instantly to your pocket balance.",
+          amount: "+₹85.00",
+          icon: "🎉",
+          buttonText: "Ready for Next Order"
+        });
 
         // Re-display radar for next order
         setTimeout(() => {
@@ -1055,8 +1073,14 @@
         const withdrawModal = bootstrap.Modal.getInstance(withdrawModalEl);
         if (withdrawModal) withdrawModal.hide();
 
-        alert(`✅ Payout Successful!\n₹${amt} has been transferred to ${upi}.`);
-        document.getElementById('nav-pocket-balance').textContent = '₹0.00';
+        showCelebrationModal({
+          title: "Payout Successful!",
+          subtitle: "Instant bank transfer completed to " + upi,
+          amount: "₹" + amt,
+          icon: "⚡",
+          buttonText: "Done"
+        });
+        document.getElementById("nav-pocket-balance").textContent = '₹0.00';
         document.getElementById('header-earnings-val').textContent = '₹0.00';
       });
 
@@ -1070,5 +1094,32 @@
 
     });
   </script>
+
+  <!-- Custom High-Contrast Celebration Pop-Up Modal -->
+  <div class="modal fade" id="deliveryCelebrationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 rounded-4 overflow-hidden text-center" style="background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); border: 1.5px solid rgba(34, 197, 94, 0.4) !important; box-shadow: 0 25px 50px -12px rgba(34, 197, 94, 0.25);">
+        <div class="modal-body p-4 p-md-5">
+          <div class="d-inline-flex align-items-center justify-center rounded-circle mb-3 position-relative" style="width: 80px; height: 80px; background: rgba(34, 197, 94, 0.15); border: 2px solid #22c55e;">
+            <span class="fs-1" id="celeb-icon" style="display: inline-block;">🎉</span>
+          </div>
+          <h3 class="fw-black text-white mb-2" id="celeb-title" style="letter-spacing: -0.5px;">Delivery Complete!</h3>
+          <p class="small mb-4" id="celeb-subtitle" style="color: #cbd5e1;">Trip completed & customer handoff verified successfully.</p>
+          <div class="p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between" style="background: rgba(34, 197, 94, 0.12); border: 1px dashed #22c55e;">
+            <div class="text-start">
+              <div class="text-uppercase fw-bold" style="color: #4ade80; font-size: 0.72rem; letter-spacing: 1px;">Shift Earnings Added</div>
+              <div class="fw-bold text-white small">Credited to FoodWala Wallet</div>
+            </div>
+            <div class="fs-2 fw-black" id="celeb-amount" style="color: #22c55e;">+₹85.00</div>
+          </div>
+          <button type="button" class="btn btn-success w-100 py-3 rounded-pill fw-bold fs-6 shadow-lg d-flex align-items-center justify-content-center gap-2" data-bs-dismiss="modal" style="background: #16a34a !important; border: none !important;">
+            <span id="celeb-btn-text">Accept Next Order</span>
+            <i class="bi bi-arrow-right-circle-fill"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

@@ -705,19 +705,43 @@
 
     
     async function populateAdminRestaurantDropdown(selectElem, activeId) {
-      if (selectElem.dataset.populated === 'true') return;
+      if (selectElem.dataset.populated === "true") return;
       try {
-        const res = await FoodWalaApi.getRestaurants({ limit: 120 });
-        const list = (res && res.restaurants) ? res.restaurants : [];
-        if (list && list.length > 0) {
-          selectElem.innerHTML = list.map(r => `
-            <option value="${r.restaurant_id || r.id}" ${(r.restaurant_id || r.id) == activeId ? 'selected' : ''}>
-              ${r.name} (#${r.restaurant_id || r.id})
-            </option>
-          `).join('');
-          selectElem.dataset.populated = 'true';
+        let list = [];
+        try {
+          const res = await FoodWalaApi.getRestaurants({ limit: 120 });
+          if (Array.isArray(res) && res.length > 0) {
+            list = res;
+          } else if (res && Array.isArray(res.restaurants) && res.restaurants.length > 0) {
+            list = res.restaurants;
+          }
+        } catch (e) {}
+
+        if (!list || list.length < 10) {
+          if (window.FoodWalaApp && typeof FoodWalaApp.getRestaurants === "function") {
+            list = FoodWalaApp.getRestaurants();
+          }
         }
-      } catch (e) {}
+
+        if (!list || list.length < 10) {
+          try {
+            const resp = await fetch("./data/restaurants.json");
+            if (resp.ok) list = await resp.json();
+          } catch (e) {}
+        }
+
+        if (list && list.length > 0) {
+          list.sort((a, b) => (parseInt(a.restaurant_id || a.id, 10) || 0) - (parseInt(b.restaurant_id || b.id, 10) || 0));
+          selectElem.innerHTML = list.map(r => {
+            const rId = r.restaurant_id || r.id;
+            const isSel = String(rId) === String(activeId) ? "selected" : "";
+            return `<option value="${rId}" ${isSel}>#${rId} - ${r.name} (${r.area || "Bengaluru"})</option>`;
+          }).join("");
+          selectElem.dataset.populated = "true";
+        }
+      } catch (err) {
+        console.error("Failed to populate restaurants dropdown:", err);
+      }
     }
 
     function renderRestaurantHeader(r) {

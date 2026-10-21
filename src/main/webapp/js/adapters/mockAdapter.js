@@ -134,6 +134,32 @@
       },
       {
         userId: 5,
+        name: 'Kiran Kumar (Delivery Hero)',
+        username: 'delivery_hero',
+        email: 'deliveryfoodwala@gmail.com',
+        phone: '9900000201',
+        role: 'partner',
+        passwordHash: mockHash('Vishnu@143'),
+        address: 'Koramangala, Bengaluru',
+        memberSince: 'March 2026',
+        failedAttempts: 0,
+        lockedUntil: 0
+      },
+      {
+        userId: 102,
+        name: 'FoodWala Super Admin',
+        username: 'super_admin',
+        email: 'adminfoodwala@gmail.com',
+        phone: '9876543222',
+        role: 'admin',
+        passwordHash: mockHash('Vishnu@143'),
+        address: 'FoodWala HQ, Bengaluru',
+        memberSince: 'January 2026',
+        failedAttempts: 0,
+        lockedUntil: 0
+      },
+      {
+        userId: 5,
         name: 'Ramesh Kumar (Delivery Partner)',
         username: 'delivery_partner',
         email: 'delivery@foodwala.com',
