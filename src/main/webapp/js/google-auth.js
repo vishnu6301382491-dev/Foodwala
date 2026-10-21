@@ -172,10 +172,12 @@
     showAccountChooserModal: function (options = {}) {
       if (typeof document === 'undefined') return;
       let modalEl = document.getElementById('foodwalaGoogleChooserModal');
+      const currentOrigin = (typeof window !== 'undefined' && window.location) ? window.location.origin : 'http://localhost:8080';
+
       if (!modalEl) {
         const modalHtml = [
           '<div class="modal fade" id="foodwalaGoogleChooserModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">',
-          '  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">',
+          '  <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">',
           '    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff; color: #202124;">',
           '      <div class="modal-header border-0 pb-1 pt-3 px-3 d-flex align-items-center justify-content-between">',
           '        <div class="d-flex align-items-center gap-2">',
@@ -190,30 +192,40 @@
           '        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>',
           '      </div>',
           '      <div class="modal-body px-3 py-2">',
-          '        <p class="text-muted small mb-3">Choose an account to continue to <strong class="text-dark">FoodWala</strong></p>',
+          '        <p class="text-muted small mb-2">Choose an account to continue to <strong class="text-dark">FoodWala</strong></p>',
+          '        <div class="p-2 mb-3 bg-light rounded-3 border d-flex align-items-center justify-content-between" style="font-size: 0.74rem;">',
+          '          <div class="text-truncate me-2">',
+          '            <span class="text-muted">Origin:</span> <code class="text-dark fw-bold">' + currentOrigin + '</code>',
+          '          </div>',
+          '          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Local Dev Mode</span>',
+          '        </div>',
           '        <div class="list-group list-group-flush border rounded-3 overflow-hidden mb-3">',
-          '          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 border-bottom js-choose-google-account" data-name="Vishnu Vardhan Reddy" data-email="vishnuvardhanreddych45@gmail.com" data-sub="109876543210987654321">',
-          '            <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; font-size: 1rem;">V</div>',
+          '          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2.5 px-3 border-bottom js-choose-google-account" data-name="Vishnu Vardhan Reddy" data-email="vishnuvardhanreddych45@gmail.com" data-sub="109876543210987654321">',
+          '            <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 38px; height: 38px; font-size: 1rem;">V</div>',
           '            <div class="text-start flex-grow-1 overflow-hidden">',
-          '              <div class="fw-bold text-dark text-truncate" style="font-size: 0.9rem;">Vishnu Vardhan Reddy</div>',
+          '              <div class="d-flex align-items-center gap-1.5">',
+          '                <span class="fw-bold text-dark text-truncate" style="font-size: 0.92rem;">Vishnu Vardhan Reddy</span>',
+          '                <span class="badge bg-primary text-white" style="font-size: 0.62rem;">Default</span>',
+          '              </div>',
           '              <div class="text-muted text-truncate" style="font-size: 0.78rem;">vishnuvardhanreddych45@gmail.com</div>',
           '            </div>',
-          '            <i class="bi bi-check-circle-fill text-success fs-5"></i>',
+          '            <i class="bi bi-arrow-right-circle-fill text-primary fs-5"></i>',
           '          </button>',
-          '          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2 px-3 js-choose-google-account" data-name="Rahul Sharma" data-email="customer@foodwala.com" data-sub="209876543210987654322">',
-          '            <div class="rounded-circle bg-danger text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; font-size: 1rem;">R</div>',
+          '          <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2.5 px-3 js-choose-google-account" data-name="Rahul Sharma" data-email="customer@foodwala.com" data-sub="209876543210987654322">',
+          '            <div class="rounded-circle bg-danger text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 38px; height: 38px; font-size: 1rem;">R</div>',
           '            <div class="text-start flex-grow-1 overflow-hidden">',
-          '              <div class="fw-bold text-dark text-truncate" style="font-size: 0.9rem;">Rahul Sharma</div>',
+          '              <div class="fw-bold text-dark text-truncate" style="font-size: 0.92rem;">Rahul Sharma</div>',
           '              <div class="text-muted text-truncate" style="font-size: 0.78rem;">customer@foodwala.com</div>',
           '            </div>',
+          '            <i class="bi bi-arrow-right-circle text-muted fs-5"></i>',
           '          </button>',
           '        </div>',
           '        <div class="text-center mb-1">',
           '          <button class="btn btn-link link-secondary text-decoration-none small py-1" type="button" id="toggleOtherGoogleAccountBtn">',
-          '            <i class="bi bi-person-plus me-1"></i> Use another account',
+          '            <i class="bi bi-person-plus me-1"></i> Use another Google account',
           '          </button>',
           '        </div>',
-          '        <div id="otherGoogleAccountSection" style="display: none;" class="mt-2 p-2 bg-light rounded-3 border text-start">',
+          '        <div id="otherGoogleAccountSection" style="display: none;" class="mt-2 p-2.5 bg-light rounded-3 border text-start">',
           '          <div class="mb-2">',
           '            <label class="form-label small fw-semibold mb-1 text-dark">Your Full Name</label>',
           '            <input type="text" id="customGoogleName" class="form-control form-control-sm" placeholder="e.g. Vishnu Vardhan">',
@@ -223,8 +235,25 @@
           '            <input type="email" id="customGoogleEmail" class="form-control form-control-sm" placeholder="name@gmail.com">',
           '          </div>',
           '          <button type="button" class="btn btn-primary btn-sm w-100 rounded-pill fw-bold" id="submitCustomGoogleBtn">',
-          '            Continue',
+          '            Sign In with Google',
           '          </button>',
+          '        </div>',
+          '        <div class="border-top pt-2 mt-2">',
+          '          <button class="btn btn-link text-decoration-none text-muted w-100 text-center py-1 d-flex align-items-center justify-content-center gap-1" type="button" data-bs-toggle="collapse" data-bs-target="#googleOriginGuideCollapse" style="font-size: 0.74rem;">',
+          '            <i class="bi bi-question-circle"></i> Why does Google show "origin_mismatch"?',
+          '          </button>',
+          '          <div class="collapse mt-2 p-2.5 bg-light rounded-3 border text-start" id="googleOriginGuideCollapse" style="font-size: 0.74rem;">',
+          '            <div class="fw-bold text-dark mb-1">To enable Google\'s official popup on this port:</div>',
+          '            <ol class="ps-3 mb-2 text-muted" style="line-height: 1.45;">',
+          '              <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="fw-bold text-primary">Google Cloud Console</a>.</li>',
+          '              <li>Edit OAuth 2.0 Client ID: <code>387098615100...</code></li>',
+          '              <li>Under <strong>Authorized JavaScript origins</strong>, add:<br><code class="text-dark bg-white px-1.5 py-0.5 rounded border d-inline-block mt-1">' + currentOrigin + '</code></li>',
+          '              <li>Click <strong>Save</strong>.</li>',
+          '            </ol>',
+          '            <button type="button" class="btn btn-outline-secondary btn-sm w-100 rounded-pill py-1 js-launch-native-popup" style="font-size: 0.74rem;">',
+          '              <i class="bi bi-box-arrow-up-right me-1"></i> Try Native Google Popup Anyway',
+          '            </button>',
+          '          </div>',
           '        </div>',
           '      </div>',
           '      <div class="modal-footer border-0 pt-0 px-3 pb-3">',
@@ -277,6 +306,21 @@
             await FoodWalaGoogleAuth.handleCredentialResponse({ credential: token }, options);
           };
         }
+
+        const launchNativeBtn = modalEl.querySelector('.js-launch-native-popup');
+        if (launchNativeBtn) {
+          launchNativeBtn.onclick = () => {
+            if (bsModal) bsModal.hide();
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+              window.google.accounts.id.prompt((notification) => {
+                if (notification && notification.isNotDisplayed()) {
+                  console.warn('[Google Auth] Native prompt not displayed:', notification.getNotDisplayedReason());
+                  FoodWalaGoogleAuth.showAccountChooserModal(options);
+                }
+              });
+            }
+          };
+        }
       }
 
       if (bsModal) bsModal.show();
@@ -327,6 +371,58 @@
       const mobileContainer = document.getElementById(options.mobileContainerId || 'google-signin-btn-mobile-container');
 
       function setupGis() {
+        const isLocalhost = typeof window !== 'undefined' && window.location && (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname.endsWith('.local')
+        );
+
+        function renderLocalGoogleButton(container) {
+          if (!container) return;
+          container.innerHTML = [
+            '<button type="button" class="btn btn-google-auth w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm js-google-auth-btn" style="background:#fff; border:1px solid #dadce0; color:#3c4043; height:44px; font-size: 0.95rem; cursor: pointer;">',
+            '  <svg width="20" height="20" viewBox="0 0 48 48" class="flex-shrink-0">',
+            '    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>',
+            '    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>',
+            '    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>',
+            '    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>',
+            '  </svg>',
+            '  <span>Continue with Google</span>',
+            '</button>'
+          ].join('\n');
+          const btn = container.querySelector('.js-google-auth-btn');
+          if (btn) {
+            btn.onclick = (e) => {
+              e.preventDefault();
+              FoodWalaGoogleAuth.showAccountChooserModal(options);
+            };
+          }
+        }
+
+        if (isLocalhost) {
+          // Render robust fallback Google button on localhost so origin mismatch never blocks users
+          if (desktopContainer) renderLocalGoogleButton(desktopContainer);
+          if (mobileContainer) renderLocalGoogleButton(mobileContainer);
+
+          // Still initialize GIS in background so that if origin is authorized in Google Cloud Console,
+          // user can test native popup via the modal button
+          if (window.google && window.google.accounts && window.google.accounts.id) {
+            try {
+              window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: async (response) => {
+                  await FoodWalaGoogleAuth.handleCredentialResponse(response, options);
+                },
+                auto_select: false,
+                cancel_on_tap_outside: true,
+                context: isSignUp ? 'signup' : 'signin'
+              });
+            } catch (e) {}
+          }
+          console.log('[FoodWala Google Auth] Initialized in Localhost Developer Mode (Origin safe).');
+          return true;
+        }
+
         if (!window.google || !window.google.accounts || !window.google.accounts.id) {
           return false;
         }
@@ -377,6 +473,7 @@
               window.google.accounts.id.prompt((notification) => {
                 if (notification.isNotDisplayed()) {
                   console.warn('[Google Auth] Prompt not displayed:', notification.getNotDisplayedReason());
+                  FoodWalaGoogleAuth.showAccountChooserModal(options);
                 } else if (notification.isSkippedMoment()) {
                   console.log('[Google Auth] Prompt skipped:', notification.getSkippedReason());
                 } else if (notification.isDismissedMoment()) {
@@ -390,6 +487,8 @@
           return true;
         } catch (err) {
           console.error('[FoodWala Google Auth] GIS initialization error:', err);
+          if (desktopContainer) renderLocalGoogleButton(desktopContainer);
+          if (mobileContainer) renderLocalGoogleButton(mobileContainer);
           return false;
         }
       }

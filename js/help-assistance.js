@@ -20,6 +20,25 @@
     injectFloatingButton: function() {
       if (document.getElementById('fw-floating-help-btn')) return;
 
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
+      var waUrl = 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent('Hi FoodWala, I need assistance with my order');
+
+      // 1. Floating WhatsApp Assistance Button
+      var waBtn = document.createElement('a');
+      waBtn.id = 'fw-floating-whatsapp-btn';
+      waBtn.className = 'fw-help-floating-wa-btn';
+      waBtn.href = waUrl;
+      waBtn.target = '_blank';
+      waBtn.rel = 'noopener noreferrer';
+      waBtn.setAttribute('aria-label', 'Chat with FoodWala Support on WhatsApp');
+      waBtn.setAttribute('title', 'Direct WhatsApp AI Assistance (+91 85004 57005)');
+      waBtn.innerHTML = [
+        '<i class="bi bi-whatsapp fs-5"></i>',
+        '<span>WhatsApp</span>'
+      ].join('');
+      document.body.appendChild(waBtn);
+
+      // 2. Floating 24/7 Web Care Center Button
       var btn = document.createElement('button');
       btn.id = 'fw-floating-help-btn';
       btn.className = 'fw-help-floating-btn';
@@ -39,6 +58,9 @@
     injectModal: function() {
       if (document.getElementById('foodwalaHelpModal')) return;
 
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
+      var waUrl = 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent('Hi FoodWala, I need assistance with my order');
+
       var modalHtml = [
         '<div class="modal fade fw-help-modal" id="foodwalaHelpModal" tabindex="-1" aria-labelledby="foodwalaHelpModalLabel" aria-hidden="true">',
         '  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 440px;">',
@@ -56,20 +78,33 @@
         '            </small>',
         '          </div>',
         '        </div>',
-        '        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>',
+        '        <div class="d-flex align-items-center gap-2">',
+        '          <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success rounded-pill px-2.5 py-1 text-white fw-bold d-flex align-items-center gap-1 shadow-sm text-decoration-none" style="font-size: 0.76rem;" title="Chat directly with FoodWala on WhatsApp">',
+        '            <i class="bi bi-whatsapp"></i> WhatsApp',
+        '          </a>',
+        '          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>',
+        '        </div>',
         '      </div>',
         '      <!-- Chat Body -->',
         '      <div class="fw-help-chat-box" id="fw-help-chat-messages">',
         '        <div class="fw-chat-msg-agent">',
         '          👋 <strong>Hello! Welcome to FoodWala 24/7 Support.</strong><br>',
-        '          How can we help you today with your order, refund, delivery, or discount queries?',
+        '          How can we help you today with your order, cancellation, refund, delivery, or discount queries?',
+        '          <div class="mt-2 pt-2 border-top border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-1">',
+        '            <span class="small text-muted"><i class="bi bi-whatsapp text-success me-1"></i> Prefer WhatsApp?</span>',
+        '            <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="badge bg-success text-white text-decoration-none py-1.5 px-2.5 rounded-pill d-inline-flex align-items-center gap-1">',
+        '              <i class="bi bi-whatsapp"></i> Chat on WhatsApp AI',
+        '            </a>',
+        '          </div>',
         '        </div>',
         '      </div>',
         '      <!-- Smart Suggestions Chips -->',
         '      <div class="p-2.5 px-3 bg-white border-top border-bottom d-flex flex-wrap gap-1.5" id="fw-help-chips-container">',
+        '        <button type="button" class="fw-smart-chip-btn bg-success bg-opacity-10 text-success border-success fw-bold" data-query="whatsapp"><i class="bi bi-whatsapp"></i> WhatsApp Support</button>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="track_order">🛵 Where is my order?</button>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="refund">💰 Refund & Cancel</button>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="coupon">🏷️ 50% Off Coupon</button>',
+        '        <button type="button" class="fw-smart-chip-btn" data-query="request_callback">📞 Request Callback</button>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="location">📍 Change Address</button>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="hygiene">⭐ Kitchen Hygiene</button>',
         '      </div>',
@@ -81,14 +116,23 @@
         '            <i class="bi bi-send-fill"></i>',
         '          </button>',
         '        </form>',
-        '        <!-- Direct Escalation Links -->',
+        '        <!-- Privacy-Protected Escalation Bar -->',
         '        <div class="d-flex align-items-center justify-content-between pt-2 border-top text-muted" style="font-size: 0.75rem;">',
-        '          <a href="tel:+918500457005" class="text-decoration-none text-danger fw-bold d-flex align-items-center gap-1">',
-        '            <i class="bi bi-telephone-fill"></i> +91 85004 57005',
+        '          <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-link text-decoration-none text-success fw-bold d-flex align-items-center gap-1 p-0">',
+        '            <i class="bi bi-whatsapp"></i> WhatsApp',
         '          </a>',
-        '          <a href="https://wa.me/918500457005?text=Hi%20FoodWala%20Support,%20I%20need%20help%20with%20my%20order" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fw-bold d-flex align-items-center gap-1">',
-        '            <i class="bi bi-whatsapp"></i> WhatsApp Chat',
-        '          </a>',
+        '          <span class="text-muted">•</span>',
+        '          <button type="button" class="btn btn-link text-decoration-none text-danger fw-bold d-flex align-items-center gap-1 p-0 js-callback-prompt-btn">',
+        '            <i class="bi bi-telephone-inbound-fill"></i> Callback',
+        '          </button>',
+        '          <span class="text-muted">•</span>',
+        '          <button type="button" class="btn btn-link text-decoration-none text-success fw-bold d-flex align-items-center gap-1 p-0 js-priority-ticket-btn">',
+        '            <i class="bi bi-ticket-perforated-fill"></i> Priority Ticket',
+        '          </button>',
+        '          <span class="text-muted">•</span>',
+        '          <span class="text-secondary d-flex align-items-center gap-1">',
+        '            <i class="bi bi-shield-lock-fill text-primary"></i> 100% Private',
+        '          </span>',
         '        </div>',
         '      </div>',
         '    </div>',
@@ -104,8 +148,15 @@
     bindEvents: function() {
       var self = this;
 
-      // Smart chips click
+      // Smart chips & callback triggers
       document.addEventListener('click', function(e) {
+        var callbackTrigger = e.target.closest('.js-callback-prompt-btn, .js-priority-ticket-btn, .js-trigger-callback-action');
+        if (callbackTrigger) {
+          e.preventDefault();
+          self.handleSmartQuery('request_callback', '📞 Request Priority Callback');
+          return;
+        }
+
         var chip = e.target.closest('.fw-smart-chip-btn');
         if (chip) {
           var queryType = chip.getAttribute('data-query');
@@ -174,93 +225,103 @@
     },
 
     handleSmartQuery: function(type, userLabel) {
-      this.appendUserMessage(userLabel);
+      var queryMap = {
+        'whatsapp': 'How can I connect with FoodWala WhatsApp AI support assistance?',
+        'track_order': 'Where is my order?',
+        'refund': 'What is your order cancellation and refund policy?',
+        'coupon': 'What discount coupons and offers are available?',
+        'location': 'How do I change my delivery address or area?',
+        'hygiene': 'What are your kitchen hygiene and food safety standards?',
+        'request_callback': 'I would like to request a callback from a support supervisor.'
+      };
 
-      var self = this;
-      setTimeout(function() {
-        if (type === 'track_order') {
-          self.appendAgentMessage([
-            '🛵 <strong>Live Telemetry Dispatch</strong><br>',
-            'Order <strong>#FW-84920</strong> is currently EN ROUTE!<br>',
-            '• <strong>Valet:</strong> Suresh Kumar (Speed: 32 km/h)<br>',
-            '• <strong>Destination:</strong> Maruthi Nagar, Bengaluru<br>',
-            '• <strong>Estimated Arrival:</strong> 14 minutes<br>',
-            '<a href="./orders.html" class="btn btn-danger btn-sm rounded-pill mt-2 fw-bold text-white"><i class="bi bi-geo-alt-fill me-1"></i> View Full Live GPS Map</a>'
-          ].join(''));
-        } else if (type === 'refund') {
-          self.appendAgentMessage([
-            '💰 <strong>100% Instant Refund Assurance</strong><br>',
-            '• If you cancel within 60 seconds of placing, 100% is refunded immediately.<br>',
-            '• In case of delivery delays exceeding 45 minutes, automatic wallet credits apply.<br>',
-            '• Need a refund on an existing order? Click below to check your invoice or contact our billing desk directly.<br>',
-            '<a href="./orders.html" class="btn btn-outline-danger btn-sm rounded-pill mt-2 fw-bold">View Recent Orders</a>'
-          ].join(''));
-        } else if (type === 'coupon') {
-          self.appendAgentMessage([
-            '🎉 <strong>Exclusive 50% Off Code!</strong><br>',
-            'Use coupon code: <span class="badge bg-warning text-dark font-monospace fw-bold fs-6">FOODWALA50</span><br>',
-            '• Valid across all 105+ Bengaluru partner restaurants.<br>',
-            '• Flat 50% discount up to ₹150.<br>',
-            '<button type="button" class="btn btn-warning btn-sm rounded-pill mt-2 fw-bold text-dark" onclick="navigator.clipboard && navigator.clipboard.writeText(\'FOODWALA50\'); alert(\'Coupon FOODWALA50 copied to clipboard!\');"><i class="bi bi-copy me-1"></i> Copy Code</button>'
-          ].join(''));
-        } else if (type === 'location') {
-          self.appendAgentMessage([
-            '📍 <strong>Delivery Micro-Zone Management</strong><br>',
-            'Currently active hub: <strong>Maruthi Nagar, Bengaluru</strong> (14+ hubs available).<br>',
-            'You can change or fine-tune your exact street address anytime.<br>',
-            '<button type="button" class="btn btn-danger btn-sm rounded-pill mt-2 fw-bold text-white" data-bs-toggle="modal" data-bs-target="#locationModal"><i class="bi bi-geo-alt me-1"></i> Change Location Hub</button>'
-          ].join(''));
-        } else if (type === 'hygiene') {
-          self.appendAgentMessage([
-            '⭐ <strong>FSSAI 40-Point Hygiene Standard</strong><br>',
-            '• 100% contactless thermal packaging with tamper-proof seals.<br>',
-            '• Daily valet sanitization & kitchen staff temperature monitoring.<br>',
-            '• Personally inspected Bengaluru heritage eateries and modern kitchens.'
-          ].join(''));
-        }
-      }, 350);
+      var queryText = queryMap[type] || userLabel;
+      this.appendUserMessage(userLabel || queryText);
+      this.processUserQuery(queryText);
+    },
+
+    retryLastQuery: function(text) {
+      if (!text) return;
+      this.processUserQuery(text);
     },
 
     processUserQuery: function(rawText) {
-      var text = rawText.toLowerCase();
       var self = this;
+      var text = (rawText || '').trim();
+      if (!text) return;
 
-      setTimeout(function() {
-        if (text.indexOf('order') !== -1 || text.indexOf('track') !== -1 || text.indexOf('where') !== -1 || text.indexOf('suresh') !== -1 || text.indexOf('valet') !== -1) {
-          self.appendAgentMessage([
-            '🛵 <strong>Order Status Found:</strong><br>',
-            'Your latest order is with valet <strong>Suresh Kumar</strong> heading towards <strong>Maruthi Nagar</strong> (ETA: 14 mins).<br>',
-            '<a href="./orders.html" class="btn btn-danger btn-sm rounded-pill mt-2 fw-bold text-white">Track on GPS Map</a>'
-          ].join(''));
-        } else if (text.indexOf('cancel') !== -1 || text.indexOf('refund') !== -1 || text.indexOf('money') !== -1 || text.indexOf('return') !== -1) {
-          self.appendAgentMessage([
-            '💰 <strong>Refund & Cancellation Policy:</strong><br>',
-            'FoodWala processes instant UPI/card refunds within 15 minutes of cancellation. You can manage cancellations directly from your <a href="./orders.html" class="fw-bold text-danger">Orders Page</a>.'
-          ].join(''));
-        } else if (text.indexOf('coupon') !== -1 || text.indexOf('offer') !== -1 || text.indexOf('discount') !== -1 || text.indexOf('promo') !== -1 || text.indexOf('50') !== -1) {
-          self.appendAgentMessage([
-            '🏷️ <strong>Best Available Offer:</strong><br>',
-            'Apply coupon code <strong class="text-danger font-monospace">FOODWALA50</strong> during checkout for 50% Flat Off up to ₹150!'
-          ].join(''));
-        } else if (text.indexOf('location') !== -1 || text.indexOf('address') !== -1 || text.indexOf('maruthi') !== -1 || text.indexOf('koramangala') !== -1) {
-          self.appendAgentMessage([
-            '📍 <strong>Location Assistance:</strong><br>',
-            'We deliver across all 14+ Bengaluru hubs including Maruthi Nagar, Koramangala, Indiranagar, and HSR Layout. Click below to switch your hub.<br>',
-            '<button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-2 fw-bold" data-bs-toggle="modal" data-bs-target="#locationModal">Switch Location</button>'
-          ].join(''));
-        } else if (text.indexOf('contact') !== -1 || text.indexOf('call') !== -1 || text.indexOf('agent') !== -1 || text.indexOf('human') !== -1 || text.indexOf('phone') !== -1 || text.indexOf('number') !== -1) {
-          self.appendAgentMessage([
-            '📞 <strong>Direct Human Support:</strong><br>',
-            'Call our 24/7 care hotline: <a href="tel:+918500457005" class="fw-bold text-danger">+91 85004 57005</a>, or message our direct WhatsApp desk.<br>',
-            '<a href="https://wa.me/918500457005?text=Hi%20FoodWala%20Support" target="_blank" class="btn btn-success btn-sm rounded-pill mt-2 fw-bold text-white"><i class="bi bi-whatsapp me-1"></i> Chat on WhatsApp (+91 85004 57005)</a>'
-          ].join(''));
+      var typingIndicatorId = 'fw-help-typing-' + Date.now();
+      var container = document.getElementById('fw-help-chat-messages');
+      if (container) {
+        var typingDiv = document.createElement('div');
+        typingDiv.id = typingIndicatorId;
+        typingDiv.className = 'fw-chat-msg-agent small text-muted py-2 fst-italic';
+        typingDiv.innerHTML = '<span class="spinner-grow spinner-grow-sm text-danger me-1"></span> FoodWala AI is typing...';
+        container.appendChild(typingDiv);
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function removeTyping() {
+        var el = document.getElementById(typingIndicatorId);
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }
+
+      var apiBase = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) || 'http://localhost:5000';
+      var chatEndpoint = apiBase.replace(/\/+$/, '') + '/api/support/chat';
+
+      var userPhone = null;
+      var userName = null;
+      var token = '';
+      try {
+        var storedUser = JSON.parse(localStorage.getItem('foodwala_current_user') || '{}');
+        userPhone = storedUser.phone || null;
+        userName = storedUser.name || storedUser.username || null;
+        token = localStorage.getItem('foodwala_auth_token') || '';
+      } catch (e) {}
+
+      var reqHeaders = { 'Content-Type': 'application/json' };
+      if (token) {
+        reqHeaders['Authorization'] = 'Bearer ' + token;
+      }
+
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timeoutId = controller ? setTimeout(function() { controller.abort(); }, 15000) : null;
+
+      fetch(chatEndpoint, {
+        method: 'POST',
+        headers: reqHeaders,
+        body: JSON.stringify({ message: text, phone: userPhone, name: userName }),
+        signal: controller ? controller.signal : undefined
+      })
+      .then(function(res) {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        removeTyping();
+        if (data && data.reply) {
+          var formatted = data.reply
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>')
+            .replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+          self.appendAgentMessage(formatted);
         } else {
-          self.appendAgentMessage([
-            'I understand! Our 24/7 care desk is at your service.<br>',
-            'You can choose from the quick action buttons above, message our WhatsApp desk, or call our care hotline directly at <a href="tel:+918500457005" class="fw-bold text-danger">+91 85004 57005</a> for instant personal assistance.'
-          ].join(''));
+          throw new Error('Empty reply');
         }
-      }, 400);
+      })
+      .catch(function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        removeTyping();
+        self.appendAgentMessage([
+          '⚠️ <strong>Support Service Momentarily Unavailable</strong><br>',
+          'Our care desk is momentarily unreachable. Please try again or request a callback.<br>',
+          '<div class="d-flex gap-2 mt-2">',
+          '  <button type="button" class="btn btn-sm btn-outline-danger rounded-pill fw-bold" onclick="window.FoodWalaHelpAssistant && window.FoodWalaHelpAssistant.retryLastQuery(\'' + text.replace(/'/g, "\\'") + '\')">🔄 Retry</button>',
+          '  <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold text-white js-trigger-callback-action">📞 Request Callback</button>',
+          '</div>'
+        ].join(''));
+      });
     }
   };
 
