@@ -5,7 +5,7 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "test": "node scripts/test_whatsapp_webhook.js",
+    "test": "node scripts/test_whatsapp_full_suite.js && node scripts/test_whatsapp_webhook.js",
     "build": "npm install --prefix server",
     "postinstall": "npm install --prefix server",
     "verify": "node scripts/verify-deploy.js"

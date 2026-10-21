@@ -7,6 +7,7 @@
  * - HMAC-SHA256 signature verification for inbound webhooks
  * - Phone number normalization for Indian WhatsApp numbers (+91)
  * - Safe fallback / mock dispatcher for local testing without active token
+ * - Unified environment variable support (META_ACCESS_TOKEN / WHATSAPP_ACCESS_TOKEN)
  */
 
 const crypto = require('crypto');
@@ -19,7 +20,7 @@ class WhatsAppService {
   }
 
   get accessToken() {
-    return process.env.WHATSAPP_ACCESS_TOKEN || '';
+    return process.env.META_ACCESS_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN || '';
   }
 
   get businessAccountId() {
@@ -27,15 +28,15 @@ class WhatsAppService {
   }
 
   get apiVersion() {
-    return process.env.WHATSAPP_API_VERSION || 'v21.0';
+    return process.env.META_GRAPH_API_VERSION || process.env.WHATSAPP_API_VERSION || 'v21.0';
   }
 
   get appSecret() {
-    return process.env.WHATSAPP_APP_SECRET || '';
+    return process.env.META_APP_SECRET || process.env.WHATSAPP_APP_SECRET || '';
   }
 
   get verifyToken() {
-    return process.env.WHATSAPP_VERIFY_TOKEN || 'foodwala_wa_verify_token_2026';
+    return process.env.WHATSAPP_VERIFY_TOKEN || 'FW_wh_verify_9c8e2a71f6404bf4b7b5a3d1e8c6f204d7a9b61e';
   }
 
   get hotline() {
@@ -54,9 +55,12 @@ class WhatsAppService {
     let phone10 = digits;
     let waId = digits;
 
-    if (digits.startsWith('91') && digits.length === 12) {
+    if (digits.length === 12 && digits.startsWith('91')) {
       phone10 = digits.substring(2);
       waId = digits;
+    } else if (digits.length === 11 && digits.startsWith('0')) {
+      phone10 = digits.substring(1);
+      waId = '91' + phone10;
     } else if (digits.length === 10) {
       phone10 = digits;
       waId = '91' + digits;
@@ -66,7 +70,7 @@ class WhatsAppService {
   }
 
   /**
-   * Masks a phone number for safe logging (e.g. "+9198****12")
+   * Masks a phone number for safe logging (e.g. "+9198****53")
    */
   maskPhone(phone) {
     if (!phone) return 'unknown';
@@ -149,7 +153,7 @@ class WhatsAppService {
           try {
             const parsed = JSON.parse(data);
             if (res.statusCode >= 200 && res.statusCode < 300) {
-              console.log(`✅ [WhatsApp Live API] Outbound message successfully delivered to Meta (HTTP ${res.statusCode})`);
+              console.log(`[WhatsApp] Outbound message delivered successfully to Meta (HTTP ${res.statusCode})`);
               resolve({ success: true, live: true, ...parsed });
             } else {
               const errObj = parsed.error || {};
@@ -161,18 +165,18 @@ class WhatsAppService {
               if (res.statusCode === 429 || errCode === 4 || errCode === 80007) {
                 diagnostic = 'Meta Graph API rate limit reached. Please retry after throttle backoff.';
               } else if (errCode === 190) {
-                diagnostic = 'Meta Access Token is expired or invalid. Please refresh WHATSAPP_ACCESS_TOKEN.';
+                diagnostic = 'Meta Access Token is expired or invalid. Please refresh WHATSAPP_ACCESS_TOKEN / META_ACCESS_TOKEN.';
               } else if (errCode === 131026) {
                 diagnostic = 'Message undeliverable: Recipient outside 24-hour customer service window.';
               } else if (errCode === 100) {
                 diagnostic = 'Invalid request parameters or WHATSAPP_PHONE_NUMBER_ID mismatch.';
               }
 
-              console.error(`❌ [WhatsApp Graph API Error] (HTTP ${res.statusCode}): ${diagnostic}`);
+              console.error(`[WhatsApp ERROR] Meta Graph API returned HTTP ${res.statusCode}: ${diagnostic}`);
               resolve({ success: false, live: true, error: diagnostic, metaCode: errCode, statusCode: res.statusCode });
             }
           } catch (e) {
-            console.error(`❌ [WhatsApp Graph API Error] Non-JSON response (HTTP ${res.statusCode})`);
+            console.error(`[WhatsApp ERROR] Non-JSON response from Meta API (HTTP ${res.statusCode})`);
             resolve({ success: false, live: true, error: 'Non-JSON response from Meta API', statusCode: res.statusCode });
           }
         });
@@ -180,12 +184,12 @@ class WhatsAppService {
 
       req.on('timeout', () => {
         req.destroy();
-        console.error('❌ [WhatsApp Graph API Error] Request timed out (10s)');
+        console.error('[WhatsApp ERROR] Request to Meta Graph API timed out (10s)');
         resolve({ success: false, live: true, error: 'Meta Graph API request timed out' });
       });
 
       req.on('error', (err) => {
-        console.error('[WhatsApp Network Error]', err.message);
+        console.error('[WhatsApp ERROR] Network error reaching Meta Graph API:', err.message);
         resolve({ success: false, live: true, error: err.message });
       });
 
@@ -195,48 +199,50 @@ class WhatsAppService {
   }
 
   /**
-   * Sends standard text message
+   * Primary Reusable Function: sendWhatsAppMessage(to, message)
+   * Sends text message to customer via Meta WhatsApp Cloud API
    */
-  async sendTextMessage(toWaId, textBody, replyMessageId = null) {
+  async sendWhatsAppMessage(to, message) {
+    const { waId } = this.normalizeSender(to);
     const payload = {
       messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to: toWaId,
+      to: waId,
       type: 'text',
       text: {
-        preview_url: false,
-        body: textBody
+        body: String(message || '').trim()
       }
     };
-
-    if (replyMessageId) {
-      payload.context = { message_id: replyMessageId };
-    }
-
     return await this._postToGraphApi('messages', payload);
   }
 
   /**
-   * Sends interactive reply buttons (up to 3 buttons supported by Meta)
+   * Backward-compatible alias for sendWhatsAppMessage
    */
-  async sendInteractiveButtons(toWaId, bodyText, buttonList) {
-    const buttons = (buttonList || []).slice(0, 3).map((btn, index) => ({
+  async sendTextMessage(toWaId, textBody) {
+    return await this.sendWhatsAppMessage(toWaId, textBody);
+  }
+
+  /**
+   * Sends interactive action buttons to WhatsApp customer
+   */
+  async sendInteractiveButtons(toWaId, bodyText, buttons = []) {
+    const { waId } = this.normalizeSender(toWaId);
+    const validButtons = buttons.slice(0, 3).map((btn, idx) => ({
       type: 'reply',
       reply: {
-        id: btn.id || ('btn_' + index),
+        id: btn.id || `btn_${idx}`,
         title: btn.title.substring(0, 20)
       }
     }));
 
     const payload = {
       messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to: toWaId,
+      to: waId,
       type: 'interactive',
       interactive: {
         type: 'button',
         body: { text: bodyText },
-        action: { buttons }
+        action: { buttons: validButtons }
       }
     };
 
@@ -244,15 +250,16 @@ class WhatsAppService {
   }
 
   /**
-   * Marks incoming message as read (blue checkmark)
+   * Marks incoming customer message as read on WhatsApp
    */
-  async markMessageAsRead(waMessageId) {
-    if (!waMessageId || waMessageId.startsWith('wamid.MOCK_')) return;
-    return await this._postToGraphApi('messages', {
+  async markMessageAsRead(messageId) {
+    if (!messageId) return;
+    const payload = {
       messaging_product: 'whatsapp',
       status: 'read',
-      message_id: waMessageId
-    });
+      message_id: messageId
+    };
+    return await this._postToGraphApi('messages', payload);
   }
 
   /**
@@ -332,6 +339,59 @@ class WhatsAppService {
       console.error('[WhatsApp Service] logMessage error:', err.message);
       return null;
     }
+  }
+
+  /**
+   * Health Check: Diagnostics Meta WhatsApp Cloud API credentials
+   */
+  async checkHealth() {
+    const phoneId = this.phoneNumberId;
+    const token = this.accessToken;
+
+    if (!phoneId || !token) {
+      return {
+        configured: false,
+        tokenValid: false,
+        message: 'WHATSAPP_PHONE_NUMBER_ID or META_ACCESS_TOKEN is not configured in environment variables.'
+      };
+    }
+
+    return new Promise((resolve) => {
+      const url = `https://graph.facebook.com/${this.apiVersion}/${phoneId}?access_token=${token}`;
+      https.get(url, { timeout: 6000 }, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve({
+                configured: true,
+                tokenValid: true,
+                phoneNumberId: phoneId,
+                displayPhoneNumber: parsed.display_phone_number || null,
+                verifiedName: parsed.verified_name || null
+              });
+            } else {
+              const code = parsed.error?.code;
+              const subcode = parsed.error?.error_subcode;
+              const msg = parsed.error?.message || 'Meta API rejected token';
+              resolve({
+                configured: true,
+                tokenValid: false,
+                errorCode: code,
+                errorSubcode: subcode,
+                message: msg
+              });
+            }
+          } catch (e) {
+            resolve({ configured: true, tokenValid: false, message: 'Invalid response from Meta' });
+          }
+        });
+      }).on('error', (err) => {
+        resolve({ configured: true, tokenValid: false, message: err.message });
+      });
+    });
   }
 }
 

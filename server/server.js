@@ -257,8 +257,11 @@ app.use(authenticateUser);
 // =======================================================================
 // WHATSAPP CLOUD API & AI CUSTOMER SUPPORT WEBHOOKS
 // =======================================================================
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const whatsappWebhookRouter = require('./routes/whatsappWebhook');
-app.use('/api/webhook/whatsapp', whatsappWebhookRouter);
+
+app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/webhook/whatsapp', whatsappRoutes);
 app.use('/api/support', whatsappWebhookRouter);
 
 // =======================================================================
