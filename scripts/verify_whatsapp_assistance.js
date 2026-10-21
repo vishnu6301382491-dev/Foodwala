@@ -144,7 +144,7 @@ async function runVerification() {
   // Check 4: Outbound AI Reply Verification in Database
   console.log('\nTest 4: WhatsApp Outbound AI Reply Generation & Delivery...');
   let replyRecord = null;
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 50; i++) {
     await new Promise(r => setTimeout(r, 200));
     const [msgs] = await db.query(
       `SELECT wm.message_text, wm.delivery_status, wm.direction, wm.created_at

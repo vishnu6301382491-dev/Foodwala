@@ -212,23 +212,7 @@
 
           <!-- ================= SECTION 1: EMAIL LOGIN ================= -->
           <div id="email-login-section">
-            <!-- 1-Click Fast Demo Login Buttons (hidden unless DEMO_MODE is true) -->
-            <div id="demo-logins-container" class="bg-light p-3 rounded-4 mb-4 border" style="display: none;">
-              <small class="text-muted fw-bold text-uppercase d-block mb-2 text-center" style="font-size:0.75rem;">
-                <i class="bi bi-lightning-charge-fill text-warning"></i> Optional 1-Click Demo Logins
-              </small>
-              <div class="d-grid gap-2">
-                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="customer">
-                  <i class="bi bi-person-circle text-primary me-2"></i><strong>Customer</strong>: Rahul Sharma
-                </button>
-                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="restaurant">
-                  <i class="bi bi-shop text-danger me-2"></i><strong>Restaurant Manager</strong>: Vidyarthi Bhavan
-                </button>
-                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill text-start px-3 py-2 js-demo-login" data-role="partner">
-                  <i class="bi bi-bicycle text-success me-2"></i><strong>Delivery Partner</strong>: Ramesh Kumar
-                </button>
-              </div>
-            </div>
+            <!-- Demo logins removed for production security -->
 
             <div id="login-error-msg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;" role="alert"></div>
 
@@ -602,7 +586,7 @@
         if (loginIcon) loginIcon.className = 'bi bi-shield-lock-fill fs-3 text-warning';
         if (adminBanner) adminBanner.style.display = 'block';
         if (emailLabel) emailLabel.textContent = 'Administrator Email or Username';
-        if (emailInput) emailInput.placeholder = 'admin@foodwala.com';
+        if (emailInput) emailInput.placeholder = 'adminfoodwala@gmail.com';
         if (loginSubmitBtn) loginSubmitBtn.textContent = 'Access Administration Console';
 
         // Admin portal has NO public signup button (as requested)
@@ -623,7 +607,7 @@
           adminBanner.innerHTML = `<div class="alert alert-danger-subtle border border-danger-subtle rounded-3 py-2 px-3 small d-flex align-items-center gap-2 mb-0" style="background: rgba(255, 112, 93, 0.1); color: #FF705D;"><i class="bi bi-shop fs-5"></i><div><strong>Partner Console Gate</strong><div class="small opacity-75">Public signup is disabled.</div></div></div>`;
         }
         if (emailLabel) emailLabel.textContent = 'Restaurant Manager Email or Store ID';
-        if (emailInput) emailInput.placeholder = 'restaurant@foodwala.com';
+        if (emailInput) emailInput.placeholder = 'meghanafood@gmail.com';
         if (loginSubmitBtn) loginSubmitBtn.textContent = 'Access Partner Dashboard';
         if (signupPrompt) {
           signupPrompt.innerHTML = 'Partner access only &bull; <a href="./login.html" class="text-secondary fw-semibold">Customer Sign In</a>';
@@ -660,27 +644,7 @@
         emailSection.style.display = 'none';
       });
 
-      // --- Demo login buttons (only active when in offline DEMO_MODE) ---
-      const demoContainer = document.getElementById('demo-logins-container');
-      function syncDemoLoginsVisibility() {
-        if (demoContainer) {
-          demoContainer.style.display = (window.FOODWALA_IS_DEMO_MODE || (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.DEMO_MODE)) ? 'block' : 'none';
-        }
-      }
-      syncDemoLoginsVisibility();
-      window.addEventListener('foodwala:demoModeChanged', (e) => {
-        const isDemo = e.detail && e.detail.isDemoMode;
-        if (demoContainer) demoContainer.style.display = isDemo ? 'block' : 'none';
-      });
-
-      document.querySelectorAll('.js-demo-login').forEach(btn => {
-        btn.addEventListener('click', () => {
-          btn.disabled = true; // prevent multi-click
-          const role = btn.getAttribute('data-role');
-          const user = FoodWalaApp.Auth.loginAsDemo(role);
-          FoodWalaApp.showToast(`Signed in as ${user.name} (Demo)!`, 'success');
-          handlePostLoginNavigation(user);
-        });
+      // Demo logins permanently disabled
       });
 
       // --- Password Toggle ---

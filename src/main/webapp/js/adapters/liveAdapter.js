@@ -736,6 +736,16 @@
       }
     },
 
+    getAdminRestaurants: async function () {
+      try {
+        const res = await liveFetch('/api/admin/restaurants', { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        return { success: false, restaurants: [] };
+      } catch (err) {
+        return { success: false, restaurants: [] };
+      }
+    },
+
     getAdminLoginHistory: async function () {
       if (unavailableEndpoints.has('admin/login-history')) {
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {

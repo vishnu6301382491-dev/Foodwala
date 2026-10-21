@@ -185,6 +185,10 @@
       return await getAdapter().getAdminOrders();
     },
 
+    getAdminRestaurants: async function () {
+      return await getAdapter().getAdminRestaurants();
+    },
+
     getAdminLoginHistory: async function () {
       return await getAdapter().getAdminLoginHistory();
     },

@@ -1,0 +1,746 @@
+{
+  "superAdmin": {
+    "email": "adminfoodwala@gmail.com",
+    "password": "Vishnu@143",
+    "role": "admin"
+  },
+  "totalRestaurants": 105,
+  "defaultPasswordForAllRestaurants": "Vishnu@143",
+  "restaurants": [
+    {
+      "restaurantId": 1,
+      "restaurantName": "Central Tiffin Room (CTR) - Shri Sagar",
+      "managerEmail": "centraltiffinroomshrisagar@gmail.com",
+      "managerUserId": 42,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 2,
+      "restaurantName": "Vidyarthi Bhavan",
+      "managerEmail": "vidyarthibhavan@gmail.com",
+      "managerUserId": 43,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 3,
+      "restaurantName": "Mavalli Tiffin Room (MTR)",
+      "managerEmail": "mavallitiffinroom@gmail.com",
+      "managerUserId": 44,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 4,
+      "restaurantName": "Corner House Ice Cream",
+      "managerEmail": "cornerhouseicecream@gmail.com",
+      "managerUserId": 45,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 5,
+      "restaurantName": "Shivaji Military Hotel",
+      "managerEmail": "shivajimilitaryhotel@gmail.com",
+      "managerUserId": 46,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 6,
+      "restaurantName": "Brahmin's Coffee Bar",
+      "managerEmail": "brahminscoffeebar@gmail.com",
+      "managerUserId": 47,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 7,
+      "restaurantName": "Meghana Foods",
+      "managerEmail": "meghanafood@gmail.com",
+      "managerUserId": 48,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 8,
+      "restaurantName": "Truffles",
+      "managerEmail": "truffles@gmail.com",
+      "managerUserId": 49,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 9,
+      "restaurantName": "Veena Stores",
+      "managerEmail": "veenastores@gmail.com",
+      "managerUserId": 50,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 10,
+      "restaurantName": "Halli Mane",
+      "managerEmail": "hallimane@gmail.com",
+      "managerUserId": 51,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 11,
+      "restaurantName": "Janata Hotel",
+      "managerEmail": "janatahotel@gmail.com",
+      "managerUserId": 52,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 12,
+      "restaurantName": "Sri Raghavendra Stores",
+      "managerEmail": "sriraghavendrastores@gmail.com",
+      "managerUserId": 53,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 13,
+      "restaurantName": "Nalapaka",
+      "managerEmail": "nalapaka@gmail.com",
+      "managerUserId": 54,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 14,
+      "restaurantName": "Paakashala",
+      "managerEmail": "paakashala@gmail.com",
+      "managerUserId": 55,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 15,
+      "restaurantName": "Taaza Thindi",
+      "managerEmail": "taazathindi@gmail.com",
+      "managerUserId": 56,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 16,
+      "restaurantName": "Maiyas",
+      "managerEmail": "maiyas@gmail.com",
+      "managerUserId": 57,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 17,
+      "restaurantName": "Kamat Bugle Rock",
+      "managerEmail": "kamatbuglerock@gmail.com",
+      "managerUserId": 58,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 18,
+      "restaurantName": "SLV Corner Restaurant",
+      "managerEmail": "slvcornerrestaurant@gmail.com",
+      "managerUserId": 59,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 19,
+      "restaurantName": "VB Bakery",
+      "managerEmail": "vbbakery@gmail.com",
+      "managerUserId": 60,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 20,
+      "restaurantName": "VV Puram Food Street",
+      "managerEmail": "vvpuramfoodstreet@gmail.com",
+      "managerUserId": 61,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 21,
+      "restaurantName": "Chinita Real Mexican Food",
+      "managerEmail": "chinitarealmexicanfood@gmail.com",
+      "managerUserId": 62,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 22,
+      "restaurantName": "The Hole in the Wall Cafe",
+      "managerEmail": "holeinwallcafe@gmail.com",
+      "managerUserId": 63,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 23,
+      "restaurantName": "Nagarjuna - Koramangala",
+      "managerEmail": "nagarjunakoramangala@gmail.com",
+      "managerUserId": 64,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 24,
+      "restaurantName": "Anjappar Chettinad Restaurant",
+      "managerEmail": "anjapparchettinadrestaurant@gmail.com",
+      "managerUserId": 65,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 25,
+      "restaurantName": "Onesta - Koramangala",
+      "managerEmail": "onestakoramangala@gmail.com",
+      "managerUserId": 66,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 26,
+      "restaurantName": "Empire Restaurant - Koramangala",
+      "managerEmail": "empirerestaurantkoramangala@gmail.com",
+      "managerUserId": 67,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 27,
+      "restaurantName": "Smoor Chocolates & Cafe",
+      "managerEmail": "smoorchocolatescafe@gmail.com",
+      "managerUserId": 68,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 28,
+      "restaurantName": "Toit Brewpub & Kitchen",
+      "managerEmail": "toitbrewpubkitchen@gmail.com",
+      "managerUserId": 69,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 29,
+      "restaurantName": "Glen's Bakehouse - Indiranagar",
+      "managerEmail": "glensbakehouseindiranagar@gmail.com",
+      "managerUserId": 70,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 30,
+      "restaurantName": "Daddy - Casual Dining",
+      "managerEmail": "daddycasualdining@gmail.com",
+      "managerUserId": 71,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 31,
+      "restaurantName": "Smoke House Deli - Indiranagar",
+      "managerEmail": "smokehousedeliindiranagar@gmail.com",
+      "managerUserId": 72,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 32,
+      "restaurantName": "Phobidden Fruit",
+      "managerEmail": "phobiddenfruit@gmail.com",
+      "managerUserId": 73,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 33,
+      "restaurantName": "Milano Ice Cream",
+      "managerEmail": "milanoicecream@gmail.com",
+      "managerUserId": 74,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 34,
+      "restaurantName": "Indiranagar Club Kitchen",
+      "managerEmail": "indiranagarclubkitchen@gmail.com",
+      "managerUserId": 75,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 35,
+      "restaurantName": "Broadway - The Gourmet Theatre",
+      "managerEmail": "broadwaygourmettheatre@gmail.com",
+      "managerUserId": 76,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 36,
+      "restaurantName": "Vasudev Adigas - HSR",
+      "managerEmail": "vasudevadigashsr@gmail.com",
+      "managerUserId": 77,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 37,
+      "restaurantName": "Third Wave Coffee - HSR",
+      "managerEmail": "thirdwavecoffeehsr@gmail.com",
+      "managerUserId": 78,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 38,
+      "restaurantName": "Mishmash Cafe",
+      "managerEmail": "mishmashcafe@gmail.com",
+      "managerUserId": 79,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 39,
+      "restaurantName": "Kritunga Restaurant - HSR",
+      "managerEmail": "kritungarestauranthsr@gmail.com",
+      "managerUserId": 80,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 40,
+      "restaurantName": "Gufha Restaurant",
+      "managerEmail": "gufharestaurant@gmail.com",
+      "managerUserId": 81,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 41,
+      "restaurantName": "The Yellow Submarine",
+      "managerEmail": "yellowsubmarine@gmail.com",
+      "managerUserId": 82,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 42,
+      "restaurantName": "Brahmin Tiffin Centre",
+      "managerEmail": "brahmintiffincentre@gmail.com",
+      "managerUserId": 83,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 43,
+      "restaurantName": "Udupi Grand - Banashankari",
+      "managerEmail": "udupigrandbanashankari@gmail.com",
+      "managerUserId": 84,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 44,
+      "restaurantName": "Donne Biryani Mane",
+      "managerEmail": "donnebiryanimane@gmail.com",
+      "managerUserId": 85,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 45,
+      "restaurantName": "Sri Krishna Sagar - JP Nagar",
+      "managerEmail": "srikrishnasagarjpnagar@gmail.com",
+      "managerUserId": 86,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 46,
+      "restaurantName": "Mani's Dum Biryani",
+      "managerEmail": "manisdumbiryani@gmail.com",
+      "managerUserId": 87,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 47,
+      "restaurantName": "Al Daaz",
+      "managerEmail": "aldaaz@gmail.com",
+      "managerUserId": 88,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 48,
+      "restaurantName": "Biryani Zone - BTM",
+      "managerEmail": "biryanizonebtm@gmail.com",
+      "managerUserId": 89,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 49,
+      "restaurantName": "Anand Sweets and Savouries",
+      "managerEmail": "anandsweetsandsavouries@gmail.com",
+      "managerUserId": 90,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 50,
+      "restaurantName": "Thalassery Restaurant",
+      "managerEmail": "thalasseryrestaurant@gmail.com",
+      "managerUserId": 91,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 51,
+      "restaurantName": "Nandhana Palace - E-City",
+      "managerEmail": "nandhanapalaceecity@gmail.com",
+      "managerUserId": 92,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 52,
+      "restaurantName": "Republic of Noodles",
+      "managerEmail": "republicofnoodles@gmail.com",
+      "managerUserId": 93,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 53,
+      "restaurantName": "Silicon Dhaba",
+      "managerEmail": "silicondhaba@gmail.com",
+      "managerUserId": 94,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 54,
+      "restaurantName": "Windmills Craftworks",
+      "managerEmail": "windmillscraftworks@gmail.com",
+      "managerUserId": 95,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 55,
+      "restaurantName": "Herbs & Spices",
+      "managerEmail": "herbsspices@gmail.com",
+      "managerUserId": 96,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 56,
+      "restaurantName": "The Bier Library",
+      "managerEmail": "bierlibrary@gmail.com",
+      "managerUserId": 97,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 57,
+      "restaurantName": "Mainland China - Whitefield",
+      "managerEmail": "mainlandchinawhitefield@gmail.com",
+      "managerUserId": 98,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 58,
+      "restaurantName": "California Burrito - Marathahalli",
+      "managerEmail": "californiaburritomarathahalli@gmail.com",
+      "managerUserId": 99,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 59,
+      "restaurantName": "The Fisherman's Wharf",
+      "managerEmail": "fishermanswharf@gmail.com",
+      "managerUserId": 100,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 60,
+      "restaurantName": "Byg Brewski Brewing Company",
+      "managerEmail": "bygbrewskibrewingcompany@gmail.com",
+      "managerUserId": 101,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 61,
+      "restaurantName": "Zoey's Pizzeria & Cafe",
+      "managerEmail": "zoeyspizzeriacafe@gmail.com",
+      "managerUserId": 102,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 62,
+      "restaurantName": "Chai Point - Bellandur",
+      "managerEmail": "chaipointbellandur@gmail.com",
+      "managerUserId": 103,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 63,
+      "restaurantName": "Koshy's Restaurant",
+      "managerEmail": "koshysrestaurant@gmail.com",
+      "managerUserId": 104,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 64,
+      "restaurantName": "Nagarjuna - Residency Road",
+      "managerEmail": "nagarjunaresidencyroad@gmail.com",
+      "managerUserId": 105,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 65,
+      "restaurantName": "The Only Place",
+      "managerEmail": "onlyplace@gmail.com",
+      "managerUserId": 106,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 66,
+      "restaurantName": "Matteo Coffea",
+      "managerEmail": "matteocoffea@gmail.com",
+      "managerUserId": 107,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 67,
+      "restaurantName": "Plan B - Castle Street",
+      "managerEmail": "planbcastlestreet@gmail.com",
+      "managerUserId": 108,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 68,
+      "restaurantName": "Ebony - Fine Dining",
+      "managerEmail": "ebonyfinedining@gmail.com",
+      "managerUserId": 109,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 69,
+      "restaurantName": "Albert Bakery",
+      "managerEmail": "albertbakery@gmail.com",
+      "managerUserId": 110,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 70,
+      "restaurantName": "Karama Restaurant",
+      "managerEmail": "karamarestaurant@gmail.com",
+      "managerUserId": 111,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 71,
+      "restaurantName": "Thom's Bakery",
+      "managerEmail": "thomsbakery@gmail.com",
+      "managerUserId": 112,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 72,
+      "restaurantName": "Nandi Upachar",
+      "managerEmail": "nandiupachar@gmail.com",
+      "managerUserId": 113,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 73,
+      "restaurantName": "Arirang Korean Restaurant",
+      "managerEmail": "arirangkoreanrestaurant@gmail.com",
+      "managerUserId": 114,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 74,
+      "restaurantName": "Once Upon a Flame",
+      "managerEmail": "onceuponaflame@gmail.com",
+      "managerUserId": 115,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 75,
+      "restaurantName": "Chetty's Corner",
+      "managerEmail": "chettyscorner@gmail.com",
+      "managerUserId": 116,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 76,
+      "restaurantName": "The Fatty Bao - Indiranagar",
+      "managerEmail": "fattybaoindiranagar@gmail.com",
+      "managerUserId": 117,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 77,
+      "restaurantName": "Sukh Sagar",
+      "managerEmail": "sukhsagar@gmail.com",
+      "managerUserId": 118,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 78,
+      "restaurantName": "Kamath Hotel - Majestic",
+      "managerEmail": "kamathhotelmajestic@gmail.com",
+      "managerUserId": 119,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 79,
+      "restaurantName": "SGS Non-Veg Gundu Pulav",
+      "managerEmail": "sgsnonveggundupulav@gmail.com",
+      "managerUserId": 120,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 80,
+      "restaurantName": "Sankey's Cafe",
+      "managerEmail": "sankeyscafe@gmail.com",
+      "managerUserId": 121,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 81,
+      "restaurantName": "Pavithra Paradise",
+      "managerEmail": "pavithraparadise@gmail.com",
+      "managerUserId": 122,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 82,
+      "restaurantName": "Adyar Ananda Bhavan (A2B) - Vijayanagar",
+      "managerEmail": "adyaranandabhavanvijayanagar@gmail.com",
+      "managerUserId": 123,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 83,
+      "restaurantName": "Hotel Janatha - Vijayanagar",
+      "managerEmail": "hoteljanathavijayanagar@gmail.com",
+      "managerUserId": 124,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 84,
+      "restaurantName": "Navayuga Family Restaurant",
+      "managerEmail": "navayugafamilyrestaurant@gmail.com",
+      "managerUserId": 125,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 85,
+      "restaurantName": "Beijing Bites - Malleshwaram",
+      "managerEmail": "beijingbitesmalleshwaram@gmail.com",
+      "managerUserId": 126,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 86,
+      "restaurantName": "Windsor Pub - Vasanth Nagar",
+      "managerEmail": "windsorpubvasanthnagar@gmail.com",
+      "managerUserId": 127,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 87,
+      "restaurantName": "Savoury Restaurant - Frazer Town",
+      "managerEmail": "savouryrestaurantfrazertown@gmail.com",
+      "managerUserId": 128,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 88,
+      "restaurantName": "The Pizza Bakery - Indiranagar",
+      "managerEmail": "pizzabakeryindiranagar@gmail.com",
+      "managerUserId": 129,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 89,
+      "restaurantName": "Chulha Chauki Da Dhaba",
+      "managerEmail": "chulhachaukidadhaba@gmail.com",
+      "managerUserId": 130,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 90,
+      "restaurantName": "Absolute Barbecues (AB's) - Marathahalli",
+      "managerEmail": "absolutebarbecuesmarathahalli@gmail.com",
+      "managerUserId": 131,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 91,
+      "restaurantName": "Pasta Street - Whitefield",
+      "managerEmail": "pastastreetwhitefield@gmail.com",
+      "managerUserId": 132,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 92,
+      "restaurantName": "Zoey's Desserts & Bakes",
+      "managerEmail": "zoeysdessertsbakes@gmail.com",
+      "managerUserId": 133,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 93,
+      "restaurantName": "Royal Andhra Spice - Yelahanka",
+      "managerEmail": "royalandhraspiceyelahanka@gmail.com",
+      "managerUserId": 134,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 94,
+      "restaurantName": "Arogya Aahaara",
+      "managerEmail": "arogyaaahaara@gmail.com",
+      "managerUserId": 135,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 95,
+      "restaurantName": "Cheesecakes by Smoor",
+      "managerEmail": "cheesecakesbysmoor@gmail.com",
+      "managerUserId": 136,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 96,
+      "restaurantName": "Urban Solace - Cafe for the Soul",
+      "managerEmail": "urbansolacecafeforsoul@gmail.com",
+      "managerUserId": 137,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 97,
+      "restaurantName": "Domlur Club Kitchen",
+      "managerEmail": "domlurclubkitchen@gmail.com",
+      "managerUserId": 138,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 98,
+      "restaurantName": "Kabab Magic - Basavanagudi",
+      "managerEmail": "kababmagicbasavanagudi@gmail.com",
+      "managerUserId": 139,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 99,
+      "restaurantName": "Goli Vada Pav No. 1",
+      "managerEmail": "golivadapavno1@gmail.com",
+      "managerUserId": 140,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 100,
+      "restaurantName": "Hotel Fanoos - Johnson Market",
+      "managerEmail": "hotelfanoosjohnsonmarket@gmail.com",
+      "managerUserId": 141,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 101,
+      "restaurantName": "Suryawanshi - Maharashtrian",
+      "managerEmail": "suryawanshimaharashtrian@gmail.com",
+      "managerUserId": 142,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 102,
+      "restaurantName": "Mezzeh Mediterranean Kitchen",
+      "managerEmail": "mezzehmediterraneankitchen@gmail.com",
+      "managerUserId": 143,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 103,
+      "restaurantName": "Madurai Idly Shop - Indiranagar",
+      "managerEmail": "maduraiidlyshopindiranagar@gmail.com",
+      "managerUserId": 144,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 104,
+      "restaurantName": "Leon's Burgers & Wings",
+      "managerEmail": "leonsburgerswings@gmail.com",
+      "managerUserId": 145,
+      "password": "Vishnu@143"
+    },
+    {
+      "restaurantId": 105,
+      "restaurantName": "The Filter Coffee - Koramangala",
+      "managerEmail": "filtercoffeekoramangala@gmail.com",
+      "managerUserId": 146,
+      "password": "Vishnu@143"
+    }
+  ]
+}

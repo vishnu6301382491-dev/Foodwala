@@ -687,6 +687,23 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       addresses = addrRows || [];
     } catch (addrErr) {}
 
+    let restaurantId = null;
+    let restaurantName = null;
+    if ((user.role || '').toLowerCase() === 'restaurant' || (user.role || '').toLowerCase() === 'manager') {
+      try {
+        const [rRows] = await db.query(
+          'SELECT restaurant_id, name FROM restaurant WHERE admin_user_id = ? LIMIT 1',
+          [user.user_id]
+        );
+        if (rRows && rRows.length > 0) {
+          restaurantId = rRows[0].restaurant_id;
+          restaurantName = rRows[0].name;
+        }
+      } catch (rErr) {
+        console.warn('[Login Restaurant Lookup Warning]:', rErr.message);
+      }
+    }
+
     const userPayload = {
       userId: user.user_id,
       name: user.username,
@@ -696,6 +713,9 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
       role: (user.role || 'customer').toLowerCase(),
       address: user.address || '',
       addresses: addresses,
+      restaurantId: restaurantId,
+      restaurant_id: restaurantId,
+      restaurantName: restaurantName,
       lastLogin: new Date().toISOString()
     };
 
@@ -2455,30 +2475,48 @@ app.get('/api/admin/login-history', requireAdmin, async (req, res) => {
   }
 });
 
+app.get('/api/admin/restaurants', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.restaurant_id, r.name, r.cuisine_type, r.rating, r.is_active, r.is_open,
+              r.address, r.area, r.city, r.phone, r.review_count,
+              u.email AS manager_email, u.username AS manager_name
+       FROM restaurant r
+       LEFT JOIN user u ON r.admin_user_id = u.user_id
+       ORDER BY r.restaurant_id ASC`
+    );
+    res.json({ success: true, restaurants: rows, total: rows.length });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // =======================================================================
 // 10. RESTAURANT PARTNER & MANAGER ENDPOINTS
 // =======================================================================
 
 // Helper: resolve restaurant for currently logged in restaurant manager
 async function resolveRestaurantForManager(req) {
-  // If specific restaurantId requested
+  const isAdmin = req.user && (req.user.role || '').toLowerCase() === 'admin';
   const paramRestId = parseInt(req.query.restaurantId || (req.body && req.body.restaurantId), 10);
-  if (paramRestId) {
-    const [rows] = await db.query('SELECT * FROM restaurant WHERE restaurant_id = ?', [paramRestId]);
-    if (rows.length > 0) return rows[0];
+
+  // 1. Super Admin: full access to inspect/manage any restaurant across the platform
+  if (isAdmin) {
+    if (paramRestId) {
+      const [rows] = await db.query('SELECT * FROM restaurant WHERE restaurant_id = ?', [paramRestId]);
+      if (rows.length > 0) return rows[0];
+    }
+    const [defaultRows] = await db.query('SELECT * FROM restaurant ORDER BY restaurant_id ASC LIMIT 1');
+    return defaultRows[0] || null;
   }
 
-  // If user is linked by admin_user_id
+  // 2. Restaurant Manager: STRICTLY scoped to their own restaurant (WHERE admin_user_id = req.user.user_id)
   if (req.user && req.user.user_id) {
     const [rows] = await db.query('SELECT * FROM restaurant WHERE admin_user_id = ?', [req.user.user_id]);
     if (rows.length > 0) return rows[0];
   }
 
-  // Default fallback to Vidyarthi Bhavan (ID 2) or CTR (ID 1)
-  const [vRows] = await db.query('SELECT * FROM restaurant WHERE restaurant_id = 2');
-  if (vRows.length > 0) return vRows[0];
-  const [anyRows] = await db.query('SELECT * FROM restaurant LIMIT 1');
-  return anyRows[0] || null;
+  return null;
 }
 
 // 1. Get Restaurant Details for Manager
@@ -2854,13 +2892,12 @@ app.use((err, req, res, next) => {
 // =======================================================================
 
 async function seedAdminUser() {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@foodwala.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Vishnu@143';
+  const adminEmail = process.env.ADMIN_EMAIL || 'adminfoodwala@gmail.com';
   const adminPhone = process.env.ADMIN_PHONE || '9876543222';
 
   const accountsToSeed = [
-    { email: adminEmail, username: 'FoodWala Admin', phone: adminPhone, password: adminPassword },
-    { email: 'admin@example.com', username: 'Administrator', phone: '9876543229', password: 'password' }
+    { email: adminEmail, username: 'FoodWala Super Admin', phone: adminPhone, password: adminPassword }
   ];
 
   for (const acc of accountsToSeed) {
@@ -2881,6 +2918,12 @@ async function seedAdminUser() {
         );
         console.log(`[Security] Synchronized administrator credentials (${acc.email}).`);
       }
+
+      // Demote any old admin accounts so ONLY adminfoodwala@gmail.com is admin
+      await db.execute(
+        `UPDATE user SET role = 'customer' WHERE role = 'admin' AND email != ?`,
+        [acc.email]
+      );
     } catch (err) {
       console.warn(`[Security] Seed admin warning (${acc.email}):`, err.message);
     }

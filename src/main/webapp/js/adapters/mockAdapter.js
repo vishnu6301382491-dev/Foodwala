@@ -1285,6 +1285,11 @@
       };
     },
 
+    getAdminRestaurants: async function () {
+      const list = window.FoodWalaCatalog ? window.FoodWalaCatalog.restaurants : [];
+      return { success: true, restaurants: list };
+    },
+
     getAdminLoginHistory: async function () {
       let history = getLocal(STORAGE_KEYS.LOGIN_HISTORY, []);
       if (!history || history.length === 0) {

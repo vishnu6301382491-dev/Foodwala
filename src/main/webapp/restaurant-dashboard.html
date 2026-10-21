@@ -103,7 +103,7 @@
             <small class="text-warning-emphasis fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">RESTAURANT PARTNER HUB</small>
           </div>
         </a>
-        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block">
+        <span id="partner-role-badge" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block">
           <i class="bi bi-shield-check me-1"></i> Manager Console
         </span>
       </div>
@@ -146,7 +146,7 @@
       <form id="quick-rest-login-form" class="text-start">
         <div class="mb-3">
           <label class="form-label small fw-bold text-muted">Manager Email or Mobile</label>
-          <input type="text" id="gate-email" class="form-control rounded-3" placeholder="restaurant@foodwala.com"  required>
+          <input type="text" id="gate-email" class="form-control rounded-3" placeholder="meghanafood@gmail.com"  required>
         </div>
         <div class="mb-3">
           <label class="form-label small fw-bold text-muted">Password</label>
@@ -580,8 +580,56 @@
     }
 
     async function loadRestaurantDashboard() {
+      const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      const role = (currentUser && currentUser.role ? currentUser.role : '').toLowerCase();
+      const isAdmin = role === 'admin';
       const urlParams = new URLSearchParams(window.location.search);
-      currentRestId = parseInt(urlParams.get('id') || '2', 10) || 2;
+
+      const restSelector = document.getElementById('restaurant-selector-dropdown');
+      const roleBadge = document.getElementById('partner-role-badge');
+
+      if (!isAdmin) {
+        // --- RESTAURANT MANAGER: Strictly bound to their own restaurant ---
+        const managerRestId = (currentUser && (currentUser.restaurantId || currentUser.restaurant_id)) || null;
+        if (managerRestId) {
+          currentRestId = parseInt(managerRestId, 10);
+        } else {
+          currentRestId = parseInt(urlParams.get('id') || '7', 10);
+        }
+
+        // HIDE restaurant switcher dropdown so managers cannot view or select other stores
+        if (restSelector) {
+          restSelector.style.setProperty('display', 'none', 'important');
+        }
+
+        // Update Manager badge
+        if (roleBadge) {
+          const storeName = (currentUser && currentUser.restaurantName) || 'Assigned Store';
+          roleBadge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block';
+          roleBadge.innerHTML = `<i class="bi bi-shop me-1"></i> Manager: ${escapeHtml(storeName)}`;
+        }
+
+        // URL Tampering Protection: Keep URL synchronized with their store only
+        if (urlParams.get('id') && parseInt(urlParams.get('id'), 10) !== currentRestId) {
+          window.history.replaceState(null, '', `./restaurant-dashboard.html?id=${currentRestId}`);
+        }
+      } else {
+        // --- SUPER ADMIN: Full Access to All 105 Restaurants ---
+        currentRestId = parseInt(urlParams.get('id') || '2', 10) || 2;
+        if (restSelector) {
+          restSelector.style.setProperty('display', 'inline-block', 'important');
+          restSelector.value = currentRestId.toString();
+          restSelector.onchange = (e) => {
+            window.location.search = '?id=' + e.target.value;
+          };
+          populateAdminRestaurantDropdown(restSelector, currentRestId);
+        }
+        if (roleBadge) {
+          roleBadge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block';
+          roleBadge.innerHTML = `<i class="bi bi-gear-wide-connected me-1"></i> Super Admin Mode (All 105 Stores)`;
+        }
+      }
+
       const restId = currentRestId;
       const previewBtn = document.getElementById('preview-store-btn');
       if (previewBtn) {
@@ -636,6 +684,23 @@
         console.error('[RestaurantDashboard] Load error:', err);
         FoodWalaApp.showToast('Could not sync with restaurant services.', 'danger');
       }
+    }
+
+    
+    async function populateAdminRestaurantDropdown(selectElem, activeId) {
+      if (selectElem.dataset.populated === 'true') return;
+      try {
+        const res = await FoodWalaApi.getRestaurants({ limit: 120 });
+        const list = (res && res.restaurants) ? res.restaurants : [];
+        if (list && list.length > 0) {
+          selectElem.innerHTML = list.map(r => `
+            <option value="${r.restaurant_id || r.id}" ${(r.restaurant_id || r.id) == activeId ? 'selected' : ''}>
+              ${r.name} (#${r.restaurant_id || r.id})
+            </option>
+          `).join('');
+          selectElem.dataset.populated = 'true';
+        }
+      } catch (e) {}
     }
 
     function renderRestaurantHeader(r) {
