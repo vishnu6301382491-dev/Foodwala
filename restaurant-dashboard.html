@@ -131,6 +131,25 @@
       </div>
     </div>
   </header>
+  <!-- Super Admin Omnipotent Control Bar (visible only to Admin) -->
+  <div id="super-admin-control-bar" class="py-2.5 px-4 shadow-sm" style="display: none; background: #2d1848; color: #f3e8ff; border-bottom: 2px solid #a855f7;">
+    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="fs-5">👑</span>
+        <span class="fw-bold fs-6">SUPER ADMIN CONTROL:</span>
+        <span class="badge bg-warning text-dark fw-bold">Full Omnipotent Store Management Active</span>
+        <small class="text-white-50 d-none d-lg-inline">Add/Edit Dishes, Modify Pricing, Toggle Stock, Dispatch Orders</small>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a href="./admin.html" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold">
+          <i class="bi bi-arrow-left me-1"></i> Admin Portal
+        </a>
+        <a href="./delivery-dashboard.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold">
+          <i class="bi bi-bicycle me-1"></i> Delivery Hero
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Main Content Container -->
   <main class="container my-4 flex-grow-1">
@@ -628,6 +647,8 @@
           roleBadge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1 fw-bold small d-none d-md-inline-block';
           roleBadge.innerHTML = `<i class="bi bi-gear-wide-connected me-1"></i> Super Admin Mode (All 105 Stores)`;
         }
+        const adminBar = document.getElementById('super-admin-control-bar');
+        if (adminBar) adminBar.style.display = 'block';
       }
 
       const restId = currentRestId;
@@ -635,12 +656,8 @@
       if (previewBtn) {
         previewBtn.href = `./restaurant-details.html?id=${restId}`;
       }
-      const restSelector = document.getElementById('restaurant-selector-dropdown');
-      if (restSelector) {
+      if (restSelector && isAdmin) {
         restSelector.value = restId.toString();
-        restSelector.onchange = (e) => {
-          window.location.search = '?id=' + e.target.value;
-        };
       }
       try {
         const [detRes, menuRes, ordersRes] = await Promise.all([

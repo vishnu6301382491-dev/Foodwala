@@ -146,6 +146,15 @@
     },
 
     bindEvents: function() {
+      // Prevent aria-hidden accessibility violation when modal hides while focus is retained
+      var helpModalElem = document.getElementById("foodwalaHelpModal");
+      if (helpModalElem) {
+        helpModalElem.addEventListener("hide.bs.modal", function() {
+          if (document.activeElement && helpModalElem.contains(document.activeElement)) {
+            document.activeElement.blur();
+          }
+        });
+      }
       var self = this;
 
       // Smart chips & callback triggers

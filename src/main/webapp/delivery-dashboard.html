@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodWala Delivery Hero | Partner Portal</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/ui.css">
+  <script src="./js/theme.js"></script>
+  <style>
+    :root {
+      --hero-orange: #ff5200;
+      --hero-dark: #121417;
+      --hero-card: #ffffff;
+      --hero-border: #e9ecef;
+    }
+    body {
+      background-color: #f4f6f8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .hero-top-nav {
+      background: #1e2229;
+      color: #fff;
+    }
+    .duty-indicator-pulse {
+      width: 12px;
+      height: 12px;
+      background-color: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse-green 1.8s infinite;
+    }
+    .duty-indicator-offline {
+      width: 12px;
+      height: 12px;
+      background-color: #6c757d;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .radar-card {
+      background: #ffffff;
+      border: 2px solid #ff5200;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(255, 82, 0, 0.12);
+      transition: all 0.25s ease-in-out;
+    }
+    .radar-progress {
+      height: 6px;
+      border-radius: 3px;
+      background: #ff5200;
+      transition: width 1s linear;
+    }
+    .hero-stat-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .nav-pills-hero .nav-link {
+      color: #4b5563;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 12px;
+      padding: 10px 20px;
+    }
+    .nav-pills-hero .nav-link.active {
+      background-color: #ff5200;
+      color: #ffffff;
+    }
+    .delivery-step-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+    .map-canvas-container {
+      background: #e8ecf1;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      min-height: 240px;
+    }
+    .pulse-bike-marker {
+      position: absolute;
+      transition: all 1s ease-in-out;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Hero Navigation -->
+  <nav class="hero-top-nav py-2.5 px-3 px-lg-4 shadow-sm">
+    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <!-- Brand & Partner Tag -->
+      <div class="d-flex align-items-center gap-3">
+        <a href="./index.html" class="d-flex align-items-center gap-2 text-white text-decoration-none fw-bold fs-5">
+          <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+            <i class="bi bi-bicycle fs-5"></i>
+          </div>
+          <span>Food<span class="text-danger">Wala</span> <span class="badge bg-warning text-dark fs-6 py-0.5 px-2 ms-1">HERO</span></span>
+        </a>
+
+        <!-- Duty Indicator Pill -->
+        <div class="d-flex align-items-center gap-2 bg-dark bg-opacity-50 px-3 py-1.5 rounded-pill border border-secondary border-opacity-50">
+          <span id="duty-pulse-icon" class="duty-indicator-pulse"></span>
+          <span id="duty-text-status" class="fw-bold text-white small">Online (Ready)</span>
+        </div>
+      </div>
+
+      <!-- Right Controls: Profile, Pocket, SOS, Logout -->
+      <div class="d-flex align-items-center gap-2 gap-md-3">
+        <!-- Pocket Balance -->
+        <div class="d-none d-sm-flex align-items-center gap-2 bg-dark px-3 py-1.5 rounded-pill border border-secondary border-opacity-25">
+          <i class="bi bi-wallet2 text-warning fs-6"></i>
+          <span class="small text-white-50">Pocket:</span>
+          <span id="nav-pocket-balance" class="fw-bold text-success">₹840.00</span>
+        </div>
+
+        <!-- Emergency SOS Button -->
+        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2.5 px-md-3 py-1.5 fw-bold d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#sosEmergencyModal">
+          <i class="bi bi-shield-fill-exclamation"></i>
+          <span class="d-none d-md-inline">SOS Help</span>
+        </button>
+
+        <!-- Partner Profile Chip -->
+        <div class="dropdown">
+          <button class="btn btn-dark btn-sm rounded-pill px-3 py-1.5 d-flex align-items-center gap-2 dropdown-toggle border border-secondary border-opacity-25" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="rounded-circle bg-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.75rem;">
+              <span id="partner-initials">K</span>
+            </div>
+            <span id="nav-partner-name" class="fw-semibold text-white small">Kiran Kumar</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
+            <li><h6 class="dropdown-header text-muted small" id="nav-partner-id-badge">ID: FW-RIDER-108</h6></li>
+            <li><div class="dropdown-item-text small text-muted"><i class="bi bi-phone me-1"></i> <span id="nav-partner-phone">9900000201</span></div></li>
+            <li><div class="dropdown-item-text small text-muted"><i class="bi bi-ev-front me-1"></i> <span id="nav-partner-vehicle">KA 05 MN 7890</span></div></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger fw-semibold" href="#" id="partner-logout-btn"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Super Admin Banner if Admin logged in -->
+  <div id="admin-oversight-banner" class="alert alert-dark rounded-0 border-0 py-2 px-3 mb-0 text-center small fw-bold" style="display: none; background: #2d1848; color: #e9d5ff;">
+    👑 <span class="badge bg-warning text-dark me-2">SUPER ADMIN MODE</span> You are inspecting Delivery Partner Operations. Full dispatch & overrides active.
+  </div>
+
+  <!-- Main Container -->
+  <div class="container-fluid py-4 px-3 px-lg-4" style="max-width: 1200px;">
+
+    <!-- Top Duty & Performance Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+      <div class="card-body p-3 p-md-4 bg-white">
+        <div class="row align-items-center g-3">
+          <!-- Duty Toggle Column -->
+          <div class="col-12 col-md-5 d-flex align-items-center gap-3">
+            <div class="form-check form-switch fs-4 mb-0">
+              <input class="form-check-input" type="checkbox" role="switch" id="dutyToggleSwitch" checked style="cursor: pointer;">
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <h5 class="fw-bold mb-0 text-dark" id="hero-duty-heading">You are Online</h5>
+                <span id="duty-badge" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small">Orders Radar Active</span>
+              </div>
+              <small class="text-muted d-block mt-0.5">
+                <i class="bi bi-geo-alt-fill text-danger me-1"></i> Zone: <span class="fw-semibold text-dark">Koramangala & Indiranagar Hub</span> • On Duty: <span class="fw-bold text-dark" id="shift-duty-timer">2h 45m</span>
+              </small>
+            </div>
+          </div>
+
+          <!-- Quick Stats Row -->
+          <div class="col-12 col-md-7">
+            <div class="row g-2 text-center">
+              <div class="col-4">
+                <div class="p-2.5 rounded-3 bg-light border">
+                  <div class="small text-muted fw-semibold">Today's Trips</div>
+                  <div class="fs-5 fw-black text-dark" id="header-trips-count">9 Trips</div>
+                  <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> 100%</span>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2.5 rounded-3 bg-light border">
+                  <div class="small text-muted fw-semibold">Today's Earnings</div>
+                  <div class="fs-5 fw-black text-success" id="header-earnings-val">₹840.00</div>
+                  <span class="text-muted small">+₹180 Surge</span>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2.5 rounded-3 bg-light border">
+                  <div class="small text-muted fw-semibold">Rider Rating</div>
+                  <div class="fs-5 fw-black text-warning"><i class="bi bi-star-fill me-1"></i>4.89</div>
+                  <span class="text-muted small">340 Reviews</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs: Radar, Pocket/Earnings, Performance -->
+    <ul class="nav nav-pills nav-pills-hero mb-4 gap-2 border-bottom pb-3" id="heroTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active d-flex align-items-center gap-2" id="radar-tab" data-bs-toggle="pill" data-bs-target="#radar-pane" type="button" role="tab">
+          <i class="bi bi-radar"></i>
+          <span>Live Radar & Orders</span>
+          <span class="badge bg-white text-dark rounded-pill ms-1" id="active-orders-count-badge">1</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link d-flex align-items-center gap-2" id="pocket-tab" data-bs-toggle="pill" data-bs-target="#pocket-pane" type="button" role="tab">
+          <i class="bi bi-wallet-fill"></i>
+          <span>Pocket & Earnings</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link d-flex align-items-center gap-2" id="metrics-tab" data-bs-toggle="pill" data-bs-target="#metrics-pane" type="button" role="tab">
+          <i class="bi bi-speedometer2"></i>
+          <span>Rider Metrics & Safety</span>
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="heroTabContent">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: RADAR & ACTIVE ORDERS               -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="radar-pane" role="tabpanel">
+
+        <!-- Offline Banner (shown when duty toggle is off) -->
+        <div id="offline-state-card" class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white" style="display: none;">
+          <div class="text-muted mb-3">
+            <i class="bi bi-pause-circle-fill display-3 text-secondary"></i>
+          </div>
+          <h4 class="fw-bold text-dark">You are Currently Offline</h4>
+          <p class="text-muted small max-w-sm mx-auto mb-4">Toggle the switch above to "Go Online" to receive incoming delivery requests in your zone.</p>
+          <div>
+            <button type="button" class="btn btn-danger px-4 py-2 rounded-pill fw-bold" id="go-online-btn-card">
+              <i class="bi bi-play-circle-fill me-1"></i> Go Online Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Radar & Active Delivery Container -->
+        <div id="online-radar-container" class="space-y-4">
+
+          <!-- Incoming Order Radar Box (Flash Alert) -->
+          <div id="incoming-order-box" class="radar-card p-4 mb-4 position-relative overflow-hidden">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="spinner-grow spinner-grow-sm text-danger" role="status"></span>
+                <span class="fw-black text-danger text-uppercase tracking-wider small">New Delivery Request Available</span>
+              </div>
+              <span id="radar-timer-label" class="badge bg-light text-dark border px-3 py-1.5 fw-bold">⏱️ 28s remaining</span>
+            </div>
+
+            <!-- Countdown Bar -->
+            <div class="w-100 bg-light rounded-pill overflow-hidden mb-4" style="height: 6px;">
+              <div id="radar-countdown-bar" class="radar-progress" style="width: 100%;"></div>
+            </div>
+
+            <div class="row g-4 align-items-center">
+              <!-- Route & Addresses -->
+              <div class="col-12 col-md-7">
+                <div class="d-flex flex-column gap-3">
+                  <!-- Pickup -->
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="bg-warning bg-opacity-10 text-warning p-2 rounded-3 fs-5">
+                      <i class="bi bi-shop"></i>
+                    </div>
+                    <div>
+                      <span class="text-muted small text-uppercase fw-bold">Pickup Store</span>
+                      <h6 class="fw-bold text-dark mb-0" id="radar-store-name">Meghana Foods (Store #7)</h6>
+                      <small class="text-muted" id="radar-store-address">124 KHB Colony, 5th Block Koramangala (1.2 km away)</small>
+                    </div>
+                  </div>
+
+                  <!-- Dropoff -->
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="bg-success bg-opacity-10 text-success p-2 rounded-3 fs-5">
+                      <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div>
+                      <span class="text-muted small text-uppercase fw-bold">Deliver To</span>
+                      <h6 class="fw-bold text-dark mb-0" id="radar-customer-name">Vishnu Vardhan Reddy</h6>
+                      <small class="text-muted" id="radar-customer-address">Flat 302, Green Glen Layout, Bellandur (2.2 km trip)</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payout Card & Actions -->
+              <div class="col-12 col-md-5">
+                <div class="bg-light p-3 rounded-4 border">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Estimated Payout</span>
+                    <span class="fs-4 fw-black text-success" id="radar-payout-val">₹85.00</span>
+                  </div>
+                  <div class="small text-muted d-flex justify-content-between mb-1">
+                    <span>Base Fare + Distance:</span>
+                    <span class="fw-bold text-dark">₹65.00</span>
+                  </div>
+                  <div class="small text-muted d-flex justify-content-between mb-3">
+                    <span>Customer Tip:</span>
+                    <span class="fw-bold text-success">+₹20.00</span>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light border w-50 rounded-pill py-2 fw-bold text-muted" id="btn-decline-radar">
+                      Decline
+                    </button>
+                    <button type="button" class="btn btn-success w-50 rounded-pill py-2 fw-bold text-white shadow" id="btn-accept-radar">
+                      <i class="bi bi-check-lg me-1"></i> Accept (₹85)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Delivery Execution Card (Steps: Heading -> Pickup -> Delivering -> Delivered) -->
+          <div id="active-trip-card" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="display: none;">
+            <div class="card-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-danger rounded-pill px-2.5 py-1">ACTIVE TRIP #<span id="active-trip-id">82</span></span>
+                <span class="fw-bold fs-6" id="active-trip-stage-title">Heading to Restaurant for Pickup</span>
+              </div>
+              <span class="badge bg-light text-dark fw-bold">Payout: ₹85.00</span>
+            </div>
+
+            <div class="card-body p-4">
+              <!-- Stepper Header -->
+              <div class="row g-2 text-center mb-4 pb-3 border-bottom">
+                <div class="col-3">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="delivery-step-badge bg-primary text-white mb-1" id="step-badge-1">1</div>
+                    <small class="fw-bold text-primary" id="step-text-1">To Store</small>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="delivery-step-badge bg-light text-muted mb-1" id="step-badge-2">2</div>
+                    <small class="text-muted fw-semibold" id="step-text-2">Pickup</small>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="delivery-step-badge bg-light text-muted mb-1" id="step-badge-3">3</div>
+                    <small class="text-muted fw-semibold" id="step-text-3">Delivering</small>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="delivery-step-badge bg-light text-muted mb-1" id="step-badge-4">4</div>
+                    <small class="text-muted fw-semibold" id="step-text-4">Delivered</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Map Simulation & Navigation Route -->
+              <div class="row g-4 align-items-center">
+                <div class="col-12 col-lg-7">
+                  <div class="map-canvas-container p-3 border d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center z-2">
+                      <span class="badge bg-white text-dark shadow-sm px-2.5 py-1.5 fw-bold">
+                        <i class="bi bi-compass-fill text-danger me-1"></i> Live Simulated GPS Tracking
+                      </span>
+                      <span class="badge bg-dark text-white px-2.5 py-1.5" id="map-dist-rem">1.2 km (4 mins)</span>
+                    </div>
+
+                    <!-- SVG Route Map Graphic -->
+                    <div class="position-relative py-5 my-2">
+                      <svg width="100%" height="120" viewBox="0 0 400 120" class="w-100">
+                        <path d="M 30,60 Q 150,10 200,60 T 370,60" fill="none" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+                        <path id="svg-active-route" d="M 30,60 Q 150,10 200,60 T 370,60" fill="none" stroke="#ff5200" stroke-width="8" stroke-dasharray="10 5" stroke-linecap="round" />
+                        <!-- Start Pin (Store) -->
+                        <circle cx="30" cy="60" r="12" fill="#eab308" />
+                        <text x="30" y="64" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">S</text>
+                        <!-- End Pin (Customer) -->
+                        <circle cx="370" cy="60" r="12" fill="#10b981" />
+                        <text x="370" y="64" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">C</text>
+                      </svg>
+                      <!-- Moving Bike Marker -->
+                      <div id="sim-bike-marker" class="pulse-bike-marker text-danger fs-3" style="left: 30px; top: 60px;">
+                        🛵
+                      </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted small z-2">
+                      <span>Store: <strong>Meghana Foods</strong></span>
+                      <span>Customer: <strong>Bellandur, BLR</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Current Action Box -->
+                <div class="col-12 col-lg-5">
+                  <div class="bg-light p-4 rounded-4 border">
+                    <div id="action-heading" class="fs-6 fw-bold text-dark mb-1">Step 1: Arrive at Store</div>
+                    <p id="action-desc" class="text-muted small mb-3">Navigate to Meghana Foods, Koramangala. Park safely in designated delivery slots.</p>
+
+                    <!-- Contact Buttons -->
+                    <div class="d-flex gap-2 mb-3">
+                      <a href="tel:9876543210" class="btn btn-outline-dark btn-sm rounded-pill w-50 py-1.5 fw-semibold">
+                        <i class="bi bi-telephone-fill me-1 text-primary"></i> Call Store
+                      </a>
+                      <a href="https://wa.me/15551960307" target="_blank" class="btn btn-outline-success btn-sm rounded-pill w-50 py-1.5 fw-semibold">
+                        <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                      </a>
+                    </div>
+
+                    <!-- Primary Action Button -->
+                    <button type="button" class="btn btn-danger btn-lg w-100 rounded-pill py-2.5 fw-bold shadow-sm" id="btn-advance-trip-action">
+                      Arrived at Restaurant
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: POCKET & EARNINGS WALLET            -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="pocket-pane" role="tabpanel">
+        <div class="row g-4">
+          <!-- Balance Summary Card -->
+          <div class="col-12 col-md-5">
+            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-4 h-100 position-relative overflow-hidden">
+              <div class="position-relative z-2">
+                <span class="text-white-50 text-uppercase small fw-bold">FoodWala Rider Wallet</span>
+                <div class="display-5 fw-black text-white mt-1 mb-3">₹840.00</div>
+                
+                <div class="bg-secondary bg-opacity-25 p-3 rounded-3 mb-4">
+                  <div class="d-flex justify-content-between small text-white-50 mb-1">
+                    <span>Base Delivery Pay:</span>
+                    <span class="text-white fw-bold">₹450.00</span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-white-50 mb-1">
+                    <span>Distance Allowance:</span>
+                    <span class="text-white fw-bold">₹180.00</span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-white-50 mb-1">
+                    <span>Surge & Peak Incentives:</span>
+                    <span class="text-warning fw-bold">+₹130.00</span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-white-50">
+                    <span>Customer Tips:</span>
+                    <span class="text-success fw-bold">+₹80.00</span>
+                  </div>
+                </div>
+
+                <button type="button" class="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow" data-bs-toggle="modal" data-bs-target="#withdrawPocketModal">
+                  <i class="bi bi-arrow-up-right-circle-fill me-1"></i> Instant Transfer to Bank / UPI
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly Overview & Trip History -->
+          <div class="col-12 col-md-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Completed Trips Today (9 Orders)</h6>
+                <span class="badge bg-light text-muted border">Auto-Credited</span>
+              </div>
+
+              <div class="list-group list-group-flush border rounded-3 overflow-hidden">
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="fs-4 text-warning">🏪</span>
+                    <div>
+                      <div class="fw-bold text-dark">Meghana Foods (Trip #908)</div>
+                      <small class="text-muted">Koramangala to Bellandur • 3.4 km • 15 mins ago</small>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-black text-success fs-6">+₹85.00</div>
+                    <span class="badge bg-success-subtle text-success small">Paid</span>
+                  </div>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="fs-4 text-warning">🏪</span>
+                    <div>
+                      <div class="fw-bold text-dark">Vidyarthi Bhavan (Trip #907)</div>
+                      <small class="text-muted">Basavanagudi to Jayanagar • 4.1 km • 1 hr ago</small>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-black text-success fs-6">+₹95.00</div>
+                    <span class="badge bg-success-subtle text-success small">Paid</span>
+                  </div>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="fs-4 text-warning">🏪</span>
+                    <div>
+                      <div class="fw-bold text-dark">Truffles (Trip #906)</div>
+                      <small class="text-muted">St. Marks Rd to Indiranagar • 2.8 km • 2 hrs ago</small>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-black text-success fs-6">+₹75.00</div>
+                    <span class="badge bg-success-subtle text-success small">Paid</span>
+                  </div>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="fs-4 text-warning">🏪</span>
+                    <div>
+                      <div class="fw-bold text-dark">Empire Restaurant (Trip #905)</div>
+                      <small class="text-muted">Indiranagar to Domlur • 4.5 km • 3 hrs ago</small>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-black text-success fs-6">+₹110.00</div>
+                    <span class="badge bg-success-subtle text-success small">Paid</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: METRICS & SAFETY                    -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="metrics-pane" role="tabpanel">
+        <div class="row g-4">
+          <div class="col-12 col-md-4">
+            <div class="hero-stat-card text-center">
+              <div class="text-warning display-4 mb-2"><i class="bi bi-star-fill"></i></div>
+              <h3 class="fw-black text-dark mb-0">4.89 / 5.0</h3>
+              <p class="text-muted small mb-0">Customer Satisfaction (340 Ratings)</p>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="hero-stat-card text-center">
+              <div class="text-primary display-4 mb-2"><i class="bi bi-lightning-charge-fill"></i></div>
+              <h3 class="fw-black text-dark mb-0">98.4%</h3>
+              <p class="text-muted small mb-0">On-Time Delivery Rate</p>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="hero-stat-card text-center">
+              <div class="text-success display-4 mb-2"><i class="bi bi-shield-check"></i></div>
+              <h3 class="fw-black text-dark mb-0">96.0%</h3>
+              <p class="text-muted small mb-0">Order Acceptance Rate</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Safety & Support Card -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mt-4 bg-white">
+          <h5 class="fw-bold text-dark mb-3">🛡️ FoodWala Rider Care & Safety Guidelines</h5>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="p-3 bg-light rounded-3 border">
+                <h6 class="fw-bold text-danger"><i class="bi bi-shield-fill-plus me-1"></i> Emergency SOS Desk</h6>
+                <p class="text-muted small mb-2">Available 24/7 for road assistance, accidents, or urgent medical support while on duty.</p>
+                <a href="tel:1800123456" class="btn btn-danger btn-sm rounded-pill fw-bold">Call 1800-FOODWALA</a>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="p-3 bg-light rounded-3 border">
+                <h6 class="fw-bold text-success"><i class="bi bi-whatsapp me-1"></i> Partner WhatsApp Helpdesk</h6>
+                <p class="text-muted small mb-2">Chat with our fleet management team for payment issues, wrong addresses, or app queries.</p>
+                <a href="https://wa.me/15551960307" target="_blank" class="btn btn-success btn-sm rounded-pill fw-bold">Open WhatsApp Hotline</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SOS Emergency Modal -->
+  <div class="modal fade" id="sosEmergencyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <h5 class="modal-title fw-bold"><i class="bi bi-shield-fill-exclamation me-2"></i>Emergency Assistance</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <div class="display-4 text-danger mb-3"><i class="bi bi-exclamation-triangle-fill"></i></div>
+          <h5 class="fw-bold text-dark">Are you in an emergency situation?</h5>
+          <p class="text-muted small mb-4">Clicking the button below dispatches your live GPS coordinates to FoodWala Emergency Response Desk and dials our hotline immediately.</p>
+          <div class="d-grid gap-2">
+            <a href="tel:112" class="btn btn-danger btn-lg rounded-pill fw-bold py-2.5">
+              <i class="bi bi-telephone-fill me-1"></i> Call Police & Ambulance (112)
+            </a>
+            <a href="tel:1800123456" class="btn btn-outline-dark rounded-pill fw-bold py-2">
+              Call FoodWala Rider Safety Desk
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Withdraw Pocket Modal -->
+  <div class="modal fade" id="withdrawPocketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-success text-white border-0 py-3">
+          <h5 class="modal-title fw-bold"><i class="bi bi-cash-stack me-2"></i>Withdraw to Bank / UPI</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="text-center mb-3">
+            <span class="text-muted small">Available Balance</span>
+            <div class="display-6 fw-black text-success">₹840.00</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">UPI ID (e.g. mobile@okaxis or mobile@paytm)</label>
+            <input type="text" class="form-control rounded-pill px-3 py-2" value="9900000201@upi" id="withdraw-upi-input">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">Amount to Transfer</label>
+            <input type="number" class="form-control rounded-pill px-3 py-2" value="840" id="withdraw-amount-input">
+          </div>
+          <button type="button" class="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow" id="confirm-withdraw-btn">
+            Confirm Instant Transfer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Handover OTP Modal -->
+  <div class="modal fade" id="handoverOtpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-dark text-white border-0 py-3">
+          <h5 class="modal-title fw-bold"><i class="bi bi-key-fill text-warning me-2"></i>Customer Handover OTP</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <p class="text-muted small mb-3">Ask the customer for their 4-digit FoodWala delivery code to complete order verification.</p>
+          <div class="mb-3">
+            <input type="text" maxlength="4" class="form-control text-center fw-bold fs-3 letter-spacing-2 rounded-3" placeholder="• • • •" id="customer-handover-otp" value="1234">
+          </div>
+          <button type="button" class="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow" id="btn-submit-delivery-otp">
+            Verify & Finish Delivery
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Delivery Partner Engine Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Authentication Check
+      let currentUser = null;
+      try {
+        currentUser = JSON.parse(localStorage.getItem('foodwala_current_user') || 'null');
+      } catch (e) {}
+
+      if (!currentUser) {
+        window.location.href = './login.html?redirect=./delivery-dashboard.html';
+        return;
+      }
+
+      const role = (currentUser.role || '').toLowerCase();
+      const isAdmin = role === 'admin';
+      const isPartner = role === 'partner' || role === 'delivery_partner';
+
+      if (!isAdmin && !isPartner) {
+        alert('Access denied. This portal is restricted to authorized Delivery Partners.');
+        window.location.href = './login.html';
+        return;
+      }
+
+      // If Admin, show oversight banner
+      if (isAdmin) {
+        const banner = document.getElementById('admin-oversight-banner');
+        if (banner) banner.style.display = 'block';
+      }
+
+      // Populate partner profile
+      const partnerName = currentUser.name || currentUser.username || 'Kiran Kumar';
+      document.getElementById('nav-partner-name').textContent = partnerName;
+      document.getElementById('partner-initials').textContent = partnerName.charAt(0).toUpperCase();
+      if (currentUser.phone) document.getElementById('nav-partner-phone').textContent = currentUser.phone;
+      if (currentUser.vehicleNumber) document.getElementById('nav-partner-vehicle').textContent = currentUser.vehicleNumber;
+
+      // Logout handler
+      document.getElementById('partner-logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        try {
+          localStorage.removeItem('foodwala_current_user');
+          localStorage.removeItem('foodwala_auth_token');
+        } catch (err) {}
+        window.location.href = './login.html';
+      });
+
+      // 2. Online / Offline Duty Switcher
+      const dutySwitch = document.getElementById('dutyToggleSwitch');
+      const dutyPulse = document.getElementById('duty-pulse-icon');
+      const dutyText = document.getElementById('duty-text-status');
+      const dutyHeading = document.getElementById('hero-duty-heading');
+      const dutyBadge = document.getElementById('duty-badge');
+      const offlineCard = document.getElementById('offline-state-card');
+      const onlineContainer = document.getElementById('online-radar-container');
+
+      function updateDutyState(isOnline) {
+        if (isOnline) {
+          dutyPulse.className = 'duty-indicator-pulse';
+          dutyText.textContent = 'Online (Ready)';
+          dutyHeading.textContent = 'You are Online';
+          dutyBadge.className = 'badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small';
+          dutyBadge.textContent = 'Orders Radar Active';
+          offlineCard.style.display = 'none';
+          onlineContainer.style.display = 'block';
+          dutySwitch.checked = true;
+        } else {
+          dutyPulse.className = 'duty-indicator-offline';
+          dutyText.textContent = 'Offline (Paused)';
+          dutyHeading.textContent = 'You are Offline';
+          dutyBadge.className = 'badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1 small';
+          dutyBadge.textContent = 'Duty Paused';
+          offlineCard.style.display = 'block';
+          onlineContainer.style.display = 'none';
+          dutySwitch.checked = false;
+        }
+
+        // Notify backend of status change
+        const token = localStorage.getItem('foodwala_auth_token');
+        if (token) {
+          fetch('/api/delivery/status', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ isAvailable: isOnline, is_available: isOnline ? 1 : 0 })
+          }).catch(err => console.warn('Duty sync warning:', err));
+        }
+      }
+
+      dutySwitch.addEventListener('change', () => {
+        updateDutyState(dutySwitch.checked);
+      });
+
+      document.getElementById('go-online-btn-card').addEventListener('click', () => {
+        updateDutyState(true);
+      });
+
+      // 3. Radar Countdown Timer
+      let remainingSeconds = 30;
+      const timerLabel = document.getElementById('radar-timer-label');
+      const countdownBar = document.getElementById('radar-countdown-bar');
+      const countdownInterval = setInterval(() => {
+        remainingSeconds--;
+        if (remainingSeconds < 0) remainingSeconds = 30;
+        timerLabel.textContent = `⏱️ ${remainingSeconds}s remaining`;
+        countdownBar.style.width = `${(remainingSeconds / 30) * 100}%`;
+      }, 1000);
+
+      // 4. Order Acceptance & Lifecycle Management
+      const incomingBox = document.getElementById('incoming-order-box');
+      const activeTripCard = document.getElementById('active-trip-card');
+      const btnAccept = document.getElementById('btn-accept-radar');
+      const btnDecline = document.getElementById('btn-decline-radar');
+      const btnAdvanceTrip = document.getElementById('btn-advance-trip-action');
+      const simBike = document.getElementById('sim-bike-marker');
+
+      let tripStage = 1; // 1: Heading to store, 2: At store, 3: Delivering to customer, 4: Delivered
+
+      btnAccept.addEventListener('click', () => {
+        incomingBox.style.display = 'none';
+        activeTripCard.style.display = 'block';
+        tripStage = 1;
+        updateTripUI();
+      });
+
+      btnDecline.addEventListener('click', () => {
+        incomingBox.style.display = 'none';
+        setTimeout(() => {
+          incomingBox.style.display = 'block';
+          remainingSeconds = 30;
+        }, 4000);
+      });
+
+      function updateTripUI() {
+        const step1Badge = document.getElementById('step-badge-1');
+        const step2Badge = document.getElementById('step-badge-2');
+        const step3Badge = document.getElementById('step-badge-3');
+        const step4Badge = document.getElementById('step-badge-4');
+
+        const step1Text = document.getElementById('step-text-1');
+        const step2Text = document.getElementById('step-text-2');
+        const step3Text = document.getElementById('step-text-3');
+        const step4Text = document.getElementById('step-text-4');
+
+        const stageTitle = document.getElementById('active-trip-stage-title');
+        const actHeading = document.getElementById('action-heading');
+        const actDesc = document.getElementById('action-desc');
+        const distRem = document.getElementById('map-dist-rem');
+
+        if (tripStage === 1) {
+          stageTitle.textContent = 'Step 1: Heading to Restaurant for Pickup';
+          actHeading.textContent = 'Step 1: Arrive at Store';
+          actDesc.textContent = 'Drive to Meghana Foods, Koramangala. Park safely in designated delivery slots.';
+          btnAdvanceTrip.textContent = 'Arrived at Restaurant';
+          btnAdvanceTrip.className = 'btn btn-danger btn-lg w-100 rounded-pill py-2.5 fw-bold shadow-sm';
+          distRem.textContent = '1.2 km (4 mins)';
+          simBike.style.left = '30px';
+
+          step1Badge.className = 'delivery-step-badge bg-primary text-white mb-1';
+          step2Badge.className = 'delivery-step-badge bg-light text-muted mb-1';
+          step3Badge.className = 'delivery-step-badge bg-light text-muted mb-1';
+          step4Badge.className = 'delivery-step-badge bg-light text-muted mb-1';
+        } else if (tripStage === 2) {
+          stageTitle.textContent = 'Step 2: Collect Package & Confirm Pickup';
+          actHeading.textContent = 'Step 2: Verify Order with Kitchen';
+          actDesc.textContent = 'Provide Order #82 to Meghana Foods counter. Verify 2x Special Chicken Biryani package seals.';
+          btnAdvanceTrip.textContent = 'Confirm Order Picked Up';
+          btnAdvanceTrip.className = 'btn btn-warning btn-lg w-100 rounded-pill py-2.5 fw-bold text-dark shadow-sm';
+          distRem.textContent = 'At Restaurant';
+          simBike.style.left = '60px';
+
+          step1Badge.className = 'delivery-step-badge bg-success text-white mb-1';
+          step2Badge.className = 'delivery-step-badge bg-primary text-white mb-1';
+        } else if (tripStage === 3) {
+          stageTitle.textContent = 'Step 3: Out for Delivery to Customer';
+          actHeading.textContent = 'Step 3: Deliver to Customer';
+          actDesc.textContent = 'Deliver to Vishnu Vardhan Reddy at Flat 302, Green Glen Layout, Bellandur. Ring the doorbell or call customer.';
+          btnAdvanceTrip.textContent = 'Arrived at Customer Doorstep';
+          btnAdvanceTrip.className = 'btn btn-success btn-lg w-100 rounded-pill py-2.5 fw-bold shadow-sm';
+          distRem.textContent = '2.2 km (7 mins)';
+          simBike.style.left = '200px';
+
+          step1Badge.className = 'delivery-step-badge bg-success text-white mb-1';
+          step2Badge.className = 'delivery-step-badge bg-success text-white mb-1';
+          step3Badge.className = 'delivery-step-badge bg-primary text-white mb-1';
+        }
+      }
+
+      const handoverModalEl = document.getElementById('handoverOtpModal');
+      const handoverModal = new bootstrap.Modal(handoverModalEl);
+
+      btnAdvanceTrip.addEventListener('click', () => {
+        if (tripStage === 1) {
+          tripStage = 2;
+          updateTripUI();
+        } else if (tripStage === 2) {
+          tripStage = 3;
+          updateTripUI();
+        } else if (tripStage === 3) {
+          handoverModal.show();
+        }
+      });
+
+      // Submit OTP & Finish Delivery
+      document.getElementById('btn-submit-delivery-otp').addEventListener('click', () => {
+        handoverModal.hide();
+        activeTripCard.style.display = 'none';
+
+        // Update Wallet Balance
+        const pocket = document.getElementById('nav-pocket-balance');
+        const headerEarn = document.getElementById('header-earnings-val');
+        pocket.textContent = '₹925.00';
+        headerEarn.textContent = '₹925.00';
+
+        alert('🎉 Delivery Complete!\n₹85.00 has been credited to your FoodWala Wallet.');
+
+        // Re-display radar for next order
+        setTimeout(() => {
+          incomingBox.style.display = 'block';
+          remainingSeconds = 30;
+        }, 3000);
+      });
+
+      // Withdraw Modal
+      document.getElementById('confirm-withdraw-btn').addEventListener('click', () => {
+        const amt = document.getElementById('withdraw-amount-input').value;
+        const upi = document.getElementById('withdraw-upi-input').value;
+        const withdrawModalEl = document.getElementById('withdrawPocketModal');
+        const withdrawModal = bootstrap.Modal.getInstance(withdrawModalEl);
+        if (withdrawModal) withdrawModal.hide();
+
+        alert(`✅ Payout Successful!\n₹${amt} has been transferred to ${upi}.`);
+        document.getElementById('nav-pocket-balance').textContent = '₹0.00';
+        document.getElementById('header-earnings-val').textContent = '₹0.00';
+      });
+
+    });
+  </script>
+</body>
+</html>

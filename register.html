@@ -489,10 +489,18 @@
         const password = document.getElementById('reg-password').value;
         const confirmPassword = document.getElementById('reg-confirm-password').value;
 
+        function resetSubmitBtn(errMsg) {
+          regSubmitBtn.disabled = false;
+          regSubmitBtn.innerHTML = 'Create Account';
+          if (errMsg) {
+            regErrorMsg.textContent = errMsg;
+            regErrorMsg.style.display = 'block';
+          }
+        }
+
         // Validation: required fields
         if (!name || !email || !password) {
-          regErrorMsg.textContent = 'Name, email and password are required.';
-          regErrorMsg.style.display = 'block';
+          resetSubmitBtn('Name, email and password are required.');
           return;
         }
 
@@ -501,8 +509,7 @@
 
         // Validation: email format
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          regErrorMsg.textContent = 'Please enter a valid email address.';
-          regErrorMsg.style.display = 'block';
+          resetSubmitBtn('Please enter a valid email address.');
           return;
         }
 
@@ -511,27 +518,23 @@
         const normalizedPhone = (digits.length === 12 && digits.startsWith('91')) ? digits.substring(2) : (digits.length === 11 && digits.startsWith('0')) ? digits.substring(1) : digits;
 
         if (!/^[6-9]\d{9}$/.test(normalizedPhone)) {
-          regErrorMsg.textContent = 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.';
-          regErrorMsg.style.display = 'block';
+          resetSubmitBtn('Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
           return;
         }
 
         // Validation: password confirmation
         if (password !== confirmPassword) {
-          regErrorMsg.textContent = 'Passwords do not match. Please verify your confirm password.';
-          regErrorMsg.style.display = 'block';
+          resetSubmitBtn('Passwords do not match. Please verify your confirm password.');
           return;
         }
 
         // Validation: password policy (8-128 chars, at least one letter and one number)
         if (password.length < 8 || password.length > 128) {
-          regErrorMsg.textContent = 'Password must be between 8 and 128 characters long.';
-          regErrorMsg.style.display = 'block';
+          resetSubmitBtn('Password must be between 8 and 128 characters long.');
           return;
         }
         if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-          regErrorMsg.textContent = 'Password must contain at least one letter and at least one number.';
-          regErrorMsg.style.display = 'block';
+          resetSubmitBtn('Password must contain at least one letter and at least one number.');
           return;
         }
 
@@ -540,6 +543,7 @@
           try {
             const check = await window.FoodWalaApi.checkPhone(normalizedPhone);
             if (check && check.available === false && (check.exists === true || check.alreadyRegistered === true)) {
+              resetSubmitBtn();
               showDuplicatePhoneModal(normalizedPhone);
               return;
             }
@@ -745,7 +749,7 @@
                 if (registeredRole === 'admin') {
                   window.location.href = './admin.html';
                 } else if (registeredRole === 'partner' || registeredRole === 'delivery_partner') {
-                  window.location.href = './orders.html';
+                window.location.href = './delivery-dashboard.html';
                 } else if (registeredRole === 'restaurant' || registeredRole === 'restaurant_admin') {
                   window.location.href = './restaurant-details.html?id=1';
                 } else {
@@ -790,7 +794,7 @@
               if (registeredRole === 'admin') {
                 window.location.href = './admin.html';
               } else if (registeredRole === 'partner' || registeredRole === 'delivery_partner') {
-                window.location.href = './orders.html';
+                window.location.href = './delivery-dashboard.html';
               } else if (registeredRole === 'restaurant' || registeredRole === 'restaurant_admin') {
                 window.location.href = './restaurant-dashboard.html';
               } else {

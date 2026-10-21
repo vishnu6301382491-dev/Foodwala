@@ -88,3 +88,25 @@ This file defines persistent engineering standards, architectural decisions, and
 - **No Hardcoded Demo Buttons**: Never expose 1-click demo logins or hardcoded credentials on production or public-facing login portals (`login.html`, `admin.html`, `restaurant-dashboard.html`).
 - **Input Placeholders**: Input field placeholders should remain descriptive yet clean (e.g., `adminfoodwala@gmail.com` or `restaurantname@gmail.com`), requiring users and managers to enter authentic credentials.
 
+---
+
+## 11. Automated Client-Side `<script>` Syntax Validation Pre-Flight
+- When editing vanilla HTML files containing inline `<script>` blocks (e.g. `login.html`, `register.html`, `index.html`):
+  - A single unclosed brace, trailing parenthesis, or syntax typo halts the entire script execution immediately upon page load.
+  - **Rule**: ALWAYS run an automated syntax check using Node.js `vm.Script` or an AST parser on all `<script>` tags in modified `.html` files before committing or deploying:
+    ```javascript
+    new vm.Script(scriptCode, { filename: 'file.html' });
+    ```
+  - Never mark an engineering task complete if any client HTML file contains an uncaught `SyntaxError`.
+
+---
+
+## 12. Standard Multi-Role Route Redirection Matrix
+- In multi-vendor delivery platforms, user login redirection MUST adhere to this explicit role hierarchy:
+  - `role === 'admin'`: Redirect to `./admin.html` (Platform Super Admin).
+  - `role === 'partner' || role === 'delivery_partner'`: Redirect to `./delivery-dashboard.html` (Rider Portal).
+  - `role === 'restaurant' || role === 'restaurant_admin'`: Redirect to `./restaurant-dashboard.html` (Store Manager).
+  - `role === 'customer'`: Redirect to `redirectTarget || './index.html'`.
+- Never redirect delivery riders to generic customer order history (`orders.html`).
+
+
