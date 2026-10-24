@@ -26,6 +26,7 @@
     "pptxgenjs": "^4.0.1"
   },
   "devDependencies": {
-    "localtunnel": "^2.0.2"
+    "localtunnel": "^2.0.2",
+    "puppeteer-core": "^25.16.0"
   }
 }
