@@ -14,6 +14,7 @@
 
 const db = require('../db');
 const whatsappParser = require('../utils/whatsappParser');
+const aiService = require('./aiService');
 const https = require('https');
 
 class WhatsAppAIService {
@@ -143,7 +144,7 @@ class WhatsAppAIService {
   }
 
   /**
-   * 21-Intent Detection Engine
+   * 25-Intent Detection Engine (Rule-based & Semantic)
    */
   classifyIntent(rawText) {
     const text = (rawText || '').trim().toLowerCase();
@@ -154,7 +155,16 @@ class WhatsAppAIService {
       return 'order_status';
     }
 
-    // 2. Cancellation
+    // 1b. Order Assistance & General Order Inquiries
+    if (
+      /\b(assist(ance)?|help|issue|problem|support)\b.*?\border\b/i.test(text) ||
+      /\border\b.*?\b(assist(ance)?|help|issue|problem|support)\b/i.test(text) ||
+      /need\s+assistance\s+with\s+my\s+order/i.test(text)
+    ) {
+      return 'order_assistance';
+    }
+
+    // 2. Cancellation Policy & Action
     if (
       /cancell?ation/i.test(text) ||
       /\bcancel\b/i.test(text) ||
@@ -174,13 +184,21 @@ class WhatsAppAIService {
       return 'refund';
     }
 
-    // 4. Payment Failure & Issues
+    // 4. Payment Failure, Deductions & Issues
     if (
-      /\bpayment\s*(failed|failure|deducted|pending|stuck|error)\b/i.test(text) ||
+      /\b(payment|money|amount|cash)\b.*?\b(failed|failure|deducted|debited|cut|stuck|pending|error)\b/i.test(text) ||
+      /\b(deducted|debited|cut)\b.*?\b(payment|money|amount|order|bank|account)\b/i.test(text) ||
       /\bmoney\s*cut\b/i.test(text) ||
       /\bdebited\b/i.test(text)
     ) {
       return 'payment_failure';
+    }
+
+    // 4b. Coupons, Promos & Discounts
+    if (
+      /\b(coupons?|offers?|discounts?|promo|foodwala50|voucher|deals?|50%\s*(off)?)\b/i.test(text)
+    ) {
+      return 'coupon_offers';
     }
 
     // 5. Payment Methods
@@ -240,17 +258,28 @@ class WhatsAppAIService {
       return 'delivery_time';
     }
 
-    // 10. Change Address & Delivery Areas
+    // 10. Hyperlocal Delivery Areas & Micro-Zones
+    if (
+      /\b(where\s*do\s*you\s*deliver|delivery\s*(areas?|zones?|locations?|hubs?))\b/i.test(text) ||
+      /\b(deliver(y)?\s*(to|in|at)\s*|reach\s*to\s*)\b/i.test(text) ||
+      /\b(koramangala|indiranagar|hsr|whitefield|maruthi\s*nagar|jp\s*nagar|jayanagar|btm|electronic\s*city|malleshwaram|hebbal|bellandur)\b/i.test(text)
+    ) {
+      return 'hyperlocal_delivery';
+    }
+
+    // 10b. Food Hygiene & Safety (FSSAI)
+    if (
+      /\b(hygiene|fssai|clean(liness)?|safety|tamper|sanitiz|thermal\s*pack|safe\s*food)\b/i.test(text)
+    ) {
+      return 'food_hygiene';
+    }
+
+    // 10c. Change Address & Delivery Location
     if (
       /\b(change|update|edit|modify)\b.*?\b(address|location)\b/i.test(text) ||
       /\bwrong\s*address\b/i.test(text)
     ) {
       return 'change_address';
-    }
-    if (
-      /\b(where\s*do\s*you\s*deliver|delivery\s*(areas?|zones?|locations?))\b/i.test(text)
-    ) {
-      return 'delivery_address';
     }
 
     // 11. Restaurant & Menu Information
@@ -274,8 +303,8 @@ class WhatsAppAIService {
       return 'greeting';
     }
 
-    // 14. Default
-    return 'unknown';
+    // 14. Conversational Open-Ended
+    return 'conversational';
   }
 
   /**
@@ -313,6 +342,34 @@ class WhatsAppAIService {
              `*Estimated Delivery:* ${ord.estimated_delivery_time || '25–35 minutes'}\n` +
              `*Total Amount:* ₹${ord.total_amount}\n\n` +
              `I'll help you track it. Need anything else for this order?`;
+    }
+
+    // A2. Handle General Order Assistance (e.g. "I need assistance with my order")
+    if (intent === 'order_assistance') {
+      const activeOrder = customer ? await this.getCustomerLatestOrder(customer.user_id, senderPhone10) : null;
+      if (activeOrder) {
+        return `📦 *FoodWala Order Assistance*\n\n` +
+               `*Active Order:* #FW${activeOrder.order_id} (${activeOrder.restaurant_name || 'Partner Kitchen'})\n` +
+               `*Status:* ${activeOrder.status} 🚴\n` +
+               `*Estimated Delivery:* ${activeOrder.estimated_delivery_time || '20–30 mins'}\n` +
+               `*Total Amount:* ₹${activeOrder.total_amount}\n\n` +
+               `How would you like us to assist you with this order?\n` +
+               `1️⃣ Track live ETA & delivery valet\n` +
+               `2️⃣ Cancel this order (Full instant refund within 60s)\n` +
+               `3️⃣ Report missing or damaged items\n` +
+               `4️⃣ Update delivery address or delivery note\n` +
+               `5️⃣ Connect directly with a Care Supervisor\n\n` +
+               `Or reply with another *Order ID* (e.g. *FW12345*)! 🛵`;
+      } else {
+        return `📦 *FoodWala Order Assistance*\n\n` +
+               `I'd be glad to assist with your order! Please send your *Order ID* (e.g. *FW12345*), or select an option below:\n\n` +
+               `1️⃣ Track my order\n` +
+               `2️⃣ Cancel an order\n` +
+               `3️⃣ Report missing or damaged food\n` +
+               `4️⃣ Payment / refund inquiry\n` +
+               `5️⃣ Speak with a Care Supervisor\n\n` +
+               `Reply with a number or your Order ID! 🛵`;
+      }
     }
 
     // B. Handle Order Status / Tracking without explicit ID
@@ -374,11 +431,41 @@ class WhatsAppAIService {
              `If your order did not generate a receipt within 10 minutes, reply with your *UPI Reference / UTR Number* and our billing team will verify it immediately. 🛡️`;
     }
 
+    // F2. Coupons, Promos & Discounts
+    if (intent === 'coupon_offers') {
+      return `🏷️ *FoodWala Exclusive Offers & Coupons:*\n\n` +
+             `🎉 *Coupon Code: FOODWALA50*\n` +
+             `• *Flat 50% OFF* up to ₹150 on orders above ₹100!\n` +
+             `• Valid across all 105+ partner restaurants in Bengaluru.\n` +
+             `• Applicable at checkout on web & mobile portals.\n\n` +
+             `✨ *Free Delivery:* Automatically unlocked on all orders over ₹299!\n\n` +
+             `Ready to feast? Visit our menu to apply your discount! 🍕🍔`;
+    }
+
     // G. Delivery Time
     if (intent === 'delivery_time') {
       return `⚡ *FoodWala Delivery Speed:*\n\n` +
              `Our average delivery time in Bengaluru is *24 to 32 minutes*! 🛵💨\n\n` +
              `We operate across 14+ hyperlocal delivery hubs (Koramangala, Indiranagar, HSR Layout, Maruthi Nagar, Whitefield, etc.) to ensure your food arrives piping hot.`;
+    }
+
+    // G2. Hyperlocal Delivery Areas & Micro-Zones
+    if (intent === 'hyperlocal_delivery') {
+      return `📍 *FoodWala Hyperlocal Delivery in Bengaluru:*\n\n` +
+             `✅ *Yes! We deliver across 14+ major hubs:*\n` +
+             `• Koramangala, Indiranagar, HSR Layout, Maruthi Nagar\n` +
+             `• JP Nagar, Jayanagar, BTM Layout, Whitefield\n` +
+             `• Electronic City, Church Street, Malleshwaram, Bellandur\n\n` +
+             `⚡ *Average Delivery Speed:* 24 to 32 minutes, guaranteed hot in thermal-sealed packaging! 🛵💨`;
+    }
+
+    // G3. Food Hygiene & Safety (FSSAI)
+    if (intent === 'food_hygiene') {
+      return `🛡️ *FoodWala Hygiene & Food Safety Standards:*\n\n` +
+             `• *FSSAI 40-Point Inspection:* All 105+ partner kitchens undergo strict hygiene compliance audits.\n` +
+             `• *Tamper-Proof Packaging:* Sealed thermal insulated bags to ensure freshness and zero contamination.\n` +
+             `• *Contactless Delivery:* Sanitized delivery gear and temperature checks for all delivery valets.\n\n` +
+             `Your health and food quality are our #1 priority! ✨`;
     }
 
     // H. Delivery Address & Changes
@@ -434,7 +521,24 @@ class WhatsAppAIService {
              `Need account verification? Our care desk is available 24/7!`;
     }
 
-    // M. Default Greeting / Menu
+    // M. Conversational Fallback to AI Service
+    if (intent === 'conversational') {
+      try {
+        const aiReply = await aiService.generateResponse({
+          userPhone10: senderPhone10,
+          customerName: customer?.username || customerName,
+          messageText: text,
+          authenticatedUserId: customer?.user_id
+        });
+        if (aiReply && typeof aiReply === 'string' && aiReply.trim()) {
+          return aiReply.trim();
+        }
+      } catch (aiErr) {
+        console.warn('[WhatsApp AI Service] Conversational fallback warning:', aiErr.message);
+      }
+    }
+
+    // N. Default Greeting / Menu
     const greetingName = customer?.username ? ` ${customer.username}` : '';
     return `Hi${greetingName}! 👋 Welcome to FoodWala.\n\n` +
            `How can I help you today?\n\n` +

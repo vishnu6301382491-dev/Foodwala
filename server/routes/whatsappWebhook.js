@@ -121,7 +121,7 @@ router.post('/', async (req, res) => {
 
           // D. Bot Self-Loop Prevention: Ignore messages originating from the business's own numbers
           const { waId, phone10 } = whatsappService.normalizeSender(rawFrom);
-          if (waId === whatsappService.hotline || waId === businessPhoneId || rawFrom === businessPhoneId) {
+          if (whatsappService.isBusinessNumber(waId) || whatsappService.isBusinessNumber(phone10) || waId === whatsappService.hotline || waId === businessPhoneId || rawFrom === businessPhoneId) {
             console.log(`🛡️ [WhatsApp Webhook] Loop prevention: Message from business entity (${whatsappService.maskPhone(waId)}) ignored.`);
             continue;
           }

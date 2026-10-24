@@ -366,6 +366,7 @@ async function runTests() {
   // Test 6: Bot Self-Message Loop Prevention
   // -------------------------------------------------------------
   console.log('\nTest 6: Verifying Bot Self-Message Loop Prevention...');
+  const selfMsgId = 'wamid.BOT_SELF_' + Date.now();
   const botSelfPayload = {
     object: 'whatsapp_business_account',
     entry: [{
@@ -377,7 +378,7 @@ async function runTests() {
           contacts: [{ profile: { name: 'FoodWala Support Desk' }, wa_id: '918500457005' }],
           messages: [{
             from: '918500457005', // FoodWala Hotline
-            id: 'wamid.BOT_SELF_' + Date.now(),
+            id: selfMsgId,
             timestamp: String(Math.floor(Date.now() / 1000)),
             text: { body: 'This is an outbound broadcast from our care desk' },
             type: 'text'
@@ -393,7 +394,8 @@ async function runTests() {
   await new Promise(r => setTimeout(r, 400));
 
   const [selfBotCheck] = await db.query(
-    'SELECT COUNT(*) as count FROM whatsapp_messages WHERE wa_message_id LIKE "wamid.BOT_SELF_%"'
+    'SELECT COUNT(*) as count FROM whatsapp_messages WHERE wa_message_id = ?',
+    [selfMsgId]
   );
   assert.strictEqual(selfBotCheck[0].count, 0, 'Self messages must be ignored immediately');
   console.log('   ✅ PASS: Message from business hotline was successfully suppressed.');

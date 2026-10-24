@@ -58,7 +58,23 @@ class WhatsAppParser {
     const extractedMessages = [];
     let hasStatusOnly = false;
 
-    const normalizedHotline = businessHotline ? this.normalizePhoneNumber(businessHotline).phone10 : '';
+    const knownHotlines = new Set();
+    if (businessHotline) {
+      if (Array.isArray(businessHotline)) {
+        businessHotline.forEach(h => {
+          if (h) knownHotlines.add(this.normalizePhoneNumber(h).phone10);
+        });
+      } else {
+        knownHotlines.add(this.normalizePhoneNumber(businessHotline).phone10);
+      }
+    }
+    // Include known hotline numbers and aliases to prevent bot echo loops
+    ['15551960307', '8500457005', '918500457005', '6301382491', process.env.SUPPORT_PHONE_NUMBER, process.env.ADMIN_PHONE, process.env.WHATSAPP_PHONE_NUMBER_ID].forEach(h => {
+      if (h) {
+        const norm = this.normalizePhoneNumber(h).phone10;
+        if (norm) knownHotlines.add(norm);
+      }
+    });
 
     for (const entry of entries) {
       const changes = entry.changes || [];
@@ -85,8 +101,8 @@ class WhatsAppParser {
           const rawFrom = msg.from;
           const { phone10, waId } = this.normalizePhoneNumber(rawFrom);
 
-          // Loop Prevention: Ignore messages from the business's own hotline
-          if (normalizedHotline && phone10 === normalizedHotline) {
+          // Loop Prevention: Ignore messages from the business's own hotline or known numbers
+          if (knownHotlines.has(phone10) || knownHotlines.has(waId)) {
             continue;
           }
 
