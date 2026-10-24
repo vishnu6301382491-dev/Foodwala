@@ -193,6 +193,8 @@ class WhatsAppService {
                 diagnostic = 'Meta Access Token is expired or invalid. Please refresh WHATSAPP_ACCESS_TOKEN / META_ACCESS_TOKEN.';
               } else if (errCode === 200) {
                 diagnostic = 'Meta API access blocked (Error 200). Meta temporary token expired or recipient phone not added to developer sandbox whitelist (WhatsApp > API Setup > To: Manage phone number list).';
+              } else if (errCode === 131030) {
+                diagnostic = 'Meta sandbox restriction (Error 131030): Recipient phone number is not on the allowed list. Go to Meta Dashboard > WhatsApp > API Setup > To: Manage phone number list to add and OTP-verify this number.';
               } else if (errCode === 131026) {
                 diagnostic = 'Message undeliverable: Recipient outside 24-hour customer service window.';
               } else if (errCode === 100) {
