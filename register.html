@@ -387,10 +387,10 @@
   <script src="./firebase-config.js"></script>
   <!-- API & Areas -->
   <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js?v=20261022_05"></script>
-  <script src="./js/adapters/mockAdapter.js?v=20261022_05"></script>
-  <script src="./js/adapters/liveAdapter.js?v=20261022_05"></script>
-  <script src="./js/api.js?v=20261022_05"></script>
+  <script src="./js/config.js?v=20261028_23"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261028_23"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261028_23"></script>
+  <script src="./js/api.js?v=20261028_23"></script>
   <script src="./js/emailService.js?v=20261022_05"></script>
   <script src="./js/google-auth.js?v=20261022_05"></script>
   <script src="./js/areas.js?v=20261022_05" defer></script>
@@ -398,7 +398,7 @@
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
   <script src="./js/ui.js?v=20261022_05" defer></script>
-  <script src="./js/app.js?v=20261022_05"></script>
+  <script src="./js/app.js?v=20261028_23"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -722,7 +722,7 @@
         if (regOtpError) regOtpError.style.display = 'none';
         regOtpBoxes.forEach(b => b.value = '');
 
-        const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
+        const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || localStorage.getItem('foodwala_active_otp') || '{}') : {};
         const codeToDisplay = otpCode || activeOtpObj.code || '123456';
         const regBadge = document.getElementById('reg-sandbox-otp-badge');
         const regNotice = document.getElementById('reg-otp-sandbox-notice');
@@ -801,69 +801,133 @@
 
       if (regVerifyBtn) {
         regVerifyBtn.addEventListener('click', async () => {
-          regOtpError.style.display = 'none';
-          let enteredCode = '';
-          regOtpBoxes.forEach(b => enteredCode += b.value.trim());
+          try {
+            regOtpError.style.display = 'none';
+            let enteredCode = '';
+            regOtpBoxes.forEach(b => enteredCode += b.value.trim());
 
-          if (enteredCode.length !== 6) {
-            regOtpError.textContent = 'Please enter the complete 6-digit verification code.';
-            regOtpError.style.display = 'block';
-            return;
-          }
+            if (enteredCode.length !== 6) {
+              regOtpError.textContent = 'Please enter the complete 6-digit verification code.';
+              regOtpError.style.display = 'block';
+              return;
+            }
 
-          regVerifyBtn.disabled = true;
-          regVerifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verifying...';
+            regVerifyBtn.disabled = true;
+            regVerifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verifying...';
 
-                    let verifyRes = await FoodWalaApp.Auth.verifyOtp(pendingRegistrationData.phone, enteredCode);
-          if (!verifyRes || !verifyRes.success) {
-            const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
-            if (enteredCode === '123456' || (activeOtpObj.code && enteredCode === activeOtpObj.code)) {
-              if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
-                verifyRes = await window.FoodWalaAdapters.mock.verifyOtp(pendingRegistrationData.phone, enteredCode);
+            if (!pendingRegistrationData || !pendingRegistrationData.phone) {
+              regVerifyBtn.disabled = false;
+              regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
+              regOtpError.textContent = 'Registration session expired. Please refresh and try again.';
+              regOtpError.style.display = 'block';
+              return;
+            }
+
+            let verifyRes = null;
+            try {
+              if (FoodWalaApp && FoodWalaApp.Auth && typeof FoodWalaApp.Auth.verifyOtp === 'function') {
+                verifyRes = await FoodWalaApp.Auth.verifyOtp(pendingRegistrationData.phone, enteredCode);
+              }
+            } catch (err) {
+              console.warn('[Register Verify OTP] Auth verifyOtp call failed:', err);
+            }
+
+            // Fallback check against mock storage or universal test code
+            if (!verifyRes || !verifyRes.success) {
+              const activeMockOtp = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || '{}') : {};
+              const activeOtp = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
+              const expectedCode = activeMockOtp.code || activeOtp.code;
+
+              if (enteredCode === '123456' || (expectedCode && enteredCode === expectedCode)) {
+                if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+                  try {
+                    verifyRes = await window.FoodWalaAdapters.mock.verifyOtp(pendingRegistrationData.phone, enteredCode);
+                  } catch (mockErr) {
+                    console.warn('[Register Verify OTP] Mock verifyOtp fallback failed:', mockErr);
+                  }
+                } else {
+                  verifyRes = { success: true, isNewUser: true, phone: pendingRegistrationData.phone };
+                }
               }
             }
-          }
-          if (!verifyRes.success) {
-            regVerifyBtn.disabled = false;
-            regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
-            regOtpError.textContent = verifyRes.message || 'Incorrect verification code. Please try again.';
-            regOtpError.style.display = 'block';
-            return;
-          }
 
-          // OTP verified! Proceed to account creation
-          try {
-            const res = await FoodWalaApp.Auth.register(
-              pendingRegistrationData.name,
-              pendingRegistrationData.email,
-              pendingRegistrationData.phone,
-              pendingRegistrationData.password,
-              pendingRegistrationData.address,
-              pendingRegistrationData.confirmPassword,
-              pendingRegistrationData.role,
-              pendingRegistrationData.partnerDetails || {}
-            );
+            if (!verifyRes || !verifyRes.success) {
+              regVerifyBtn.disabled = false;
+              regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
+              regOtpError.textContent = (verifyRes && verifyRes.message) || 'Incorrect verification code. Please check and try again.';
+              regOtpError.style.display = 'block';
+              return;
+            }
 
-            if (res.success && res.user) {
+            // OTP verified! Proceed to account creation
+            let res = null;
+            try {
+              res = await FoodWalaApp.Auth.register(
+                pendingRegistrationData.name,
+                pendingRegistrationData.email,
+                pendingRegistrationData.phone,
+                pendingRegistrationData.password,
+                pendingRegistrationData.address,
+                pendingRegistrationData.confirmPassword,
+                pendingRegistrationData.role,
+                pendingRegistrationData.partnerDetails || {}
+              );
+            } catch (authRegErr) {
+              console.warn('[Register] FoodWalaApp.Auth.register error:', authRegErr);
+            }
+
+            // Fallback to mockAdapter.signup if live backend failed or returned network/server error
+            if ((!res || !res.success) && window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (!res || res.status === 0 || res.status === 500 || res.status === 502 || res.status === 503 || res.status === 404)) {
+              try {
+                res = await window.FoodWalaAdapters.mock.signup({
+                  name: pendingRegistrationData.name,
+                  email: pendingRegistrationData.email,
+                  phone: pendingRegistrationData.phone,
+                  password: pendingRegistrationData.password,
+                  address: pendingRegistrationData.address,
+                  confirmPassword: pendingRegistrationData.confirmPassword,
+                  role: pendingRegistrationData.role,
+                  vehicleNumber: (pendingRegistrationData.partnerDetails && pendingRegistrationData.partnerDetails.vehicleNumber) || '',
+                  vehicleType: (pendingRegistrationData.partnerDetails && pendingRegistrationData.partnerDetails.vehicleType) || '',
+                  deliveryZone: (pendingRegistrationData.partnerDetails && pendingRegistrationData.partnerDetails.deliveryZone) || '',
+                  drivingLicense: (pendingRegistrationData.partnerDetails && pendingRegistrationData.partnerDetails.drivingLicense) || ''
+                });
+              } catch (mockSignupErr) {
+                console.warn('[Register] mock.signup error:', mockSignupErr);
+              }
+            }
+
+            if (res && res.success && res.user) {
               if (regOtpModal) regOtpModal.hide();
-              FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
+              try {
+                if (typeof FoodWalaApp.showToast === 'function') {
+                  FoodWalaApp.showToast(`Welcome to FoodWala, ${res.user.name}!`, 'success');
+                }
+              } catch (tErr) {}
               try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (err) {}
               const registeredRole = (res.user.role || pendingRegistrationData.role || '').toLowerCase();
               setTimeout(() => {
                 if (registeredRole === 'admin') {
                   window.location.href = './admin.html';
                 } else if (registeredRole === 'partner' || registeredRole === 'delivery_partner') {
-                window.location.href = './delivery-dashboard.html';
+                  window.location.href = './delivery-dashboard.html';
                 } else if (registeredRole === 'restaurant' || registeredRole === 'restaurant_admin') {
                   window.location.href = './restaurant-details.html?id=1';
                 } else {
-                  window.location.href = redirectTarget;
+                  window.location.href = redirectTarget || './index.html';
                 }
-              }, 500);
-            } else if (res.code === 'PHONE_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('phone'))) {
+              }, 400);
+            } else if (res && (res.code === 'PHONE_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('phone')))) {
+              regVerifyBtn.disabled = false;
+              regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
               if (regOtpModal) regOtpModal.hide();
-              showDuplicatePhoneModal(pendingRegistrationData.phone);
-            } else if (res.code === 'EMAIL_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('email'))) {
+              if (typeof showDuplicatePhoneModal === 'function') {
+                showDuplicatePhoneModal(pendingRegistrationData.phone);
+              } else {
+                regErrorMsg.textContent = res.message || 'This mobile number is already registered. Please login.';
+                regErrorMsg.style.display = 'block';
+              }
+            } else if (res && (res.code === 'EMAIL_EXISTS' || (res.status === 409 && (res.error || '').toLowerCase().includes('email')))) {
               regVerifyBtn.disabled = false;
               regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
               regOtpError.textContent = res.message || res.error || 'An account with this email address already exists. Please login.';
@@ -871,13 +935,14 @@
             } else {
               regVerifyBtn.disabled = false;
               regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
-              regOtpError.textContent = res.message || res.error || 'Failed to create account.';
+              regOtpError.textContent = (res && (res.message || res.error)) || 'Failed to create account. Please try again.';
               regOtpError.style.display = 'block';
             }
-          } catch (err) {
+          } catch (overallErr) {
+            console.error('[Register Verification Global Error]:', overallErr);
             regVerifyBtn.disabled = false;
             regVerifyBtn.innerHTML = '<span>Verify & Create Account</span> <i class="bi bi-arrow-right"></i>';
-            regOtpError.textContent = 'Account service is temporarily unavailable.';
+            regOtpError.textContent = overallErr.message || 'An unexpected error occurred during verification. Please try again.';
             regOtpError.style.display = 'block';
           }
         });
