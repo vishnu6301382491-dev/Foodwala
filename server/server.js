@@ -463,6 +463,26 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
 
     const newUserId = result.insertId;
 
+    // Delivery Partner record auto-provisioning
+    let partnerId = null;
+    let finalVehicleNumber = 'KA-05-EV-4219';
+    let finalVehicleType = 'Electric Scooter';
+    if (userRole === 'partner' || userRole === 'delivery_partner') {
+      finalVehicleNumber = (req.body.vehicleNumber || req.body.vehicle_number || 'KA-05-EV-4219').trim();
+      finalVehicleType = (req.body.vehicleType || req.body.vehicle_type || 'Electric Scooter').trim();
+      try {
+        const [dpRes] = await db.execute(
+          `INSERT INTO delivery_partner (user_id, name, phone, vehicle_number, vehicle_type, status, is_available, rating)
+           VALUES (?, ?, ?, ?, ?, 'AVAILABLE', 1, 4.9)`,
+          [newUserId, finalName, normalizedPhone, finalVehicleNumber, finalVehicleType]
+        );
+        partnerId = dpRes.insertId;
+        console.log(`[Delivery Fleet] New partner registered: ${finalName} (partnerId: ${partnerId}, vehicle: ${finalVehicleNumber})`);
+      } catch (dpErr) {
+        console.warn('[Register Delivery Partner Insert Warning]:', dpErr.message);
+      }
+    }
+
     // If an address was supplied during registration, save it into address table
     if (address && address.trim()) {
       try {
@@ -498,12 +518,18 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
 
     const userPayload = {
       userId: newUserId,
+      user_id: newUserId,
+      id: newUserId,
       name: finalName,
       username: finalName,
       email: cleanEmail,
       phone: normalizedPhone,
       role: userRole,
       address: address || '',
+      partnerId: partnerId,
+      partner_id: partnerId,
+      vehicleNumber: finalVehicleNumber,
+      vehicleType: finalVehicleType,
       memberSince: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     };
 

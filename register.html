@@ -183,11 +183,23 @@
             <p class="text-muted small" id="reg-page-desc">Create an account for personalized food delivery across Bengaluru.</p>
           </div>
 
-          <!-- Registration is exclusively for Customers (Public Partner/Admin Signup Disabled) -->
-          <div id="reg-customer-notice" class="mb-3 text-center">
-            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small">
-              <i class="bi bi-person-check-fill me-1"></i> Customer Account Registration
+          <!-- Role Switcher: Customer vs Delivery Partner -->
+          <div class="d-flex bg-light p-1 rounded-pill mb-3 border shadow-sm" role="tablist">
+            <button class="btn btn-sm flex-fill rounded-pill fw-bold active js-reg-role-btn" type="button" data-role="customer" id="reg-role-btn-customer">
+              <i class="bi bi-person-fill me-1"></i> Customer Sign Up
+            </button>
+            <button class="btn btn-sm flex-fill rounded-pill fw-bold text-muted js-reg-role-btn" type="button" data-role="partner" id="reg-role-btn-partner">
+              <i class="bi bi-bicycle me-1 text-danger"></i> Delivery Partner Fleet
+            </button>
+          </div>
+
+          <div id="reg-role-badge-container" class="mb-3 text-center">
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small" id="reg-role-badge">
+              <i class="bi bi-person-check-fill me-1" id="reg-role-badge-icon"></i> Customer Account Registration
             </span>
+            <p class="text-muted small mt-1 mb-0" id="reg-role-desc" style="font-size: 0.8rem;">
+              Create an account for personalized food delivery across Bengaluru.
+            </p>
           </div>
 
           <div id="register-error-msg" class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="display: none;" role="alert"></div>
@@ -209,6 +221,44 @@
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-address" id="reg-address-label">Delivery Address (Optional)</label>
               <input type="text" id="reg-address" name="address" class="form-control rounded-3" placeholder="e.g. Koramangala, Bengaluru" autocomplete="street-address">
+            </div>
+
+            <!-- Delivery Partner Fleet Specific Fields Container -->
+            <div id="partner-fields-container" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
+              <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+                <i class="bi bi-ev-front text-danger fs-5"></i>
+                <h6 class="fw-bold text-dark mb-0 small">Delivery Hero Fleet Details</h6>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small fw-semibold mb-1" for="reg-vehicle-type">Vehicle Type *</label>
+                <select id="reg-vehicle-type" name="vehicleType" class="form-select form-select-sm rounded-3">
+                  <option value="Electric Scooter" selected>Electric Scooter (EV)</option>
+                  <option value="Motorcycle / Bike">Motorcycle / Petrol Bike</option>
+                  <option value="Scooter / Moped">Scooter / Moped</option>
+                  <option value="Bicycle">Bicycle / Cycle</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small fw-semibold mb-1" for="reg-vehicle-number" id="reg-vehicle-num-label">Vehicle Registration Number *</label>
+                <input type="text" id="reg-vehicle-number" name="vehicleNumber" class="form-control form-control-sm rounded-3 text-uppercase font-monospace" placeholder="e.g. KA-05-EV-4219" autocomplete="off">
+                <small class="text-muted" style="font-size: 0.72rem;">Vehicle license plate number (or 'N/A' for bicycle)</small>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small fw-semibold mb-1" for="reg-delivery-zone">Preferred Bengaluru Delivery Hub *</label>
+                <select id="reg-delivery-zone" name="deliveryZone" class="form-select form-select-sm rounded-3">
+                  <option value="Koramangala & HSR Layout" selected>Koramangala & HSR Layout</option>
+                  <option value="Indiranagar & MG Road">Indiranagar & MG Road</option>
+                  <option value="Whitefield & Marathahalli">Whitefield & Marathahalli</option>
+                  <option value="Jayanagar & Basavanagudi">Jayanagar & Basavanagudi</option>
+                  <option value="Malleshwaram & Rajajinagar">Malleshwaram & Rajajinagar</option>
+                  <option value="Bellandur & Outer Ring Road">Bellandur & Outer Ring Road</option>
+                  <option value="BTM Layout & Electronic City">BTM Layout & Electronic City</option>
+                </select>
+              </div>
+              <div class="mb-1">
+                <label class="form-label small fw-semibold mb-1" for="reg-driving-license">Driving License / Govt ID Number *</label>
+                <input type="text" id="reg-driving-license" name="drivingLicense" class="form-control form-control-sm rounded-3 text-uppercase font-monospace" placeholder="e.g. KA05 20210012345" autocomplete="off">
+              </div>
             </div>
             <div class="mb-3">
               <label class="form-label small fw-semibold" for="reg-password">Password *</label>
@@ -389,40 +439,32 @@
       // --- Registration Role Switcher Controller ---
       const regRoleProfiles = {
         customer: {
-          badge: 'Customer',
+          badge: 'Customer Account Registration',
           title: 'Join FoodWala',
           desc: 'Create an account for personalized food delivery across Bengaluru.',
-          benefits: 'Order delicacies from 105+ Bengaluru restaurants with live order tracking.',
+          benefits: 'Order delicacies from 105+ Bengaluru restaurants with live order tracking & cash on delivery.',
+          icon: 'bi-person-plus-fill',
           nameLabel: 'Full Name *',
           namePlaceholder: 'e.g. Vishnu Vardhan',
           addressLabel: 'Delivery Address (Optional)',
           addressPlaceholder: 'e.g. Koramangala, Bengaluru',
-          btnText: 'Create Customer Account',
-          redirect: './index.html'
+          btnText: 'Create Account',
+          badgeClass: 'badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small',
+          badgeIcon: 'bi bi-person-check-fill me-1'
         },
         partner: {
-          badge: 'Delivery Partner',
-          title: 'Register as Delivery Partner',
-          desc: 'Join Bengaluru\'s hyper-fast delivery network with weekly payouts & flexible hours.',
-          benefits: 'Earn with flexible shifts, accident insurance & instant delivery incentives in Bengaluru.',
+          badge: 'Delivery Partner Fleet Registration',
+          title: 'Join FoodWala Delivery Fleet',
+          desc: 'Deliver food across Bengaluru, earn weekly payouts with flexible shifts & instant incentives.',
+          benefits: 'Earn up to ₹35,000/month with flexible shifts, accident insurance & instant delivery incentives.',
+          icon: 'bi-bicycle',
           nameLabel: 'Delivery Partner Full Name *',
-          namePlaceholder: 'e.g. Ramesh Kumar',
-          addressLabel: 'Delivery Area & Vehicle Reg No. (Optional)',
-          addressPlaceholder: 'e.g. Koramangala / KA 01 AB 1234',
-          btnText: 'Join Delivery Fleet',
-          redirect: './orders.html'
-        },
-        restaurant: {
-          badge: 'Restaurant Partner',
-          title: 'Register as Restaurant Partner',
-          desc: 'Partner with FoodWala to expand your culinary reach to 100,000+ customers.',
-          benefits: 'Get listed on FoodWala, receive digital orders, and manage kitchen menus in real-time.',
-          nameLabel: 'Owner / Manager Full Name *',
-          namePlaceholder: 'e.g. Vidyarthi Bhavan Manager',
-          addressLabel: 'Restaurant Outlet Name & Address *',
-          addressPlaceholder: 'e.g. Vidyarthi Bhavan, Gandhi Bazaar, Bengaluru',
-          btnText: 'Register Restaurant',
-          redirect: './restaurant-details.html?id=1'
+          namePlaceholder: 'e.g. Kiran Kumar',
+          addressLabel: 'Residential Address in Bengaluru *',
+          addressPlaceholder: 'e.g. 5th Block, Koramangala, Bengaluru',
+          btnText: 'Join Delivery Fleet (🛵 Sign Up)',
+          badgeClass: 'badge bg-warning-subtle text-dark border border-warning rounded-pill px-3 py-1 fw-bold small',
+          badgeIcon: 'bi bi-bicycle me-1 text-danger'
         }
       };
 
@@ -435,22 +477,49 @@
       const regNameInput = document.getElementById('reg-name');
       const regAddressLabel = document.getElementById('reg-address-label');
       const regAddressInput = document.getElementById('reg-address');
+      const partnerFieldsContainer = document.getElementById('partner-fields-container');
+      const googleSignupContainer = document.getElementById('google-signup-btn-container');
+      const regVehicleType = document.getElementById('reg-vehicle-type');
+      const regVehicleNumber = document.getElementById('reg-vehicle-number');
+      const regDeliveryZone = document.getElementById('reg-delivery-zone');
+      const regDrivingLicense = document.getElementById('reg-driving-license');
+      const regSubmitBtn = document.getElementById('register-submit-btn');
+      const regForm = document.getElementById('register-form');
+      const regErrorMsg = document.getElementById('register-error-msg');
       let selectedRegRole = 'customer';
 
       function setRegistrationRole(roleKey) {
-        selectedRegRole = roleKey;
-        const profile = regRoleProfiles[roleKey] || regRoleProfiles.customer;
-        if (regRoleInput) regRoleInput.value = roleKey;
+        selectedRegRole = roleKey === 'partner' ? 'partner' : 'customer';
+        const profile = regRoleProfiles[selectedRegRole];
+        if (regRoleInput) regRoleInput.value = selectedRegRole;
 
-        document.querySelectorAll('.js-reg-role-btn').forEach(btn => {
-          if (btn.getAttribute('data-role') === roleKey) {
-            btn.className = 'btn btn-danger btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn active shadow-sm';
-          } else {
-            btn.className = 'btn btn-outline-secondary btn-sm w-100 rounded-3 py-2 text-center js-reg-role-btn';
+        // Toggle pill buttons
+        const btnCustomer = document.getElementById('reg-role-btn-customer');
+        const btnPartner = document.getElementById('reg-role-btn-partner');
+        if (selectedRegRole === 'partner') {
+          if (btnPartner) {
+            btnPartner.className = 'btn btn-sm flex-fill rounded-pill fw-bold btn-danger shadow-sm js-reg-role-btn active';
           }
-        });
+          if (btnCustomer) {
+            btnCustomer.className = 'btn btn-sm flex-fill rounded-pill fw-bold text-muted btn-light js-reg-role-btn';
+          }
+          if (partnerFieldsContainer) partnerFieldsContainer.style.display = 'block';
+          if (googleSignupContainer) googleSignupContainer.style.display = 'none';
+        } else {
+          if (btnCustomer) {
+            btnCustomer.className = 'btn btn-sm flex-fill rounded-pill fw-bold btn-danger shadow-sm js-reg-role-btn active';
+          }
+          if (btnPartner) {
+            btnPartner.className = 'btn btn-sm flex-fill rounded-pill fw-bold text-muted btn-light js-reg-role-btn';
+          }
+          if (partnerFieldsContainer) partnerFieldsContainer.style.display = 'none';
+          if (googleSignupContainer) googleSignupContainer.style.display = 'flex';
+        }
 
-        if (regRoleBadge) regRoleBadge.textContent = profile.badge;
+        if (regRoleBadge) {
+          regRoleBadge.className = profile.badgeClass;
+          regRoleBadge.innerHTML = `<i class="${profile.badgeIcon}"></i> ${profile.badge}`;
+        }
         if (regRoleDesc) regRoleDesc.textContent = profile.benefits;
         if (regPageTitle) regPageTitle.textContent = profile.title;
         if (regPageDesc) regPageDesc.textContent = profile.desc;
@@ -462,15 +531,23 @@
       }
 
       document.querySelectorAll('.js-reg-role-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
           const role = btn.getAttribute('data-role');
           setRegistrationRole(role);
         });
       });
 
-      const regForm = document.getElementById('register-form');
-      const regSubmitBtn = document.getElementById('register-submit-btn');
-      const regErrorMsg = document.getElementById('register-error-msg');
+      // Check URL parameters on page load: ?portal=partner or ?role=partner
+      const urlQuery = new URLSearchParams(window.location.search);
+      const urlPortal = (urlQuery.get('portal') || urlQuery.get('role') || '').toLowerCase();
+      if (urlPortal === 'partner' || urlPortal === 'delivery' || urlPortal === 'delivery_partner' || urlPortal === 'rider') {
+        setRegistrationRole('partner');
+      } else {
+        setRegistrationRole('customer');
+      }
+
+      // Form elements already declared above
 
       let pendingRegistrationData = null;
 
@@ -564,6 +641,31 @@
             return;
           }
 
+          // Partner fields validation if partner role selected
+          let partnerDetails = {};
+          if (selectedRegRole === 'partner') {
+            const vType = regVehicleType ? regVehicleType.value : 'Electric Scooter';
+            const vNum = regVehicleNumber ? regVehicleNumber.value.trim().toUpperCase() : '';
+            const dZone = regDeliveryZone ? regDeliveryZone.value : 'Koramangala & HSR Layout';
+            const dLic = regDrivingLicense ? regDrivingLicense.value.trim().toUpperCase() : '';
+
+            if (vType !== 'Bicycle' && !vNum) {
+              resetSubmitBtn('Please enter your vehicle registration number.');
+              return;
+            }
+            if (!dLic) {
+              resetSubmitBtn('Please enter your driving license or government ID number.');
+              return;
+            }
+
+            partnerDetails = {
+              vehicleType: vType,
+              vehicleNumber: vNum || 'BICYCLE-NA',
+              deliveryZone: dZone,
+              drivingLicense: dLic
+            };
+          }
+
           pendingRegistrationData = {
             name: cleanName,
             email: email.toLowerCase(),
@@ -571,7 +673,8 @@
             password: password,
             address: address,
             confirmPassword: confirmPassword,
-            role: (regRoleInput && regRoleInput.value) ? regRoleInput.value : 'customer'
+            role: selectedRegRole || 'customer',
+            partnerDetails: partnerDetails
           };
 
           showRegOtpModal(normalizedPhone, otpRes.code || otpRes.otp);
@@ -737,7 +840,8 @@
               pendingRegistrationData.password,
               pendingRegistrationData.address,
               pendingRegistrationData.confirmPassword,
-              pendingRegistrationData.role
+              pendingRegistrationData.role,
+              pendingRegistrationData.partnerDetails || {}
             );
 
             if (res.success && res.user) {

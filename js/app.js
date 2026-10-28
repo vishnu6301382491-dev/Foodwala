@@ -1160,7 +1160,7 @@ const FoodWalaApp = (function () {
       return res || { success: false, message: 'Invalid or expired verification code.' };
     },
 
-    register: async function (name, email, phone, password, addressText, confirmPassword, role) {
+    register: async function (name, email, phone, password, addressText, confirmPassword, role, partnerDetails = {}) {
       if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.signup === "function") {
         return await window.FoodWalaApi.signup({
           name: name,
@@ -1169,7 +1169,11 @@ const FoodWalaApp = (function () {
           password: password,
           address: addressText,
           confirmPassword: confirmPassword,
-          role: role || 'customer'
+          role: role || 'customer',
+          vehicleNumber: partnerDetails.vehicleNumber || '',
+          vehicleType: partnerDetails.vehicleType || '',
+          deliveryZone: partnerDetails.deliveryZone || '',
+          drivingLicense: partnerDetails.drivingLicense || ''
         });
       }
       const cleanName = (name || '').trim();

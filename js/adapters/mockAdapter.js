@@ -611,17 +611,27 @@
         };
       }
 
-      // Create user
+      // Create user (Customer or Delivery Partner)
+      const isPartnerRole = (data.role || '').toLowerCase() === 'partner' || (data.role || '').toLowerCase() === 'delivery_partner';
       const newUser = {
         userId: users.length + 1,
         name: cleanName,
         username: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
-        role: data.role || 'customer',
+        role: isPartnerRole ? 'partner' : (data.role || 'customer'),
         passwordHash: mockHash(password),
-        address: (data.address || '').trim() || 'Bengaluru, Karnataka',
-        memberSince: 'March 2026',
+        address: (data.address || '').trim() || (isPartnerRole ? 'Bengaluru Delivery Hub' : 'Bengaluru, Karnataka'),
+        partnerId: isPartnerRole ? (users.length + 100) : undefined,
+        partner_id: isPartnerRole ? (users.length + 100) : undefined,
+        vehicleNumber: isPartnerRole ? (data.vehicleNumber || 'KA-05-EV-4219') : undefined,
+        vehicleType: isPartnerRole ? (data.vehicleType || 'Electric Scooter') : undefined,
+        deliveryZone: data.deliveryZone || 'Koramangala & HSR',
+        drivingLicense: data.drivingLicense || '',
+        isAvailable: isPartnerRole ? 1 : undefined,
+        status: isPartnerRole ? 'AVAILABLE' : undefined,
+        rating: isPartnerRole ? 4.9 : undefined,
+        memberSince: 'October 2026',
         failedAttempts: 0,
         lockedUntil: 0
       };
@@ -631,12 +641,19 @@
 
       const safeUser = {
         userId: newUser.userId,
+        user_id: newUser.userId,
+        id: newUser.userId,
         name: newUser.name,
         username: newUser.username,
         email: newUser.email,
         phone: newUser.phone,
         role: newUser.role,
         address: newUser.address,
+        partnerId: newUser.partnerId,
+        partner_id: newUser.partnerId,
+        vehicleNumber: newUser.vehicleNumber,
+        vehicleType: newUser.vehicleType,
+        deliveryZone: newUser.deliveryZone,
         addresses: [],
         memberSince: newUser.memberSince
       };
