@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const pptx = new PptxGenJS();
 
-// Set 16:9 Widescreen Layout (13.33 x 7.5 inches)
+// Set 16:9 Widescreen Layout (13.333 x 7.5 inches)
 pptx.layout = 'LAYOUT_16x9';
 pptx.author = 'FoodWala Engineering Team';
 pptx.company = 'FoodWala — Bengaluru Discovery & Delivery';
@@ -16,6 +16,7 @@ const COLORS = {
   bgDark: '0B1120',
   cardBg: '1E293B',
   cardBorder: '334155',
+  cardBorderLight: '475569',
   primaryCoral: 'EF4444',
   accentOrange: 'F97316',
   accentAmber: 'F59E0B',
@@ -24,14 +25,15 @@ const COLORS = {
   accentPurple: '8B5CF6',
   textWhite: 'F8FAFC',
   textMuted: '94A3B8',
-  textDark: '0F172A'
+  textDark: '0F172A',
+  codeBg: '0F172A'
 };
 
 const BASE_DIR = path.resolve('D:/FoodWala_Eclipse_Project');
 const SCREENSHOTS_DIR = path.join(BASE_DIR, 'presentation/screenshots');
 const DIAGRAMS_DIR = path.join(BASE_DIR, 'presentation/diagrams');
 
-// Helper to add standard slide header
+// Helper to add standard slide header with strict symmetrical margins (0.8" left, 0.8" right)
 function addSlideHeader(slide, sectionNum, sectionTitle, subtitle) {
   slide.background = { color: COLORS.bgDark };
 
@@ -50,25 +52,25 @@ function addSlideHeader(slide, sectionNum, sectionTitle, subtitle) {
 
   // Slide Title
   slide.addText(sectionTitle, {
-    x: 0.8, y: 0.72, w: 11.7, h: 0.5,
+    x: 0.8, y: 0.72, w: 11.73, h: 0.5,
     fontSize: 22, bold: true, color: COLORS.textWhite
   });
 
   // Subtitle / Caption
   if (subtitle) {
     slide.addText(subtitle, {
-      x: 0.8, y: 1.22, w: 11.7, h: 0.35,
+      x: 0.8, y: 1.22, w: 11.73, h: 0.35,
       fontSize: 12, color: COLORS.textMuted
     });
   }
 
   // Footer branding
   slide.addText('FoodWala — Bengaluru Food Discovery & Delivery Platform', {
-    x: 0.8, y: 7.1, w: 8.0, h: 0.3,
+    x: 0.8, y: 7.12, w: 7.5, h: 0.28,
     fontSize: 9, color: COLORS.textMuted
   });
-  slide.addText('Confidential • Project Demonstration', {
-    x: 8.8, y: 7.1, w: 3.7, h: 0.3,
+  slide.addText('Confidential • Project Demonstration • Master Deck', {
+    x: 8.3, y: 7.12, w: 4.23, h: 0.28,
     fontSize: 9, color: COLORS.textMuted, align: 'right'
   });
 }
@@ -89,25 +91,25 @@ slide1.addShape(pptx.ShapeType.ellipse, {
 
 // Title & Hero Branding
 slide1.addShape(pptx.ShapeType.roundRect, {
-  x: 1.0, y: 1.0, w: 2.8, h: 0.38,
+  x: 1.0, y: 0.95, w: 2.8, h: 0.38,
   rectRadius: 0.19,
   fill: { color: COLORS.primaryCoral, transparency: 85 },
   line: { color: COLORS.primaryCoral, width: 1 }
 });
 slide1.addText('PROJECT DEMONSTRATION', {
-  x: 1.0, y: 1.0, w: 2.8, h: 0.38,
+  x: 1.0, y: 0.95, w: 2.8, h: 0.38,
   fontSize: 11, bold: true, color: COLORS.primaryCoral,
   align: 'center', valign: 'middle'
 });
 
 slide1.addText('FoodWala — Bengaluru Food Discovery & Delivery Platform', {
-  x: 1.0, y: 1.5, w: 11.3, h: 1.0,
+  x: 1.0, y: 1.45, w: 11.33, h: 0.95,
   fontSize: 32, bold: true, color: COLORS.textWhite
 });
 
 // Mandatory ONE concise line definition
 slide1.addShape(pptx.ShapeType.roundRect, {
-  x: 1.0, y: 2.65, w: 11.3, h: 0.85,
+  x: 1.0, y: 2.55, w: 11.33, h: 0.88,
   rectRadius: 0.1,
   fill: { color: COLORS.cardBg },
   line: { color: COLORS.primaryCoral, width: 1.5 }
@@ -115,7 +117,7 @@ slide1.addShape(pptx.ShapeType.roundRect, {
 slide1.addText(
   '"FoodWala is a full-stack Bengaluru food discovery and delivery platform that allows users to discover restaurants, search menus, place orders, make payments, and track deliveries in real time."',
   {
-    x: 1.2, y: 2.75, w: 10.9, h: 0.65,
+    x: 1.2, y: 2.65, w: 10.93, h: 0.68,
     fontSize: 15, italic: true, bold: true, color: COLORS.textWhite, valign: 'middle'
   }
 );
@@ -144,31 +146,35 @@ const pillars = [
   }
 ];
 
+const pillarW = 2.65;
+const pillarGap = 0.24;
+const pillarStartX = 1.0;
+
 pillars.forEach((p, idx) => {
-  const colX = 1.0 + idx * 2.92;
+  const colX = pillarStartX + idx * (pillarW + pillarGap);
   slide1.addShape(pptx.ShapeType.roundRect, {
-    x: colX, y: 3.8, w: 2.65, h: 2.7,
+    x: colX, y: 3.75, w: pillarW, h: 2.75,
     rectRadius: 0.1,
     fill: { color: COLORS.cardBg },
     line: { color: COLORS.cardBorder, width: 1 }
   });
 
   slide1.addText(p.icon, {
-    x: colX + 0.2, y: 4.0, w: 2.25, h: 0.5,
+    x: colX + 0.2, y: 3.95, w: pillarW - 0.4, h: 0.5,
     fontSize: 26
   });
   slide1.addText(p.title, {
-    x: colX + 0.2, y: 4.55, w: 2.25, h: 0.45,
+    x: colX + 0.2, y: 4.50, w: pillarW - 0.4, h: 0.45,
     fontSize: 14, bold: true, color: COLORS.textWhite
   });
   slide1.addText(p.desc, {
-    x: colX + 0.2, y: 5.05, w: 2.25, h: 1.3,
+    x: colX + 0.2, y: 5.00, w: pillarW - 0.4, h: 1.35,
     fontSize: 11, color: COLORS.textMuted
   });
 });
 
-slide1.addText('Bengaluru, Karnataka • Production Ready Architecture', {
-  x: 1.0, y: 6.9, w: 11.3, h: 0.35,
+slide1.addText('Bengaluru, Karnataka • Production Ready Architecture • 4–5 Minute Demonstration Deck', {
+  x: 1.0, y: 6.85, w: 11.33, h: 0.35,
   fontSize: 11, color: COLORS.textMuted
 });
 
@@ -183,7 +189,7 @@ const techCategories = [
   {
     badge: 'FRONTEND',
     color: COLORS.accentCyan,
-    x: 0.8, y: 1.7, w: 3.7, h: 2.4,
+    x: 0.80, y: 1.65, w: 3.70, h: 2.45,
     items: [
       { name: 'HTML5 & CSS3', detail: 'Semantic layout, custom dark mode, variables' },
       { name: 'Bootstrap 5.3 & Icons', detail: 'Responsive grid, modals, offcanvas navigation' },
@@ -194,7 +200,7 @@ const techCategories = [
   {
     badge: 'BACKEND & APIS',
     color: COLORS.accentEmerald,
-    x: 4.8, y: 1.7, w: 3.7, h: 2.4,
+    x: 4.81, y: 1.65, w: 3.70, h: 2.45,
     items: [
       { name: 'Node.js (v24.17 LTS)', detail: 'High performance asynchronous event loop' },
       { name: 'Express.js 4.x', detail: 'RESTful routes, controllers, and middleware' },
@@ -205,7 +211,7 @@ const techCategories = [
   {
     badge: 'DATABASE & STORAGE',
     color: COLORS.accentAmber,
-    x: 8.8, y: 1.7, w: 3.7, h: 2.4,
+    x: 8.83, y: 1.65, w: 3.70, h: 2.45,
     items: [
       { name: 'MySQL 9.7 Server', detail: '22 relational tables, InnoDB engine, ACID' },
       { name: 'Connection Pool', detail: 'mysql2/promise with connection limits' },
@@ -216,7 +222,7 @@ const techCategories = [
   {
     badge: 'SECURITY & AUTH',
     color: COLORS.primaryCoral,
-    x: 0.8, y: 4.4, w: 3.7, h: 2.4,
+    x: 0.80, y: 4.35, w: 3.70, h: 2.45,
     items: [
       { name: 'Argon2id Hashing', detail: 'State-of-the-art memory-hard password encryption' },
       { name: 'Role-Based Access (RBAC)', detail: 'Super Admin, Store Manager, Rider, Customer' },
@@ -227,7 +233,7 @@ const techCategories = [
   {
     badge: 'PAYMENT & COMMS',
     color: COLORS.accentPurple,
-    x: 4.8, y: 4.4, w: 3.7, h: 2.4,
+    x: 4.81, y: 4.35, w: 3.70, h: 2.45,
     items: [
       { name: 'Razorpay API Gateway', detail: 'UPI, Debit/Credit cards, NetBanking, COD' },
       { name: 'WhatsApp Cloud API', detail: 'Graph API v18.0 automated conversational desk' },
@@ -238,7 +244,7 @@ const techCategories = [
   {
     badge: 'DEVOPS & ENVIRONMENT',
     color: COLORS.accentOrange,
-    x: 8.8, y: 4.4, w: 3.7, h: 2.4,
+    x: 8.83, y: 4.35, w: 3.70, h: 2.45,
     items: [
       { name: 'Cloudflare Tunnel', detail: 'Zero-trust HTTPS tunnel for webhook intake' },
       { name: 'Puppeteer Core', detail: 'End-to-end automated UI & screenshot testing' },
@@ -290,24 +296,32 @@ const slide3 = pptx.addSlide();
 addSlideHeader(slide3, '3', 'Project Architecture & Directory Layout', 'Visual codebase hierarchy demonstrating strict separation of frontend assets, backend APIs, and database migrations');
 
 const imgStruct = path.join(SCREENSHOTS_DIR, '00_project_structure.png');
+// Frame card for screenshot
+slide3.addShape(pptx.ShapeType.roundRect, {
+  x: 0.80, y: 1.60, w: 8.40, h: 4.85,
+  rectRadius: 0.08,
+  fill: { color: COLORS.cardBg },
+  line: { color: COLORS.cardBorder, width: 1 }
+});
+
 if (fs.existsSync(imgStruct)) {
   slide3.addImage({
     path: imgStruct,
-    x: 0.8, y: 1.6, w: 8.5, h: 4.8,
-    sizing: { type: 'contain', w: 8.5, h: 4.8 }
+    x: 0.90, y: 1.68, w: 8.20, h: 4.69,
+    sizing: { type: 'contain', w: 8.20, h: 4.69 }
   });
 }
 
 // Side explanation panel
 slide3.addShape(pptx.ShapeType.roundRect, {
-  x: 9.5, y: 1.6, w: 3.0, h: 4.8,
+  x: 9.43, y: 1.60, w: 3.10, h: 4.85,
   rectRadius: 0.08,
   fill: { color: COLORS.cardBg },
   line: { color: COLORS.cardBorder, width: 1 }
 });
 
 slide3.addText('Layered Architecture', {
-  x: 9.7, y: 1.8, w: 2.6, h: 0.35,
+  x: 9.63, y: 1.80, w: 2.70, h: 0.35,
   fontSize: 14, bold: true, color: COLORS.primaryCoral
 });
 
@@ -321,159 +335,245 @@ const structHighlights = [
 let hlY = 2.25;
 structHighlights.forEach(h => {
   slide3.addText(h.title, {
-    x: 9.7, y: hlY, w: 2.6, h: 0.25,
+    x: 9.63, y: hlY, w: 2.70, h: 0.25,
     fontSize: 11, bold: true, color: COLORS.textWhite
   });
   slide3.addText(h.desc, {
-    x: 9.7, y: hlY + 0.24, w: 2.6, h: 0.72,
+    x: 9.63, y: hlY + 0.24, w: 2.70, h: 0.72,
     fontSize: 9.5, color: COLORS.textMuted
   });
   hlY += 1.05;
 });
 
 slide3.addText('Caption: Frontend client files are strictly separated from Express REST controllers and MySQL database layer.', {
-  x: 0.8, y: 6.6, w: 11.7, h: 0.3,
-  fontSize: 10, italic: true, color: COLORS.accentAmber
+  x: 0.8, y: 6.65, w: 11.73, h: 0.3,
+  fontSize: 10, italic: true, color: COLORS.accentAmber, align: 'center'
 });
 
 // ==========================================
-// SECTION 4: ER DIAGRAM (Slide 4)
+// SECTION 4: ER DIAGRAM (Slide 4) — Centered!
 // ==========================================
-console.log('Building Slide 4: Section 4 - ER Diagram...');
+console.log('Building Slide 4: Section 4 - ER Diagram (Centered)...');
 const slide4 = pptx.addSlide();
 addSlideHeader(slide4, '4', 'Database Architecture & ER Diagram', 'Normalized relational database schema (MySQL 9.7) featuring 22 tables supporting ACID-compliant order transactions');
+
+// Mathematically Centered ER Diagram (Aspect 16:9)
+// Slide width: 13.333". Height: 4.90" -> Width: 4.90 * (16/9) = 8.711".
+// Centered X: (13.333 - 8.711) / 2 = 2.311"
+const erFrameX = 2.15;
+const erFrameY = 1.50;
+const erFrameW = 9.03;
+const erFrameH = 5.08;
+
+slide4.addShape(pptx.ShapeType.roundRect, {
+  x: erFrameX, y: erFrameY, w: erFrameW, h: erFrameH,
+  rectRadius: 0.08,
+  fill: { color: COLORS.cardBg },
+  line: { color: COLORS.cardBorder, width: 1 }
+});
 
 const imgER = path.join(DIAGRAMS_DIR, 'foodwala-er-diagram.png');
 if (fs.existsSync(imgER)) {
   slide4.addImage({
     path: imgER,
-    x: 0.8, y: 1.6, w: 11.7, h: 4.8,
-    sizing: { type: 'contain', w: 11.7, h: 4.8 }
+    x: 2.31, y: 1.58, w: 8.71, h: 4.90,
+    sizing: { type: 'contain', w: 8.71, h: 4.90 }
   });
 }
 
 slide4.addText(
   'Key Relationships: user (1:N) orders • restaurant (1:N) menu • orders (1:N) order_item • orders (1:1) payment • user (1:N) whatsapp_conversations',
   {
-    x: 0.8, y: 6.6, w: 11.7, h: 0.3,
+    x: 0.8, y: 6.68, w: 11.73, h: 0.3,
     fontSize: 10, bold: true, color: COLORS.accentCyan, align: 'center'
   }
 );
 
 // ==========================================
-// SECTION 5: PAGE SCREENSHOTS (Slides 5 to 22)
-// Strictly 1 Page Screenshot per Slide!
+// SECTION 5: PAGE SCREENSHOTS (Slides 5 to 24)
+// Exactly 1 Page Screenshot per Slide (20 Slides Total)
+// Mathematically Centered & Perfectly Aligned!
 // ==========================================
-console.log('Building Section 5: Dedicated Page Screenshots (18 slides)...');
+console.log('Building Section 5: Dedicated Page Screenshots (20 slides)...');
 
 const pageSlides = [
   {
     slideNum: '5.1',
     title: 'Home Page — Bengaluru Discovery & Hero Showcase',
     caption: 'Hero banner with video showcase, dynamic Bengaluru cuisine category carousels, instant search bar, and top-rated restaurants.',
-    file: '01_home_page.png'
+    file: '01_home_page.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.2',
     title: 'Login Screen — Role-Based Authentication',
     caption: 'Multi-role authentication gateway verifying Customer, Restaurant Manager, and Delivery Partner credentials with Argon2id password verification.',
-    file: '02_login_page.png'
+    file: '02_login_page.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.3',
-    title: 'Registration Screen — Customer Onboarding',
-    caption: 'New user onboarding form with dual client/server validation for email, phone format, and password complexity requirements.',
-    file: '03_register_page.png'
+    title: 'Registration Screen — Customer Onboarding & Fleet Toggle',
+    caption: 'Dual onboarding form supporting Customer sign-up and direct Delivery Partner fleet onboarding toggle with vehicle & license validation.',
+    file: '03_register_page.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.4',
-    title: 'Restaurant Discovery & Advanced Filtering',
-    caption: 'Comprehensive listing of Bengaluru eateries with multi-criteria filtering by cuisine, customer rating, delivery ETA, veg/non-veg, and budget.',
-    file: '04_restaurants_discovery.png'
+    title: 'Account Security — Password Reset OTP Verification Email',
+    caption: 'Automated cryptographic password reset email delivering a 6-digit OTP (724132) with 15-minute validity, secure token expiry, and account protection.',
+    file: '21_email_forgot_password.png',
+    type: 'email',
+    emailDetails: {
+      badge: 'ACCOUNT RECOVERY & AUTH SECURITY',
+      badgeColor: COLORS.primaryCoral,
+      headline: 'Automated Security Verification Email',
+      subhead: 'Instant OTP dispatch via EmailJS REST Gateway triggered upon password recovery request.',
+      meta: [
+        { label: 'Subject', val: 'FoodWala Receipt for Order VERIFY-724132 — FoodWala Account Security' },
+        { label: 'Recipient', val: 'Registered User Email (Direct Mailbox Delivery)' },
+        { label: 'Verification OTP', val: '724132 (Strict 15-Minute Expiry Window)' },
+        { label: 'Event Trigger', val: 'POST /api/auth/forgot-password' }
+      ],
+      highlights: [
+        'Argon2id Memory-Hard Password Re-hashing on submit',
+        'Transient In-Memory OTP Store + MySQL reset_token Sync',
+        'Single-use verification token cleared immediately upon reset',
+        'Rate-limited endpoints (authLimiter) to prevent brute-force'
+      ],
+      payloadSample: 'Payload: { email: user@foodwala.com, otp: "724132", ttl: 900s, status: "DISPATCHED" }'
+    }
   },
   {
     slideNum: '5.5',
-    title: 'Restaurant Menu & Item Customization',
-    caption: 'Dynamic restaurant catalog showing categorized dishes, prices, ratings, dietary tags, real-time availability badges, and instant cart addition.',
-    file: '05_restaurant_menu.png'
+    title: 'Restaurant Discovery & Advanced Filtering',
+    caption: 'Comprehensive listing of Bengaluru eateries with multi-criteria filtering by cuisine, customer rating, delivery ETA, veg/non-veg, and budget.',
+    file: '04_restaurants_discovery.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.6',
-    title: 'Food Search & Typo-Tolerant Autocomplete',
-    caption: 'Real-time search bar with instant autocomplete suggestions powered by the Jaro-Winkler string similarity algorithm for typo resilience.',
-    file: '06_search_feature.png'
+    title: 'Restaurant Menu & Item Customization',
+    caption: 'Dynamic restaurant catalog showing categorized dishes, prices, ratings, dietary tags, real-time availability badges, and instant cart addition.',
+    file: '05_restaurant_menu.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.7',
-    title: 'Cart Management & Live Bill Breakdown',
-    caption: 'Interactive shopping cart supporting item increment/decrement, real-time subtotal calculation, delivery fee, GST (5%), platform fee, and coupon application.',
-    file: '07_cart_page.png'
+    title: 'Food Search & Typo-Tolerant Autocomplete',
+    caption: 'Real-time search bar with instant autocomplete suggestions powered by the Jaro-Winkler string similarity algorithm for typo resilience.',
+    file: '06_search_feature.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.8',
-    title: 'Checkout & Delivery Address Selection',
-    caption: 'Streamlined checkout interface allowing users to choose saved delivery addresses, provide delivery instructions, and review order totals.',
-    file: '08_checkout_page.png'
+    title: 'Cart Management & Live Bill Breakdown',
+    caption: 'Interactive shopping cart supporting item increment/decrement, real-time subtotal calculation, delivery fee, GST (5%), platform fee, and coupon application.',
+    file: '07_cart_page.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.9',
-    title: 'Payment Gateway Integration — Razorpay & COD',
-    caption: 'Integrated payment processing supporting Razorpay checkout modal (UPI, Debit/Credit cards, Net Banking) alongside Cash on Delivery options.',
-    file: '09_payment_screen.png'
+    title: 'Checkout & Delivery Address Selection',
+    caption: 'Streamlined checkout interface allowing users to choose saved delivery addresses, provide delivery instructions, and review order totals.',
+    file: '08_checkout_page.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.10',
-    title: 'Order Confirmation & Instant Receipt',
-    caption: 'Post-purchase confirmation screen displaying generated Order ID, estimated arrival time, detailed item summary, and live tracking call-to-action.',
-    file: '10_order_confirmation.png'
+    title: 'Payment Gateway Integration — Razorpay & COD',
+    caption: 'Integrated payment processing supporting Razorpay checkout modal (UPI, Debit/Credit cards, Net Banking) alongside Cash on Delivery options.',
+    file: '09_payment_screen.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.11',
-    title: 'Live Order Tracking & 5-Stage Status Pipeline',
-    caption: 'Real-time order progress monitor tracking 5 distinct stages: Order Placed -> Confirmed -> Food Prepared -> Out for Delivery -> Delivered.',
-    file: '11_order_tracking.png'
+    title: 'Order Confirmation & Instant Receipt',
+    caption: 'Post-purchase confirmation screen displaying generated Order ID, estimated arrival time, detailed item summary, and live tracking call-to-action.',
+    file: '10_order_confirmation.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.12',
-    title: 'Order History & Digital Invoices',
-    caption: 'Comprehensive log of past orders with timestamps, status tags, itemized costs, one-click re-order functionality, and invoice retrieval.',
-    file: '12_orders_history.png'
+    title: 'Order Confirmation — Automated Transactional Email Receipt',
+    caption: 'Official order confirmation receipt delivered via EmailJS immediately following Razorpay transaction, detailing Order ID #41486, Vidyarthi Bhavan restaurant, and paid grand total.',
+    file: '20_email_order_receipt.png',
+    type: 'email',
+    emailDetails: {
+      badge: 'TRANSACTIONAL ORDER CONFIRMATION',
+      badgeColor: COLORS.accentEmerald,
+      headline: 'Automated Post-Checkout Email Receipt',
+      subhead: 'Instant transactional order receipt dispatched to customer inbox upon successful payment.',
+      meta: [
+        { label: 'Order ID', val: 'Order #41486 • Vidyarthi Bhavan' },
+        { label: 'Recipient', val: 'Vishnu Vardhan Reddy (Customer Mailbox)' },
+        { label: 'Total Paid', val: 'Rs. 192.00 (Razorpay Test Sandbox)' },
+        { label: 'Dispatched Items', val: 'Steamed Idli (2x), Medu Vada, Khara Bath, Benne Masala Dosa' }
+      ],
+      highlights: [
+        'Automated dispatch via EmailJS REST Client (emailService.js)',
+        'Triggered atomically upon ACID transaction commit',
+        'Itemized billing breakdown matching database record',
+        'Permanent audit record logged with order timestamp'
+      ],
+      payloadSample: 'Payload: { orderId: 41486, items: 4, grandTotal: "Rs. 192.00", channel: "EMAILJS_REST" }'
+    }
   },
   {
     slideNum: '5.13',
-    title: 'User Profile & Account Management',
-    caption: 'Customer management portal showing personal profile details, contact information, password modification tools, and account security preferences.',
-    file: '13_profile_page.png'
+    title: 'Live Order Tracking & 5-Stage Status Pipeline',
+    caption: 'Real-time order progress monitor tracking 5 distinct stages: Order Placed -> Confirmed -> Food Prepared -> Out for Delivery -> Delivered.',
+    file: '11_order_tracking.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.14',
-    title: 'Saved Delivery Addresses & Geolocation',
-    caption: 'Address book management allowing users to save multiple locations (Home, Work, Other) with street details, landmarks, and default selections.',
-    file: '14_address_management.png'
+    title: 'Order History & Digital Invoices',
+    caption: 'Comprehensive log of past orders with timestamps, status tags, itemized costs, one-click re-order functionality, and invoice retrieval.',
+    file: '12_orders_history.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.15',
-    title: 'Super Admin Console & Platform Analytics',
-    caption: 'Platform management dashboard displaying system-wide gross merchandise volume (GMV), active restaurant approvals, user metrics, and revenue charts.',
-    file: '15_admin_dashboard.png'
+    title: 'User Profile & Account Management',
+    caption: 'Customer management portal showing personal profile details, contact information, password modification tools, and account security preferences.',
+    file: '13_profile_page.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.16',
-    title: 'Restaurant Manager Dashboard & Store Isolation',
-    caption: 'Store-isolated management portal allowing authorized managers to accept/reject incoming orders, update dish availability, and inspect sales trends.',
-    file: '16_restaurant_manager_dashboard.png'
+    title: 'Saved Delivery Addresses & Geolocation',
+    caption: 'Address book management allowing users to save multiple locations (Home, Work, Other) with street details, landmarks, and default selections.',
+    file: '14_address_management.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.17',
-    title: 'Delivery Partner Fleet Portal',
-    caption: 'Dedicated driver mobile portal with real-time GPS coordinate reporting, assigned delivery orders list, and order delivery status updates.',
-    file: '17_delivery_partner_portal.png'
+    title: 'Super Admin Console & Platform Analytics',
+    caption: 'Platform management dashboard displaying system-wide gross merchandise volume (GMV), active restaurant approvals, user metrics, and revenue charts.',
+    file: '15_admin_dashboard.png',
+    type: 'widescreen'
   },
   {
     slideNum: '5.18',
+    title: 'Restaurant Manager Dashboard & Store Isolation',
+    caption: 'Store-isolated management portal allowing authorized managers to accept/reject incoming orders, update dish availability, and inspect sales trends.',
+    file: '16_restaurant_manager_dashboard.png',
+    type: 'widescreen'
+  },
+  {
+    slideNum: '5.19',
+    title: 'Delivery Partner Fleet Portal',
+    caption: 'Dedicated driver mobile portal with real-time GPS coordinate reporting, assigned delivery orders list, and order delivery status updates.',
+    file: '17_delivery_partner_portal.png',
+    type: 'widescreen'
+  },
+  {
+    slideNum: '5.20',
     title: 'WhatsApp 24/7 AI Assistance Desk',
     caption: 'Dual-channel conversational AI assistant resolving customer queries, order status inquiries, menu suggestions, and escalation tickets.',
-    file: '18_whatsapp_ai_assistant.png'
+    file: '18_whatsapp_ai_assistant.png',
+    type: 'widescreen'
   }
 ];
 
@@ -482,52 +582,194 @@ pageSlides.forEach(ps => {
   addSlideHeader(slide, ps.slideNum, ps.title, ps.caption);
 
   const imgPath = path.join(SCREENSHOTS_DIR, ps.file);
-  if (fs.existsSync(imgPath)) {
-    slide.addImage({
-      path: imgPath,
-      x: 1.0, y: 1.6, w: 11.33, h: 4.8,
-      sizing: { type: 'contain', w: 11.33, h: 4.8 }
+
+  if (ps.type === 'email' && ps.emailDetails) {
+    // ==========================================
+    // SPECIALIZED EXECUTIVE SIDE-BY-SIDE LAYOUT
+    // Left: Framed High-Res Vertical Email Mockup
+    // Right: Technical Specification & Architecture Card
+    // ==========================================
+    const leftCardX = 0.80;
+    const leftCardY = 1.55;
+    const leftCardW = 4.60;
+    const leftCardH = 5.02;
+
+    // Left Framing Card
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: leftCardX, y: leftCardY, w: leftCardW, h: leftCardH,
+      rectRadius: 0.08,
+      fill: { color: COLORS.cardBg },
+      line: { color: COLORS.cardBorder, width: 1 }
     });
+
+    if (fs.existsSync(imgPath)) {
+      slide.addImage({
+        path: imgPath,
+        x: leftCardX + 0.12, y: leftCardY + 0.10, w: leftCardW - 0.24, h: leftCardH - 0.20,
+        sizing: { type: 'contain', w: leftCardW - 0.24, h: leftCardH - 0.20 }
+      });
+    }
+
+    // Right Architecture Card
+    const rightCardX = 5.65;
+    const rightCardY = 1.55;
+    const rightCardW = 6.88;
+    const rightCardH = 5.02;
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: rightCardX, y: rightCardY, w: rightCardW, h: rightCardH,
+      rectRadius: 0.08,
+      fill: { color: COLORS.cardBg },
+      line: { color: COLORS.cardBorder, width: 1 }
+    });
+
+    // Badge
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: rightCardX + 0.25, y: rightCardY + 0.22, w: 3.2, h: 0.28,
+      rectRadius: 0.14,
+      fill: { color: ps.emailDetails.badgeColor, transparency: 85 },
+      line: { color: ps.emailDetails.badgeColor, width: 1 }
+    });
+    slide.addText(ps.emailDetails.badge, {
+      x: rightCardX + 0.25, y: rightCardY + 0.22, w: 3.2, h: 0.28,
+      fontSize: 9, bold: true, color: ps.emailDetails.badgeColor,
+      align: 'center', valign: 'middle'
+    });
+
+    // Headline
+    slide.addText(ps.emailDetails.headline, {
+      x: rightCardX + 0.25, y: rightCardY + 0.58, w: rightCardW - 0.5, h: 0.35,
+      fontSize: 15, bold: true, color: COLORS.textWhite
+    });
+    slide.addText(ps.emailDetails.subhead, {
+      x: rightCardX + 0.25, y: rightCardY + 0.95, w: rightCardW - 0.5, h: 0.35,
+      fontSize: 10.5, color: COLORS.textMuted
+    });
+
+    // Metadata Grid
+    let metaY = rightCardY + 1.40;
+    ps.emailDetails.meta.forEach(m => {
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: rightCardX + 0.25, y: metaY, w: rightCardW - 0.5, h: 0.38,
+        rectRadius: 0.05,
+        fill: { color: '0F172A' },
+        line: { color: COLORS.cardBorder, width: 1 }
+      });
+      slide.addText(m.label, {
+        x: rightCardX + 0.35, y: metaY + 0.05, w: 1.6, h: 0.28,
+        fontSize: 9, bold: true, color: COLORS.accentCyan, valign: 'middle'
+      });
+      slide.addText(m.val, {
+        x: rightCardX + 2.05, y: metaY + 0.05, w: rightCardW - 2.35, h: 0.28,
+        fontSize: 9.5, color: COLORS.textWhite, valign: 'middle'
+      });
+      metaY += 0.46;
+    });
+
+    // Security & Delivery Highlights
+    slide.addText('Key Architectural Highlights:', {
+      x: rightCardX + 0.25, y: metaY + 0.10, w: rightCardW - 0.5, h: 0.25,
+      fontSize: 11, bold: true, color: COLORS.primaryCoral
+    });
+    let hlY = metaY + 0.36;
+    ps.emailDetails.highlights.forEach(h => {
+      slide.addText(`✓  ${h}`, {
+        x: rightCardX + 0.25, y: hlY, w: rightCardW - 0.5, h: 0.22,
+        fontSize: 9.5, color: COLORS.textMuted
+      });
+      hlY += 0.24;
+    });
+
+    // Sample payload bar
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: rightCardX + 0.25, y: rightCardH + leftCardY - 0.50, w: rightCardW - 0.5, h: 0.35,
+      rectRadius: 0.05,
+      fill: { color: '090E17' },
+      line: { color: COLORS.cardBorder, width: 1 }
+    });
+    slide.addText(ps.emailDetails.payloadSample, {
+      x: rightCardX + 0.35, y: rightCardH + leftCardY - 0.50, w: rightCardW - 0.7, h: 0.35,
+      fontSize: 8.5, color: COLORS.accentEmerald, fontFace: 'Consolas', valign: 'middle'
+    });
+
+    slide.addText('Real Transactional Email Screenshot • Delivered via EmailJS • Verified in Gmail Mailbox', {
+      x: 0.8, y: 6.68, w: 11.73, h: 0.3,
+      fontSize: 9, italic: true, color: COLORS.accentCyan, align: 'center'
+    });
+
   } else {
-    slide.addText(`Screenshot file not found: ${ps.file}`, {
-      x: 1.0, y: 3.0, w: 11.33, h: 1.0,
-      fontSize: 16, color: COLORS.primaryCoral, align: 'center'
+    // ==========================================
+    // MATHEMATICALLY CENTERED 16:9 WIDESCREEN SLIDE
+    // Exact Width: 8.71" • Height: 4.90" • Centered X: 2.31"
+    // ==========================================
+    const frameX = 2.15;
+    const frameY = 1.50;
+    const frameW = 9.03;
+    const frameH = 5.08;
+
+    slide.addShape(pptx.ShapeType.roundRect, {
+      x: frameX, y: frameY, w: frameW, h: frameH,
+      rectRadius: 0.08,
+      fill: { color: COLORS.cardBg },
+      line: { color: COLORS.cardBorder, width: 1 }
+    });
+
+    if (fs.existsSync(imgPath)) {
+      slide.addImage({
+        path: imgPath,
+        x: 2.31, y: 1.58, w: 8.71, h: 4.90,
+        sizing: { type: 'contain', w: 8.71, h: 4.90 }
+      });
+    } else {
+      slide.addText(`Screenshot file not found: ${ps.file}`, {
+        x: 2.31, y: 3.0, w: 8.71, h: 1.0,
+        fontSize: 16, color: COLORS.primaryCoral, align: 'center'
+      });
+    }
+
+    slide.addText(`Real Application Screenshot • 1920×1080 Viewport • http://localhost:5000/${ps.file.replace(/^[0-9]+_/, '').replace('.png', '.html')}`, {
+      x: 0.8, y: 6.68, w: 11.73, h: 0.3,
+      fontSize: 9, italic: true, color: COLORS.textMuted, align: 'center'
     });
   }
-
-  slide.addText(`Real Application Screenshot • 1920×1080 Viewport • http://localhost:5000/${ps.file.replace(/^[0-9]+_/, '').replace('.png', '.html')}`, {
-    x: 0.8, y: 6.6, w: 11.7, h: 0.3,
-    fontSize: 9, italic: true, color: COLORS.textMuted, align: 'center'
-  });
 });
 
 // ==========================================
-// SECTION 6: NEW FEATURES ADDED (Slide 23)
+// SECTION 6: NEW FEATURES ADDED (Slide 25)
+// Mathematically Centered!
 // ==========================================
-console.log('Building Slide 23: Section 6 - New Features Added...');
-const slide23 = pptx.addSlide();
-addSlideHeader(slide23, '6', 'New Features Added & Innovative Capabilities', 'Visual showcase of production capabilities built beyond base requirement: Typo Search, WhatsApp AI Desk, Store Isolation, Dark Mode');
+console.log('Building Slide 25: Section 6 - New Features Added (Centered)...');
+const slide25 = pptx.addSlide();
+addSlideHeader(slide25, '6', 'New Features Added & Innovative Capabilities', 'Visual showcase of production capabilities built beyond base requirement: Typo Search, WhatsApp AI Desk, Store Isolation, Dark Mode');
+
+// Centered Framing Card
+slide25.addShape(pptx.ShapeType.roundRect, {
+  x: 2.15, y: 1.50, w: 9.03, h: 5.08,
+  rectRadius: 0.08,
+  fill: { color: COLORS.cardBg },
+  line: { color: COLORS.cardBorder, width: 1 }
+});
 
 const imgShowcase = path.join(SCREENSHOTS_DIR, '19_new_features_showcase.png');
 if (fs.existsSync(imgShowcase)) {
-  slide23.addImage({
+  slide25.addImage({
     path: imgShowcase,
-    x: 0.8, y: 1.6, w: 11.7, h: 4.8,
-    sizing: { type: 'contain', w: 11.7, h: 4.8 }
+    x: 2.31, y: 1.58, w: 8.71, h: 4.90,
+    sizing: { type: 'contain', w: 8.71, h: 4.90 }
   });
 }
 
-slide23.addText('Key Innovations: 1. Jaro-Winkler Typo Search • 2. 25-Intent WhatsApp AI Desk • 3. Store Data Isolation • 4. Adaptive Dark Mode', {
-  x: 0.8, y: 6.6, w: 11.7, h: 0.3,
+slide25.addText('Key Innovations: 1. Jaro-Winkler Typo Search • 2. 25-Intent WhatsApp AI Desk • 3. Store Data Isolation • 4. Adaptive Dark Mode', {
+  x: 0.8, y: 6.68, w: 11.73, h: 0.3,
   fontSize: 10, bold: true, color: COLORS.accentCyan, align: 'center'
 });
 
 // ==========================================
-// SECTION 7: IMPORTANT ALGORITHMS (Slide 24)
+// SECTION 7: IMPORTANT ALGORITHMS (Slide 26)
 // ==========================================
-console.log('Building Slide 24: Section 7 - Important Algorithms...');
-const slide24 = pptx.addSlide();
-addSlideHeader(slide24, '7', 'Important Algorithms & Core Engineering', 'Mathematical and algorithmic logic driving search similarity, cart billing, transactional integrity, and NLP classification');
+console.log('Building Slide 26: Section 7 - Important Algorithms...');
+const slide26 = pptx.addSlide();
+addSlideHeader(slide26, '7', 'Important Algorithms & Core Engineering', 'Mathematical and algorithmic logic driving search similarity, cart billing, transactional integrity, and NLP classification');
 
 const algorithms = [
   {
@@ -565,73 +807,73 @@ const algorithms = [
 ];
 
 algorithms.forEach((algo, idx) => {
-  const colX = idx % 2 === 0 ? 0.8 : 6.8;
+  const colX = idx % 2 === 0 ? 0.80 : 6.83;
   const colY = idx < 2 ? 1.65 : 4.25;
 
-  slide24.addShape(pptx.ShapeType.roundRect, {
-    x: colX, y: colY, w: 5.7, h: 2.35,
+  slide26.addShape(pptx.ShapeType.roundRect, {
+    x: colX, y: colY, w: 5.70, h: 2.38,
     rectRadius: 0.08,
     fill: { color: COLORS.cardBg },
     line: { color: COLORS.cardBorder, width: 1 }
   });
 
-  slide24.addShape(pptx.ShapeType.roundRect, {
+  slide26.addShape(pptx.ShapeType.roundRect, {
     x: colX + 0.2, y: colY + 0.15, w: 1.6, h: 0.26,
     rectRadius: 0.13,
     fill: { color: algo.color, transparency: 85 },
     line: { color: algo.color, width: 1 }
   });
-  slide24.addText(algo.badge, {
+  slide26.addText(algo.badge, {
     x: colX + 0.2, y: colY + 0.15, w: 1.6, h: 0.26,
     fontSize: 8.5, bold: true, color: algo.color,
     align: 'center', valign: 'middle'
   });
 
-  slide24.addText(algo.title, {
+  slide26.addText(algo.title, {
     x: colX + 1.9, y: colY + 0.12, w: 3.6, h: 0.32,
     fontSize: 12, bold: true, color: COLORS.textWhite
   });
 
-  slide24.addText(algo.desc, {
+  slide26.addText(algo.desc, {
     x: colX + 0.2, y: colY + 0.5, w: 5.3, h: 0.4,
     fontSize: 9.5, color: COLORS.textMuted
   });
 
   // Formula Card
-  slide24.addShape(pptx.ShapeType.roundRect, {
+  slide26.addShape(pptx.ShapeType.roundRect, {
     x: colX + 0.2, y: colY + 0.95, w: 5.3, h: 0.45,
     rectRadius: 0.05,
     fill: { color: '111827' },
     line: { color: COLORS.cardBorder, width: 1 }
   });
-  slide24.addText(algo.formula, {
+  slide26.addText(algo.formula, {
     x: colX + 0.3, y: colY + 0.95, w: 5.1, h: 0.45,
     fontSize: 9.5, bold: true, color: COLORS.accentCyan, valign: 'middle', fontFace: 'Consolas'
   });
 
-  slide24.addText(`Implementation: ${algo.impl}`, {
-    x: colX + 0.2, y: colY + 1.5, w: 5.3, h: 0.65,
+  slide26.addText(`Implementation: ${algo.impl}`, {
+    x: colX + 0.2, y: colY + 1.48, w: 5.3, h: 0.70,
     fontSize: 9, color: COLORS.textMuted
   });
 });
 
 // ==========================================
-// SECTION 8: MAJOR CHALLENGE FACED (Slide 25)
+// SECTION 8: MAJOR CHALLENGE FACED (Slide 27)
 // ==========================================
-console.log('Building Slide 25: Section 8 - Major Challenge Faced...');
-const slide25 = pptx.addSlide();
-addSlideHeader(slide25, '8', 'Major Engineering Challenge & Solution', 'Architectural breakdown of WhatsApp Cloud API integration, webhook authentication, and fallback resilience');
+console.log('Building Slide 27: Section 8 - Major Challenge Faced...');
+const slide27 = pptx.addSlide();
+addSlideHeader(slide27, '8', 'Major Engineering Challenge & Solution', 'Architectural breakdown of WhatsApp Cloud API integration, webhook authentication, and fallback resilience');
 
 // Left Column: The Challenge & Constraints
-slide25.addShape(pptx.ShapeType.roundRect, {
-  x: 0.8, y: 1.65, w: 5.6, h: 4.8,
+slide27.addShape(pptx.ShapeType.roundRect, {
+  x: 0.80, y: 1.65, w: 5.70, h: 4.80,
   rectRadius: 0.08,
   fill: { color: COLORS.cardBg },
   line: { color: COLORS.primaryCoral, width: 1.5 }
 });
 
-slide25.addText('⚠️ The Technical Challenge', {
-  x: 1.1, y: 1.85, w: 5.0, h: 0.35,
+slide27.addText('⚠️ The Technical Challenge', {
+  x: 1.05, y: 1.85, w: 5.2, h: 0.35,
   fontSize: 16, bold: true, color: COLORS.primaryCoral
 });
 
@@ -652,27 +894,27 @@ const challenges = [
 
 let chY = 2.3;
 challenges.forEach(ch => {
-  slide25.addText(ch.title, {
-    x: 1.1, y: chY, w: 5.0, h: 0.25,
+  slide27.addText(ch.title, {
+    x: 1.05, y: chY, w: 5.2, h: 0.25,
     fontSize: 11, bold: true, color: COLORS.textWhite
   });
-  slide25.addText(ch.desc, {
-    x: 1.1, y: chY + 0.25, w: 5.0, h: 0.72,
+  slide27.addText(ch.desc, {
+    x: 1.05, y: chY + 0.25, w: 5.2, h: 0.72,
     fontSize: 9.5, color: COLORS.textMuted
   });
   chY += 1.1;
 });
 
 // Right Column: Architectural Solution
-slide25.addShape(pptx.ShapeType.roundRect, {
-  x: 6.8, y: 1.65, w: 5.7, h: 4.8,
+slide27.addShape(pptx.ShapeType.roundRect, {
+  x: 6.83, y: 1.65, w: 5.70, h: 4.80,
   rectRadius: 0.08,
   fill: { color: COLORS.cardBg },
   line: { color: COLORS.accentEmerald, width: 1.5 }
 });
 
-slide25.addText('✅ Architectural Solution & Dual-Channel Resilience', {
-  x: 7.1, y: 1.85, w: 5.2, h: 0.35,
+slide27.addText('✅ Architectural Solution & Dual-Channel Resilience', {
+  x: 7.08, y: 1.85, w: 5.2, h: 0.35,
   fontSize: 16, bold: true, color: COLORS.accentEmerald
 });
 
@@ -693,28 +935,28 @@ const solutions = [
 
 let solY = 2.3;
 solutions.forEach(sol => {
-  slide25.addText(sol.title, {
-    x: 7.1, y: solY, w: 5.2, h: 0.25,
+  slide27.addText(sol.title, {
+    x: 7.08, y: solY, w: 5.2, h: 0.25,
     fontSize: 11, bold: true, color: COLORS.textWhite
   });
-  slide25.addText(sol.desc, {
-    x: 7.1, y: solY + 0.25, w: 5.2, h: 0.72,
+  slide27.addText(sol.desc, {
+    x: 7.08, y: solY + 0.25, w: 5.2, h: 0.72,
     fontSize: 9.5, color: COLORS.textMuted
   });
   solY += 1.1;
 });
 
-slide25.addText('Result: Zero downtime for end users • Instant fallback to browser AI desk if WhatsApp Cloud API is inaccessible.', {
-  x: 0.8, y: 6.6, w: 11.7, h: 0.3,
+slide27.addText('Result: Zero downtime for end users • Instant fallback to browser AI desk if WhatsApp Cloud API is inaccessible.', {
+  x: 0.8, y: 6.68, w: 11.73, h: 0.3,
   fontSize: 10, bold: true, color: COLORS.accentEmerald, align: 'center'
 });
 
 // ==========================================
-// SECTION 9: FUTURE ENHANCEMENTS (Slide 26)
+// SECTION 9: FUTURE ENHANCEMENTS (Slide 28)
 // ==========================================
-console.log('Building Slide 26: Section 9 - Future Enhancements...');
-const slide26 = pptx.addSlide();
-addSlideHeader(slide26, '9', 'Future Enhancements & Platform Roadmap', 'Strategic technical roadmap for high-scale microservices, automated logistics, and smart AI personalization');
+console.log('Building Slide 28: Section 9 - Future Enhancements...');
+const slide28 = pptx.addSlide();
+addSlideHeader(slide28, '9', 'Future Enhancements & Platform Roadmap', 'Strategic technical roadmap for high-scale microservices, automated logistics, and smart AI personalization');
 
 const futureItems = [
   {
@@ -750,41 +992,41 @@ const futureItems = [
 ];
 
 futureItems.forEach((fi, idx) => {
-  const colX = idx % 2 === 0 ? 0.8 : 6.8;
+  const colX = idx % 2 === 0 ? 0.80 : 6.83;
   const colY = 1.65 + Math.floor(idx / 2) * 1.55;
 
-  slide26.addShape(pptx.ShapeType.roundRect, {
-    x: colX, y: colY, w: 5.7, h: 1.4,
+  slide28.addShape(pptx.ShapeType.roundRect, {
+    x: colX, y: colY, w: 5.70, h: 1.40,
     rectRadius: 0.08,
     fill: { color: COLORS.cardBg },
     line: { color: COLORS.cardBorder, width: 1 }
   });
 
-  slide26.addShape(pptx.ShapeType.roundRect, {
+  slide28.addShape(pptx.ShapeType.roundRect, {
     x: colX + 0.15, y: colY + 0.15, w: 0.55, h: 0.35,
     rectRadius: 0.06,
     fill: { color: COLORS.primaryCoral, transparency: 85 },
     line: { color: COLORS.primaryCoral, width: 1 }
   });
-  slide26.addText(fi.num, {
+  slide28.addText(fi.num, {
     x: colX + 0.15, y: colY + 0.15, w: 0.55, h: 0.35,
     fontSize: 12, bold: true, color: COLORS.primaryCoral,
     align: 'center', valign: 'middle'
   });
 
-  slide26.addText(fi.title, {
+  slide28.addText(fi.title, {
     x: colX + 0.85, y: colY + 0.15, w: 4.6, h: 0.32,
     fontSize: 12, bold: true, color: COLORS.textWhite
   });
 
-  slide26.addText(fi.desc, {
-    x: colX + 0.85, y: colY + 0.48, w: 4.6, h: 0.8,
+  slide28.addText(fi.desc, {
+    x: colX + 0.85, y: colY + 0.48, w: 4.6, h: 0.80,
     fontSize: 9.5, color: COLORS.textMuted
   });
 });
 
-slide26.addText('Roadmap Timeline: Q1 2027 — Q4 2027 • Architectural Evolution from Monolith to Event-Driven Microservices', {
-  x: 0.8, y: 6.6, w: 11.7, h: 0.3,
+slide28.addText('Roadmap Timeline: Q1 2027 — Q4 2027 • Architectural Evolution from Monolith to Event-Driven Microservices', {
+  x: 0.8, y: 6.68, w: 11.73, h: 0.3,
   fontSize: 10, italic: true, color: COLORS.accentCyan, align: 'center'
 });
 

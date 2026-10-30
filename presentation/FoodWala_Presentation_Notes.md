@@ -1,6 +1,6 @@
 # FoodWala Project Presentation — Speaker Notes & Timing Plan
 
-**Total Slides**: 26 Slides  
+**Total Slides**: 28 Slides  
 **Target Duration**: 4 Minutes 30 Seconds (4.5 Minutes)  
 **Tone**: Technical, Confident, Full-Stack Architectural Focus  
 **Platform**: FoodWala — Bengaluru Food Discovery & Delivery Platform  
@@ -41,85 +41,93 @@
 
 ---
 
-### SECTION 5 — PAGE SCREENSHOTS (Slides 5 to 22)
+### SECTION 5 — PAGE SCREENSHOTS (Slides 5 to 24)
 **Rule**: Exactly 1 page per slide. 10 to 12 seconds per slide.  
 **Total Section 5 Time**: 1:35 – 3:35 (2 Minutes / 120 Seconds)
 
 #### Slide 5.1 — Home Page
-- **Time**: 1:35 – 1:45
+- **Time**: 1:35 – 1:41
 - **Script**: *"The home page features an interactive culinary video showcase, dynamic category carousels for Bengaluru specialties like Dosas and Biryanis, an instant search bar, and curated restaurant collections."*
 
 #### Slide 5.2 — Login Screen
-- **Time**: 1:45 – 1:52
+- **Time**: 1:41 – 1:47
 - **Script**: *"Our login screen authenticates users across three distinct roles: Customers, Restaurant Managers, and Delivery Partners, verified securely using Argon2id."*
 
 #### Slide 5.3 — Registration Screen
-- **Time**: 1:52 – 1:58
+- **Time**: 1:47 – 1:53
 - **Script**: *"The registration flow provides real-time client-side regex validation for 10-digit Indian mobile numbers and email addresses before hashing passwords on the server."*
 
-#### Slide 5.4 — Restaurant Discovery & Filters
-- **Time**: 1:58 – 2:05
+#### Slide 5.4 — Forgot Password Verification Email
+- **Time**: 1:53 – 2:00
+- **Script**: *"When a user initiates password recovery via `/api/auth/forgot-password`, our backend generates a cryptographically secure 6-digit OTP with a 15-minute TTL and dispatches a responsive HTML notification via EmailJS. Once verified, the password is re-hashed using Argon2id."*
+
+#### Slide 5.5 — Restaurant Discovery & Filters
+- **Time**: 2:00 – 2:06
 - **Script**: *"The discovery page allows multi-criteria filtering by cuisine, 4-star+ ratings, delivery time under 30 minutes, and pure-vegetarian preferences."*
 
-#### Slide 5.5 — Restaurant Menu & Item Customization
-- **Time**: 2:05 – 2:12
+#### Slide 5.6 — Restaurant Menu & Item Customization
+- **Time**: 2:06 – 2:12
 - **Script**: *"The menu page dynamically renders categorized dishes, live pricing, dish descriptions, dietary badges, and one-click add-to-cart counters."*
 
-#### Slide 5.6 — Food Search & Autocomplete
+#### Slide 5.7 — Food Search & Autocomplete
 - **Time**: 2:12 – 2:18
 - **Script**: *"The search engine features instant autocomplete suggestions powered by our Jaro-Winkler string similarity algorithm, handling typos in complex dish names."*
 
-#### Slide 5.7 — Cart Management
-- **Time**: 2:18 – 2:25
+#### Slide 5.8 — Cart Management
+- **Time**: 2:18 – 2:24
 - **Script**: *"The cart provides live item quantity increments, subtotal calculation, 5% GST breakdown, platform fees, and coupon application logic."*
 
-#### Slide 5.8 — Checkout & Delivery Address
-- **Time**: 2:25 – 2:32
+#### Slide 5.9 — Checkout & Delivery Address
+- **Time**: 2:24 – 2:30
 - **Script**: *"At checkout, users select from their saved address book, input optional delivery instructions for the rider, and review their order total."*
 
-#### Slide 5.9 — Payment Gateway Integration
-- **Time**: 2:32 – 2:38
+#### Slide 5.10 — Payment Gateway Integration
+- **Time**: 2:30 – 2:36
 - **Script**: *"Our payment interface integrates Razorpay for UPI, Net Banking, and Cards, alongside an instant Cash on Delivery option with transactional logging."*
 
-#### Slide 5.10 — Order Confirmation
-- **Time**: 2:38 – 2:45
+#### Slide 5.11 — Order Confirmation
+- **Time**: 2:36 – 2:42
 - **Script**: *"Upon payment completion, an atomic transaction issues a unique Order ID, generates a printable receipt, and triggers EmailJS delivery notifications."*
 
-#### Slide 5.11 — Live Order Tracking
-- **Time**: 2:45 – 2:52
+#### Slide 5.12 — Automated Email Order Receipt
+- **Time**: 2:42 – 2:49
+- **Script**: *"Immediately after order placement, our backend compiles an itemized transaction receipt containing the 5-digit Order ID, restaurant details, delivery address, GST breakdown, and estimated arrival time, automatically dispatched to the customer's verified inbox."*
+
+#### Slide 5.13 — Live Order Tracking
+- **Time**: 2:49 – 2:55
 - **Script**: *"Customers monitor their order in real time through a 5-stage visual progress pipeline: Order Placed, Confirmed, Food Prepared, Out for Delivery, and Delivered."*
 
-#### Slide 5.12 — Order History
-- **Time**: 2:52 – 2:58
+#### Slide 5.14 — Order History
+- **Time**: 2:55 – 3:01
 - **Script**: *"The order history archive displays previous orders with status badges, itemized receipts, and instant one-click re-ordering."*
 
-#### Slide 5.13 — User Profile & Settings
-- **Time**: 2:58 – 3:05
+#### Slide 5.15 — User Profile & Settings
+- **Time**: 3:01 – 3:07
 - **Script**: *"The profile module allows customers to update their personal details, phone numbers, and manage security settings."*
 
-#### Slide 5.14 — Saved Delivery Addresses
-- **Time**: 3:05 – 3:12
+#### Slide 5.16 — Saved Delivery Addresses
+- **Time**: 3:07 – 3:13
 - **Script**: *"Users can manage multiple delivery locations tagged as Home, Work, or Other, setting a primary address for one-click checkout."*
 
-#### Slide 5.15 — Super Admin Console
-- **Time**: 3:12 – 3:18
+#### Slide 5.17 — Super Admin Console
+- **Time**: 3:13 – 3:19
 - **Script**: *"The Super Admin console provides top-level analytics on total platform GMV, pending restaurant onboardings, active users, and system audit logs."*
 
-#### Slide 5.16 — Restaurant Manager Dashboard
-- **Time**: 3:18 – 3:25
+#### Slide 5.18 — Restaurant Manager Dashboard
+- **Time**: 3:19 – 3:25
 - **Script**: *"The Manager portal features strict store data isolation: managers only see incoming orders and menu items belonging exclusively to their specific outlet."*
 
-#### Slide 5.17 — Delivery Partner Fleet Portal
+#### Slide 5.19 — Delivery Partner Fleet Portal
 - **Time**: 3:25 – 3:30
 - **Script**: *"The rider portal enables delivery partners to update their GPS coordinates, accept delivery dispatches, and toggle order completion."*
 
-#### Slide 5.18 — WhatsApp 24/7 AI Assistance Desk
+#### Slide 5.20 — WhatsApp 24/7 AI Assistance Desk
 - **Time**: 3:30 – 3:35
 - **Script**: *"Our 24/7 AI Desk operates both via Meta WhatsApp Cloud API and an in-browser floating widget, answering questions and tracking orders autonomously."*
 
 ---
 
-### SECTION 6 — NEW FEATURES ADDED (Slide 23)
+### SECTION 6 — NEW FEATURES ADDED (Slide 25)
 - **Time**: 3:35 – 3:55 (20 Seconds)
 - **Visual**: 4 Feature Cards (Smart Search, WhatsApp AI Desk, Store Isolation, Dark Mode)
 - **Speaker Script**:  
@@ -127,7 +135,7 @@
 
 ---
 
-### SECTION 7 — IMPORTANT ALGORITHMS (Slide 24)
+### SECTION 7 — IMPORTANT ALGORITHMS (Slide 26)
 - **Time**: 3:55 – 4:10 (15 Seconds)
 - **Visual**: 4 Mathematical Formulas & Implementations
 - **Speaker Script**:  
@@ -135,7 +143,7 @@
 
 ---
 
-### SECTION 8 — MAJOR CHALLENGE FACED (Slide 25)
+### SECTION 8 — MAJOR CHALLENGE FACED (Slide 27)
 - **Time**: 4:10 – 4:20 (10 Seconds)
 - **Visual**: Dual-Panel Problem vs. Solution Architecture
 - **Speaker Script**:  
@@ -143,7 +151,7 @@
 
 ---
 
-### SECTION 9 — FUTURE ENHANCEMENTS (Slide 26)
+### SECTION 9 — FUTURE ENHANCEMENTS (Slide 28)
 - **Time**: 4:20 – 4:30 (10 Seconds)
 - **Visual**: 6 Strategic Roadmap Cards (WebSockets, AI Recommendations, PWA, Multi-Store Cart)
 - **Speaker Script**:  
@@ -152,6 +160,6 @@
 ---
 
 ## Presentation Checklist & Delivery Tips
-1. **Pacing**: Speak at ~130–140 words per minute. Do not rush Section 5—let each slide be visible for ~10 seconds.
-2. **Emphasis**: Emphasize that all 18 screenshots in Section 5 are from the **live running FoodWala application** on `http://localhost:5000`.
+1. **Pacing**: Speak at ~130–140 words per minute. Do not rush Section 5—let each slide be visible for ~6–7 seconds.
+2. **Emphasis**: Emphasize that all screenshots in Section 5 are from the **live running FoodWala application** on `http://localhost:5000` plus real transaction notification emails.
 3. **Demo Readiness**: Keep `http://localhost:5000` open in Chrome alongside the PowerPoint presentation in case the audience asks for a live test.
