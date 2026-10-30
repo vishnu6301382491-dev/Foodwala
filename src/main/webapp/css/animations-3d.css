@@ -2619,6 +2619,8 @@ footer i.bi-geo-alt {
 [data-bs-theme="dark"] .btn-outline-danger {
   color: #f87171 !important;
   border-color: #ef4444 !important;
+  background-color: transparent !important;
+  background: transparent !important;
 }
 [data-bs-theme="dark"] .btn-outline-danger:hover {
   background-color: #ef4444 !important;
@@ -2983,6 +2985,8 @@ body.zomato-mesh,
 .btn-outline-danger {
   color: #D92D20 !important;
   border-color: #D92D20 !important;
+  background-color: transparent !important;
+  background: transparent !important;
 }
 
 .btn-outline-danger:hover {
@@ -3115,6 +3119,8 @@ body.zomato-mesh,
 [data-bs-theme="dark"] .btn-outline-danger {
   color: #FF705D !important;
   border-color: #FF705D !important;
+  background-color: transparent !important;
+  background: transparent !important;
 }
 
 [data-bs-theme="dark"] .btn-outline-danger:hover {

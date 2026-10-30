@@ -179,7 +179,9 @@ class WhatsAppController {
     }
 
     if (sendResult?.success) {
-      console.log(`[WhatsApp] Message sent successfully`);
+      console.log(`[WhatsApp] Message sent successfully to Meta for +91 ${whatsappParser.maskPhone(msg.fromPhone10)}`);
+    } else if (sendResult?.metaCode === 131030) {
+      console.warn(`[WhatsApp SANDBOX ADVISORY] Recipient +91 ${msg.fromPhone10} is not yet on the Meta Sandbox allowed list (Meta Dashboard > WhatsApp > API Setup > To: Manage phone number list). AI response generated and persisted in MySQL.`);
     } else {
       console.error(`[WhatsApp ERROR] Message dispatch failed: ${sendResult?.error || 'Unknown error'}`);
     }

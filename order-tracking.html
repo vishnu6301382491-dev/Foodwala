@@ -19,6 +19,34 @@
   <link rel="stylesheet" href="./css/animations-3d.css">
   <!-- Theme Controller (Dark / Light Mode) -->
   <script src="./js/theme.js"></script>
+  <style>
+    /* High Contrast Pop Alert and Cart overrides */
+    #btn-trigger-pop, a[href="./cart.html"].btn-outline-danger {
+      background-color: transparent !important;
+      background: transparent !important;
+      color: #D92D20 !important;
+      border: 1.5px solid #D92D20 !important;
+      box-shadow: 0 1px 3px rgba(217, 45, 32, 0.12) !important;
+    }
+    #btn-trigger-pop:hover, a[href="./cart.html"].btn-outline-danger:hover {
+      background-color: #D92D20 !important;
+      background: #D92D20 !important;
+      color: #ffffff !important;
+    }
+    [data-bs-theme="dark"] #btn-trigger-pop,
+    [data-bs-theme="dark"] a[href="./cart.html"].btn-outline-danger {
+      background-color: transparent !important;
+      background: transparent !important;
+      color: #FF705D !important;
+      border: 1.5px solid #FF705D !important;
+    }
+    [data-bs-theme="dark"] #btn-trigger-pop:hover,
+    [data-bs-theme="dark"] a[href="./cart.html"].btn-outline-danger:hover {
+      background-color: #FF705D !important;
+      background: #FF705D !important;
+      color: #101418 !important;
+    }
+  </style>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100 fw-tracking-page">
 

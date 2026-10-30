@@ -31,7 +31,8 @@
   window.FOODWALA_CONFIG = {
     MODE: shouldRunMock ? 'mock' : 'live',
     API_BASE_URL: isLocalHost ? 'http://localhost:5000' : 'https://foodwala-backend.onrender.com',
-    DEMO_MODE: shouldRunMock
+    DEMO_MODE: shouldRunMock,
+    WHATSAPP_SUPPORT_NUMBER: '15551960307'
   };
 
   // Explicit demo mode indicator

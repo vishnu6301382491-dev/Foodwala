@@ -68,8 +68,9 @@ class WhatsAppParser {
         knownHotlines.add(this.normalizePhoneNumber(businessHotline).phone10);
       }
     }
-    // Include known hotline numbers and aliases to prevent bot echo loops
-    ['15551960307', '8500457005', '918500457005', '6301382491', process.env.SUPPORT_PHONE_NUMBER, process.env.ADMIN_PHONE, process.env.WHATSAPP_PHONE_NUMBER_ID].forEach(h => {
+    // Only suppress the bot's own hotline numbers/IDs to prevent bot echo loops.
+    // NEVER suppress customer or admin numbers (e.g. 6301382491 or 8500457005).
+    ['15551960307', process.env.SUPPORT_PHONE_NUMBER, process.env.WHATSAPP_PHONE_NUMBER_ID].forEach(h => {
       if (h) {
         const norm = this.normalizePhoneNumber(h).phone10;
         if (norm) knownHotlines.add(norm);

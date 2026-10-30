@@ -375,9 +375,9 @@ async function runTests() {
         value: {
           messaging_product: 'whatsapp',
           metadata: { display_phone_number: '15550234567', phone_number_id: '123456789' },
-          contacts: [{ profile: { name: 'FoodWala Support Desk' }, wa_id: '918500457005' }],
+          contacts: [{ profile: { name: 'FoodWala Support Desk' }, wa_id: '15551960307' }],
           messages: [{
-            from: '918500457005', // FoodWala Hotline
+            from: '15551960307', // FoodWala Official Hotline
             id: selfMsgId,
             timestamp: String(Math.floor(Date.now() / 1000)),
             text: { body: 'This is an outbound broadcast from our care desk' },

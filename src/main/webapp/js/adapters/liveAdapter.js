@@ -960,16 +960,31 @@
       const q = restaurantId ? `?restaurantId=${restaurantId}` : '';
       try {
         const res = await liveFetch(`/api/restaurant/orders${q}`, { headers: getAuthHeader() });
-        if (res.ok) return await res.json();
-        if (res.status === 404) {
-          unavailableEndpoints.add('restaurant_orders');
+        if (res.ok) {
+          const liveData = await res.json();
+          // Merge client-side/sandbox orders so none are missed (e.g. newly placed customer orders)
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && typeof window.FoodWalaAdapters.mock.getRestaurantOrders === 'function') {
+            try {
+              const mockData = await window.FoodWalaAdapters.mock.getRestaurantOrders(restaurantId);
+              if (mockData && Array.isArray(mockData.orders)) {
+                const liveIds = new Set((liveData.orders || []).map(o => String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '')));
+                const extraOrders = mockData.orders.filter(o => !liveIds.has(String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '')));
+                if (extraOrders.length > 0) {
+                  liveData.orders = [...extraOrders, ...(liveData.orders || [])];
+                  liveData.totalOrders = liveData.orders.length;
+                }
+              }
+            } catch (mergeErr) {}
+          }
+          return liveData;
+        }
+        if (res.status === 404 || res.status === 401 || res.status === 403) {
           if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
             return await window.FoodWalaAdapters.mock.getRestaurantOrders(restaurantId);
           }
         }
         handleHttpErrors(res);
       } catch (err) {
-        unavailableEndpoints.add('restaurant_orders');
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
           return await window.FoodWalaAdapters.mock.getRestaurantOrders(restaurantId);
         }

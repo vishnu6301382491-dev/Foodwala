@@ -1998,6 +1998,30 @@ const FoodWalaApp = (function () {
         setStorage('foodwala_mock_orders', mockOrders);
       } catch (e) {}
 
+      // Also sync to mock kitchen orders store for restaurant manager portal
+      try {
+        const kitchenOrders = getStorage('foodwala_mock_kitchen_orders', []);
+        if (Array.isArray(kitchenOrders)) {
+          const kIdx = kitchenOrders.findIndex(o => String(o.order_id || o.orderId || o.id).replace(/^#?FW-?/i, '') === cleanId);
+          if (kIdx > -1) {
+            kitchenOrders[kIdx] = newOrder;
+          } else {
+            kitchenOrders.unshift(newOrder);
+          }
+          setStorage('foodwala_mock_kitchen_orders', kitchenOrders);
+        }
+      } catch (e) {}
+
+      // Cross-tab notification ping
+      try {
+        localStorage.setItem('foodwala_order_placed_ping', Date.now().toString());
+        if (typeof BroadcastChannel !== 'undefined') {
+          const bc = new BroadcastChannel('foodwala_orders_channel');
+          bc.postMessage({ type: 'order_placed', order: newOrder });
+          bc.close();
+        }
+      } catch (e) {}
+
       // Dispatch global real-time event
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('foodwala:orderPlaced', { detail: newOrder }));

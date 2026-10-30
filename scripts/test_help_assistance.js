@@ -78,7 +78,7 @@ assert(cssContent.includes('.fw-help-pulse-dot'), 'CSS defines .fw-help-pulse-do
 console.log('\nTest 5: Verifying Smart Query handler response logic & WhatsApp number...');
 assert(helpJsContent.includes('Suresh Kumar') && helpJsContent.includes('Maruthi Nagar'), 'Order tracking logic references live valet Suresh Kumar and Maruthi Nagar.');
 assert(helpJsContent.includes('FOODWALA50'), 'Coupon logic references FOODWALA50 discount code.');
-assert(helpJsContent.includes('8500457005'), 'WhatsApp integration uses user verified number 8500457005.');
+assert(helpJsContent.includes('15551960307'), 'WhatsApp integration uses verified hotline 15551960307.');
 
 // Test 6: Verify Local Video Asset & Section Order
 console.log('\nTest 6: Verifying local video asset & section alignment in index.html...');

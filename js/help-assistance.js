@@ -20,7 +20,7 @@
     },
 
     getWhatsAppUrl: function(customText) {
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '8500457005' || '15551960307';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '15551960307';
       var text = customText || 'Hi FoodWala, I need assistance with my order';
       return 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent(text);
     },
@@ -29,7 +29,7 @@
       if (document.getElementById('fw-floating-help-btn')) return;
 
       var self = this;
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '8500457005' || '15551960307';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '15551960307';
 
       // 1. Floating WhatsApp Assistance Button (Opens Interactive WhatsApp AI Assistant)
       var waBtn = document.createElement('button');
@@ -39,7 +39,7 @@
       waBtn.setAttribute('data-bs-toggle', 'modal');
       waBtn.setAttribute('data-bs-target', '#foodwalaHelpModal');
       waBtn.setAttribute('aria-label', 'Open FoodWala 24/7 WhatsApp AI Assistant');
-      waBtn.setAttribute('title', 'FoodWala WhatsApp 24/7 AI Assistance (+1 (555) 196-0307 / 8500457005)');
+      waBtn.setAttribute('title', 'FoodWala WhatsApp 24/7 AI Assistance (+1 (555) 196-0307)');
       waBtn.innerHTML = [
         '<i class="bi bi-whatsapp fs-5"></i>',
         '<span>WhatsApp AI</span>'
@@ -91,7 +91,7 @@
         '          <div>',
         '            <h6 class="modal-title fw-bold lh-1 mb-1 text-white" id="foodwalaHelpModalLabel">FoodWala WhatsApp 24/7 AI Desk</h6>',
         '            <small class="text-white text-opacity-90 d-flex align-items-center gap-1" id="fw-help-header-sub" style="font-size: 0.75rem;">',
-        '              <span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +1 (555) 196-0307 / 8500457005 • Online',
+        '              <span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +1 (555) 196-0307 • Online',
         '            </small>',
         '          </div>',
         '        </div>',
@@ -175,7 +175,7 @@
         if (header) header.style.background = 'linear-gradient(135deg, #128C7E 0%, #075E54 100%)';
         if (icon) icon.innerHTML = '<i class="bi bi-whatsapp fs-5 text-success"></i>';
         if (title) title.textContent = 'FoodWala WhatsApp 24/7 AI Desk';
-        if (sub) sub.innerHTML = '<span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +1 (555) 196-0307 / 8500457005 • Online';
+        if (sub) sub.innerHTML = '<span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +1 (555) 196-0307 • Online';
         if (sendBtn) {
           sendBtn.className = 'btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 shadow-sm';
           sendBtn.style.background = '#25D366';
@@ -298,7 +298,7 @@
 
     handleSmartQuery: function(type, userLabel) {
       var queryMap = {
-        'whatsapp': 'How can I connect with FoodWala WhatsApp AI support assistance on 8500457005?',
+        'whatsapp': 'How can I connect with FoodWala WhatsApp AI support assistance on +1 (555) 196-0307?',
         'track_order': 'Where is my order?',
         'refund': 'What is your order cancellation and refund policy?',
         'coupon': 'What discount coupons and offers are available?',
@@ -316,12 +316,84 @@
       var q = (rawQuery || '').toLowerCase().trim();
       var waUrl = this.getWhatsAppUrl(rawQuery);
 
-      // 1. Greetings & Assistance Intents ("hi", "hello", "hey", "need assistance", etc.)
-      if (q === 'hi' || q === 'hello' || q === 'hey' || q.includes('assistance') || q.includes('help') || q.includes('foodwala')) {
+      // 1. Refund & Cancellation Policy (Must be checked BEFORE general order checks to prevent query hijacking)
+      if (q.includes('cancel') || q.includes('refund') || q.includes('cancellation') || q.includes('return') || q.includes('money back')) {
+        return [
+          '⚡ <strong>FoodWala Cancellation & Refund Policy</strong><br><br>',
+          '• <strong>Instant 60-Second Window</strong>: You can cancel free of charge within 60 seconds of placing an order for a 100% instant refund.<br>',
+          '• <strong>Kitchen Prep Cutoff</strong>: Once the restaurant begins cooking, cancellations are non-refundable to maintain food safety standards.<br>',
+          '• <strong>15-Minute Reversal</strong>: Approved refunds are credited directly to your original payment source (UPI / Card / NetBanking) within 15 minutes.<br>',
+          '• <strong>Delay Compensation</strong>: If food delivery exceeds 45 minutes beyond the promised ETA, automatic wallet compensation credits are issued.<br><br>',
+          '<div class="d-flex gap-2 flex-wrap">',
+          '  <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold text-white js-trigger-callback-action shadow-sm">📞 Speak to Care Supervisor</button>',
+          '  <a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> WhatsApp Care Desk</a>',
+          '</div>'
+        ].join('');
+      }
+
+      // 2. Coupon / Promo / Discount
+      if (q.includes('coupon') || q.includes('discount') || q.includes('50%') || q.includes('offer') || q.includes('promo') || q.includes('code') || q.includes('deal')) {
+        return [
+          '🎉 <strong>Special FoodWala Discount Active!</strong><br><br>',
+          'Use promo code <span class="badge bg-warning text-dark fs-6 px-2.5 py-1 shadow-sm">FOODWALA50</span> at checkout to receive <strong>Flat 50% OFF</strong> (up to ₹150) on all orders above ₹100.<br><br>',
+          '• <strong>Eligibility</strong>: Valid across all 105+ Bengaluru partner restaurants.<br>',
+          '• <strong>Instant Apply</strong>: Simply enter <code>FOODWALA50</code> in the checkout coupon box.<br><br>',
+          '<div class="d-flex gap-2 flex-wrap">',
+          '  <button type="button" class="btn btn-sm btn-warning rounded-pill fw-bold text-dark shadow-sm" onclick="navigator.clipboard && navigator.clipboard.writeText(\'FOODWALA50\'); window.FoodWalaApp && FoodWalaApp.showToast(\'Coupon FOODWALA50 copied to clipboard!\', \'success\');">📋 Copy Code FOODWALA50</button>',
+          '  <a href="./restaurants.html" class="btn btn-sm btn-outline-danger rounded-pill fw-bold text-decoration-none">Order Now</a>',
+          '</div>'
+        ].join('');
+      }
+
+      // 3. Request Callback / Human Escalation
+      if (q.includes('callback') || q.includes('call me') || q.includes('speak') || q.includes('supervisor') || q.includes('human')) {
+        return [
+          '📞 <strong>Priority Callback Request Logged!</strong><br><br>',
+          'A FoodWala care supervisor will call you within <strong>5–10 minutes</strong> at your registered phone number.<br><br>',
+          '<span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 rounded-pill fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Priority Ticket Logged</span>'
+        ].join('');
+      }
+
+      // 4. WhatsApp Support Details
+      if (q.includes('whatsapp') || q.includes('phone') || q.includes('hotline') || q.includes('agent') || q.includes('8500457005') || q.includes('15551960307')) {
+        return [
+          '📲 <strong>FoodWala WhatsApp 24/7 AI Helpline</strong><br><br>',
+          '• <strong>Verified WhatsApp Assistance</strong>: <code>+1 (555) 196-0307</code><br>',
+          '• <strong>Live Interactive Care</strong>: You are chatting with our AI assistant right now with 0s latency!<br>',
+          '• <strong>WhatsApp Direct Chat</strong>: Click below to open directly in WhatsApp:<br><br>',
+          '<a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp Chat</a>'
+        ].join('');
+      }
+
+      // 5. Change Address / Delivery Hub
+      if (q.includes('address') || q.includes('location') || q.includes('hub') || q.includes('area') || q.includes('pincode') || q.includes('where do you deliver')) {
+        return [
+          '📍 <strong>Delivery Address Management</strong><br><br>',
+          'FoodWala delivers across all major Bengaluru hubs including Maruthi Nagar, Koramangala, Indiranagar, HSR Layout, JP Nagar, Whitefield, and Malleshwaram.<br><br>',
+          'You can switch delivery hubs directly using the location selector in the top navigation bar, or manage saved home and work addresses.<br><br>',
+          '<a href="./addresses.html" class="btn btn-sm btn-outline-danger rounded-pill fw-bold text-decoration-none shadow-sm"><i class="bi bi-geo-alt-fill me-1"></i> Manage Addresses</a>'
+        ].join('');
+      }
+
+      // 6. Kitchen Hygiene & Food Safety
+      if (q.includes('hygiene') || q.includes('safety') || q.includes('clean') || q.includes('quality') || q.includes('fssai')) {
+        return [
+          '⭐ <strong>FoodWala Hygiene Standards</strong><br><br>',
+          '• 100% of partner kitchens are <strong>FSSAI certified</strong> with 40-point hygiene audits.<br>',
+          '• Daily temperature monitoring & sanitized preparation areas.<br>',
+          '• All orders are dispatched in <strong>tamper-evident thermal sealed packaging</strong>.<br>',
+          '• Contactless doorstep handover available on all orders.'
+        ].join('');
+      }
+
+      // 7. Greetings (Strict matching: standalone greetings only, not mixed queries like "help with order" or "FoodWala cancel")
+      var isPureGreeting = /^(hi|hello|hey|namaste|greetings|good\s+morning|good\s+afternoon|good\s+evening)(\s+foodwala)?(\s+team|\s+support)?[\s!.]*$/i.test(q) ||
+                           q === 'hi' || q === 'hello' || q === 'hey' || q === 'namaste' || q === 'help';
+      if (isPureGreeting) {
         return [
           '👋 <strong>Hello ' + (userName || 'Valued Customer') + '! Welcome to FoodWala 24/7 AI Care!</strong><br><br>',
           'How can I assist your food journey today?<br><br>',
-          '• <strong>🛵 Live Order Tracking</strong>: Enter your Order ID (e.g. <code>#FW1042</code>) or click <em>Track Order</em> below.<br>',
+          '• <strong>🛵 Live Order Tracking</strong>: Enter your Order ID (e.g. <code>#FW41486</code>) or click <em>Track Order</em> below.<br>',
           '• <strong>🏷️ Flat 50% Off</strong>: Use code <span class="badge bg-warning text-dark fw-bold">FOODWALA50</span> at checkout.<br>',
           '• <strong>⚡ 60-Second Instant Refund</strong>: Full refund within 60s of placing order.<br>',
           '• <strong>📞 Human Care Desk</strong>: Request a 5-minute priority callback anytime.<br><br>',
@@ -333,80 +405,57 @@
         ].join('');
       }
 
-      // 2. Coupon / Promo / Discount
-      if (q.includes('coupon') || q.includes('discount') || q.includes('50%') || q.includes('offer') || q.includes('promo')) {
-        return [
-          '🎉 <strong>Special FoodWala Discount Active!</strong><br><br>',
-          'Use promo code <span class="badge bg-warning text-dark fs-6 px-2.5 py-1 shadow-sm">FOODWALA50</span> at checkout to receive <strong>Flat 50% OFF</strong> (up to ₹150) on all orders above ₹199.<br><br>',
-          '<div class="d-flex gap-2">',
-          '  <button type="button" class="btn btn-sm btn-warning rounded-pill fw-bold text-dark shadow-sm" onclick="navigator.clipboard && navigator.clipboard.writeText(\'FOODWALA50\'); window.FoodWalaApp && FoodWalaApp.showToast(\'Coupon FOODWALA50 copied to clipboard!\', \'success\');">📋 Copy Code FOODWALA50</button>',
-          '  <a href="./restaurants.html" class="btn btn-sm btn-outline-danger rounded-pill fw-bold text-decoration-none">Order Now</a>',
-          '</div>'
-        ].join('');
-      }
+      // 8. Order Tracking (Specific tracking intents only; grounded in real customer data)
+      var isTrackIntent = q.includes('track') || q.includes('where is my') || q.includes('order status') ||
+                          q.includes('delivery status') || q.includes('eta') || /#?fw-?\d+/i.test(q) ||
+                          (q.includes('order') && (q.includes('my') || q.includes('find') || q.includes('show') || q.includes('check') || q.includes('help') || q.includes('support') || q.includes('with')));
 
-      // 3. Order Tracking (with live valet and destination telemetry)
-      if (q.includes('order') || q.includes('where') || q.includes('track') || q.includes('status') || q.includes('deliver')) {
+      if (isTrackIntent) {
+        var activeOrder = null;
+        try {
+          if (typeof window !== 'undefined' && window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.getAllOrders === 'function') {
+            var ordersList = window.FoodWalaApp.Orders.getAllOrders();
+            if (Array.isArray(ordersList) && ordersList.length > 0) activeOrder = ordersList[0];
+          }
+          if (!activeOrder && typeof localStorage !== 'undefined') {
+            var rawAppOrders = JSON.parse(localStorage.getItem('foodwala_orders') || '[]');
+            if (Array.isArray(rawAppOrders) && rawAppOrders.length > 0) activeOrder = rawAppOrders[0];
+          }
+        } catch(e) {}
+
+        if (activeOrder) {
+          var rawId = String(activeOrder.order_id || activeOrder.orderId || activeOrder.id || 'Active');
+          var cleanId = rawId.replace(/^#?FW-?/i, '');
+          var rName = activeOrder.restaurant_name || activeOrder.restaurantName || 'Bengaluru Restaurant';
+          var valetName = (activeOrder.deliveryPartner && activeOrder.deliveryPartner.name) || 'Suresh Kumar';
+          var valetPhone = (activeOrder.deliveryPartner && activeOrder.deliveryPartner.phone) || '+91 91234 56789';
+          var destination = activeOrder.delivery_address || activeOrder.deliveryAddress || 'Maruthi Nagar, Bengaluru';
+          var liveStatus = (activeOrder.status || 'PREPARING').toUpperCase();
+          var friendlyStatus = liveStatus === 'DELIVERED' ? 'Delivered 🎉' : (liveStatus === 'OUT_FOR_DELIVERY' || liveStatus === 'ON_THE_WAY' ? 'On the way 🚴' : 'Being Prepared in Kitchen 🍳');
+          var etaMins = activeOrder.etaMinutes || activeOrder.estimatedMinutes || 24;
+
+          return [
+            '🍽️ <strong>Live Order Tracking & Status</strong><br><br>',
+            '• <strong>Active Order</strong>: <span class="badge bg-danger rounded-pill px-2.5 py-1">#FW-' + cleanId + '</span> (' + rName + ')<br>',
+            '• <strong>Valet Assigned</strong>: <strong>' + valetName + '</strong> (📞 ' + valetPhone + ')<br>',
+            '• <strong>Destination</strong>: ' + destination + '<br>',
+            '• <strong>Status</strong>: ' + friendlyStatus + ' (ETA: ~' + etaMins + ' mins)<br><br>',
+            '<div class="d-flex gap-2 flex-wrap">',
+            '  <a href="./order-tracking.html?orderId=' + cleanId + '" class="btn btn-sm btn-danger rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-geo-alt-fill me-1"></i> Live 3D Tracking</a>',
+            '  <a href="./orders.html" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold text-decoration-none shadow-sm"><i class="bi bi-clock-history me-1"></i> Order History</a>',
+            '</div>'
+          ].join('');
+        }
+
+        // If customer has no active orders
         return [
           '🍽️ <strong>Live Order Tracking & Status</strong><br><br>',
-          '• <strong>Active Order</strong>: #FW80 (Central Tiffin Room - Shri Sagar)<br>',
-          '• <strong>Valet Assigned</strong>: <strong>Suresh Kumar</strong> (📞 98765 43210)<br>',
-          '• <strong>Destination</strong>: <strong>Maruthi Nagar</strong>, Bengaluru<br>',
-          '• <strong>Status</strong>: On the way 🚴 (Estimated: 12 mins)<br><br>',
+          'You currently do not have any active food orders in transit.<br><br>',
+          'Explore our 105+ partner restaurants and 750+ Bengaluru specialties to place your order!<br><br>',
           '<div class="d-flex gap-2 flex-wrap">',
-          '  <a href="./orders.html" class="btn btn-sm btn-danger rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-box-seam me-1"></i> View My Orders</a>',
-          '  <a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Track via WhatsApp</a>',
+          '  <a href="./restaurants.html" class="btn btn-sm btn-danger rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-shop me-1"></i> Browse Restaurants</a>',
+          '  <a href="./orders.html" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold text-decoration-none shadow-sm"><i class="bi bi-clock-history me-1"></i> Past Orders</a>',
           '</div>'
-        ].join('');
-      }
-
-      // 4. Refund & Cancellation
-      if (q.includes('cancel') || q.includes('refund') || q.includes('return') || q.includes('money')) {
-        return [
-          '⚡ <strong>FoodWala Cancellation & Refund Policy</strong><br><br>',
-          '• <strong>Instant 60-Second Window</strong>: You can cancel free of charge within 60 seconds of placing an order.<br>',
-          '• <strong>Kitchen Prep Cutoff</strong>: Once the restaurant begins cooking, cancellations are non-refundable to maintain food safety standards.<br>',
-          '• <strong>Refund Timeline</strong>: Approved refunds are credited to original payment source within 3–5 business days.<br><br>',
-          '<button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold text-white js-trigger-callback-action shadow-sm">📞 Speak to Care Supervisor</button>'
-        ].join('');
-      }
-
-      // 5. Change Address / Location
-      if (q.includes('address') || q.includes('location') || q.includes('hub') || q.includes('area')) {
-        return [
-          '📍 <strong>Delivery Address Management</strong><br><br>',
-          'You can switch delivery hubs directly using the location selector in the navigation bar, or manage saved home and work addresses.<br><br>',
-          '<a href="./addresses.html" class="btn btn-sm btn-outline-danger rounded-pill fw-bold text-decoration-none shadow-sm"><i class="bi bi-geo-alt-fill me-1"></i> Manage Addresses</a>'
-        ].join('');
-      }
-
-      // 6. Kitchen Hygiene
-      if (q.includes('hygiene') || q.includes('safety') || q.includes('clean') || q.includes('quality') || q.includes('fssai')) {
-        return [
-          '⭐ <strong>FoodWala Hygiene Standards</strong><br><br>',
-          '• 100% of partner kitchens are <strong>FSSAI certified</strong>.<br>',
-          '• Daily temperature monitoring & sanitized preparation areas.<br>',
-          '• All orders are dispatched in <strong>tamper-evident sealed packaging</strong>.'
-        ].join('');
-      }
-
-      // 7. WhatsApp Support Details
-      if (q.includes('whatsapp') || q.includes('phone') || q.includes('hotline') || q.includes('agent') || q.includes('8500457005')) {
-        return [
-          '📲 <strong>FoodWala WhatsApp 24/7 AI Helpline</strong><br><br>',
-          '• <strong>Verified WhatsApp Numbers</strong>: <code>8500457005</code> / <code>+1 (555) 196-0307</code><br>',
-          '• <strong>Live Interactive Care</strong>: You are chatting with our AI assistant right now with 0s latency!<br>',
-          '• <strong>WhatsApp Direct Chat</strong>: Click below to open directly in WhatsApp:<br><br>',
-          '<a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp Chat</a>'
-        ].join('');
-      }
-
-      // 8. Request Callback
-      if (q.includes('callback') || q.includes('call me') || q.includes('speak') || q.includes('supervisor')) {
-        return [
-          '📞 <strong>Priority Callback Request Logged!</strong><br><br>',
-          'A FoodWala care supervisor will call you within <strong>5–10 minutes</strong> at your registered phone number.<br><br>',
-          '<span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 rounded-pill fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Priority Ticket Logged</span>'
         ].join('');
       }
 
@@ -446,6 +495,10 @@
       if (typeof window !== 'undefined') {
         if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.API_BASE_URL) {
           apiBase = window.FOODWALA_CONFIG.API_BASE_URL;
+        } else if (window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          apiBase = 'http://localhost:5000';
+        } else if (window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          apiBase = 'http://localhost:5000';
         } else if (window.location && window.location.origin && window.location.origin.startsWith('http')) {
           apiBase = window.location.origin;
         } else {

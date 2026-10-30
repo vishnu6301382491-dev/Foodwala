@@ -39,6 +39,10 @@ STRICT RESPONSE RULES:
 5. Keep responses concise, warm, professional, with clean bullet points and natural emojis (🛵, 🍕, 💰, 🏷️, ✨).`;
 
 class AIService {
+  constructor() {
+    this._circuitBreakerOpenUntil = 0;
+  }
+
   get provider() {
     return (process.env.AI_PROVIDER || 'gemini').toLowerCase();
   }
@@ -401,8 +405,9 @@ class AIService {
       orderContext = await this.lookupLiveOrder(userPhone10, explicitOrderId, authenticatedUserId);
     }
 
-    // If external LLM API key configured (Gemini/OpenAI)
-    if (this.apiKey) {
+    // If external LLM API key configured (Gemini/OpenAI) and circuit breaker is closed
+    const isCircuitOpen = Date.now() < (this._circuitBreakerOpenUntil || 0);
+    if (this.apiKey && !isCircuitOpen) {
       try {
         if (this.provider === 'openai') {
           return await this._callOpenAI({ userPhone10, customerName, messageText, conversationHistory, orderContext, intent });
@@ -410,7 +415,8 @@ class AIService {
           return await this._callGemini({ userPhone10, customerName, messageText, conversationHistory, orderContext, intent });
         }
       } catch (err) {
-        console.warn('[AI Service] External LLM call failed, smoothly failing over to Built-in Engine:', err.message);
+        console.warn('[AI Service] External LLM call failed, opening circuit breaker for 60s and smoothly failing over to Built-in Engine:', err.message);
+        this._circuitBreakerOpenUntil = Date.now() + 60000;
       }
     }
 
@@ -459,7 +465,7 @@ class AIService {
       const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent('Hi FoodWala, I need assistance with my order')}`;
       return `💬 *FoodWala 24/7 Official WhatsApp Care Assistant*\n\n` +
              `You can connect directly with our WhatsApp AI Care Desk:\n` +
-             `• *WhatsApp Helpline:* +1 (711) 665-9122\n` +
+             `• *WhatsApp Helpline:* +1 (555) 196-0307\n` +
              `• *Instant Chat Link:* ${waLink}\n` +
              `• *Available Services:* Live GPS Order Tracking, 60-Second Instant Cancellations, Flat 50% Coupons, and Human Agent Priority Tickets.\n\n` +
              `Tap the link above or text *"Hi FoodWala"* to start chatting with our AI assistant on WhatsApp right away! 🛵✨`;
@@ -593,7 +599,7 @@ class AIService {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData)
         },
-        timeout: 3000
+        timeout: 6000
       }, (res) => {
         let data = '';
         res.on('data', chunk => data += chunk);
@@ -616,7 +622,7 @@ class AIService {
       });
 
       req.on('timeout', () => {
-        req.destroy(new Error('Gemini API request timed out (3s)'));
+        req.destroy(new Error('Gemini API request timed out (6s)'));
       });
       req.on('error', reject);
       req.write(postData);

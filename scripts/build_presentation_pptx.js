@@ -4,12 +4,13 @@ const fs = require('fs');
 
 const pptx = new PptxGenJS();
 
-// Set 16:9 Widescreen Layout (13.333 x 7.5 inches)
-pptx.layout = 'LAYOUT_16x9';
+// Set true 16:9 Widescreen Layout (13.333 x 7.5 inches)
+pptx.defineLayout({ name: 'WIDESCREEN_16_9', width: 13.333, height: 7.5 });
+pptx.layout = 'WIDESCREEN_16_9';
 pptx.author = 'FoodWala Engineering Team';
-pptx.company = 'FoodWala — Bengaluru Discovery & Delivery';
+pptx.company = 'FoodWala - Bengaluru Discovery and Delivery';
 pptx.title = 'FoodWala Project Presentation';
-pptx.subject = 'Comprehensive Project Demonstration & Architecture';
+pptx.subject = 'Comprehensive Project Demonstration and Architecture';
 
 // Design Theme Constants
 const COLORS = {
@@ -104,7 +105,7 @@ slide1.addText('PROJECT DEMONSTRATION', {
 
 slide1.addText('FoodWala — Bengaluru Food Discovery & Delivery Platform', {
   x: 1.0, y: 1.45, w: 11.33, h: 0.95,
-  fontSize: 32, bold: true, color: COLORS.textWhite
+  fontSize: 28, bold: true, color: COLORS.textWhite, wrap: true
 });
 
 // Mandatory ONE concise line definition
@@ -115,10 +116,10 @@ slide1.addShape(pptx.ShapeType.roundRect, {
   line: { color: COLORS.primaryCoral, width: 1.5 }
 });
 slide1.addText(
-  '"FoodWala is a full-stack Bengaluru food discovery and delivery platform that allows users to discover restaurants, search menus, place orders, make payments, and track deliveries in real time."',
+  '"FoodWala is a Java Full Stack food discovery and delivery platform built with Java Servlets, JSP, JDBC, and MySQL that allows users to discover restaurants, order food, make online payments, and track deliveries in real time."',
   {
     x: 1.2, y: 2.65, w: 10.93, h: 0.68,
-    fontSize: 15, italic: true, bold: true, color: COLORS.textWhite, valign: 'middle'
+    fontSize: 13.5, italic: true, bold: true, color: COLORS.textWhite, valign: 'middle', wrap: true
   }
 );
 
@@ -160,16 +161,16 @@ pillars.forEach((p, idx) => {
   });
 
   slide1.addText(p.icon, {
-    x: colX + 0.2, y: 3.95, w: pillarW - 0.4, h: 0.5,
-    fontSize: 26
+    x: colX + 0.2, y: 3.90, w: pillarW - 0.4, h: 0.45,
+    fontSize: 24
   });
   slide1.addText(p.title, {
-    x: colX + 0.2, y: 4.50, w: pillarW - 0.4, h: 0.45,
-    fontSize: 14, bold: true, color: COLORS.textWhite
+    x: colX + 0.2, y: 4.40, w: pillarW - 0.4, h: 0.45,
+    fontSize: 13, bold: true, color: COLORS.textWhite, wrap: true
   });
   slide1.addText(p.desc, {
-    x: colX + 0.2, y: 5.00, w: pillarW - 0.4, h: 1.35,
-    fontSize: 11, color: COLORS.textMuted
+    x: colX + 0.2, y: 4.90, w: pillarW - 0.4, h: 1.45,
+    fontSize: 10, color: COLORS.textMuted, wrap: true
   });
 });
 
@@ -187,34 +188,34 @@ addSlideHeader(slide2, '2', 'Tech Stack & System Architecture', 'Comprehensive f
 
 const techCategories = [
   {
-    badge: 'FRONTEND',
+    badge: 'FRONTEND & JSP',
     color: COLORS.accentCyan,
     x: 0.80, y: 1.65, w: 3.70, h: 2.45,
     items: [
       { name: 'HTML5 & CSS3', detail: 'Semantic layout, custom dark mode, variables' },
       { name: 'Bootstrap 5.3 & Icons', detail: 'Responsive grid, modals, offcanvas navigation' },
-      { name: 'Vanilla JavaScript (ES6+)', detail: 'Modular client state, fetch API, local storage' },
-      { name: 'Media & Culinary Audio', detail: 'HTML5 1080p WebM video & Web Audio API' }
+      { name: 'JSP & JSTL Templates', detail: 'Server-Side Rendering, dynamic expression language' },
+      { name: 'JavaScript (ES6+)', detail: 'Modular client state, fetch API, local storage' }
     ]
   },
   {
-    badge: 'BACKEND & APIS',
+    badge: 'JAVA BACKEND & SERVLETS',
     color: COLORS.accentEmerald,
     x: 4.81, y: 1.65, w: 3.70, h: 2.45,
     items: [
-      { name: 'Node.js (v24.17 LTS)', detail: 'High performance asynchronous event loop' },
-      { name: 'Express.js 4.x', detail: 'RESTful routes, controllers, and middleware' },
-      { name: 'Webhook Processor', detail: 'Meta WhatsApp raw body verification' },
-      { name: 'NLP Intent Engine', detail: '25-intent regex scoring and slot extraction' }
+      { name: 'Java (JDK 17 / 21)', detail: 'Core OOP business logic, robust multithreading' },
+      { name: 'Java Servlets (Jakarta)', detail: 'MVC Controller dispatching, session management' },
+      { name: 'DAO & Service Layer', detail: 'Clean separation of concerns, POJO models' },
+      { name: 'Apache Tomcat Server', detail: 'High-concurrency enterprise Servlet web container' }
     ]
   },
   {
-    badge: 'DATABASE & STORAGE',
+    badge: 'DATABASE & PERSISTENCE',
     color: COLORS.accentAmber,
     x: 8.83, y: 1.65, w: 3.70, h: 2.45,
     items: [
       { name: 'MySQL 9.7 Server', detail: '22 relational tables, InnoDB engine, ACID' },
-      { name: 'Connection Pool', detail: 'mysql2/promise with connection limits' },
+      { name: 'JDBC & Connection Pool', detail: 'Optimized DAO persistence with PreparedStatement' },
       { name: 'Foreign Key Integrity', detail: 'Cascading updates, constraints, normalized 3NF' },
       { name: 'Audit & Tracking', detail: 'order_status_history, login_history, activity_log' }
     ]
@@ -224,10 +225,10 @@ const techCategories = [
     color: COLORS.primaryCoral,
     x: 0.80, y: 4.35, w: 3.70, h: 2.45,
     items: [
-      { name: 'Argon2id Hashing', detail: 'State-of-the-art memory-hard password encryption' },
+      { name: 'Argon2id & BCrypt', detail: 'State-of-the-art memory-hard password encryption' },
       { name: 'Role-Based Access (RBAC)', detail: 'Super Admin, Store Manager, Rider, Customer' },
-      { name: 'Security Middleware', detail: 'Helmet headers, CORS, express-rate-limit' },
-      { name: 'Store Data Isolation', detail: 'Enforced tenant separation on all manager routes' }
+      { name: 'Servlet Filters & CORS', detail: 'CORSFilter, request validation, session guards' },
+      { name: 'Store Data Isolation', detail: 'Enforced tenant separation on manager routes' }
     ]
   },
   {
@@ -246,10 +247,10 @@ const techCategories = [
     color: COLORS.accentOrange,
     x: 8.83, y: 4.35, w: 3.70, h: 2.45,
     items: [
-      { name: 'Cloudflare Tunnel', detail: 'Zero-trust HTTPS tunnel for webhook intake' },
-      { name: 'Puppeteer Core', detail: 'End-to-end automated UI & screenshot testing' },
+      { name: 'Eclipse IDE (Java EE)', detail: 'Dynamic Web Project workspace & server runtime' },
+      { name: 'Apache Tomcat v9/v10', detail: 'Local & production Servlet deployment container' },
       { name: 'Git & GitHub Versioning', detail: 'Branching workflow, release version control' },
-      { name: 'Dotenv Configuration', detail: 'Secure environment variable management' }
+      { name: 'Cloudflare Tunnel', detail: 'Zero-trust HTTPS tunnel for webhook intake' }
     ]
   }
 ];
@@ -326,10 +327,10 @@ slide3.addText('Layered Architecture', {
 });
 
 const structHighlights = [
-  { title: 'Frontend Client Layer', desc: 'Modular HTML5 views, responsive Bootstrap 5.3 stylesheets, and dedicated client scripts (app.js, cart.js, search.js).' },
-  { title: 'Express Server Core', desc: 'REST controllers, security middleware (rate-limiter, helmet, cors), and unified error handlers in /server.' },
-  { title: 'Database Migrations', desc: 'MySQL relational DDL scripts in /database with 22 normalized tables and sample seed catalogs.' },
-  { title: 'AI & Automation Scripts', desc: 'WhatsApp intent classifiers, webhook listeners, Puppeteer test runners, and automated tools.' }
+  { title: 'Frontend & JSP Layer', desc: 'Server-rendered JSP templates, responsive Bootstrap 5.3 stylesheets, and client scripts (app.js, cart.js).' },
+  { title: 'Java Servlets (Controllers)', desc: 'com.tap.controller Servlets handling HTTP request routing, session lifecycle, and MVC dispatching.' },
+  { title: 'DAO & Service Layer', desc: 'com.tap.dao & daoimpl encapsulating parameterized SQL queries with JDBC connection pooling.' },
+  { title: 'Database & Transactions', desc: 'MySQL relational schema with 22 normalized tables and atomic InnoDB ACID transactions.' }
 ];
 
 let hlY = 2.25;
@@ -345,7 +346,7 @@ structHighlights.forEach(h => {
   hlY += 1.05;
 });
 
-slide3.addText('Caption: Frontend client files are strictly separated from Express REST controllers and MySQL database layer.', {
+slide3.addText('Caption: Architecture strictly decouples Java Servlets, Business Services, and JDBC DAOs from JSP & client views.', {
   x: 0.8, y: 6.65, w: 11.73, h: 0.3,
   fontSize: 10, italic: true, color: COLORS.accentAmber, align: 'center'
 });
@@ -484,6 +485,7 @@ const pageSlides = [
     title: 'Payment Gateway Integration — Razorpay & COD',
     caption: 'Integrated payment processing supporting Razorpay checkout modal (UPI, Debit/Credit cards, Net Banking) alongside Cash on Delivery options.',
     file: '09_payment_screen.png',
+    displayUrl: 'http://localhost:5000/checkout.html#payment',
     type: 'widescreen'
   },
   {
@@ -727,7 +729,8 @@ pageSlides.forEach(ps => {
       });
     }
 
-    slide.addText(`Real Application Screenshot • 1920×1080 Viewport • http://localhost:5000/${ps.file.replace(/^[0-9]+_/, '').replace('.png', '.html')}`, {
+    const displayUrl = ps.displayUrl || `http://localhost:5000/${ps.file.replace(/^[0-9]+_/, '').replace('.png', '.html')}`;
+    slide.addText(`Real Application Screenshot • 1920×1080 Viewport • ${displayUrl}`, {
       x: 0.8, y: 6.68, w: 11.73, h: 0.3,
       fontSize: 9, italic: true, color: COLORS.textMuted, align: 'center'
     });
@@ -776,7 +779,7 @@ const algorithms = [
     title: '1. Jaro-Winkler String Distance Algorithm',
     badge: 'FUZZY SEARCH',
     color: COLORS.accentCyan,
-    desc: 'Calculates transposition-aware string distance with common prefix bonus $l$ (max 4) and scaling factor $p = 0.1$:',
+    desc: 'Calculates transposition-aware string distance with common prefix bonus l (max 4) and scaling factor p = 0.1:',
     formula: 'Sim(s1, s2) = Jaro(s1, s2) + l * p * (1 - Jaro(s1, s2))',
     impl: 'Matches user queries with menu item names and restaurant titles even with character swaps and typos.'
   },
@@ -794,7 +797,7 @@ const algorithms = [
     color: COLORS.primaryCoral,
     desc: 'Multi-query transactional commit locking rows to prevent race conditions during checkout:',
     formula: 'START TRANSACTION -> INSERT order -> INSERT order_items -> DEDUCT coupon -> COMMIT',
-    impl: 'Guarantees that if payment or item creation fails, all changes rollback without orphan records.'
+    impl: 'Java JDBC transaction: con.setAutoCommit(false), atomic multi-table execution, and con.rollback() on failure.'
   },
   {
     title: '4. 25-Intent Rule-Based NLP Classification',
@@ -883,8 +886,8 @@ const challenges = [
     desc: 'WhatsApp Cloud API enforces a strict 24-hour service window. Outbound automated messages cannot reach users unless user-initiated within the timeframe or registered as approved business templates.'
   },
   {
-    title: 'SHA-256 HMAC Webhook Verification',
-    desc: 'Incoming webhook payloads from Meta require raw cryptographic signature verification (X-Hub-Signature-256). Express body-parser json parsing altered raw bytes, breaking signature validation.'
+    title: 'Servlet Stream Consumption & HMAC-SHA256 Verification',
+    desc: 'Incoming payment & webhook payloads require raw cryptographic signature verification (HMAC-SHA256). In standard Java Servlets, reading getInputStream() consumes the stream, preventing downstream parameter parsing.'
   },
   {
     title: 'Transient Tunnel Drops During Demos',
@@ -924,8 +927,8 @@ const solutions = [
     desc: 'Decoupled the AI intelligence layer into a shared standalone service. When WhatsApp API token expires or tunnel drops, the in-browser floating AI widget (#foodwalaHelpModal) provides 100% identical response capabilities.'
   },
   {
-    title: 'Raw Body Preserving Webhook Middleware',
-    desc: 'Configured custom verify middleware in express.json({ verify: (req, res, buf) => req.rawBody = buf }) to maintain exact byte fidelity for flawless crypto.createHmac verification.'
+    title: 'Custom CachedHttpServletRequestWrapper (Filter Pattern)',
+    desc: 'Engineered a Servlet Filter implementing HttpServletRequestWrapper to cache the raw byte stream in memory, enabling both HMAC-SHA256 crypto validation and JSON parameter extraction without stream exhaustion.'
   },
   {
     title: 'Self-Healing Cloudflare Tunnel Scripting',
@@ -1043,6 +1046,26 @@ pptx.writeFile({ fileName: pptxPath })
     console.log('✅ Successfully wrote presentation to:', pptxPath);
     fs.copyFileSync(pptxPath, rootPptxPath);
     console.log('✅ Copied presentation to root:', rootPptxPath);
+
+    // Overwrite all Downloads & Desktop variants so any shortcut/recent opens the clean presentation
+    const targets = [
+      'C:/Users/vishn/Downloads/FoodWala_Project_Presentation.pptx',
+      'C:/Users/vishn/Downloads/FoodWala_Project_Presentation (1).pptx',
+      'C:/Users/vishn/Downloads/FoodWala_Project_Presentation (2).pptx',
+      'C:/Users/vishn/Downloads/FoodWala_Project_Presentation (3).pptx',
+      'C:/Users/vishn/Downloads/FoodWala_Project_Presentation (4).pptx',
+      'C:/Users/vishn/Downloads/FoodWala_Project_Presentation_Fixed.pptx',
+      'C:/Users/vishn/OneDrive/Desktop/FoodWala_Project_Presentation.pptx'
+    ];
+
+    targets.forEach(target => {
+      try {
+        fs.copyFileSync(pptxPath, target);
+        console.log('✅ Copied presentation to:', target);
+      } catch (err) {
+        console.warn('⚠️ Could not copy to target:', target, err.message);
+      }
+    });
   })
   .catch(err => {
     console.error('❌ Failed to write presentation PPTX:', err);

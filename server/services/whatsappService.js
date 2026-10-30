@@ -81,15 +81,15 @@ class WhatsAppService {
   }
 
   /**
-   * Checks whether a phone number belongs to the business entity (loop prevention)
+   * Checks whether a phone number belongs to the business bot entity (loop prevention)
    */
   isBusinessNumber(phone) {
     if (!phone) return false;
     const digits = String(phone).replace(/\D/g, '');
     const phone10 = digits.length >= 10 ? digits.slice(-10) : digits;
-    const known = ['15551960307', '8500457005', '918500457005', '6301382491'];
+    // Only match the bot's own hotline and phone ID; never match customer or admin mobile numbers
+    const known = ['15551960307'];
     if (process.env.SUPPORT_PHONE_NUMBER) known.push(String(process.env.SUPPORT_PHONE_NUMBER).replace(/\D/g, ''));
-    if (process.env.ADMIN_PHONE) known.push(String(process.env.ADMIN_PHONE).replace(/\D/g, ''));
     if (process.env.WHATSAPP_PHONE_NUMBER_ID) known.push(String(process.env.WHATSAPP_PHONE_NUMBER_ID));
     return known.some(k => k && (k === digits || k.slice(-10) === phone10));
   }

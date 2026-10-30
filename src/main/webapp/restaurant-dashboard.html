@@ -1488,11 +1488,17 @@
     window.addEventListener('foodwala:orderPlaced', reloadKitchenOrders);
     window.addEventListener('foodwala:orderStatusChanged', reloadKitchenOrders);
     window.addEventListener('storage', (e) => {
-      if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_kitchen_orders') {
+      if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_kitchen_orders' || e.key === 'foodwala_order_placed_ping') {
         reloadKitchenOrders();
       }
     });
-    setInterval(reloadKitchenOrders, 15000);
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('foodwala_orders_channel');
+        bc.onmessage = () => { reloadKitchenOrders(); };
+      } catch (e) {}
+    }
+    setInterval(reloadKitchenOrders, 5000);
 
     function escapeHtml(text) {
       if (!text) return '';
