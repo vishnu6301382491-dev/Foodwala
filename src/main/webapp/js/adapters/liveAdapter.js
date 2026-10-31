@@ -274,8 +274,13 @@
           return data;
         }
 
-        // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/503/400)
-        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 400)) {
+        // If server explicitly reported SMS delivery failure or business validation error, return it directly to caller
+        if (data && (data.error === 'SMS_DELIVERY_FAILED' || data.success === false)) {
+          return data;
+        }
+
+        // Fallback for GitHub Pages only when endpoint is missing (404) or remote server is down without response
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && res.status === 404) {
           unavailableEndpoints.add('send-otp');
           return await window.FoodWalaAdapters.mock.sendOtp(rawPhone);
         }
@@ -297,7 +302,7 @@
 
     // 7. Verify OTP
     verifyOtp: async function (rawPhone, code) {
-      if (unavailableEndpoints.has('send-otp') || unavailableEndpoints.has('verify-otp')) {
+      if (unavailableEndpoints.has('verify-otp')) {
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
           return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
         }
@@ -323,8 +328,13 @@
           return data;
         }
 
-        // Fallback for GitHub Pages when remote Render is pending redeployment (returns 404/502/503/400)
-        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && (res.status === 404 || res.status === 502 || res.status === 503 || res.status === 400)) {
+        // If server responded with deliberate validation error (invalid OTP, expired OTP), return directly to caller
+        if (data && data.success === false) {
+          return data;
+        }
+
+        // Fallback for GitHub Pages only when remote endpoint is not found (404)
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock && res.status === 404) {
           unavailableEndpoints.add('verify-otp');
           return await window.FoodWalaAdapters.mock.verifyOtp(rawPhone, code);
         }

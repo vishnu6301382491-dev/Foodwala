@@ -722,12 +722,14 @@
         if (regOtpError) regOtpError.style.display = 'none';
         regOtpBoxes.forEach(b => b.value = '');
 
-        const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_mock_active_otp') || localStorage.getItem('foodwala_active_otp') || '{}') : {};
-        const codeToDisplay = otpCode || activeOtpObj.code || '123456';
         const regBadge = document.getElementById('reg-sandbox-otp-badge');
         const regNotice = document.getElementById('reg-otp-sandbox-notice');
-        if (regBadge) regBadge.textContent = codeToDisplay;
-        if (regNotice) regNotice.style.display = 'block';
+        if (otpCode) {
+          if (regBadge) regBadge.textContent = otpCode;
+          if (regNotice) regNotice.style.display = 'block';
+        } else {
+          if (regNotice) regNotice.style.display = 'none';
+        }
 
         startRegResendTimer(30);
 
@@ -747,10 +749,15 @@
           if (res && res.success) {
             regOtpBoxes.forEach(b => b.value = '');
             if (regOtpBoxes[0]) regOtpBoxes[0].focus();
-            const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
-            const activeCode = res.code || (res.otp ? String(res.otp) : null) || activeOtpObj.code || '123456';
             const regBadge = document.getElementById('reg-sandbox-otp-badge');
-            if (regBadge) regBadge.textContent = activeCode;
+            const regNotice = document.getElementById('reg-otp-sandbox-notice');
+            if (res.code || res.otp || res.devOtp) {
+              const activeCode = String(res.code || res.otp || res.devOtp);
+              if (regBadge) regBadge.textContent = activeCode;
+              if (regNotice) regNotice.style.display = 'block';
+            } else {
+              if (regNotice) regNotice.style.display = 'none';
+            }
             startRegResendTimer(30);
             FoodWalaApp.showToast('New verification OTP sent to your phone!', 'success');
           } else {

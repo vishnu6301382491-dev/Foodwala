@@ -215,6 +215,43 @@ public class SMSService {
                 .build();
 
         String lastError = null;
+        String otpRouteError = null;
+
+        // Method 0: If FAST2SMS_OTP_ID is configured, use official Smart OTP API (/dev/otp/send)
+        String otpId = getConfig("FAST2SMS_OTP_ID");
+        if (otpId != null && !otpId.isBlank()) {
+            try {
+                System.out.println("[FoodWala OTP] Trying Fast2SMS Smart OTP /dev/otp/send (otp_id: " + otpId + ")...");
+                String smartPayload = "{\"mobile\":\"" + raw10 + "\",\"otp_id\":\"" + otpId.trim() + "\",\"otp\":\"" + otp + "\"}";
+                HttpRequest smartReq = HttpRequest.newBuilder()
+                        .uri(URI.create("https://www.fast2sms.com/dev/otp/send"))
+                        .header("authorization", apiKey)
+                        .header("Content-Type", "application/json")
+                        .header("Accept", "application/json")
+                        .header("cache-control", "no-cache")
+                        .POST(HttpRequest.BodyPublishers.ofString(smartPayload))
+                        .build();
+
+                HttpResponse<String> smartRes = client.send(smartReq, HttpResponse.BodyHandlers.ofString());
+                int smartStatus = smartRes.statusCode();
+                String smartResBody = smartRes.body();
+
+                System.out.println("[FoodWala OTP] Fast2SMS Smart OTP status: " + smartStatus);
+                System.out.println("[FoodWala OTP] Fast2SMS Smart OTP response: " + smartResBody);
+
+                if (smartStatus >= 200 && smartStatus < 300 && smartResBody != null && smartResBody.contains("\"return\":true")) {
+                    String reqId = extractJsonValue(smartResBody, "request_id");
+                    System.out.println("[FoodWala OTP] Fast2SMS Smart OTP accepted. Request ID: " + reqId);
+                    System.out.println("[FoodWala OTP] OTP delivery successful -> Real SMS dispatched to mobile!");
+                    return SMSResult.success("fast2sms", reqId != null ? reqId : "fast2sms_smart_" + System.currentTimeMillis());
+                } else if (smartResBody != null) {
+                    lastError = extractFast2SMSError(smartResBody);
+                }
+            } catch (Exception e) {
+                System.err.println("[FoodWala OTP] Fast2SMS Smart OTP error: " + e.getMessage());
+                lastError = e.getMessage();
+            }
+        }
 
         // Method 1: POST to /dev/bulkV2 with header 'authorization' (route=otp)
         try {
@@ -241,7 +278,8 @@ public class SMSService {
                 System.out.println("[FoodWala OTP] OTP delivery successful -> Real SMS dispatched to mobile!");
                 return SMSResult.success("fast2sms", reqId != null ? reqId : "fast2sms_" + System.currentTimeMillis());
             } else if (resBody != null) {
-                lastError = extractFast2SMSError(resBody);
+                otpRouteError = extractFast2SMSError(resBody);
+                lastError = otpRouteError;
             }
         } catch (Exception e) {
             System.err.println("[FoodWala OTP] Fast2SMS POST route=otp error: " + e.getMessage());
@@ -350,7 +388,14 @@ public class SMSService {
             System.err.println("[FoodWala OTP] Fast2SMS GET fallback error: " + e.getMessage());
         }
 
-        String fullErr = "Fast2SMS Error: " + (lastError != null ? lastError : "Unable to deliver SMS through Fast2SMS");
+        String diagnosticAdvice = "";
+        if (otpRouteError != null && otpRouteError.contains("website verification")) {
+            diagnosticAdvice = " (Fast2SMS Code 996: Complete Website & Aadhaar KYC Verification on fast2sms.com to activate automated OTP API)";
+        } else if (lastError != null && lastError.contains("100 INR")) {
+            diagnosticAdvice = " (Fast2SMS Code 999: Account requires a minimum 100 INR transaction on fast2sms.com to enable API route)";
+        }
+
+        String fullErr = "Fast2SMS Error: " + (lastError != null ? lastError : "Unable to deliver SMS through Fast2SMS") + diagnosticAdvice;
         System.err.println("[FoodWala OTP] SMS delivery FAILED. Error: " + fullErr);
         return SMSResult.failure("fast2sms", fullErr, 400);
     }
@@ -537,6 +582,52 @@ public class SMSService {
             String fullErr = "MSG91 Error: " + (message != null ? message : responseBody);
             System.err.println("[FoodWala OTP] SMS delivery FAILED. Status: " + status + ", Error: " + fullErr);
             return SMSResult.failure("msg91", fullErr, status >= 400 ? status : 400);
+        }
+    }
+
+    /**
+     * Resend OTP via Fast2SMS Smart OTP Resend API (/dev/otp/resend)
+     * Allowed within a 10-minute window and capped at 5 attempts.
+     */
+    public SMSResult resendFast2SMS(String phone) {
+        if (isDevMode()) {
+            System.out.println("[FoodWala OTP] Resend OTP in dev mode for: " + phone);
+            return SMSResult.devSuccess("console");
+        }
+
+        String apiKey = getConfig("FAST2SMS_API_KEY");
+        if (apiKey == null || apiKey.isBlank()) {
+            return SMSResult.failure("fast2sms", "FAST2SMS_API_KEY missing", 401);
+        }
+
+        String raw10 = phone.replaceAll("[^0-9]", "");
+        if (raw10.length() > 10) raw10 = raw10.substring(raw10.length() - 10);
+
+        try {
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(12)).build();
+            String payload = "{\"mobile\":\"" + raw10 + "\"}";
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create("https://www.fast2sms.com/dev/otp/resend"))
+                    .header("authorization", apiKey)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("cache-control", "no-cache")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+
+            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            int status = res.statusCode();
+            String resBody = res.body();
+
+            if (status >= 200 && status < 300 && resBody != null && resBody.contains("\"return\":true")) {
+                String reqId = extractJsonValue(resBody, "request_id");
+                return SMSResult.success("fast2sms", reqId != null ? reqId : "fast2sms_resend_" + System.currentTimeMillis());
+            } else {
+                String err = extractFast2SMSError(resBody);
+                return SMSResult.failure("fast2sms", "Fast2SMS Resend Error: " + err, status >= 400 ? status : 400);
+            }
+        } catch (Exception e) {
+            return SMSResult.failure("fast2sms", "Fast2SMS Resend exception: " + e.getMessage(), 500);
         }
     }
 

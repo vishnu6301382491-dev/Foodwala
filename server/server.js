@@ -44,7 +44,7 @@ const APP_VERSION = require('./package.json').version || '1.0.0';
 const GIT_COMMIT = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'development';
 const HASH_SECRET = process.env.OTP_HASH_SECRET || crypto.randomBytes(32).toString('hex');
 const JWT_SECRET = process.env.JWT_SECRET || 'foodwala_secure_jwt_secret_2026_key_super_secret';
-const IS_DEV_MODE = process.env.OTP_DEV_MODE === 'true' || process.env.NODE_ENV !== 'production';
+const IS_DEV_MODE = process.env.OTP_DEV_MODE !== undefined ? process.env.OTP_DEV_MODE === 'true' : process.env.NODE_ENV !== 'production';
 
 // ---------------------------------------------------------------------------
 // 1. CORS CONFIGURATION (TOP OF SERVER BEFORE ALL ROUTES & EXPRESS.JSON)
@@ -1224,10 +1224,20 @@ app.post('/api/auth/send-otp', async (req, res) => {
     const hashed = hashOtp(normalized, otp);
     const expiresAt = now + (5 * 60 * 1000);
 
+    let smsResult;
     try {
-      await smsService.sendOtp('+91' + normalized, otp);
+      smsResult = await smsService.sendOtp('+91' + normalized, otp);
     } catch (smsErr) {
-      console.warn('[Send OTP SMS Warning]:', smsErr.message);
+      console.error('[Send OTP SMS Delivery Error]:', smsErr.message);
+      if (!IS_DEV_MODE && !smsService.isDevMode) {
+        return res.status(smsErr.statusCode >= 400 && smsErr.statusCode < 600 ? smsErr.statusCode : 502).json({
+          success: false,
+          error: 'SMS_DELIVERY_FAILED',
+          provider: smsService.provider,
+          message: smsErr.message || 'SMS provider rejected message'
+        });
+      }
+      smsResult = { success: true, isDevMode: true, provider: 'console_dev', messageId: 'dev_fallback_' + now };
     }
 
     otpStore.set(normalized, {
@@ -1237,15 +1247,23 @@ app.post('/api/auth/send-otp', async (req, res) => {
       lastSentAt: now
     });
 
+    const isCurrentDev = IS_DEV_MODE || (smsResult && smsResult.isDevMode);
     const responsePayload = {
       success: true,
-      message: 'OTP sent successfully to +91 ' + normalized,
+      message: isCurrentDev
+        ? 'Development OTP generated. Check server console.'
+        : 'OTP sent successfully to +91 ' + normalized,
       phone: normalized,
-      otp: otp,
-      devOtp: otp,
+      provider: (smsResult && smsResult.provider) || smsService.provider,
+      messageId: smsResult ? smsResult.messageId : undefined,
       expiresIn: 300,
       cooldownSeconds: 30
     };
+
+    if (isCurrentDev) {
+      responsePayload.otp = otp;
+      responsePayload.devOtp = otp;
+    }
 
     return res.json(responsePayload);
   } catch (err) {

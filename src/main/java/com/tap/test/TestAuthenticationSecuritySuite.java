@@ -138,11 +138,12 @@ public class TestAuthenticationSecuritySuite {
             total++;
             System.out.println("\n[TEST 5] Transparent Auto-upgrade of Legacy Hash");
             String legacyEmail = "legacy_test_" + System.currentTimeMillis() + "@foodwala.com";
+            String legacyPhone = "+91" + (7000000000L + (long)(Math.random() * 999999999L));
             // Correct SHA-256 of "LegacyPass123"
             String legacyPlain = "LegacyPass123";
             String legacyHash = "30d8b6c7521886df6f7f16fdec73ba09b8acdc3b04dba174befb5c4ca6f93ba6"; // Verified SHA-256
 
-            User legacyUser = new User("Legacy User", legacyHash, legacyEmail, "+919988776655", "Indiranagar", "CUSTOMER");
+            User legacyUser = new User("Legacy User", legacyHash, legacyEmail, legacyPhone, "Indiranagar", "CUSTOMER");
             int legacyUserId = userDAO.addUser(legacyUser);
 
             // Simulate LoginController check and upgrade

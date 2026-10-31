@@ -496,10 +496,10 @@
   <script src="./firebase-config.js"></script>
   <!-- API & Areas -->
   <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js?v=20261022_05"></script>
-  <script src="./js/adapters/mockAdapter.js?v=20261022_05"></script>
-  <script src="./js/adapters/liveAdapter.js?v=20261022_05"></script>
-  <script src="./js/api.js?v=20261022_05"></script>
+  <script src="./js/config.js?v=20261028_23"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261028_23"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261028_23"></script>
+  <script src="./js/api.js?v=20261028_23"></script>
   <script src="./js/emailService.js?v=20261022_05"></script>
   <script src="./js/google-auth.js?v=20261022_05"></script>
   <script src="./js/areas.js?v=20261022_05" defer></script>
@@ -507,7 +507,7 @@
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
   <script src="./js/ui.js?v=20261022_05" defer></script>
-  <script src="./js/app.js?v=20261022_05"></script>
+  <script src="./js/app.js?v=20261028_23"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -640,7 +640,7 @@
         if (emailInput) emailInput.placeholder = 'deliveryfoodwala@gmail.com';
         if (loginSubmitBtn) loginSubmitBtn.textContent = 'Access Delivery Hero Dashboard';
         if (signupPrompt) {
-          signupPrompt.innerHTML = 'Delivery fleet access &bull; <a href="./login.html" class="text-secondary fw-semibold">Customer Sign In</a>';
+          signupPrompt.innerHTML = '<span class="text-dark fw-semibold">New Delivery Hero?</span> <a href="./register.html?portal=partner" class="text-danger fw-bold text-decoration-none ms-1"><i class="bi bi-bicycle me-1"></i>Sign Up as Delivery Partner</a> &bull; <a href="./login.html" class="text-secondary fw-semibold ms-1">Customer Sign In</a>';
         }
       } else if (portalMode === 'restaurant') {
         selectedRole = 'restaurant';
@@ -841,20 +841,26 @@
             displayPhoneEl.textContent = '+91 ' + normalized;
           }
 
-          // Show Sandbox OTP notice and badge for convenient testing
+          // Show Sandbox OTP notice and badge ONLY if development/sandbox mode returned an OTP
           const sandboxNotice = document.getElementById('mobile-otp-sandbox-notice');
           const sandboxBadge = document.getElementById('mobile-sandbox-otp-badge');
-          const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
-          const activeCode = res.code || (res.otp ? String(res.otp) : null) || activeOtpObj.code || '123456';
-          if (sandboxBadge) sandboxBadge.textContent = activeCode;
-          if (sandboxNotice) sandboxNotice.style.display = 'block';
+          if (res.isDevMode || res.devOtp || res.otp) {
+            const activeCode = String(res.devOtp || res.otp || '123456');
+            if (sandboxBadge) sandboxBadge.textContent = activeCode;
+            if (sandboxNotice) sandboxNotice.style.display = 'block';
+          } else {
+            if (sandboxNotice) sandboxNotice.style.display = 'none';
+          }
 
           stepPhone.style.display = 'none';
           stepVerify.style.display = 'block';
           stepRegister.style.display = 'none';
 
           clearOtpBoxes();
-          FoodWalaApp.showToast('OTP sent successfully to your mobile number!', 'success');
+          const successMsg = (res.isDevMode || res.devOtp || res.otp)
+            ? 'Development OTP generated. Check server console or debug badge.'
+            : 'OTP sent successfully to your mobile number!';
+          FoodWalaApp.showToast(successMsg, 'success');
           otpBoxes[0].focus();
           startResendCountdown(30);
         } else {
@@ -1017,15 +1023,21 @@
         if (res.success) {
           const sandboxNotice = document.getElementById('mobile-otp-sandbox-notice');
           const sandboxBadge = document.getElementById('mobile-sandbox-otp-badge');
-          const activeOtpObj = window.localStorage ? JSON.parse(localStorage.getItem('foodwala_active_otp') || '{}') : {};
-          const activeCode = res.code || (res.otp ? String(res.otp) : null) || activeOtpObj.code || '123456';
-          if (sandboxBadge) sandboxBadge.textContent = activeCode;
-          if (sandboxNotice) sandboxNotice.style.display = 'block';
+          if (res.isDevMode || res.devOtp || res.otp) {
+            const activeCode = String(res.devOtp || res.otp || '123456');
+            if (sandboxBadge) sandboxBadge.textContent = activeCode;
+            if (sandboxNotice) sandboxNotice.style.display = 'block';
+          } else {
+            if (sandboxNotice) sandboxNotice.style.display = 'none';
+          }
 
           clearOtpBoxes();
           otpBoxes[0].focus();
           startResendCountdown(30);
-          FoodWalaApp.showToast('New OTP sent successfully!', 'success');
+          const resendSuccessMsg = (res.isDevMode || res.devOtp || res.otp)
+            ? 'Development OTP generated. Check server console or debug badge.'
+            : 'New OTP sent successfully!';
+          FoodWalaApp.showToast(resendSuccessMsg, 'success');
         } else {
           otpError.textContent = res.message || 'Unable to resend OTP. Please wait before trying again.';
           otpError.style.display = 'block';

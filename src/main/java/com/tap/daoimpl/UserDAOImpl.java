@@ -11,7 +11,7 @@ import com.tap.util.DBConnection;
 public class UserDAOImpl implements UserDAO {
 
     private static final String INSERT_QUERY =
-            "INSERT INTO `user` (username,password,email,phone,address,role) VALUES (?,?,?,?,?,?)";
+            "INSERT INTO `user` (username,password,password_hash,email,phone,address,role) VALUES (?,?,?,?,?,?,?)";
     private static final String GET_QUERY =
             "SELECT * FROM `user` WHERE user_id = ?";
     private static final String GET_BY_EMAIL_QUERY =
@@ -19,7 +19,7 @@ public class UserDAOImpl implements UserDAO {
     private static final String GET_BY_PHONE_QUERY =
             "SELECT * FROM `user` WHERE phone = ? OR phone = ? OR phone = ?";
     private static final String UPDATE_QUERY =
-            "UPDATE `user` SET username=?, password=?, email=?, phone=?, address=?, role=? WHERE user_id=?";
+            "UPDATE `user` SET username=?, password=?, password_hash=?, email=?, phone=?, address=?, role=? WHERE user_id=?";
     private static final String DELETE_QUERY =
             "DELETE FROM `user` WHERE user_id=?";
 
@@ -29,10 +29,11 @@ public class UserDAOImpl implements UserDAO {
              PreparedStatement ps = c.prepareStatement(INSERT_QUERY, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getPhone());
-            ps.setString(5, user.getAddress());
-            ps.setString(6, user.getRole());
+            ps.setString(3, user.getPassword());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getAddress());
+            ps.setString(7, user.getRole());
             int affected = ps.executeUpdate();
             if (affected > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -100,22 +101,24 @@ public class UserDAOImpl implements UserDAO {
              PreparedStatement ps = c.prepareStatement(UPDATE_QUERY)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getPhone());
-            ps.setString(5, user.getAddress());
-            ps.setString(6, user.getRole());
-            ps.setInt(7, user.getUserId());
+            ps.setString(3, user.getPassword());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getAddress());
+            ps.setString(7, user.getRole());
+            ps.setInt(8, user.getUserId());
             return ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); return 0; }
     }
 
     @Override
     public int updatePassword(int userId, String newPasswordHash) {
-        String sql = "UPDATE `user` SET password=? WHERE user_id=?";
+        String sql = "UPDATE `user` SET password=?, password_hash=? WHERE user_id=?";
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, newPasswordHash);
-            ps.setInt(2, userId);
+            ps.setString(2, newPasswordHash);
+            ps.setInt(3, userId);
             return ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,10 +175,19 @@ public class UserDAOImpl implements UserDAO {
     }
 
     private User mapUser(ResultSet rs) throws Exception {
+        String pwd = null;
+        try {
+            pwd = rs.getString("password_hash");
+        } catch (Exception ignored) {}
+        if (pwd == null || pwd.isBlank()) {
+            try {
+                pwd = rs.getString("password");
+            } catch (Exception ignored) {}
+        }
         return new User(
                 rs.getInt("user_id"),
                 rs.getString("username"),
-                rs.getString("password"),
+                pwd,
                 rs.getString("email"),
                 rs.getString("phone"),
                 rs.getString("address"),
