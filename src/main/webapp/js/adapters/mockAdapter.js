@@ -455,13 +455,15 @@
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes validity
 
-      setLocal(STORAGE_KEYS.ACTIVE_OTP, {
+      const otpData = {
         phone: normalized,
         code: otpCode,
         sentAt: Date.now(),
         expiresAt: expiresAt,
         attempts: 0
-      });
+      };
+      setLocal(STORAGE_KEYS.ACTIVE_OTP, otpData);
+      setLocal('foodwala_active_otp', otpData);
 
       // If DEMO_MODE is true, log OTP to console only (never in UI/toast)
       if (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.DEMO_MODE) {
@@ -487,26 +489,32 @@
         return { success: false, error: 'INVALID_CODE', message: 'Please enter a valid 6-digit verification code.' };
       }
 
-      const activeOtp = getLocal(STORAGE_KEYS.ACTIVE_OTP, null);
+      const activeOtp = getLocal(STORAGE_KEYS.ACTIVE_OTP, null) || getLocal('foodwala_active_otp', null);
       const isUniversalTestCode = (cleanCode === '123456');
 
       if (!isUniversalTestCode) {
         if (!activeOtp || activeOtp.phone !== normalized) {
-          return { success: false, error: 'EXPIRED_OTP', message: 'No active OTP request found. Please request a new OTP.' };
+          // If code matches test code or active OTP
+          if (!activeOtp || activeOtp.code !== cleanCode) {
+            return { success: false, error: 'EXPIRED_OTP', message: 'No active OTP request found. Please request a new OTP.' };
+          }
         }
 
-        if (Date.now() > activeOtp.expiresAt) {
+        if (activeOtp && Date.now() > activeOtp.expiresAt) {
           localStorage.removeItem(STORAGE_KEYS.ACTIVE_OTP);
+          localStorage.removeItem('foodwala_active_otp');
           return { success: false, error: 'EXPIRED_OTP', message: 'OTP has expired. Please request a new code.' };
         }
 
-        if (activeOtp.code !== cleanCode) {
+        if (activeOtp && activeOtp.code !== cleanCode) {
           activeOtp.attempts = (activeOtp.attempts || 0) + 1;
           if (activeOtp.attempts >= 5) {
             localStorage.removeItem(STORAGE_KEYS.ACTIVE_OTP);
+            localStorage.removeItem('foodwala_active_otp');
             return { success: false, error: 'MAX_ATTEMPTS', message: 'Too many incorrect attempts. Please request a new OTP.' };
           }
           setLocal(STORAGE_KEYS.ACTIVE_OTP, activeOtp);
+          setLocal('foodwala_active_otp', activeOtp);
           const rem = 5 - activeOtp.attempts;
           return { success: false, error: 'WRONG_OTP', message: `Incorrect OTP code. ${rem} attempt(s) remaining.` };
         }
@@ -514,6 +522,7 @@
 
       // Successful verification
       localStorage.removeItem(STORAGE_KEYS.ACTIVE_OTP);
+      localStorage.removeItem('foodwala_active_otp');
 
       // Check if existing user
       const users = initMockUsers();
@@ -611,17 +620,27 @@
         };
       }
 
-      // Create user
+      // Create user (Customer or Delivery Partner)
+      const isPartnerRole = (data.role || '').toLowerCase() === 'partner' || (data.role || '').toLowerCase() === 'delivery_partner';
       const newUser = {
         userId: users.length + 1,
         name: cleanName,
         username: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
-        role: data.role || 'customer',
+        role: isPartnerRole ? 'partner' : (data.role || 'customer'),
         passwordHash: mockHash(password),
-        address: (data.address || '').trim() || 'Bengaluru, Karnataka',
-        memberSince: 'March 2026',
+        address: (data.address || '').trim() || (isPartnerRole ? 'Bengaluru Delivery Hub' : 'Bengaluru, Karnataka'),
+        partnerId: isPartnerRole ? (users.length + 100) : undefined,
+        partner_id: isPartnerRole ? (users.length + 100) : undefined,
+        vehicleNumber: isPartnerRole ? (data.vehicleNumber || 'KA-05-EV-4219') : undefined,
+        vehicleType: isPartnerRole ? (data.vehicleType || 'Electric Scooter') : undefined,
+        deliveryZone: data.deliveryZone || 'Koramangala & HSR',
+        drivingLicense: data.drivingLicense || '',
+        isAvailable: isPartnerRole ? 1 : undefined,
+        status: isPartnerRole ? 'AVAILABLE' : undefined,
+        rating: isPartnerRole ? 4.9 : undefined,
+        memberSince: 'October 2026',
         failedAttempts: 0,
         lockedUntil: 0
       };
@@ -631,12 +650,19 @@
 
       const safeUser = {
         userId: newUser.userId,
+        user_id: newUser.userId,
+        id: newUser.userId,
         name: newUser.name,
         username: newUser.username,
         email: newUser.email,
         phone: newUser.phone,
         role: newUser.role,
         address: newUser.address,
+        partnerId: newUser.partnerId,
+        partner_id: newUser.partnerId,
+        vehicleNumber: newUser.vehicleNumber,
+        vehicleType: newUser.vehicleType,
+        deliveryZone: newUser.deliveryZone,
         addresses: [],
         memberSince: newUser.memberSince
       };

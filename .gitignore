@@ -43,10 +43,14 @@ scan-secrets.js
 .env.*
 server/.env
 sms.properties
+src/main/resources/sms.properties
+src/main/webapp/sms.properties
 src/main/webapp/WEB-INF/classes/sms.properties
 !server/.env.example
 !.env.example
 !sms.properties.example
+!src/main/resources/sms.properties.example
+!src/main/webapp/sms.properties.example
 
 # Database Backups & Dumps (Only migrations.sql is tracked)
 fudwala_backup.sql

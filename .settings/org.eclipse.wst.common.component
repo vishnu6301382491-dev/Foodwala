@@ -3,6 +3,7 @@
   <wb-module deploy-name="FoodWala">
     <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
     <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+    <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
     <property name="context-root" value="FoodWala"/>
     <property name="java-output-path" value="/FoodWala/build/classes"/>
   </wb-module>

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodWala 5-Minute Presentation Teleprompter & Pacing Simulator</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body {
+      background: var(--background, #090d16);
+      color: var(--foreground, #f1f5f9);
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .highlight-term {
+      color: #38bdf8;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .pulsing {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- Top Sticky Header: Timer & Pacing Status -->
+  <header class="sticky top-0 z-50 bg-[#0f172a]/95 backdrop-blur border-b border-slate-800 px-6 py-3.5 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-3">
+        <span class="p-2 bg-rose-600 rounded-xl text-white font-black text-base shadow-lg shadow-rose-600/30">FW</span>
+        <div>
+          <h1 class="text-base font-bold text-white flex items-center gap-2">
+            FoodWala 5-Minute Presentation Simulator
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">28 Slides</span>
+          </h1>
+          <p class="text-xs text-slate-400">Target: <strong class="text-emerald-400">4m 30s</strong> • Hard Stop: <strong class="text-rose-400">5m 00s</strong> (30s buffer)</p>
+        </div>
+      </div>
+
+      <!-- Live Clock & Controls -->
+      <div class="flex items-center gap-4">
+        
+        <!-- Digital Timer Card -->
+        <div class="bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-1.5 flex items-center gap-3 shadow-inner">
+          <div class="text-right">
+            <div class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Elapsed / Limit</div>
+            <div id="elapsedDisplay" class="font-mono text-xl font-black text-emerald-400">00:00</div>
+          </div>
+          <div class="h-8 w-[1px] bg-slate-700"></div>
+          <div class="text-left">
+            <div class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Remaining</div>
+            <div id="remainingDisplay" class="font-mono text-xl font-black text-cyan-400">05:00</div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex items-center gap-2">
+          <button id="toggleTimerBtn" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5">
+            <span id="playIcon">▶</span> <span id="playText">Start Timer</span>
+          </button>
+          <button id="resetTimerBtn" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+            ↺ Reset
+          </button>
+          <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer ml-2 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl">
+            <input type="checkbox" id="autoAdvanceToggle" class="rounded accent-rose-500">
+            <span>Auto-Advance</span>
+          </label>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Progress Timeline Bar -->
+    <div class="max-w-7xl mx-auto mt-2.5">
+      <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex relative">
+        <div id="timelineProgress" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+        <!-- 4:30 Target Marker Line -->
+        <div class="absolute top-0 bottom-0 left-[90%] w-0.5 bg-yellow-400 z-10" title="4m 30s Target Stop"></div>
+      </div>
+      <div class="flex justify-between text-[11px] text-slate-500 mt-1 font-mono">
+        <span>0:00 (Start)</span>
+        <span class="text-yellow-400 font-semibold">4:30 (Target Stop Line)</span>
+        <span class="text-rose-500 font-bold">5:00 (Hard Guillotine)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Workspace -->
+  <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 w-full">
+    
+    <!-- Left Sidebar: Slide Selector (4 Columns) -->
+    <section class="lg:col-span-4 bg-[#0f172a] border border-slate-800 rounded-2xl p-4 flex flex-col h-[750px] shadow-xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+        <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <span>📑</span> Slide Directory (9 Sections)
+        </h2>
+        <span id="currentSlideBadge" class="text-xs font-mono font-bold text-rose-400 bg-rose-950/60 px-2.5 py-0.5 rounded-full border border-rose-800/40">
+          Slide 1 / 28
+        </span>
+      </div>
+
+      <!-- Scrollable Slide List -->
+      <div id="slideListContainer" class="flex-1 overflow-y-auto custom-scroll space-y-1.5 pr-1">
+        <!-- Rendered by JavaScript -->
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="pt-3 border-t border-slate-800 flex justify-between items-center gap-2 mt-2">
+        <button id="prevSlideBtn" class="flex-1 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition">
+          ◀ Previous
+        </button>
+        <button id="nextSlideBtn" class="flex-1 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white rounded-xl shadow-lg shadow-rose-600/30 transition">
+          Next Slide ▶
+        </button>
+      </div>
+    </section>
+
+    <!-- Right Area: Prompter & Speaker Script (8 Columns) -->
+    <section class="lg:col-span-8 flex flex-col gap-6">
+      
+      <!-- Active Slide Teleprompter Card -->
+      <div class="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 shadow-xl flex-1 flex flex-col justify-between">
+        
+        <div>
+          <!-- Header Metadata -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800">
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="slideSectionTag" class="text-xs font-extrabold px-2.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  SECTION 1
+                </span>
+                <span id="slideTimingTag" class="text-xs font-mono text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40">
+                  0:00 – 0:20 (20s)
+                </span>
+              </div>
+              <h2 id="slideTitle" class="text-xl font-black text-white mt-2">
+                Project Introduction
+              </h2>
+            </div>
+            <div class="text-right">
+              <div class="text-[11px] text-slate-400 font-medium">Cadence Target</div>
+              <div id="slideWordCount" class="text-xs font-mono text-slate-300 font-bold">~52 words (~140 wpm)</div>
+            </div>
+          </div>
+
+          <!-- Spoken Script Display (Large Teleprompter Typography) -->
+          <div class="mt-5 space-y-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              Say This Out Loud:
+            </div>
+            <div id="slideScript" class="text-lg md:text-xl text-slate-100 leading-relaxed font-medium bg-slate-900/60 p-5 rounded-xl border border-slate-800/80 shadow-inner">
+              <!-- Inserted dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical Buzzwords & Transition Hook -->
+        <div class="mt-6 pt-4 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-3 bg-slate-900/40 rounded-xl border border-slate-800">
+            <span class="text-slate-400 font-bold uppercase text-[11px] block mb-1">Key Buzzwords to Stress</span>
+            <div id="slideKeywords" class="text-slate-200">
+              <!-- Inserted dynamically -->
+            </div>
+          </div>
+          <div class="p-3 bg-slate-900/40 rounded-xl border border-slate-800">
+            <span class="text-slate-400 font-bold uppercase text-[11px] block mb-1">Slide Transition Hook</span>
+            <p id="slideTransition" class="text-slate-300 italic">
+              <!-- Inserted dynamically -->
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Defense Q&A Cheat Sheet Accordion -->
+      <div class="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span>🛡️</span> High-Yield Panel Q&A Defense Quick-Cards (Sections 6, 7 & 8)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          
+          <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl">
+            <strong class="text-rose-400 block mb-1">Q1: Why Jaro-Winkler over Levenshtein?</strong>
+            <p class="text-slate-300 leading-normal">
+              Levenshtein weights all character edits equally. Jaro-Winkler applies prefix scaling ($p=0.1$ up to 4 chars), perfectly matching Indian cuisine misspellings where prefixes are typed correctly ('Dosha', 'Briyani').
+            </p>
+          </div>
+
+          <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl">
+            <strong class="text-cyan-400 block mb-1">Q2: How do you enforce Store Isolation?</strong>
+            <p class="text-slate-300 leading-normal">
+              Manager JWT sessions bind their verified <code class="text-cyan-300">restaurant_id</code>. Express middleware injects parameterized SQL queries (<code class="text-cyan-300">WHERE restaurant_id = ?</code>), preventing cross-store access.
+            </p>
+          </div>
+
+          <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl">
+            <strong class="text-emerald-400 block mb-1">Q3: How is checkout transaction-safe?</strong>
+            <p class="text-slate-300 leading-normal">
+              Wrapped in an explicit MySQL InnoDB transaction (<code class="text-emerald-300">START TRANSACTION</code>). Line items, payment records, and status history commit atomically, with automatic <code class="text-emerald-300">ROLLBACK</code> on any error.
+            </p>
+          </div>
+
+          <div class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl">
+            <strong class="text-amber-400 block mb-1">Q4: What if WhatsApp webhook drops?</strong>
+            <p class="text-slate-300 leading-normal">
+              Omnichannel dual-channel architecture. The 25-intent NLP engine is decoupled. If Meta's 24-hr window drops, the system falls back seamlessly to the in-app web widget with zero session loss.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Data Script & Controller -->
+  <script>
+    const SLIDES_DATA = [
+      {
+        id: 1,
+        sec: "SECTION 1",
+        title: "Project Introduction",
+        timeRange: "0:00 – 0:20 (20s)",
+        allocatedSeconds: 20,
+        words: "~55 words",
+        script: "Good morning respected panel members. Today I am presenting FoodWala, a full-stack Bengaluru food discovery and delivery platform that allows users to discover restaurants, search menus, place orders, make payments, and track deliveries in real time. We built FoodWala with three core architectural objectives: hyper-local search with Indian cuisine typo-tolerance, atomic ACID transactions for payment safety, and an omnichannel 24/7 AI support desk integrated with WhatsApp.",
+        keywords: "Full-stack platform, Bengaluru discovery, hyper-local, ACID transactions, omnichannel AI.",
+        transition: "Let us first examine the technology stack powering our application."
+      },
+      {
+        id: 2,
+        sec: "SECTION 2",
+        title: "Tech Stack & Architecture",
+        timeRange: "0:20 – 0:40 (20s)",
+        allocatedSeconds: 20,
+        words: "~58 words",
+        script: "Our system is built on a high-performance, modular stack. On the frontend, we use semantic HTML5, custom dark-mode CSS3, Bootstrap 5.3, and modular ES6 JavaScript without heavy SPA bloat. The backend runs on Node.js 20 LTS and Express.js REST controllers protected by Helmet security headers. For data persistence, we use MySQL 9.7 with 22 relational tables and connection pooling. Security is enforced using OWASP-standard Argon2id password hashing and role-based access control. Payments are integrated via Razorpay with Cash-on-Delivery fallback, and customer messaging leverages Meta's WhatsApp Cloud API alongside EmailJS notifications.",
+        keywords: "Node.js 20 LTS, Express REST controllers, MySQL 9.7 (22 tables), Argon2id, Razorpay, WhatsApp Cloud API.",
+        transition: "Here is how this architecture translates into our physical codebase directory."
+      },
+      {
+        id: 3,
+        sec: "SECTION 3",
+        title: "Project Structure",
+        timeRange: "0:40 – 0:55 (15s)",
+        allocatedSeconds: 15,
+        words: "~45 words",
+        script: "This screenshot illustrates our project directory structure, enforcing strict separation of concerns. Frontend views and client assets reside in /src/main/webapp and root HTML files. The Express backend is isolated in /server, cleanly divided into controllers, security middleware, and REST routes. Database migration and seed scripts are located in /database, while /scripts automates our headless Puppeteer E2E testing and presentation generation.",
+        keywords: "Separation of concerns, decoupled frontend/backend, database migrations, Puppeteer automation.",
+        transition: "Next, let's examine our relational database schema."
+      },
+      {
+        id: 4,
+        sec: "SECTION 4",
+        title: "Relational Database ER Diagram",
+        timeRange: "0:55 – 1:15 (20s)",
+        allocatedSeconds: 20,
+        words: "~52 words",
+        script: "This is our normalized 3NF database schema comprising 22 relational tables. The schema models core entities including user, restaurant, menu, orders, order_items, payment, and order_status_history. Notice the whatsapp_conversations and whatsapp_messages tables, which persist omnichannel customer support sessions. All foreign key constraints enforce cascade integrity, and lookup columns such as order_id and restaurant_id are fully indexed for sub-millisecond query performance.",
+        keywords: "Normalized 3NF, 22 tables, foreign key cascades, indexed lookup columns, WhatsApp persistence.",
+        transition: "Now, I will walk you through the user journey across our live application pages."
+      },
+      {
+        id: 5,
+        sec: "SECTION 5.1",
+        title: "Home Page",
+        timeRange: "1:15 – 1:21 (6s)",
+        allocatedSeconds: 6,
+        words: "~24 words",
+        script: "Our landing page greets users with an interactive culinary video showcase, dynamic category carousels for Bengaluru favorites like Dosas and Biryanis, an instant search bar, and curated restaurant collections.",
+        keywords: "Culinary video showcase, dynamic category carousels, instant search bar.",
+        transition: "Moving to user authentication..."
+      },
+      {
+        id: 6,
+        sec: "SECTION 5.2",
+        title: "Login Screen",
+        timeRange: "1:21 – 1:27 (6s)",
+        allocatedSeconds: 6,
+        words: "~22 words",
+        script: "The login portal authenticates three distinct roles: Customers, Restaurant Managers, and Delivery Partners, validating credentials securely against Argon2id salted hashes.",
+        keywords: "3-role switcher, Customer/Manager/Partner, Argon2id salted hashes.",
+        transition: "Next is customer onboarding..."
+      },
+      {
+        id: 7,
+        sec: "SECTION 5.3",
+        title: "Registration Screen",
+        timeRange: "1:27 – 1:33 (6s)",
+        allocatedSeconds: 6,
+        words: "~22 words",
+        script: "The sign-up page performs live regex validation for 10-digit Indian mobile numbers and email formatting, preventing duplicate accounts prior to server ingestion.",
+        keywords: "Live regex validation, 10-digit mobile, duplicate account prevention.",
+        transition: "For account security recovery..."
+      },
+      {
+        id: 8,
+        sec: "SECTION 5.4",
+        title: "Forgot Password Verification Email",
+        timeRange: "1:33 – 1:40 (7s)",
+        allocatedSeconds: 7,
+        words: "~28 words",
+        script: "For account recovery, our backend generates a cryptographically secure 6-digit OTP with a 15-minute time-to-live and dispatches a responsive HTML notification via EmailJS, seen here in a real customer inbox.",
+        keywords: "6-digit OTP, 15m TTL, EmailJS dispatch, Argon2id re-hashing.",
+        transition: "Once logged in, users explore restaurants..."
+      },
+      {
+        id: 9,
+        sec: "SECTION 5.5",
+        title: "Restaurant Discovery & Filters",
+        timeRange: "1:40 – 1:46 (6s)",
+        allocatedSeconds: 6,
+        words: "~24 words",
+        script: "The discovery page enables multi-criteria filtering across cuisines, pure vegetarian tags, delivery times under 30 minutes, and 4-star-plus ratings with real-time DOM re-rendering.",
+        keywords: "Multi-criteria filtering, veg tags, 4-star ratings, sub-30m delivery.",
+        transition: "Selecting an outlet opens its menu..."
+      },
+      {
+        id: 10,
+        sec: "SECTION 5.6",
+        title: "Restaurant Menu & Customization",
+        timeRange: "1:46 – 1:52 (6s)",
+        allocatedSeconds: 6,
+        words: "~20 words",
+        script: "The menu displays categorized dishes with high-definition imagery, dietary badges, live pricing, and synchronized add-to-cart counters.",
+        keywords: "Categorized dishes, dietary badges, synchronized add-to-cart.",
+        transition: "To find items quickly across menus..."
+      },
+      {
+        id: 11,
+        sec: "SECTION 5.7",
+        title: "Typo-Tolerant Instant Search",
+        timeRange: "1:52 – 1:58 (6s)",
+        allocatedSeconds: 6,
+        words: "~24 words",
+        script: "Here you see our typo-tolerant search in action: typing misspelled queries like 'dosha' or 'briyani' instantly resolves to Masala Dosa and Biryani via the Jaro-Winkler algorithm.",
+        keywords: "Typo-tolerant search, Jaro-Winkler algorithm, regional cuisine resilience.",
+        transition: "After adding dishes to the cart..."
+      },
+      {
+        id: 12,
+        sec: "SECTION 5.8",
+        title: "Cart Management",
+        timeRange: "1:58 – 2:04 (6s)",
+        allocatedSeconds: 6,
+        words: "~21 words",
+        script: "The cart dynamically calculates line-item totals, 5% GST tax breakdowns, delivery fees, and enforces promo code validation such as WELCOME50.",
+        keywords: "Dynamic totals, 5% GST breakdown, promo code engine.",
+        transition: "Proceeding to checkout..."
+      },
+      {
+        id: 13,
+        sec: "SECTION 5.9",
+        title: "Checkout & Delivery Address",
+        timeRange: "2:04 – 2:10 (6s)",
+        allocatedSeconds: 6,
+        words: "~19 words",
+        script: "During checkout, users select from saved addresses, provide optional rider instructions, and review their final billing breakdown.",
+        keywords: "Address selection, delivery instructions, billing breakdown.",
+        transition: "Selecting payment options..."
+      },
+      {
+        id: 14,
+        sec: "SECTION 5.10",
+        title: "Payment Gateway Integration",
+        timeRange: "2:10 – 2:16 (6s)",
+        allocatedSeconds: 6,
+        words: "~22 words",
+        script: "Our checkout integrates the Razorpay payment gateway supporting UPI, debit/credit cards, and net banking, alongside a reliable Cash on Delivery fallback.",
+        keywords: "Razorpay modal, UPI/Cards/NetBanking, COD fallback.",
+        transition: "Once payment completes..."
+      },
+      {
+        id: 15,
+        sec: "SECTION 5.11",
+        title: "Order Confirmation",
+        timeRange: "2:16 – 2:22 (6s)",
+        allocatedSeconds: 6,
+        words: "~22 words",
+        script: "Upon payment capture, the system generates a unique 5-digit Order ID, displays estimated preparation time, and provides an instant invoice download button.",
+        keywords: "5-digit Order ID, preparation countdown, instant invoice.",
+        transition: "Simultaneously in the customer's email..."
+      },
+      {
+        id: 16,
+        sec: "SECTION 5.12",
+        title: "Automated Email Order Receipt",
+        timeRange: "2:22 – 2:29 (7s)",
+        allocatedSeconds: 7,
+        words: "~26 words",
+        script: "Simultaneously, an automated email receipt is delivered to the customer's inbox—as shown in this live screenshot—listing Order #41486 from Vidyarthi Bhavan with full tax details.",
+        keywords: "Live email receipt, Order #41486, Vidyarthi Bhavan, tax invoice.",
+        transition: "Back in the browser, users track progress..."
+      },
+      {
+        id: 17,
+        sec: "SECTION 5.13",
+        title: "Live Order Tracking",
+        timeRange: "2:29 – 2:35 (6s)",
+        allocatedSeconds: 6,
+        words: "~21 words",
+        script: "Customers monitor order fulfillment via a visual 5-stage milestone tracker from Order Confirmed to Out for Delivery, complete with rider contact details.",
+        keywords: "5-stage tracker, milestone progress, rider contact details.",
+        transition: "For past order records..."
+      },
+      {
+        id: 18,
+        sec: "SECTION 5.14",
+        title: "Order History Archive",
+        timeRange: "2:35 – 2:41 (6s)",
+        allocatedSeconds: 6,
+        words: "~20 words",
+        script: "The order history archive displays historical orders, transaction status badges, downloadable receipts, and a one-click re-ordering action.",
+        keywords: "Order history, status badges, 1-click reorder.",
+        transition: "Managing user preferences..."
+      },
+      {
+        id: 19,
+        sec: "SECTION 5.15",
+        title: "User Profile & Security Settings",
+        timeRange: "2:41 – 2:47 (6s)",
+        allocatedSeconds: 6,
+        words: "~18 words",
+        script: "The customer profile module allows users to update contact details, change passwords, and manage active sessions.",
+        keywords: "Profile management, phone updates, session management.",
+        transition: "Saved addresses can also be managed..."
+      },
+      {
+        id: 20,
+        sec: "SECTION 5.16",
+        title: "Saved Address Management",
+        timeRange: "2:47 – 2:53 (6s)",
+        allocatedSeconds: 6,
+        words: "~22 words",
+        script: "Users can add, edit, or remove multiple delivery addresses categorized by Home, Work, or Other, specifying default locations for one-click checkout.",
+        keywords: "Address book CRUD, Home/Work tags, default address.",
+        transition: "Now switching to platform administration..."
+      },
+      {
+        id: 21,
+        sec: "SECTION 5.17",
+        title: "Super Admin Console",
+        timeRange: "2:53 – 2:59 (6s)",
+        allocatedSeconds: 6,
+        words: "~23 words",
+        script: "The Super Admin console provides top-level platform observability: total Gross Merchandise Value, platform commissions, active restaurants, and system audit logs.",
+        keywords: "Super Admin, GMV metrics, platform commissions, audit logs.",
+        transition: "For restaurant owners..."
+      },
+      {
+        id: 22,
+        sec: "SECTION 5.18",
+        title: "Restaurant Manager Dashboard",
+        timeRange: "2:59 – 3:05 (6s)",
+        allocatedSeconds: 6,
+        words: "~23 words",
+        script: "The Restaurant Manager dashboard isolates data by outlet: managers update item stock, accept or reject incoming live orders, and review daily store revenue.",
+        keywords: "Store isolation, live order queue, inventory toggles, daily revenue.",
+        transition: "For the delivery fleet..."
+      },
+      {
+        id: 23,
+        sec: "SECTION 5.19",
+        title: "Delivery Partner Fleet Portal",
+        timeRange: "3:05 – 3:10 (5s)",
+        allocatedSeconds: 5,
+        words: "~21 words",
+        script: "The Delivery Partner portal enables riders to accept dispatched deliveries, view customer GPS drop-offs, mark orders as delivered, and track daily trip earnings.",
+        keywords: "Rider dispatch, GPS delivery, mark delivered, trip earnings.",
+        transition: "And for customer support..."
+      },
+      {
+        id: 24,
+        sec: "SECTION 5.20",
+        title: "WhatsApp 24/7 AI Assistance Desk",
+        timeRange: "3:10 – 3:15 (5s)",
+        allocatedSeconds: 5,
+        words: "~22 words",
+        script: "Finally, our AI Assistance Desk operates dual-channel: directly inside WhatsApp using Meta's Cloud API and via an in-app widget to answer queries and track orders autonomously.",
+        keywords: "WhatsApp Cloud API, in-app widget, 25-intent NLP engine.",
+        transition: "Now let's examine the unique features we built beyond the base requirements."
+      },
+      {
+        id: 25,
+        sec: "SECTION 6",
+        title: "New Features Added (★ HIGH MARKS)",
+        timeRange: "3:15 – 3:40 (25s)",
+        allocatedSeconds: 25,
+        words: "~78 words",
+        script: "Beyond standard delivery portal requirements, we engineered four advanced architectural features: First, Typo-Tolerant Search: powered by Jaro-Winkler string similarity, correctly matching regional Indian dish variants even with two-character misspellings. Second, Omnichannel WhatsApp AI Support Desk: backed by a 25-intent NLP engine capable of parsing order statuses, menu recommendations, and refund queries 24/7. Third, Strict Multi-Tenant Store Isolation: role-based access control where restaurant managers can never access cross-store order data or sales analytics. And fourth, Adaptive Dark Mode and Culinary Audio Experience: an interactive video switcher with subtle culinary ambient audio to enhance user engagement.",
+        keywords: "Beyond standard requirements, Jaro-Winkler typo tolerance, 25-intent NLP engine, multi-tenant store isolation, adaptive dark mode.",
+        transition: "Let us now dive into the mathematical algorithms powering these systems."
+      },
+      {
+        id: 26,
+        sec: "SECTION 7",
+        title: "Important Algorithms (★ HIGH MARKS)",
+        timeRange: "3:40 – 4:05 (25s)",
+        allocatedSeconds: 25,
+        words: "~76 words",
+        script: "Four core algorithms power FoodWala: 1. Jaro-Winkler String Distance: We calculate character matching within window half max length minus 1, and apply a prefix scaling factor p=0.1 for up to 4 leading characters, boosting matching accuracy for regional cuisine names. 2. Deterministic Cart Billing Engine: Computes subtotal, tiered 5% GST, capped discount vouchers, and packaging fees with half-up integer rounding to eliminate floating-point discrepancies. 3. ACID MySQL Transaction Pipeline: Enforces atomic execution using START TRANSACTION, row-level locking, and transactional rollback protection across order items, payments, and audit tables. 4. 25-Intent NLP Classification Engine: Tokenizes customer input, computes weighted keyword confidence scores, and extracts 5-digit order ID entities using regex slot extraction.",
+        keywords: "Jaro-Winkler prefix bonus, half-up integer rounding, ACID transaction pipeline, regex slot extraction.",
+        transition: "Now, I'd like to share the biggest technical challenge we overcame during development."
+      },
+      {
+        id: 27,
+        sec: "SECTION 8",
+        title: "Major Challenge Faced (★ HIGH MARKS)",
+        timeRange: "4:05 – 4:20 (15s)",
+        allocatedSeconds: 15,
+        words: "~58 words",
+        script: "Our primary engineering hurdle was integrating Meta's WhatsApp Cloud API. Meta enforces a strict 24-hour customer messaging window and HMAC SHA-256 webhook signatures, while local tunneling tools occasionally dropped connections during testing. We solved this by architecting a decoupled dual-channel fallback system: the 25-intent NLP engine was extracted into an independent micro-service. If Meta's webhook fails or the 24-hour window closes, the platform automatically routes the conversation to our in-browser web assistance widget with zero session loss.",
+        keywords: "24-hour messaging window, HMAC SHA-256 signature, decoupled dual-channel fallback, zero session loss.",
+        transition: "Finally, here is our roadmap for future development."
+      },
+      {
+        id: 28,
+        sec: "SECTION 9",
+        title: "What You'll Add Next & Conclusion",
+        timeRange: "4:20 – 4:30 (10s)",
+        allocatedSeconds: 10,
+        words: "~36 words",
+        script: "In future releases, we plan to implement bidirectional WebSocket live rider GPS tracking, collaborative-filtering meal recommendations, offline Progressive Web App caching, and vernacular Kannada voice ordering. Thank you for your time, and I am now ready for your questions!",
+        keywords: "WebSocket rider tracking, collaborative filtering, offline PWA, Kannada voice ordering.",
+        transition: "Ready for Panel Q&A!"
+      }
+    ];
+
+    let currentSlideIdx = 0;
+    let timerInterval = null;
+    let isRunning = false;
+    let elapsedSeconds = 0;
+    const MAX_SECONDS = 300; // 5 minutes
+    const TARGET_SECONDS = 270; // 4 minutes 30 seconds
+    let slideTimer = 0;
+
+    // Elements
+    const elapsedDisplay = document.getElementById('elapsedDisplay');
+    const remainingDisplay = document.getElementById('remainingDisplay');
+    const timelineProgress = document.getElementById('timelineProgress');
+    const toggleTimerBtn = document.getElementById('toggleTimerBtn');
+    const resetTimerBtn = document.getElementById('resetTimerBtn');
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+    const autoAdvanceToggle = document.getElementById('autoAdvanceToggle');
+    const slideListContainer = document.getElementById('slideListContainer');
+    const prevSlideBtn = document.getElementById('prevSlideBtn');
+    const nextSlideBtn = document.getElementById('nextSlideBtn');
+    const currentSlideBadge = document.getElementById('currentSlideBadge');
+
+    const slideSectionTag = document.getElementById('slideSectionTag');
+    const slideTimingTag = document.getElementById('slideTimingTag');
+    const slideTitle = document.getElementById('slideTitle');
+    const slideWordCount = document.getElementById('slideWordCount');
+    const slideScript = document.getElementById('slideScript');
+    const slideKeywords = document.getElementById('slideKeywords');
+    const slideTransition = document.getElementById('slideTransition');
+
+    // Format mm:ss
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    // Render Slide Directory List
+    function renderSlideList() {
+      slideListContainer.innerHTML = '';
+      SLIDES_DATA.forEach((slide, idx) => {
+        const item = document.createElement('button');
+        const isActive = idx === currentSlideIdx;
+        item.className = `w-full text-left p-2.5 rounded-xl border transition flex items-center justify-between text-xs ${
+          isActive 
+            ? 'bg-rose-950/70 border-rose-600 text-white shadow-md' 
+            : 'bg-slate-900/60 border-slate-800/80 text-slate-300 hover:bg-slate-800'
+        }`;
+        item.onclick = () => selectSlide(idx);
+        
+        item.innerHTML = `
+          <div class="truncate mr-2">
+            <span class="font-mono text-[11px] font-bold ${isActive ? 'text-rose-400' : 'text-slate-500'}">#${slide.id}</span>
+            <span class="font-medium ml-1">${slide.title}</span>
+          </div>
+          <span class="text-[10px] font-mono shrink-0 ${isActive ? 'text-rose-300' : 'text-slate-500'}">${slide.allocatedSeconds}s</span>
+        `;
+        slideListContainer.appendChild(item);
+      });
+    }
+
+    // Load active slide data
+    function selectSlide(idx) {
+      currentSlideIdx = idx;
+      slideTimer = 0;
+      const data = SLIDES_DATA[idx];
+
+      currentSlideBadge.innerText = `Slide ${data.id} / 28`;
+      slideSectionTag.innerText = data.sec;
+      slideTimingTag.innerText = data.timeRange;
+      slideTitle.innerText = data.title;
+      slideWordCount.innerText = `${data.words} (~140 wpm)`;
+      
+      // Highlight terms in script
+      let formattedScript = data.script;
+      const terms = ["FoodWala", "Jaro-Winkler", "Argon2id", "MySQL 9.7", "22 relational tables", "ACID", "START TRANSACTION", "ROLLBACK", "COMMIT", "WhatsApp Cloud API", "EmailJS", "Order #41486", "Vidyarthi Bhavan", "25-intent NLP engine", "store isolation", "Razorpay"];
+      terms.forEach(t => {
+        const regex = new RegExp(`(${t})`, 'gi');
+        formattedScript = formattedScript.replace(regex, '<span class="highlight-term">$1</span>');
+      });
+
+      slideScript.innerHTML = formattedScript;
+      slideKeywords.innerText = data.keywords;
+      slideTransition.innerText = data.transition;
+
+      renderSlideList();
+
+      // Scroll active item into view
+      const activeBtn = slideListContainer.children[idx];
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // Next / Previous
+    prevSlideBtn.onclick = () => {
+      if (currentSlideIdx > 0) selectSlide(currentSlideIdx - 1);
+    };
+    nextSlideBtn.onclick = () => {
+      if (currentSlideIdx < SLIDES_DATA.length - 1) selectSlide(currentSlideIdx + 1);
+    };
+
+    // Timer Tick
+    function tick() {
+      elapsedSeconds++;
+      slideTimer++;
+
+      const remaining = Math.max(0, MAX_SECONDS - elapsedSeconds);
+      elapsedDisplay.innerText = formatTime(elapsedSeconds);
+      remainingDisplay.innerText = formatTime(remaining);
+
+      // Timeline percentage
+      const pct = Math.min(100, (elapsedSeconds / MAX_SECONDS) * 100);
+      timelineProgress.style.width = `${pct}%`;
+
+      // Timeline colors & status
+      if (elapsedSeconds >= TARGET_SECONDS) {
+        timelineProgress.className = "h-full bg-rose-500 transition-all duration-300";
+        elapsedDisplay.className = "font-mono text-xl font-black text-rose-500 pulsing";
+      } else if (elapsedSeconds >= 240) { // 4:00 warning
+        timelineProgress.className = "h-full bg-yellow-400 transition-all duration-300";
+        elapsedDisplay.className = "font-mono text-xl font-black text-yellow-400";
+      } else {
+        timelineProgress.className = "h-full bg-emerald-500 transition-all duration-300";
+        elapsedDisplay.className = "font-mono text-xl font-black text-emerald-400";
+      }
+
+      // Auto Advance check
+      if (autoAdvanceToggle.checked) {
+        const activeSlideAlloc = SLIDES_DATA[currentSlideIdx].allocatedSeconds;
+        if (slideTimer >= activeSlideAlloc && currentSlideIdx < SLIDES_DATA.length - 1) {
+          selectSlide(currentSlideIdx + 1);
+        }
+      }
+
+      // Hard stop at 5:00
+      if (elapsedSeconds >= MAX_SECONDS) {
+        pauseTimer();
+        alert("⏱️ 5 MINUTES REACHED! The evaluation panel strictly halts at this point.");
+      }
+    }
+
+    function startTimer() {
+      isRunning = true;
+      toggleTimerBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/30 transition flex items-center gap-1.5";
+      playIcon.innerText = "⏸";
+      playText.innerText = "Pause Timer";
+      timerInterval = setInterval(tick, 1000);
+    }
+
+    function pauseTimer() {
+      isRunning = false;
+      toggleTimerBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5";
+      playIcon.innerText = "▶";
+      playText.innerText = "Resume Timer";
+      clearInterval(timerInterval);
+    }
+
+    toggleTimerBtn.onclick = () => {
+      if (isRunning) pauseTimer();
+      else startTimer();
+    };
+
+    resetTimerBtn.onclick = () => {
+      pauseTimer();
+      elapsedSeconds = 0;
+      slideTimer = 0;
+      elapsedDisplay.innerText = "00:00";
+      remainingDisplay.innerText = "05:00";
+      timelineProgress.style.width = "0%";
+      timelineProgress.className = "h-full bg-emerald-500 transition-all duration-300";
+      elapsedDisplay.className = "font-mono text-xl font-black text-emerald-400";
+      playText.innerText = "Start Timer";
+      selectSlide(0);
+    };
+
+    // Keyboard shortcuts (Space = pause/play, Right = Next, Left = Prev)
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleTimerBtn.click();
+      } else if (e.code === 'ArrowRight') {
+        nextSlideBtn.click();
+      } else if (e.code === 'ArrowLeft') {
+        prevSlideBtn.click();
+      }
+    });
+
+    // Initialize
+    selectSlide(0);
+  </script>
+
+</body>
+</html>
