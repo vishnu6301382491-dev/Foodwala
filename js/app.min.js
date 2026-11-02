@@ -82,8 +82,37 @@ const FoodWalaApp = (function () {
   // --- CLEANUP OBSOLETE DEMO DATA ---
   function cleanupObsoleteDemoData() {
     try {
-      // Clean obsolete key 'foodwala_user' if present
-      localStorage.removeItem('foodwala_user');
+      function isStoredUserValid(raw) {
+        if (!raw || raw === 'null' || raw === 'undefined') return false;
+        try {
+          const u = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+          if (!u || typeof u !== 'object') return false;
+          const hasName = u.name && String(u.name).trim().length > 0;
+          const hasEmail = u.email && String(u.email).trim().length > 0;
+          const hasPhone = u.phone && String(u.phone).trim().length > 0;
+          const hasId = Boolean(u.userId || u.id);
+          return Boolean(hasName && (hasEmail || hasPhone || hasId));
+        } catch (e) {
+          return false;
+        }
+      }
+
+      // Do NOT aggressively delete foodwala_user if it contains valid user info; migrate it to foodwala_current_user
+      const legacyKeys = ['foodwala_user', 'currentUser'];
+      for (const key of legacyKeys) {
+        const legacyVal = localStorage.getItem(key);
+        if (legacyVal) {
+          if (isStoredUserValid(legacyVal)) {
+            // Migrate to primary storage key if primary is missing or invalid
+            const curVal = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+            if (!isStoredUserValid(curVal)) {
+              localStorage.setItem(STORAGE_KEYS.CURRENT_USER, legacyVal);
+            }
+          } else {
+            localStorage.removeItem(key);
+          }
+        }
+      }
       
       // Clean obsolete fake default location or fix cached Koramangala false-positives for Maruthi Nagar
       const locStr = localStorage.getItem(STORAGE_KEYS.LOCATION);
@@ -581,20 +610,88 @@ const FoodWalaApp = (function () {
       return this.normalizeIndianPhone(rawPhone);
     },
 
+    setCurrentUser: function (user) {
+      if (!user || typeof user !== 'object') {
+        return this.logout();
+      }
+      setStorage(STORAGE_KEYS.CURRENT_USER, user);
+      try {
+        const userStr = JSON.stringify(user);
+        sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, userStr);
+        localStorage.setItem('currentUser', userStr);
+        localStorage.setItem('foodwala_user', userStr);
+      } catch (e) {}
+      window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: user }));
+      try { updateUserNavUI(); } catch (e) {}
+      return user;
+    },
+
     getCurrentUser: function () {
+      function isValidUser(u) {
+        if (!u || typeof u !== 'object') return false;
+        const hasName = u.name && String(u.name).trim().length > 0;
+        const hasEmail = u.email && String(u.email).trim().length > 0;
+        const hasPhone = u.phone && String(u.phone).trim().length > 0;
+        const hasId = Boolean(u.userId || u.id);
+        return Boolean(hasName && (hasEmail || hasPhone || hasId));
+      }
+
       if (typeof window !== "undefined" && window.FoodWalaApi && typeof window.FoodWalaApi.getCurrentUser === "function") {
         const apiUser = window.FoodWalaApi.getCurrentUser();
-        if (apiUser) return apiUser;
-      }
-      // Returns null if no authenticated user exists or user object is malformed
-      const user = getStorage(STORAGE_KEYS.CURRENT_USER, null);
-      if (user && typeof user === 'object' && user.name && String(user.name).trim().length > 0) {
-        const hasEmail = user.email && String(user.email).trim().length > 0;
-        const hasPhone = user.phone && String(user.phone).trim().length > 0;
-        if (hasEmail || hasPhone) {
-          return user;
+        if (isValidUser(apiUser)) {
+          const cur = getStorage(STORAGE_KEYS.CURRENT_USER, null);
+          if (!isValidUser(cur)) {
+            setStorage(STORAGE_KEYS.CURRENT_USER, apiUser);
+          }
+          return apiUser;
         }
       }
+
+      // 1. Primary check: foodwala_current_user in localStorage or sessionStorage
+      let user = getStorage(STORAGE_KEYS.CURRENT_USER, null);
+      if (isValidUser(user)) {
+        return user;
+      }
+
+      try {
+        const sessionUser = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (sessionUser && sessionUser !== 'null' && sessionUser !== 'undefined') {
+          const parsedSession = JSON.parse(sessionUser);
+          if (isValidUser(parsedSession)) {
+            setStorage(STORAGE_KEYS.CURRENT_USER, parsedSession);
+            return parsedSession;
+          }
+        }
+      } catch (e) {}
+
+      // 2. Multi-key resilience fallback: check 'currentUser' and 'foodwala_user'
+      const fallbackKeys = ['currentUser', 'foodwala_user'];
+      for (const key of fallbackKeys) {
+        try {
+          const rawLocal = localStorage.getItem(key);
+          if (rawLocal && rawLocal !== 'null' && rawLocal !== 'undefined') {
+            const parsed = JSON.parse(rawLocal);
+            if (isValidUser(parsed)) {
+              setStorage(STORAGE_KEYS.CURRENT_USER, parsed);
+              try { sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(parsed)); } catch (e) {}
+              return parsed;
+            }
+          }
+        } catch (e) {}
+
+        try {
+          const rawSession = sessionStorage.getItem(key);
+          if (rawSession && rawSession !== 'null' && rawSession !== 'undefined') {
+            const parsed = JSON.parse(rawSession);
+            if (isValidUser(parsed)) {
+              setStorage(STORAGE_KEYS.CURRENT_USER, parsed);
+              try { sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(parsed)); } catch (e) {}
+              return parsed;
+            }
+          }
+        } catch (e) {}
+      }
+
       return null;
     },
 
@@ -1028,8 +1125,12 @@ const FoodWalaApp = (function () {
         localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
         localStorage.removeItem('foodwala_auth_token');
         localStorage.removeItem('foodwala_user');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('foodwala_post_login_redirect');
         sessionStorage.removeItem('foodwala_current_user');
         sessionStorage.removeItem('foodwala_auth_token');
+        sessionStorage.removeItem('foodwala_user');
+        sessionStorage.removeItem('currentUser');
       } catch (e) {
         console.warn('[FoodWala Auth] Storage clearance warning:', e);
       }
@@ -1445,27 +1546,66 @@ const FoodWalaApp = (function () {
   // --- CART MODULE ---
   const Cart = {
     getCart: function () {
-      return getStorage(STORAGE_KEYS.CART, {
-        restaurantId: null,
-        restaurantName: '',
-        restaurantAddress: '',
-        restaurantImage: '',
-        items: []
-      });
+      let raw = getStorage(STORAGE_KEYS.CART, null);
+      if (!raw) {
+        try {
+          const sessionVal = sessionStorage.getItem(STORAGE_KEYS.CART);
+          if (sessionVal) raw = JSON.parse(sessionVal);
+        } catch (e) {}
+      }
+      if (!raw) {
+        try {
+          const legacyVal = localStorage.getItem('cart') || sessionStorage.getItem('cart') || localStorage.getItem('foodwalaCart');
+          if (legacyVal) raw = JSON.parse(legacyVal);
+        } catch (e) {}
+      }
+
+      // Normalize if raw is an Array of items
+      if (Array.isArray(raw)) {
+        raw = {
+          restaurantId: (raw[0] && (raw[0].restaurantId || raw[0].restaurant_id)) || null,
+          restaurantName: (raw[0] && raw[0].restaurantName) || '',
+          restaurantAddress: (raw[0] && raw[0].restaurantAddress) || '',
+          restaurantImage: (raw[0] && (raw[0].restaurantImage || raw[0].imagePath || raw[0].image)) || '',
+          items: raw
+        };
+        try { setStorage(STORAGE_KEYS.CART, raw); } catch (e) {}
+      }
+
+      // Ensure valid object structure
+      if (!raw || typeof raw !== 'object') {
+        raw = {
+          restaurantId: null,
+          restaurantName: '',
+          restaurantAddress: '',
+          restaurantImage: '',
+          items: []
+        };
+      } else if (!Array.isArray(raw.items)) {
+        raw.items = [];
+      }
+
+      return raw;
+    },
+    getItems: function () {
+      const cart = this.getCart();
+      return Array.isArray(cart.items) ? cart.items : [];
     },
     saveCart: function (cart) {
       setStorage(STORAGE_KEYS.CART, cart);
+      try {
+        sessionStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
+      } catch (e) {}
       window.dispatchEvent(new CustomEvent('foodwala:cartChanged', { detail: cart }));
       this.updateCartBadge();
     },
     getItemCount: function () {
-      const cart = this.getCart();
-      return cart.items ? cart.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+      const items = this.getItems();
+      return items.reduce((sum, item) => sum + (item.quantity || 0), 0);
     },
     getItemQuantity: function (menuId) {
-      const cart = this.getCart();
-      if (!cart.items) return 0;
-      const found = cart.items.find(i => i.menuId === menuId || i.id === menuId);
+      const items = this.getItems();
+      const found = items.find(i => i.menuId === menuId || i.id === menuId);
       return found ? found.quantity : 0;
     },
     addItem: async function (item, restaurant) {

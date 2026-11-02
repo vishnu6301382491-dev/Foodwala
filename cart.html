@@ -744,7 +744,8 @@
       if (proceedBtn) {
         proceedBtn.addEventListener('click', () => {
           const currentCart = FoodWalaApp.Cart.getCart();
-          if (!currentCart.items || currentCart.items.length === 0) {
+          const items = (currentCart && Array.isArray(currentCart.items)) ? currentCart.items : (FoodWalaApp.Cart.getItems ? FoodWalaApp.Cart.getItems() : []);
+          if (!currentCart || items.length === 0) {
             FoodWalaApp.showToast('Your cart is empty. Please add items to proceed.', 'warning');
             return;
           }

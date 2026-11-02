@@ -54,8 +54,39 @@
 
     getCurrentUser: function () {
       try {
-        const item = localStorage.getItem('foodwala_current_user');
-        return item ? JSON.parse(item) : null;
+        let item = localStorage.getItem('foodwala_current_user');
+        let parsed = null;
+        if (item && item !== 'null' && item !== 'undefined') {
+          try {
+            parsed = JSON.parse(item);
+          } catch (e) {
+            parsed = null;
+          }
+        }
+        if (!parsed || typeof parsed !== 'object' || !parsed.name) {
+          const fallbackCandidates = [
+            sessionStorage.getItem('foodwala_current_user'),
+            localStorage.getItem('currentUser'),
+            localStorage.getItem('foodwala_user'),
+            sessionStorage.getItem('currentUser'),
+            sessionStorage.getItem('foodwala_user')
+          ];
+          for (const raw of fallbackCandidates) {
+            if (raw && raw !== 'null' && raw !== 'undefined') {
+              try {
+                const candidate = JSON.parse(raw);
+                if (candidate && typeof candidate === 'object' && candidate.name) {
+                  parsed = candidate;
+                  try {
+                    localStorage.setItem('foodwala_current_user', JSON.stringify(candidate));
+                  } catch (e) {}
+                  break;
+                }
+              } catch (e) {}
+            }
+          }
+        }
+        return (parsed && typeof parsed === 'object') ? parsed : null;
       } catch (e) {
         return null;
       }

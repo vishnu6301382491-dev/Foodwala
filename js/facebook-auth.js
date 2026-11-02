@@ -59,12 +59,19 @@
       return;
     }
 
-    FB.login(function (response) {
-      statusChangeCallback(response);
-    }, {
-      scope: 'public_profile,email',
-      return_scopes: true
-    });
+    try {
+      FB.login(function (response) {
+        statusChangeCallback(response);
+      }, {
+        scope: 'public_profile,email',
+        return_scopes: true
+      });
+    } catch (err) {
+      console.error('[FoodWala Facebook Auth] FB.login error:', err);
+      if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+        window.FoodWalaApp.showToast('Unable to start Facebook Login. Please check popup settings.', 'error');
+      }
+    }
   }
 
   /**
@@ -78,36 +85,147 @@
 
       if (!userInfo || userInfo.error) {
         console.error('[FoodWala Facebook Auth] Error fetching profile:', userInfo ? userInfo.error : 'Unknown');
+        if (window.FoodWalaApp && typeof window.FoodWalaApp.showToast === 'function') {
+          window.FoodWalaApp.showToast('Unable to retrieve Facebook profile. Please try again.', 'error');
+        }
         return;
       }
 
+      // Determine active role if selected in UI or URL query
+      let targetRole = 'CUSTOMER';
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryRole = (urlParams.get('role') || urlParams.get('portal') || '').toUpperCase();
+        if (queryRole) {
+          targetRole = queryRole;
+        } else if (typeof window.selectedRole !== 'undefined' && window.selectedRole) {
+          targetRole = String(window.selectedRole).toUpperCase();
+        } else if (typeof window.selectedRegRole !== 'undefined' && window.selectedRegRole) {
+          targetRole = String(window.selectedRegRole).toUpperCase();
+        }
+      } catch (e) {}
+
       // Construct verified FoodWala customer object
       const safeEmail = userInfo.email || (userInfo.id + '@facebook.foodwala.com');
+      const token = (authResponse && authResponse.accessToken) ? authResponse.accessToken : null;
       const customer = {
         userId: userInfo.id,
         id: userInfo.id,
         name: userInfo.name || 'Facebook User',
         username: userInfo.name || 'Facebook User',
         email: safeEmail,
-        role: 'CUSTOMER',
+        phone: (userInfo && userInfo.phone) || '',
+        role: targetRole,
         avatar: userInfo.picture && userInfo.picture.data ? userInfo.picture.data.url : null,
         authProvider: 'facebook',
-        accessToken: authResponse.accessToken,
+        accessToken: token,
         loginTime: new Date().toISOString()
       };
 
-      // Persist in local browser session
-      localStorage.setItem('currentUser', JSON.stringify(customer));
-      localStorage.setItem('foodwala_user', JSON.stringify(customer));
-      localStorage.setItem('foodwala_auth_token', authResponse.accessToken);
+      // Persist in local and session browser storage across all standard keys
+      const userStr = JSON.stringify(customer);
+      try {
+        localStorage.setItem('foodwala_current_user', userStr);
+        sessionStorage.setItem('foodwala_current_user', userStr);
+        localStorage.setItem('currentUser', userStr);
+        sessionStorage.setItem('currentUser', userStr);
+        localStorage.setItem('foodwala_user', userStr);
+        sessionStorage.setItem('foodwala_user', userStr);
+        if (token) {
+          localStorage.setItem('foodwala_auth_token', token);
+          sessionStorage.setItem('foodwala_auth_token', token);
+        }
+      } catch (storageErr) {
+        console.warn('[FoodWala Facebook Auth] Storage error:', storageErr);
+      }
+
+      // Update FoodWalaApp session and UI if available
+      if (window.FoodWalaApp && window.FoodWalaApp.Auth && typeof window.FoodWalaApp.Auth.setCurrentUser === 'function') {
+        try {
+          window.FoodWalaApp.Auth.setCurrentUser(customer);
+        } catch (e) {}
+      }
+      if (window.FoodWalaApp && typeof window.FoodWalaApp.updateAuthUI === 'function') {
+        try {
+          window.FoodWalaApp.updateAuthUI();
+        } catch (e) {}
+      }
+
+      // Dispatch global authentication change event
+      try {
+        window.dispatchEvent(new CustomEvent('foodwala:authChanged', { detail: customer }));
+      } catch (e) {}
 
       // Notify user visually
       showLoginSuccessToast(customer.username);
 
       // Handle redirect
       setTimeout(function () {
+        if (typeof window.handlePostLoginNavigation === 'function') {
+          window.handlePostLoginNavigation(customer);
+          return;
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get('redirect') || 'home.html';
+        let redirectUrl = urlParams.get('redirect');
+        if (!redirectUrl) {
+          try {
+            redirectUrl = localStorage.getItem('foodwala_post_login_redirect');
+            localStorage.removeItem('foodwala_post_login_redirect');
+          } catch (e) {}
+        }
+
+        // Sanitize redirectUrl to prevent loop and external redirects
+        if (redirectUrl) {
+          const lower = redirectUrl.toLowerCase();
+          if (lower.includes('login.html') || lower.includes('register.html')) {
+            redirectUrl = null;
+          } else if (/^(?:[a-z]+:)?\/\//i.test(redirectUrl) || lower.startsWith('javascript:')) {
+            try {
+              const parsed = new URL(redirectUrl, window.location.href);
+              if (parsed.origin !== window.location.origin) {
+                redirectUrl = null;
+              }
+            } catch (e) {
+              redirectUrl = null;
+            }
+          }
+        }
+
+        // If redirect target points to checkout, verify that user actually has items in the cart
+        if (redirectUrl && redirectUrl.includes('checkout.html')) {
+          let itemCount = 0;
+          try {
+            if (window.FoodWalaApp && window.FoodWalaApp.Cart) {
+              itemCount = window.FoodWalaApp.Cart.getItemCount();
+            }
+          } catch (e) {}
+          if (itemCount === 0) {
+            try {
+              const raw = localStorage.getItem('foodwala_cart') || localStorage.getItem('cart') || sessionStorage.getItem('foodwala_cart');
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                itemCount = Array.isArray(parsed) ? parsed.length : (parsed.items ? parsed.items.length : 0);
+              }
+            } catch (e) {}
+          }
+          // If cart is empty, do NOT send user to checkout.html (which would bounce to cart.html)
+          if (itemCount === 0) {
+            redirectUrl = './index.html';
+          }
+        }
+
+        redirectUrl = redirectUrl || './index.html';
+
+        const roleLower = String(customer.role || '').toLowerCase();
+        if (roleLower === 'partner' || roleLower === 'delivery_partner') {
+          redirectUrl = './delivery-dashboard.html';
+        } else if (roleLower === 'admin') {
+          redirectUrl = './admin.html';
+        } else if (roleLower === 'restaurant' || roleLower === 'restaurant_admin' || roleLower === 'manager') {
+          redirectUrl = './restaurant-dashboard.html';
+        }
+
         window.location.href = redirectUrl;
       }, 1000);
     });
@@ -132,16 +250,24 @@
     document.body.insertAdjacentHTML('beforeend', toastHtml);
   }
 
-  // Bind Facebook buttons automatically on DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', function () {
+  // Bind Facebook buttons automatically
+  function bindFacebookButtons() {
     const fbButtons = document.querySelectorAll('.js-facebook-auth-btn');
     fbButtons.forEach(function (btn) {
+      if (btn.dataset && btn.dataset.fbBound) return;
+      if (btn.dataset) btn.dataset.fbBound = 'true';
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         loginWithFacebook();
       });
     });
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindFacebookButtons);
+  } else {
+    bindFacebookButtons();
+  }
 
   // Setup Global Facebook SDK Async Init
   window.fbAsyncInit = function () {
@@ -154,10 +280,14 @@
 
     console.log('[FoodWala Facebook Auth] Facebook SDK initialized with App ID:', FACEBOOK_APP_ID);
 
-    // Initial check of login status
-    FB.getLoginStatus(function (response) {
-      statusChangeCallback(response);
-    });
+    // Initial check of login status (Passive check only - DO NOT auto-redirect or auto-login on initial page load)
+    try {
+      FB.getLoginStatus(function (response) {
+        console.log('[FoodWala Facebook Auth] Initial passive login status:', response ? response.status : 'unknown');
+      });
+    } catch (e) {
+      console.warn('[FoodWala Facebook Auth] Passive getLoginStatus error:', e);
+    }
   };
 
   // Asynchronously inject the Facebook SDK script tag into the DOM

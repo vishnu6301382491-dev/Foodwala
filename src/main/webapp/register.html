@@ -434,7 +434,37 @@
       const urlParams = new URLSearchParams(window.location.search);
       const urlRedirect = urlParams.get('redirect');
       const storedRedirect = localStorage.getItem('foodwala_post_login_redirect');
-      const redirectTarget = urlRedirect || storedRedirect || './index.html';
+      let redirectTarget = urlRedirect || storedRedirect || './index.html';
+
+      // Sanitize redirect target to avoid redirect loops
+      if (redirectTarget) {
+        const lower = redirectTarget.toLowerCase();
+        if (lower.includes('login.html') || lower.includes('register.html')) {
+          redirectTarget = './index.html';
+        }
+      }
+
+      // If redirect target points to checkout, verify that user actually has items in the cart
+      if (redirectTarget && redirectTarget.includes('checkout.html')) {
+        let itemCount = 0;
+        try {
+          if (window.FoodWalaApp && window.FoodWalaApp.Cart) {
+            itemCount = window.FoodWalaApp.Cart.getItemCount();
+          }
+        } catch (e) {}
+        if (itemCount === 0) {
+          try {
+            const raw = localStorage.getItem('foodwala_cart') || localStorage.getItem('cart') || sessionStorage.getItem('foodwala_cart');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              itemCount = Array.isArray(parsed) ? parsed.length : (parsed.items ? parsed.items.length : 0);
+            }
+          } catch (e) {}
+        }
+        if (itemCount === 0) {
+          redirectTarget = './index.html';
+        }
+      }
 
       // Propagate redirect parameter to login link if present
       const loginLink = document.querySelector('a[href="./login.html"]');

@@ -492,7 +492,8 @@
 
       // --- SECTION 1: Cart Validation & Restaurant Resolution ---
       let cart = FoodWalaApp.Cart.getCart();
-      if (!cart || !cart.items || cart.items.length === 0) {
+      const cartItems = (cart && Array.isArray(cart.items)) ? cart.items : (FoodWalaApp.Cart.getItems ? FoodWalaApp.Cart.getItems() : []);
+      if (!cart || cartItems.length === 0) {
         if (window.FoodWalaApp && FoodWalaApp.showToast) {
           FoodWalaApp.showToast('Your cart is empty. Please add items from a restaurant.', 'warning');
         }
@@ -501,6 +502,9 @@
         }, 400);
         return;
       }
+      try {
+        localStorage.removeItem('foodwala_post_login_redirect');
+      } catch (e) {}
 
       try {
         if (window.FoodWalaApp && FoodWalaApp.loadData) {

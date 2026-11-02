@@ -490,7 +490,7 @@
   <script src="./js/adapters/liveAdapter.js" defer></script>
   <script src="./js/api.js" defer></script>
   <script src="./js/areas.js" defer></script>
-  <script src="./js/app.min.js?v=20261017_02" defer></script>
+  <script src="./js/app.min.js?v=20261022_05" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -744,7 +744,8 @@
       if (proceedBtn) {
         proceedBtn.addEventListener('click', () => {
           const currentCart = FoodWalaApp.Cart.getCart();
-          if (!currentCart.items || currentCart.items.length === 0) {
+          const items = (currentCart && Array.isArray(currentCart.items)) ? currentCart.items : (FoodWalaApp.Cart.getItems ? FoodWalaApp.Cart.getItems() : []);
+          if (!currentCart || items.length === 0) {
             FoodWalaApp.showToast('Your cart is empty. Please add items to proceed.', 'warning');
             return;
           }
