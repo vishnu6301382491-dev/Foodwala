@@ -747,11 +747,30 @@
     },
 
     getAdminRestaurants: async function () {
+      if (unavailableEndpoints.has('admin/restaurants')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminRestaurants();
+        }
+      }
       try {
         const res = await liveFetch('/api/admin/restaurants', { headers: getAuthHeader() });
-        if (res.ok) return await res.json();
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) return { success: true, restaurants: data };
+          if (data && Array.isArray(data.restaurants)) return data;
+          if (data && Array.isArray(data.data)) return { success: true, restaurants: data.data };
+          return data;
+        }
+        unavailableEndpoints.add('admin/restaurants');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminRestaurants();
+        }
         return { success: false, restaurants: [] };
       } catch (err) {
+        unavailableEndpoints.add('admin/restaurants');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminRestaurants();
+        }
         return { success: false, restaurants: [] };
       }
     },
@@ -1053,7 +1072,12 @@
           headers: getAuthHeader(),
           body: JSON.stringify({ status })
         });
-        if (res.ok) return await res.json();
+        if (res.ok) {
+          if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+            try { await window.FoodWalaAdapters.mock.updateRestaurantOrderStatus(orderId, status); } catch (e) {}
+          }
+          return await res.json();
+        }
         if (res.status === 404) {
           unavailableEndpoints.add('restaurant_orders_status');
           if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
@@ -1068,6 +1092,10 @@
         }
         throw err;
       }
+    },
+
+    updateOrderStatus: async function (orderId, status) {
+      return await this.updateRestaurantOrderStatus(orderId, status);
     }
   };
 

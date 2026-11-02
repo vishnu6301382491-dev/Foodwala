@@ -709,6 +709,7 @@
   <!-- Core Scripts -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/foodwala-data.js?v=20261102_05"></script>
   <script src="./js/config.js?v=20261022_05"></script>
   <script src="./js/adapters/mockAdapter.js?v=20261022_05"></script>
   <script src="./js/adapters/liveAdapter.js?v=20261022_05"></script>
@@ -1257,14 +1258,20 @@
 
             <!-- Status Controls -->
             <div class="d-flex flex-wrap gap-2 align-items-center">
-              <span class="small fw-bold text-muted me-1">Update Status:</span>
-              <button class="btn btn-sm ${status === 'PREPARING' ? 'btn-warning text-dark' : 'btn-outline-warning'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="PREPARING">
-                <i class="bi bi-fire me-1"></i> Mark Preparing
+              <span class="small fw-bold text-muted me-1">Lifecycle Actions:</span>
+              <button class="btn btn-sm ${status === 'ACCEPTED' || status === 'CONFIRMED' ? 'btn-primary text-white shadow-sm' : 'btn-outline-primary'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="ACCEPTED">
+                <i class="bi bi-check2-circle me-1"></i> Accept Order
               </button>
-              <button class="btn btn-sm ${status === 'READY_FOR_PICKUP' ? 'btn-primary text-white' : 'btn-outline-primary'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="READY_FOR_PICKUP">
-                <i class="bi bi-bicycle me-1"></i> Ready for Rider
+              <button class="btn btn-sm ${status === 'PREPARING' ? 'btn-warning text-dark shadow-sm' : 'btn-outline-warning'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="PREPARING">
+                <i class="bi bi-fire me-1"></i> Preparing Food
               </button>
-              <button class="btn btn-sm ${status === 'DELIVERED' ? 'btn-success text-white' : 'btn-outline-success'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="DELIVERED">
+              <button class="btn btn-sm ${status === 'READY_FOR_PICKUP' ? 'btn-info text-dark shadow-sm' : 'btn-outline-info text-dark'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="READY_FOR_PICKUP">
+                <i class="bi bi-box-seam me-1"></i> Ready for Rider
+              </button>
+              <button class="btn btn-sm ${status === 'OUT_FOR_DELIVERY' || status === 'ON_THE_WAY' ? 'btn-primary text-white shadow-sm' : 'btn-outline-primary'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="OUT_FOR_DELIVERY">
+                <i class="bi bi-bicycle me-1"></i> Out for Delivery
+              </button>
+              <button class="btn btn-sm ${status === 'DELIVERED' ? 'btn-success text-white shadow-sm' : 'btn-outline-success'} rounded-pill px-3 fw-bold js-order-status-btn" data-id="${cleanId}" data-status="DELIVERED">
                 <i class="bi bi-check-all me-1"></i> Delivered
               </button>
             </div>
@@ -1280,7 +1287,7 @@
           try {
             const res = await FoodWalaApi.updateRestaurantOrderStatus(id, st);
             if (res && res.success) {
-              const friendlyName = st === 'READY_FOR_PICKUP' ? 'Ready for Rider' : (st === 'PREPARING' ? 'Preparing Food' : (st === 'DELIVERED' ? 'Delivered' : st));
+              const friendlyName = st === 'READY_FOR_PICKUP' ? 'Ready for Rider' : (st === 'PREPARING' ? 'Preparing Food' : (st === 'DELIVERED' ? 'Delivered' : (st === 'ACCEPTED' ? 'Order Accepted' : (st === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : st))));
               FoodWalaApp.showToast(`Order #FW-${id} status updated to "${friendlyName}"!`, 'success');
               const target = globalOrders.find(o => {
                 const oClean = String(o.order_id || o.orderId || o.id || '').replace(/^#?FW-?/i, '').trim();
@@ -1292,6 +1299,7 @@
                 if (st === 'DELIVERED') target.deliveredAt = new Date().toISOString();
               }
               renderKitchenOrders(globalOrders);
+              await reloadKitchenOrders();
             }
           } catch (err) {
             FoodWalaApp.showToast('Failed to update order status.', 'danger');
@@ -1640,8 +1648,9 @@
 
     window.addEventListener('foodwala:orderPlaced', reloadKitchenOrders);
     window.addEventListener('foodwala:orderStatusChanged', reloadKitchenOrders);
+    window.addEventListener('foodwala:order-updated', reloadKitchenOrders);
     window.addEventListener('storage', (e) => {
-      if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_kitchen_orders' || e.key === 'foodwala_order_placed_ping') {
+      if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_kitchen_orders' || e.key === 'foodwala_order_placed_ping' || e.key === 'foodwala_order_updated') {
         reloadKitchenOrders();
       }
     });

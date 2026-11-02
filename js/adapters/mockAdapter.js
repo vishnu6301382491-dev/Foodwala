@@ -443,8 +443,38 @@
         }
       } catch (e) {}
 
-      if (typeof window !== 'undefined' && window.FOODWALA_RESTAURANTS && window.FOODWALA_RESTAURANTS.length > 0) {
+      if (typeof window !== 'undefined' && Array.isArray(window.FOODWALA_RESTAURANTS) && window.FOODWALA_RESTAURANTS.length > 0) {
+        setLocal(cacheKey, window.FOODWALA_RESTAURANTS);
         return window.FOODWALA_RESTAURANTS;
+      }
+
+      if (typeof window !== 'undefined' && window.FoodWalaCatalog && Array.isArray(window.FoodWalaCatalog.restaurants) && window.FoodWalaCatalog.restaurants.length > 0) {
+        setLocal(cacheKey, window.FoodWalaCatalog.restaurants);
+        return window.FoodWalaCatalog.restaurants;
+      }
+
+      if (typeof window === 'undefined' || (typeof process !== 'undefined' && process.versions && process.versions.node)) {
+        try {
+          if (typeof require !== 'undefined') {
+            const pathMod = require('path');
+            const fsMod = require('fs');
+            const candidatePaths = [
+              pathMod.resolve(__dirname, '../../data/restaurants.json'),
+              pathMod.resolve(__dirname, '../data/restaurants.json'),
+              pathMod.resolve(__dirname, 'data/restaurants.json'),
+              pathMod.resolve(process.cwd(), 'data/restaurants.json')
+            ];
+            for (const cp of candidatePaths) {
+              if (fsMod.existsSync(cp)) {
+                const list = JSON.parse(fsMod.readFileSync(cp, 'utf8'));
+                if (Array.isArray(list) && list.length > 0) {
+                  setLocal(cacheKey, list);
+                  return list;
+                }
+              }
+            }
+          }
+        } catch (e) {}
       }
       return [];
     },
@@ -1406,9 +1436,10 @@
     },
 
     getAdminOrders: async function () {
-      // 1. Gather all stored customer orders across both storage locations
+      // 1. Gather all stored customer orders across all storage locations
       const rawMockOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
       const rawAppOrders = getLocal('foodwala_orders', []);
+      const rawKitchenOrders = getLocal('foodwala_mock_kitchen_orders', []);
 
       // 2. Base fallback orders to represent historical seed transactions
       const seedOrders = [
@@ -1419,6 +1450,10 @@
           customerName: 'Rahul Sharma (Customer)',
           customer_phone: '9876543210',
           customerPhone: '9876543210',
+          customer_email: 'rahul.sharma@example.com',
+          customerEmail: 'rahul.sharma@example.com',
+          delivery_address: 'Indiranagar 100ft Road, Bengaluru - 560038',
+          deliveryAddress: 'Indiranagar 100ft Road, Bengaluru - 560038',
           restaurant_name: 'Vidyarthi Bhavan',
           restaurantName: 'Vidyarthi Bhavan',
           total_amount: 450.00,
@@ -1431,7 +1466,12 @@
           paymentStatus: 'PAID',
           status: 'DELIVERED',
           order_date: new Date(Date.now() - 3600000).toISOString(),
-          orderDate: new Date(Date.now() - 3600000).toISOString()
+          orderDate: new Date(Date.now() - 3600000).toISOString(),
+          items: [
+            { item_name: 'Benne Masala Dosa', name: 'Benne Masala Dosa', quantity: 2, price: 95, total_price: 190 },
+            { item_name: 'Degree Filter Coffee', name: 'Degree Filter Coffee', quantity: 2, price: 35, total_price: 70 },
+            { item_name: 'Steamed Idli (2 pcs)', name: 'Steamed Idli (2 pcs)', quantity: 1, price: 50, total_price: 50 }
+          ]
         },
         {
           order_id: '1002',
@@ -1440,6 +1480,10 @@
           customerName: 'Vishnu Vardhan Reddy',
           customer_phone: '6301382491',
           customerPhone: '6301382491',
+          customer_email: 'vishnuvardhanreddych45@gmail.com',
+          customerEmail: 'vishnuvardhanreddych45@gmail.com',
+          delivery_address: 'Koramangala 4th Block, 80ft Road, Bengaluru - 560034',
+          deliveryAddress: 'Koramangala 4th Block, 80ft Road, Bengaluru - 560034',
           restaurant_name: 'Meghana Foods',
           restaurantName: 'Meghana Foods',
           total_amount: 790.00,
@@ -1452,7 +1496,11 @@
           paymentStatus: 'PAID',
           status: 'DELIVERED',
           order_date: new Date(Date.now() - 7200000).toISOString(),
-          orderDate: new Date(Date.now() - 7200000).toISOString()
+          orderDate: new Date(Date.now() - 7200000).toISOString(),
+          items: [
+            { item_name: 'Special Chicken Biryani', name: 'Special Chicken Biryani', quantity: 2, price: 340, total_price: 680 },
+            { item_name: 'Gulab Jamun (2 pcs)', name: 'Gulab Jamun (2 pcs)', quantity: 1, price: 80, total_price: 80 }
+          ]
         },
         {
           order_id: '1003',
@@ -1461,6 +1509,10 @@
           customerName: 'Ananya Sharma',
           customer_phone: '9848012345',
           customerPhone: '9848012345',
+          customer_email: 'ananya.sharma@example.com',
+          customerEmail: 'ananya.sharma@example.com',
+          delivery_address: 'Malleshwaram 7th Cross, Sampige Road, Bengaluru - 560003',
+          deliveryAddress: 'Malleshwaram 7th Cross, Sampige Road, Bengaluru - 560003',
           restaurant_name: 'CTR Shri Sagar',
           restaurantName: 'CTR Shri Sagar',
           total_amount: 320.00,
@@ -1473,7 +1525,11 @@
           paymentStatus: 'PAID',
           status: 'PREPARING',
           order_date: new Date(Date.now() - 900000).toISOString(),
-          orderDate: new Date(Date.now() - 900000).toISOString()
+          orderDate: new Date(Date.now() - 900000).toISOString(),
+          items: [
+            { item_name: 'Crispy Benne Dosa', name: 'Crispy Benne Dosa', quantity: 2, price: 110, total_price: 220 },
+            { item_name: 'Filter Coffee', name: 'Filter Coffee', quantity: 2, price: 35, total_price: 70 }
+          ]
         }
       ];
 
@@ -1481,7 +1537,16 @@
       const orderMap = new Map();
 
       // First add user orders (placed via app / checkout / mockAdapter)
-      const combined = [...rawAppOrders, ...rawMockOrders];
+      const combined = [...rawAppOrders, ...rawMockOrders, ...rawKitchenOrders];
+      const allUsers = getLocal(STORAGE_KEYS.MOCK_USERS, []);
+      if (Array.isArray(allUsers)) {
+        allUsers.forEach(u => {
+          if (Array.isArray(u.orders)) {
+            combined.push(...u.orders);
+          }
+        });
+      }
+
       combined.forEach(o => {
         if (!o) return;
         const rawId = String(o.orderId || o.order_id || o.id || '');
@@ -1511,7 +1576,7 @@
         const cleanId = rawId.replace(/^#?FW-?/i, '').trim();
         const numTotal = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
         
-        let liveStatus = (o.status || 'PLACED').toUpperCase();
+        let liveStatus = (o.status || o.orderStatus || o.deliveryStatus || 'PLACED').toUpperCase();
         if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
           try {
             const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
@@ -1521,17 +1586,26 @@
 
         const dateVal = o.order_date || o.orderDate || o.createdAt || (o.createdAtMs ? new Date(o.createdAtMs).toISOString() : new Date().toISOString());
 
+        const custName = o.customer_name || o.customerName || (typeof o.address === 'object' && o.address && o.address.fullName) || o.name || 'Customer';
+        const custPhone = o.customer_phone || o.customerPhone || (typeof o.address === 'object' && o.address && o.address.phone) || o.phone || '-';
+        const custEmail = o.customer_email || o.customerEmail || o.email || '';
+        const deliveryAddr = (typeof o.delivery_address === 'string' && o.delivery_address) ||
+                             (typeof o.deliveryAddress === 'string' && o.deliveryAddress) ||
+                             (typeof o.address === 'string' ? o.address : (o.address ? [o.address.street, o.address.area, o.address.city, o.address.pincode].filter(Boolean).join(', ') : 'Bengaluru'));
+
         return {
           ...o,
           order_id: cleanId,
           orderId: cleanId,
           id: cleanId,
-          customer_name: o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer',
-          customerName: o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer',
-          customer_phone: o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-',
-          customerPhone: o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-',
-          customer_email: o.customer_email || o.customerEmail || '',
-          customerEmail: o.customer_email || o.customerEmail || '',
+          customer_name: custName,
+          customerName: custName,
+          customer_phone: custPhone,
+          customerPhone: custPhone,
+          customer_email: custEmail,
+          customerEmail: custEmail,
+          delivery_address: deliveryAddr,
+          deliveryAddress: deliveryAddr,
           restaurant_name: o.restaurant_name || o.restaurantName || 'FoodWala Partner',
           restaurantName: o.restaurant_name || o.restaurantName || 'FoodWala Partner',
           total_amount: numTotal,
@@ -1544,9 +1618,12 @@
           payment_status: (o.payment_status || o.paymentStatus || 'PAID').toUpperCase(),
           paymentStatus: (o.payment_status || o.paymentStatus || 'PAID').toUpperCase(),
           status: liveStatus,
+          orderStatus: liveStatus,
+          deliveryStatus: liveStatus,
           order_date: dateVal,
           orderDate: dateVal,
-          createdAt: dateVal
+          createdAt: dateVal,
+          items: Array.isArray(o.items) ? o.items : []
         };
       });
 
@@ -1568,8 +1645,18 @@
     },
 
     getAdminRestaurants: async function () {
-      const list = window.FoodWalaCatalog ? window.FoodWalaCatalog.restaurants : [];
-      return { success: true, restaurants: list };
+      let list = [];
+      try {
+        list = await this.getRestaurants();
+      } catch (e) {}
+      if (!list || list.length === 0) {
+        if (typeof window !== 'undefined' && Array.isArray(window.FOODWALA_RESTAURANTS) && window.FOODWALA_RESTAURANTS.length > 0) {
+          list = window.FOODWALA_RESTAURANTS;
+        } else if (typeof window !== 'undefined' && window.FoodWalaCatalog && Array.isArray(window.FoodWalaCatalog.restaurants)) {
+          list = window.FoodWalaCatalog.restaurants;
+        }
+      }
+      return { success: true, restaurants: Array.isArray(list) ? list : [] };
     },
 
     
@@ -2031,16 +2118,14 @@
         if (!o) return false;
         const oRestId = parseInt(o.restaurantId || o.restaurant_id, 10);
         if (oRestId && oRestId === targetRestId) return true;
-        const oRestName = (o.restaurantName || o.restaurant_name || '').toLowerCase();
-        if (targetRestName && oRestName) {
-          if (targetRestName.includes('vidyarthi') && oRestName.includes('vidyarthi')) return true;
-          if ((targetRestName.includes('ctr') || targetRestName.includes('shri sagar') || targetRestName.includes('central tiffin')) &&
-              (oRestName.includes('ctr') || oRestName.includes('shri sagar') || oRestName.includes('central tiffin'))) return true;
-          if (targetRestName.includes('meghana') && oRestName.includes('meghana')) return true;
-          if (targetRestName.includes('mavalli') || targetRestName.includes('mtr')) {
-            if (oRestName.includes('mavalli') || oRestName.includes('mtr')) return true;
-          }
-          if (oRestName === targetRestName) return true;
+        const oRestName = (o.restaurantName || o.restaurant_name || '').toLowerCase().trim();
+        const tName = (targetRestName || '').toLowerCase().trim();
+        if (tName && oRestName) {
+          if (oRestName === tName) return true;
+          if (oRestName.includes(tName) || tName.includes(oRestName)) return true;
+          const cleanO = oRestName.replace(/[^a-z0-9]/g, '');
+          const cleanT = tName.replace(/[^a-z0-9]/g, '');
+          if (cleanO && cleanT && (cleanO.includes(cleanT) || cleanT.includes(cleanO))) return true;
         }
         return false;
       }
@@ -2183,6 +2268,7 @@
 
       // 2. Update foodwala_orders
       let appOrders = getLocal('foodwala_orders', []);
+      let appFound = false;
       if (Array.isArray(appOrders)) {
         appOrders = appOrders.map(o => {
           const oId = String(o.orderId || o.order_id || o.id || '').replace(/^#?FW-?/i, '').trim();
@@ -2190,12 +2276,31 @@
             o.status = newStatus;
             o.deliveryStatus = newStatus;
             o.orderStatus = newStatus;
+            o.manualStatus = newStatus;
             if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
+            appFound = true;
           }
           return o;
         });
-        setLocal('foodwala_orders', appOrders);
+      } else {
+        appOrders = [];
       }
+
+      if (!appFound) {
+        const source = (kitchenOrders && kitchenOrders.find(o => String(o.order_id || o.orderId || o.id || '').replace(/^#?FW-?/i, '').trim() === cleanId)) ||
+                       (getLocal(STORAGE_KEYS.MOCK_ORDERS, []).find(o => String(o.orderId || o.order_id || o.id || '').replace(/^#?FW-?/i, '').trim() === cleanId));
+        if (source) {
+          appOrders.unshift({
+            ...source,
+            status: newStatus,
+            orderStatus: newStatus,
+            deliveryStatus: newStatus,
+            manualStatus: newStatus,
+            deliveredAt: newStatus === 'DELIVERED' ? new Date().toISOString() : undefined
+          });
+        }
+      }
+      setLocal('foodwala_orders', appOrders);
 
       // 3. Update foodwala_mock_orders
       let mockOrders = getLocal(STORAGE_KEYS.MOCK_ORDERS, []);
@@ -2206,6 +2311,7 @@
             o.status = newStatus;
             o.deliveryStatus = newStatus;
             o.orderStatus = newStatus;
+            o.manualStatus = newStatus;
             if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
           }
           return o;
@@ -2225,6 +2331,7 @@
                 o.status = newStatus;
                 o.deliveryStatus = newStatus;
                 o.orderStatus = newStatus;
+                o.manualStatus = newStatus;
                 if (newStatus === 'DELIVERED') o.deliveredAt = new Date().toISOString();
                 userChanged = true;
               }
@@ -2236,11 +2343,25 @@
         }
       }
 
-      // 5. Dispatch global order status changed event
+      // 5. Trigger Cross-window Storage Keys
+      setLocal('foodwala_order_updated', Date.now());
+      setLocal('foodwala_order_placed_ping', Date.now());
+
+      // 6. Dispatch global order status changed & order-updated events
       if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('foodwala:order-updated', {
+          detail: { orderId: cleanId, status: newStatus }
+        }));
         window.dispatchEvent(new CustomEvent('foodwala:orderStatusChanged', {
           detail: { orderId: cleanId, status: newStatus }
         }));
+        try {
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('foodwala_orders_channel');
+            bc.postMessage({ type: 'order_updated', orderId: cleanId, status: newStatus });
+            bc.close();
+          }
+        } catch (e) {}
       }
 
       return {
@@ -2249,6 +2370,10 @@
         status: newStatus,
         message: `Order #FW-${cleanId} status updated to ${newStatus}`
       };
+    },
+
+    updateOrderStatus: async function (orderId, status) {
+      return await this.updateRestaurantOrderStatus(orderId, status);
     }
   };
 

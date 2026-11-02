@@ -509,11 +509,12 @@
                     <th>Payment Status</th>
                     <th>Order Status</th>
                     <th>Order Date</th>
+                    <th class="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="orders-table-body">
                   <tr>
-                    <td colspan="9" class="text-center py-4 text-muted">Loading orders...</td>
+                    <td colspan="10" class="text-center py-4 text-muted">Loading orders...</td>
                   </tr>
                 </tbody>
               </table>
@@ -723,8 +724,116 @@
     </div>
   </footer>
 
+  <!-- ================= MODAL: ADMIN ORDER DETAILS & STATUS TRANSITIONS ================= -->
+  <div class="modal fade" id="adminOrderModal" tabindex="-1" aria-labelledby="adminOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-danger text-white border-0 py-3">
+          <div>
+            <h5 class="modal-title fw-bold" id="adminOrderModalLabel">
+              <i class="bi bi-receipt-cutoff me-2"></i>Order Details <span id="admin-modal-order-id" class="badge bg-white text-danger font-monospace ms-2"></span>
+            </h5>
+            <small class="text-white-50" id="admin-modal-order-date"></small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <!-- Order Metadata Cards -->
+          <div class="row g-3 mb-4">
+            <!-- Customer Card -->
+            <div class="col-md-6">
+              <div class="card h-100 border rounded-3 p-3 bg-light">
+                <div class="fw-bold text-dark small text-uppercase mb-2"><i class="bi bi-person-fill text-danger me-1"></i> Customer Information</div>
+                <div class="fs-6 fw-bold text-dark" id="admin-modal-customer-name">-</div>
+                <div class="small text-muted mb-1"><i class="bi bi-telephone-fill me-1"></i><span id="admin-modal-customer-phone">-</span></div>
+                <div class="small text-muted mb-1"><i class="bi bi-envelope-fill me-1"></i><span id="admin-modal-customer-email">-</span></div>
+                <div class="small text-dark mt-2 pt-2 border-top">
+                  <strong>Delivery Address:</strong><br>
+                  <span id="admin-modal-customer-address" class="text-muted">-</span>
+                </div>
+              </div>
+            </div>
+            <!-- Restaurant & Payment Card -->
+            <div class="col-md-6">
+              <div class="card h-100 border rounded-3 p-3 bg-light">
+                <div class="fw-bold text-dark small text-uppercase mb-2"><i class="bi bi-shop text-danger me-1"></i> Outlet & Payment Details</div>
+                <div class="fs-6 fw-bold text-dark" id="admin-modal-restaurant-name">-</div>
+                <div class="small text-muted mb-2"><i class="bi bi-geo-alt-fill me-1"></i><span id="admin-modal-restaurant-address">-</span></div>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top small">
+                  <span class="text-muted">Payment Mode:</span>
+                  <span class="fw-bold text-dark" id="admin-modal-payment-mode">-</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-1 small">
+                  <span class="text-muted">Payment Status:</span>
+                  <span id="admin-modal-payment-status">-</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-1 small">
+                  <span class="text-muted">Current Status:</span>
+                  <span id="admin-modal-order-status">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Progression Flow -->
+          <div class="card border rounded-3 p-3 mb-4 bg-white shadow-none">
+            <div class="fw-bold text-dark small text-uppercase mb-2"><i class="bi bi-arrow-repeat text-danger me-1"></i> Order Lifecycle Status Transitions</div>
+            <p class="text-muted small mb-2">Transition order lifecycle status in real time. Changes sync automatically to customer apps, restaurant kitchens, and delivery dashboards:</p>
+            <div class="d-flex flex-wrap gap-2 align-items-center" id="admin-modal-status-buttons">
+              <!-- Buttons dynamically generated -->
+            </div>
+          </div>
+
+          <!-- Itemized Dishes Table -->
+          <div class="card border rounded-3 overflow-hidden mb-3">
+            <div class="card-header bg-light py-2 px-3 fw-bold small text-uppercase text-dark">
+              <i class="bi bi-basket3 me-1"></i> Items Ordered
+            </div>
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead class="table-light small text-muted">
+                  <tr>
+                    <th>Item</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-modal-items-body" class="small">
+                  <!-- items -->
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer bg-light p-3">
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Subtotal</span>
+                <span id="admin-modal-subtotal">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Delivery Fee</span>
+                <span id="admin-modal-fees">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Taxes & GST</span>
+                <span id="admin-modal-taxes">₹0.00</span>
+              </div>
+              <div class="d-flex justify-content-between fs-5 fw-bold text-dark pt-2 border-top">
+                <span>Grand Total</span>
+                <span class="text-danger" id="admin-modal-total">₹0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-0 py-3">
+          <button type="button" class="btn btn-secondary rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Core Scripts -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="./js/foodwala-data.js?v=20261102_05"></script>
   <!-- FoodWala Architecture: Config & Adapters -->
   <script src="./js/config.js?v=20261102_05"></script>
   <script src="./js/adapters/mockAdapter.js?v=20261102_05"></script>
@@ -878,12 +987,19 @@
 
       // Real-time synchronization: listen for orders placed in any tab or session
       window.addEventListener('storage', (e) => {
-        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_users' || e.key === 'foodwala_mock_delivery_partners') {
+        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_users' || e.key === 'foodwala_mock_delivery_partners' || e.key === 'foodwala_mock_kitchen_orders' || e.key === 'foodwala_order_placed_ping' || e.key === 'foodwala_order_updated') {
           loadAdminData();
         }
       });
       window.addEventListener('foodwala:orderPlaced', () => loadAdminData());
       window.addEventListener('foodwala:orderStatusChanged', () => loadAdminData());
+      window.addEventListener('foodwala:order-updated', () => loadAdminData());
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          const bc = new BroadcastChannel('foodwala_orders_channel');
+          bc.onmessage = () => { loadAdminData(); };
+        } catch (e) {}
+      }
 
       // Auto-recalculate statuses & sync every 15 seconds
       setInterval(() => {
@@ -951,8 +1067,41 @@
 
         let restList = [];
         if (restRes) {
-          if (Array.isArray(restRes)) restList = restRes;
-          else if (Array.isArray(restRes.restaurants)) restList = restRes.restaurants;
+          if (Array.isArray(restRes)) {
+            restList = restRes;
+          } else if (Array.isArray(restRes.restaurants)) {
+            restList = restRes.restaurants;
+          } else if (Array.isArray(restRes.data)) {
+            restList = restRes.data;
+          } else if (restRes.data && Array.isArray(restRes.data.restaurants)) {
+            restList = restRes.data.restaurants;
+          }
+        }
+
+        if (!restList || restList.length === 0) {
+          try {
+            const fallbackRes = await FoodWalaApi.getRestaurants({ limit: 120 });
+            if (Array.isArray(fallbackRes)) {
+              restList = fallbackRes;
+            } else if (fallbackRes && Array.isArray(fallbackRes.restaurants)) {
+              restList = fallbackRes.restaurants;
+            } else if (fallbackRes && Array.isArray(fallbackRes.data)) {
+              restList = fallbackRes.data;
+            }
+          } catch (e) {
+            console.warn('[Admin] Fallback getRestaurants error:', e);
+          }
+        }
+
+        if ((!restList || restList.length === 0) && typeof window !== 'undefined' && Array.isArray(window.FOODWALA_RESTAURANTS) && window.FOODWALA_RESTAURANTS.length > 0) {
+          restList = window.FOODWALA_RESTAURANTS;
+        }
+
+        if (!restList || restList.length === 0) {
+          try {
+            const resp = await fetch('./data/restaurants.json');
+            if (resp.ok) restList = await resp.json();
+          } catch (e) {}
         }
 
         let partnersList = [];
@@ -994,9 +1143,9 @@
         document.getElementById('fleet-active-orders').textContent = onDeliveryCount;
 
         // 4. Restaurants Render
-        globalRestaurants = restList;
+        globalRestaurants = Array.isArray(restList) ? restList : [];
         renderRestaurantsTable(globalRestaurants);
-        document.getElementById('tab-restaurants-badge').textContent = globalRestaurants.length || 105;
+        document.getElementById('tab-restaurants-badge').textContent = globalRestaurants.length;
         document.getElementById('kpi-restaurants-count').textContent = globalRestaurants.length || 105;
 
         // 5. Security History Render
@@ -1069,7 +1218,7 @@
     function renderOrdersTable(orders) {
       const tbody = document.getElementById('orders-table-body');
       if (!orders || orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No orders found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">No orders found.</td></tr>';
         return;
       }
 
@@ -1083,7 +1232,7 @@
         const paymentMode = o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay';
         const paymentStatus = (o.payment_status || o.paymentStatus || 'PAID').toUpperCase();
         
-        let status = (o.status || 'PLACED').toUpperCase();
+        let status = (o.status || o.orderStatus || o.deliveryStatus || 'PLACED').toUpperCase();
         if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
           try {
             const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
@@ -1095,23 +1244,29 @@
 
         let statusBadge = 'badge-soft-info';
         if (status === 'DELIVERED') statusBadge = 'badge-soft-success';
-        else if (status === 'ON_THE_WAY' || status === 'ON THE WAY') statusBadge = 'badge-soft-warning text-dark';
-        else if (status === 'PREPARING' || status === 'CONFIRMED' || status === 'IN_PROGRESS') statusBadge = 'badge-soft-primary';
+        else if (status === 'OUT_FOR_DELIVERY' || status === 'ON_THE_WAY' || status === 'ON THE WAY') statusBadge = 'badge-soft-primary';
+        else if (status === 'READY_FOR_PICKUP') statusBadge = 'badge-soft-primary text-primary';
+        else if (status === 'PREPARING' || status === 'ACCEPTED' || status === 'CONFIRMED' || status === 'IN_PROGRESS') statusBadge = 'badge-soft-warning text-dark';
         else if (status === 'CANCELLED') statusBadge = 'badge-soft-danger';
 
         let payBadge = paymentStatus === 'PAID' ? 'badge-soft-success' : 'badge-soft-warning';
 
         return `
-          <tr>
-            <td class="fw-bold text-danger">#FW-${escapeHtml(cleanOrderId)}</td>
+          <tr style="cursor: pointer;" onclick="viewOrderDetails('${cleanOrderId}')">
+            <td class="fw-bold text-danger font-monospace">#FW-${escapeHtml(cleanOrderId)}</td>
             <td class="fw-semibold text-dark">${escapeHtml(customerName)}</td>
-            <td class="small text-muted">${escapeHtml(customerPhone)}</td>
+            <td class="small text-muted"><i class="bi bi-telephone-fill me-1 small"></i>${escapeHtml(customerPhone)}</td>
             <td class="small fw-semibold text-dark">${escapeHtml(restaurantName)}</td>
             <td class="fw-bold text-dark">₹${totalAmount.toFixed(2)}</td>
             <td class="small text-muted">${escapeHtml(paymentMode)}</td>
             <td><span class="badge ${payBadge} rounded-pill px-2 py-1 small">${escapeHtml(paymentStatus)}</span></td>
             <td><span class="badge ${statusBadge} rounded-pill px-2 py-1 small fw-bold">${escapeHtml(status)}</span></td>
             <td class="small text-muted">${orderDate ? new Date(orderDate).toLocaleString('en-IN') : '-'}</td>
+            <td class="text-end" onclick="event.stopPropagation()">
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-semibold small" onclick="viewOrderDetails('${cleanOrderId}')">
+                <i class="bi bi-eye me-1"></i>Details
+              </button>
+            </td>
           </tr>
         `;
       }).join('');
@@ -1221,15 +1376,15 @@
         return;
       }
 
-      tbody.innerHTML = restaurants.slice(0, 100).map(r => {
+      tbody.innerHTML = restaurants.map(r => {
         const id = r.restaurantId || r.restaurant_id || r.id || '-';
         const name = r.name || 'Restaurant';
-        const cuisines = r.cuisine_type || r.cuisineType || r.cuisine || 'Multi-Cuisine';
-        const area = r.address || r.area || 'Bengaluru';
+        const cuisines = r.cuisine_type || r.cuisineType || r.cuisine || (Array.isArray(r.cuisines) ? r.cuisines.join(', ') : 'Multi-Cuisine');
+        const area = r.address || r.area || r.location || 'Bengaluru';
         const rating = Number(r.rating || 4.5).toFixed(1);
-        const deliveryTime = r.estimated_delivery_time || r.deliveryTime || '25-35 mins';
-        const priceForTwo = r.price_for_two || r.costForTwo || '₹400 for two';
-        const isOpen = r.is_open !== 0 && r.isOpen !== false;
+        const deliveryTime = r.estimated_delivery_time || r.deliveryTime || r.delivery_time || '25-35 mins';
+        const priceForTwo = r.price_for_two || r.costForTwo || r.cost_for_two || '₹400 for two';
+        const isOpen = r.is_open !== 0 && r.is_open !== false && r.isOpen !== false;
 
         return `
           <tr>
@@ -1253,6 +1408,137 @@
           </tr>
         `;
       }).join('');
+    }
+
+    let currentAdminModalOrder = null;
+
+    function viewOrderDetails(orderId) {
+      const cleanOrderId = String(orderId).replace(/^#?FW-?/i, '').trim();
+      const order = globalOrders.find(o => {
+        const oClean = String(o.order_id || o.orderId || o.id || '').replace(/^#?FW-?/i, '').trim();
+        return oClean === cleanOrderId;
+      });
+      if (!order) {
+        FoodWalaApp.showToast(`Order #FW-${cleanOrderId} not found.`, 'warning');
+        return;
+      }
+      currentAdminModalOrder = order;
+
+      const customerName = order.customer_name || order.customerName || (order.address && order.address.fullName) || 'Customer';
+      const customerPhone = order.customer_phone || order.customerPhone || (order.address && order.address.phone) || '-';
+      const customerEmail = order.customer_email || order.customerEmail || order.email || '-';
+      const deliveryAddr = (typeof order.delivery_address === 'string' && order.delivery_address) ||
+                           (typeof order.deliveryAddress === 'string' && order.deliveryAddress) ||
+                           (typeof order.address === 'string' ? order.address : (order.address ? [order.address.street, order.address.area, order.address.city, order.address.pincode].filter(Boolean).join(', ') : 'Bengaluru'));
+      const restName = order.restaurant_name || order.restaurantName || 'FoodWala Partner';
+      const restAddr = order.restaurant_address || order.restaurantAddress || 'Bengaluru Outlet';
+      const totalAmount = Number(order.total_amount ?? order.totalAmount ?? order.grandTotal ?? order.total ?? 0);
+      const paymentMode = order.payment_mode || order.paymentMode || order.paymentMethod || 'Razorpay';
+      const paymentStatus = (order.payment_status || order.paymentStatus || 'PAID').toUpperCase();
+      let status = (order.status || order.orderStatus || order.deliveryStatus || 'PLACED').toUpperCase();
+      const orderDate = order.order_date || order.orderDate || order.createdAt;
+
+      document.getElementById('admin-modal-order-id').textContent = `#FW-${cleanOrderId}`;
+      document.getElementById('admin-modal-order-date').textContent = orderDate ? `Placed: ${new Date(orderDate).toLocaleString('en-IN')}` : '';
+      document.getElementById('admin-modal-customer-name').textContent = customerName;
+      document.getElementById('admin-modal-customer-phone').textContent = customerPhone;
+      document.getElementById('admin-modal-customer-email').textContent = customerEmail;
+      document.getElementById('admin-modal-customer-address').textContent = deliveryAddr;
+      document.getElementById('admin-modal-restaurant-name').textContent = restName;
+      document.getElementById('admin-modal-restaurant-address').textContent = restAddr;
+      document.getElementById('admin-modal-payment-mode').textContent = paymentMode;
+
+      const payBadgeClass = paymentStatus === 'PAID' ? 'badge bg-success-subtle text-success border border-success-subtle' : 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+      document.getElementById('admin-modal-payment-status').innerHTML = `<span class="${payBadgeClass} rounded-pill px-2.5 py-1 small fw-bold">${escapeHtml(paymentStatus)}</span>`;
+
+      let statusBadgeClass = 'badge bg-info-subtle text-info-emphasis border border-info-subtle';
+      if (status === 'DELIVERED') statusBadgeClass = 'badge bg-success text-white';
+      else if (status === 'OUT_FOR_DELIVERY' || status === 'ON_THE_WAY') statusBadgeClass = 'badge bg-primary text-white';
+      else if (status === 'READY_FOR_PICKUP') statusBadgeClass = 'badge bg-primary-subtle text-primary border border-primary-subtle';
+      else if (status === 'PREPARING' || status === 'ACCEPTED' || status === 'CONFIRMED') statusBadgeClass = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+      else if (status === 'CANCELLED') statusBadgeClass = 'badge bg-danger text-white';
+      document.getElementById('admin-modal-order-status').innerHTML = `<span class="${statusBadgeClass} rounded-pill px-2.5 py-1 small fw-bold">${escapeHtml(status)}</span>`;
+
+      // Render Status Transition Buttons:
+      // Accept Order -> Preparing -> Ready for Pickup -> Handover / Out for Delivery -> Delivered
+      const statusTransitions = [
+        { code: 'ACCEPTED', label: 'Accept Order', icon: 'bi-check2-circle', btnClass: 'btn-outline-primary' },
+        { code: 'PREPARING', label: 'Preparing', icon: 'bi-fire', btnClass: 'btn-outline-warning text-dark' },
+        { code: 'READY_FOR_PICKUP', label: 'Ready for Pickup', icon: 'bi-box-seam', btnClass: 'btn-outline-info text-dark' },
+        { code: 'OUT_FOR_DELIVERY', label: 'Handover / Out for Delivery', icon: 'bi-bicycle', btnClass: 'btn-outline-primary' },
+        { code: 'DELIVERED', label: 'Delivered', icon: 'bi-check-all', btnClass: 'btn-outline-success' }
+      ];
+
+      const btnContainer = document.getElementById('admin-modal-status-buttons');
+      btnContainer.innerHTML = statusTransitions.map(st => {
+        const isCurrent = status === st.code || (st.code === 'ACCEPTED' && status === 'CONFIRMED') || (st.code === 'OUT_FOR_DELIVERY' && (status === 'ON_THE_WAY' || status === 'ON THE WAY'));
+        const activeClass = isCurrent ? 'btn-dark text-white shadow-sm' : st.btnClass;
+        return `
+          <button type="button" class="btn btn-sm ${activeClass} rounded-pill px-3 py-1.5 fw-bold" onclick="updateAdminOrderStatus('${cleanOrderId}', '${st.code}')">
+            <i class="bi ${st.icon} me-1"></i>${st.label} ${isCurrent ? '<i class="bi bi-check-circle-fill ms-1 text-success"></i>' : ''}
+          </button>
+        `;
+      }).join('');
+
+      // Render Itemized Items
+      const itemsBody = document.getElementById('admin-modal-items-body');
+      const items = Array.isArray(order.items) ? order.items : [];
+      let itemSubtotal = 0;
+      if (items.length > 0) {
+        itemsBody.innerHTML = items.map(it => {
+          const name = it.item_name || it.name || it.itemName || 'Dish';
+          const qty = Number(it.quantity || it.qty || 1);
+          const price = Number(it.price || 0);
+          const lineTotal = Number(it.total_price || it.totalPrice || it.item_total || (price * qty));
+          itemSubtotal += lineTotal;
+          return `
+            <tr>
+              <td class="fw-semibold text-dark">${escapeHtml(name)}</td>
+              <td class="text-center font-monospace">${qty}</td>
+              <td class="text-end text-muted">₹${price.toFixed(2)}</td>
+              <td class="text-end fw-bold text-dark">₹${lineTotal.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        itemSubtotal = totalAmount;
+        itemsBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center py-2 text-muted">Standard dishes included (₹${totalAmount.toFixed(2)})</td>
+          </tr>
+        `;
+      }
+
+      const deliveryFee = Number(order.delivery_fee ?? order.deliveryFee ?? 35);
+      const taxFee = Number(order.taxes ?? order.tax ?? order.gst ?? (totalAmount > itemSubtotal ? totalAmount - itemSubtotal - deliveryFee : 15));
+      document.getElementById('admin-modal-subtotal').textContent = `₹${itemSubtotal.toFixed(2)}`;
+      document.getElementById('admin-modal-fees').textContent = `₹${deliveryFee.toFixed(2)}`;
+      document.getElementById('admin-modal-taxes').textContent = `₹${Math.max(0, taxFee).toFixed(2)}`;
+      document.getElementById('admin-modal-total').textContent = `₹${totalAmount.toFixed(2)}`;
+
+      const modalEl = document.getElementById('adminOrderModal');
+      if (modalEl && window.bootstrap && bootstrap.Modal) {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.show();
+      }
+    }
+
+    async function updateAdminOrderStatus(orderId, newStatus) {
+      try {
+        if (FoodWalaApi.updateRestaurantOrderStatus) {
+          const res = await FoodWalaApi.updateRestaurantOrderStatus(orderId, newStatus);
+          if (res && res.success) {
+            FoodWalaApp.showToast(`Order #FW-${orderId} status updated to "${newStatus}"!`, 'success');
+            await loadAdminData();
+            // Re-render modal if open
+            viewOrderDetails(orderId);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to update admin order status:', err);
+      }
+      FoodWalaApp.showToast('Failed to update order status.', 'danger');
     }
 
     function renderSecurityTable(history) {

@@ -217,7 +217,28 @@
     },
 
     getAdminRestaurants: async function () {
-      return await getAdapter().getAdminRestaurants();
+      const adapter = getAdapter();
+      if (adapter && typeof adapter.getAdminRestaurants === 'function') {
+        const res = await adapter.getAdminRestaurants();
+        if (res && res.success && Array.isArray(res.restaurants) && res.restaurants.length > 0) {
+          return res;
+        }
+      }
+      try {
+        const list = await this.getRestaurants();
+        if (Array.isArray(list) && list.length > 0) {
+          return { success: true, restaurants: list };
+        } else if (list && Array.isArray(list.restaurants) && list.restaurants.length > 0) {
+          return { success: true, restaurants: list.restaurants };
+        } else if (list && Array.isArray(list.data) && list.data.length > 0) {
+          return { success: true, restaurants: list.data };
+        }
+      } catch (e) {}
+
+      if (typeof window !== 'undefined' && Array.isArray(window.FOODWALA_RESTAURANTS) && window.FOODWALA_RESTAURANTS.length > 0) {
+        return { success: true, restaurants: window.FOODWALA_RESTAURANTS };
+      }
+      return { success: true, restaurants: [] };
     },
 
     
@@ -268,6 +289,14 @@
 
     updateRestaurantOrderStatus: async function (orderId, status) {
       return await getAdapter().updateRestaurantOrderStatus(orderId, status);
+    },
+
+    updateOrderStatus: async function (orderId, status) {
+      const adapter = getAdapter();
+      if (adapter && typeof adapter.updateOrderStatus === 'function') {
+        return await adapter.updateOrderStatus(orderId, status);
+      }
+      return await adapter.updateRestaurantOrderStatus(orderId, status);
     }
   };
 

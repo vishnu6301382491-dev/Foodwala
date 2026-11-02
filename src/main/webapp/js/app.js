@@ -1790,15 +1790,22 @@ const FoodWalaApp = (function () {
     if (!Array.isArray(ordersArray)) return [];
     const map = new Map();
     const statusPriority = {
-      'Delivered': 4,
-      'DELIVERED': 4,
-      'ON THE WAY': 3,
-      'ON_THE_WAY': 3,
-      'On the way': 3,
+      'DELIVERED': 5,
+      'Delivered': 5,
+      'OUT_FOR_DELIVERY': 4,
+      'ON THE WAY': 4,
+      'ON_THE_WAY': 4,
+      'On the way': 4,
+      'READY_FOR_PICKUP': 3,
+      'Ready for Rider': 3,
       'Food is being Prepared': 2,
       'PREPARING': 2,
+      'ACCEPTED': 1,
+      'CONFIRMED': 1,
       'IN_PROGRESS': 1,
-      'Order Placed': 0
+      'Order Placed': 0,
+      'ORDER_PLACED': 0,
+      'PLACED': 0
     };
 
     for (const order of ordersArray) {
@@ -1848,12 +1855,36 @@ const FoodWalaApp = (function () {
           deliveredAt: order.deliveredAt || order.createdAt
         };
       }
+      if (curr === 'OUT_FOR_DELIVERY' || curr === 'ON_THE_WAY' || curr === 'ON THE WAY') {
+        return {
+          status: 'OUT_FOR_DELIVERY',
+          label: 'Out for Delivery',
+          isLive: true,
+          remainingMinutes: 10
+        };
+      }
       if (curr === 'READY_FOR_PICKUP') {
         return {
           status: 'READY_FOR_PICKUP',
           label: 'Ready for Rider',
           isLive: true,
           remainingMinutes: 15
+        };
+      }
+      if (curr === 'ACCEPTED' || curr === 'CONFIRMED') {
+        return {
+          status: 'ACCEPTED',
+          label: 'Order Accepted',
+          isLive: true,
+          remainingMinutes: 25
+        };
+      }
+      if (order.manualStatus) {
+        return {
+          status: order.manualStatus.toUpperCase(),
+          label: order.manualStatus,
+          isLive: true,
+          remainingMinutes: 20
         };
       }
 
@@ -1961,8 +1992,12 @@ const FoodWalaApp = (function () {
       try {
         setStorage('foodwala_mock_orders', orders);
       } catch (e) {}
+      try {
+        localStorage.setItem('foodwala_order_updated', Date.now().toString());
+      } catch (e) {}
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('foodwala:orderStatusChanged', { detail: order }));
+        window.dispatchEvent(new CustomEvent('foodwala:order-updated', { detail: { orderId: targetId, status: order.status, order } }));
       }
       return orders[idx > -1 ? idx : 0];
     },
@@ -2155,6 +2190,7 @@ const FoodWalaApp = (function () {
       // Cross-tab notification ping
       try {
         localStorage.setItem('foodwala_order_placed_ping', Date.now().toString());
+        localStorage.setItem('foodwala_order_updated', Date.now().toString());
         if (typeof BroadcastChannel !== 'undefined') {
           const bc = new BroadcastChannel('foodwala_orders_channel');
           bc.postMessage({ type: 'order_placed', order: newOrder });
@@ -2165,6 +2201,7 @@ const FoodWalaApp = (function () {
       // Dispatch global real-time event
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('foodwala:orderPlaced', { detail: newOrder }));
+        window.dispatchEvent(new CustomEvent('foodwala:order-updated', { detail: { orderId: cleanId, status: newOrder.status, order: newOrder } }));
       }
 
       Cart.clearCart();
