@@ -756,6 +756,45 @@
       }
     },
 
+    
+    getAdminDeliveryPartners: async function () {
+      if (unavailableEndpoints.has('admin/delivery-partners')) {
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminDeliveryPartners();
+        }
+      }
+      try {
+        const res = await liveFetch('/api/admin/delivery-partners', { headers: getAuthHeader() });
+        if (res.ok) return await res.json();
+        unavailableEndpoints.add('admin/delivery-partners');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminDeliveryPartners();
+        }
+        return { success: false, partners: [] };
+      } catch (err) {
+        unavailableEndpoints.add('admin/delivery-partners');
+        if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+          return await window.FoodWalaAdapters.mock.getAdminDeliveryPartners();
+        }
+        return { success: false, partners: [] };
+      }
+    },
+
+    updateDeliveryPartnerStatus: async function (partnerId, status) {
+      try {
+        const res = await liveFetch(`/api/admin/delivery-partners/${partnerId}/status`, {
+          method: 'PATCH',
+          headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) return await res.json();
+      } catch (e) {}
+      if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {
+        return await window.FoodWalaAdapters.mock.updateDeliveryPartnerStatus(partnerId, status);
+      }
+      return { success: false };
+    },
+
     getAdminLoginHistory: async function () {
       if (unavailableEndpoints.has('admin/login-history')) {
         if (window.FoodWalaAdapters && window.FoodWalaAdapters.mock) {

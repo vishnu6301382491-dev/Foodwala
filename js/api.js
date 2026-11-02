@@ -220,6 +220,15 @@
       return await getAdapter().getAdminRestaurants();
     },
 
+    
+    getAdminDeliveryPartners: async function () {
+      return await getAdapter().getAdminDeliveryPartners();
+    },
+
+    updateDeliveryPartnerStatus: async function (partnerId, status) {
+      return await getAdapter().updateDeliveryPartnerStatus(partnerId, status);
+    },
+
     getAdminLoginHistory: async function () {
       return await getAdapter().getAdminLoginHistory();
     },

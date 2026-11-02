@@ -1,0 +1,1300 @@
+const fs = require('fs');
+const path = require('path');
+
+const root = 'D:\\FoodWala_Eclipse_Project';
+
+const adminHtmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodWala Operations | Super Admin Portal</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/ui.css">
+  <style>
+    .stat-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+    }
+    .badge-soft-success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    .badge-soft-danger {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    .badge-soft-warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .badge-soft-info {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    .badge-soft-primary {
+      background-color: #e0e7ff;
+      color: #3730a3;
+    }
+    .duty-indicator-pulse {
+      width: 10px;
+      height: 10px;
+      background-color: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse-green 1.8s infinite;
+    }
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .duty-indicator-offline {
+      width: 10px;
+      height: 10px;
+      background-color: #94a3b8;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .duty-indicator-ondelivery {
+      width: 10px;
+      height: 10px;
+      background-color: #f59e0b;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
+  <script src="./js/theme.js"></script>
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+  <!-- Admin Top Navbar -->
+  <header class="sticky-top bg-white border-bottom shadow-sm">
+    <div class="container py-2 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <a href="./index.html" class="d-flex align-items-center gap-2 text-decoration-none">
+          <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+            <i class="bi bi-shield-lock-fill fs-5"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold text-danger mb-0 lh-1">FoodWala</h5>
+            <small class="text-muted fw-semibold" style="font-size: 0.72rem;">ADMIN PORTAL</small>
+          </div>
+        </a>
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold small">
+          <i class="bi bi-shield-check me-1"></i> Management Console
+        </span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <a href="./restaurant-dashboard.html" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold shadow-sm" title="Open Restaurant Manager Console">
+          <i class="bi bi-shop me-1"></i> Manager Dashboard
+        </a>
+        <a href="./delivery-dashboard.html" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm" title="Open Delivery Partner & Fleet Console">
+          <i class="bi bi-bicycle me-1"></i> Delivery Hero Portal
+        </a>
+        <a href="./index.html" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold">
+          <i class="bi bi-arrow-left me-1"></i> Storefront
+        </a>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn border" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
+          <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
+          <span class="theme-toggle-label d-none d-sm-inline">Dark</span>
+        </button>
+        <a href="./profile.html" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+          <i class="bi bi-person me-1"></i> Profile
+        </a>
+        <button id="admin-logout-btn" class="btn btn-sm btn-danger rounded-pill px-3 fw-semibold">
+          <i class="bi bi-box-arrow-right me-1"></i> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container my-4 flex-grow-1">
+
+    <!-- Access Gate / Non-Admin Notice -->
+    <div id="admin-gate" class="card border-0 shadow-sm rounded-4 p-5 text-center my-5 mx-auto" style="max-width: 520px; display: none;">
+      <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+        <i class="bi bi-lock-fill fs-1"></i>
+      </div>
+      <h4 class="fw-bold text-dark mb-2">Administrator Access Required</h4>
+      <p class="text-muted small mb-4">Please log in with an administrator account to view and manage live database records in <code>fudwala</code>.</p>
+      
+      <form id="quick-admin-login-form" class="text-start">
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Admin Email</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+            <input type="email" id="gate-email" class="form-control" value="adminfoodwala@gmail.com" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-muted">Admin Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-shield-lock"></i></span>
+            <input type="password" id="gate-password" class="form-control" value="Vishnu@143" required>
+          </div>
+        </div>
+        <div id="gate-error" class="alert alert-danger py-2 small d-none mb-3"></div>
+        <button type="submit" id="gate-login-btn" class="btn btn-danger w-100 rounded-pill fw-bold py-2 shadow-sm">
+          <i class="bi bi-key-fill me-1"></i> Sign In to Admin Center
+        </button>
+      </form>
+    </div>
+
+    <!-- Admin Dashboard Main Surface -->
+    <div id="admin-dashboard" style="display: none;">
+
+      <!-- Top Operations Control Ribbon -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+          <h3 class="fw-bold text-dark mb-1">Super Operations Command Center</h3>
+          <p class="text-muted small mb-0">Live MySQL <code>fudwala</code> database inspection, delivery fleet radar, and customer order management</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span id="db-health-badge" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
+            <i class="bi bi-circle-fill small me-1"></i> Checking DB...
+          </span>
+          <button id="refresh-all-btn" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+            <i class="bi bi-arrow-repeat me-1"></i> Refresh Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Executive KPI Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Total Users</span>
+              <div class="bg-primary-subtle text-primary rounded-3 p-2">
+                <i class="bi bi-people-fill fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-users-count">-</h3>
+            <div class="small text-muted" id="kpi-users-sub">Registered accounts</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Total Orders</span>
+              <div class="bg-success-subtle text-success rounded-3 p-2">
+                <i class="bi bi-bag-check-fill fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-orders-count">-</h3>
+            <div class="small text-muted">Orders logged</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Gross Revenue</span>
+              <div class="bg-warning-subtle text-warning rounded-3 p-2">
+                <i class="bi bi-currency-rupee fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-revenue">-</h3>
+            <div class="small text-muted">Completed orders</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100 border-start border-4 border-warning">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Delivery Fleet</span>
+              <div class="bg-warning-subtle text-warning rounded-3 p-2">
+                <i class="bi bi-bicycle fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-fleet-count">-</h3>
+            <div class="small text-muted" id="kpi-fleet-sub"><span class="duty-indicator-pulse me-1"></span>Heroes on-duty</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Restaurants</span>
+              <div class="bg-info-subtle text-info rounded-3 p-2">
+                <i class="bi bi-shop fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-restaurants-count">105</h3>
+            <div class="small text-muted">Bengaluru outlets</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Login Audits</span>
+              <div class="bg-danger-subtle text-danger rounded-3 p-2">
+                <i class="bi bi-shield-check fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-login-count">-</h3>
+            <div class="small text-muted" id="kpi-login-sub">Security logs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active rounded-pill fw-bold px-4" id="users-tab" data-bs-toggle="pill" data-bs-target="#tab-users" type="button" role="tab">
+            <i class="bi bi-person-lines-fill me-2"></i>Users (<span id="tab-users-badge">0</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill fw-bold px-4" id="orders-tab" data-bs-toggle="pill" data-bs-target="#tab-orders" type="button" role="tab">
+            <i class="bi bi-receipt me-2"></i>Orders (<span id="tab-orders-badge">0</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill fw-bold px-4" id="partners-tab" data-bs-toggle="pill" data-bs-target="#tab-partners" type="button" role="tab">
+            <i class="bi bi-bicycle me-2"></i>Delivery Fleet (<span id="tab-partners-badge">0</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill fw-bold px-4" id="restaurants-tab" data-bs-toggle="pill" data-bs-target="#tab-restaurants" type="button" role="tab">
+            <i class="bi bi-shop me-2"></i>Restaurants (<span id="tab-restaurants-badge">105</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill fw-bold px-4" id="security-tab" data-bs-toggle="pill" data-bs-target="#tab-security" type="button" role="tab">
+            <i class="bi bi-shield-shaded me-2"></i>Login History Log
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content" id="adminTabsContent">
+        
+        <!-- TAB 1: USERS -->
+        <div class="tab-pane fade show active" id="tab-users" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+              <h5 class="fw-bold text-dark mb-0">Registered Users (<code>fudwala.user</code>)</h5>
+              <div class="position-relative" style="max-width: 300px; width: 100%;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" id="user-search-input" class="form-control rounded-pill ps-5" placeholder="Filter by name, email, phone...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="users-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone (Normalized)</th>
+                    <th>Role</th>
+                    <th>Orders</th>
+                    <th>Total Spent</th>
+                    <th>Failed Logins</th>
+                    <th>Lockout Status</th>
+                    <th>Last Login</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <tr>
+                    <td colspan="10" class="text-center py-4 text-muted">Loading user accounts...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: ORDERS -->
+        <div class="tab-pane fade" id="tab-orders" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+              <h5 class="fw-bold text-dark mb-0">Customer Orders (<code>fudwala.orders</code>)</h5>
+              <div class="d-flex gap-2">
+                <select id="order-status-filter" class="form-select form-select-sm rounded-pill" style="width: auto;">
+                  <option value="ALL">All Statuses</option>
+                  <option value="PLACED">PLACED</option>
+                  <option value="CONFIRMED">CONFIRMED</option>
+                  <option value="ON_THE_WAY">ON_THE_WAY</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                </select>
+                <div class="position-relative" style="max-width: 250px;">
+                  <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                  <input type="text" id="order-search-input" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search order ID / customer...">
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="orders-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Phone</th>
+                    <th>Restaurant</th>
+                    <th>Total</th>
+                    <th>Payment Mode</th>
+                    <th>Payment Status</th>
+                    <th>Order Status</th>
+                    <th>Order Date</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">Loading orders...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: DELIVERY FLEET & PARTNER PORTAL -->
+        <div class="tab-pane fade" id="tab-partners" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+            <!-- Header & Actions -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+              <div>
+                <div class="d-flex align-items-center gap-2">
+                  <h5 class="fw-bold text-dark mb-0">Delivery Fleet & Partner Operations</h5>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold small">
+                    <span class="duty-indicator-pulse me-1"></span> Live Fleet Radar
+                  </span>
+                </div>
+                <small class="text-muted">Monitor delivery hero assignments, active duty statuses, vehicle details, and rider performance across Bengaluru</small>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="./delivery-dashboard.html" class="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1.5 shadow-sm">
+                  <i class="bi bi-bicycle"></i>
+                  <span>Launch Delivery Hero Console</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Fleet Live KPI Cards -->
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Riders On-Duty</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-success mb-0" id="fleet-online-count">0</h4>
+                    <span class="badge bg-success text-white rounded-pill px-2 py-0.5 small" id="fleet-duty-percent">0%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Active Deliveries</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-warning mb-0" id="fleet-active-orders">0</h4>
+                    <span class="small text-muted">In Transit</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Avg Dispatch Time</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-primary mb-0">21m</h4>
+                    <span class="small text-success fw-semibold"><i class="bi bi-lightning-charge-fill me-1"></i>Ultra Fast</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Fleet Customer Rating</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-warning mb-0">4.9 ★</h4>
+                    <span class="small text-muted">Bengaluru Fleet</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+              <div class="d-flex flex-wrap gap-2">
+                <select id="partner-status-filter" class="form-select form-select-sm rounded-pill" style="width: auto;">
+                  <option value="ALL">All Duty Statuses</option>
+                  <option value="ONLINE">Online (Ready)</option>
+                  <option value="ON_DELIVERY">On Delivery</option>
+                  <option value="OFFLINE">Offline</option>
+                </select>
+                <select id="partner-zone-filter" class="form-select form-select-sm rounded-pill" style="width: auto;">
+                  <option value="ALL">All Operational Zones</option>
+                  <option value="Koramangala">Koramangala & HSR</option>
+                  <option value="Indiranagar">Indiranagar & Domlur</option>
+                  <option value="Jayanagar">Jayanagar & JP Nagar</option>
+                  <option value="Whitefield">Whitefield & Marathahalli</option>
+                  <option value="BTM">BTM Layout & Madiwala</option>
+                  <option value="Malleshwaram">Malleshwaram & Rajajinagar</option>
+                </select>
+              </div>
+              <div class="position-relative" style="max-width: 280px; width: 100%;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" id="partner-search-input" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search partner name, phone, plate...">
+              </div>
+            </div>
+
+            <!-- Fleet Table -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="partners-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>Hero ID</th>
+                    <th>Delivery Hero</th>
+                    <th>Contact</th>
+                    <th>Vehicle Details</th>
+                    <th>Operational Zone</th>
+                    <th>Duty Status</th>
+                    <th>Completed</th>
+                    <th>Wallet Balance</th>
+                    <th>Quick Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="partners-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">Loading delivery fleet...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: RESTAURANTS DIRECTORY -->
+        <div class="tab-pane fade" id="tab-restaurants" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+              <div>
+                <h5 class="fw-bold text-dark mb-0">Partner Restaurants Directory (<code>105 Outlets</code>)</h5>
+                <small class="text-muted">Live catalog of FSSAI certified restaurants across all Bengaluru zones</small>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="./restaurant-dashboard.html" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold">
+                  <i class="bi bi-shop me-1"></i> Manager Dashboard
+                </a>
+                <div class="position-relative" style="max-width: 280px;">
+                  <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                  <input type="text" id="restaurant-search-input" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search restaurant name, cuisine...">
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="restaurants-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>ID</th>
+                    <th>Restaurant Name</th>
+                    <th>Cuisines</th>
+                    <th>Area / Hub</th>
+                    <th>Rating</th>
+                    <th>Delivery Time</th>
+                    <th>Price for Two</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="restaurants-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">Loading restaurants...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: LOGIN HISTORY -->
+        <div class="tab-pane fade" id="tab-security" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="fw-bold text-dark mb-0">Authentication & Security Log (<code>fudwala.login_history</code>)</h5>
+                <small class="text-muted">Real-time audit log of all successful and failed sign-in attempts</small>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="security-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>User / Account</th>
+                    <th>Email / Phone</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="security-table-body">
+                  <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Loading security logs...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-top py-3 mt-auto">
+    <div class="container text-center text-muted small">
+      FoodWala Operations Portal &copy; 2026. Secure Admin Console.
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- FoodWala Architecture: Config & Adapters -->
+  <script src="./js/config.js?v=20261102_03"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261102_03"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261102_03"></script>
+  <script src="./js/api.js?v=20261102_03"></script>
+  <script src="./js/app.js?v=20261102_03"></script>
+
+  <script>
+    let globalUsers = [];
+    let globalOrders = [];
+    let globalHistory = [];
+    let globalRestaurants = [];
+    let globalPartners = [];
+
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) {
+        const u = FoodWalaApp.Auth.getCurrentUser();
+        const r = (u && u.role ? u.role : '').toLowerCase();
+        if (!u || r !== 'admin') {
+          window.location.replace('./login.html?redirect=./admin.html');
+        }
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initAdminAuth();
+      bindEvents();
+    });
+
+    function initAdminAuth() {
+      const currentUser = FoodWalaApp.Auth.getCurrentUser();
+      if (!currentUser) {
+        document.getElementById('admin-gate').style.display = 'block';
+        document.getElementById('admin-dashboard').style.display = 'none';
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        return;
+      }
+      const role = (currentUser.role || '').toLowerCase();
+      if (role !== 'admin') {
+        FoodWalaApp.showToast('Access denied: Administrator privileges required.', 'danger');
+        window.location.replace('./profile.html');
+        return;
+      }
+      document.getElementById('admin-gate').style.display = 'none';
+      document.getElementById('admin-dashboard').style.display = 'block';
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      if (logoutBtn) logoutBtn.style.display = 'inline-block';
+      loadAdminData();
+    }
+
+    function bindEvents() {
+      // Gate login submit
+      const gateForm = document.getElementById('quick-admin-login-form');
+      if (gateForm) {
+        gateForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('gate-email').value.trim();
+          const password = document.getElementById('gate-password').value;
+          const errDiv = document.getElementById('gate-error');
+          const btn = document.getElementById('gate-login-btn');
+          
+          errDiv.classList.add('d-none');
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Authenticating...';
+
+          try {
+            const res = await FoodWalaApi.login(email, password);
+            if (res.success && res.user && (res.user.role || '').toLowerCase() === 'admin') {
+              FoodWalaApp.showToast('Welcome, Administrator!', 'success');
+              initAdminAuth();
+            } else if (res.success && res.user && (res.user.role || '').toLowerCase() !== 'admin') {
+              errDiv.textContent = 'Account signed in successfully, but does not possess admin privileges.';
+              errDiv.classList.remove('d-none');
+            } else {
+              errDiv.textContent = res.message || 'Login failed.';
+              errDiv.classList.remove('d-none');
+            }
+          } catch (err) {
+            errDiv.textContent = 'Failed to connect to authentication server.';
+            errDiv.classList.remove('d-none');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-key-fill me-1"></i> Sign In to Admin Center';
+          }
+        });
+      }
+
+      // Logout
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          logoutBtn.disabled = true;
+          logoutBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Signing out...';
+          await FoodWalaApp.Auth.logout('./login.html');
+        });
+      }
+
+      // Refresh
+      const refreshBtn = document.getElementById('refresh-all-btn');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+          refreshBtn.disabled = true;
+          const origHtml = refreshBtn.innerHTML;
+          refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Refreshing...';
+          await loadAdminData();
+          refreshBtn.disabled = false;
+          refreshBtn.innerHTML = origHtml;
+          FoodWalaApp.showToast('Admin data refreshed successfully!', 'success');
+        });
+      }
+
+      // User search
+      const userSearch = document.getElementById('user-search-input');
+      if (userSearch) {
+        userSearch.addEventListener('input', (e) => {
+          filterUsers(e.target.value.toLowerCase().trim());
+        });
+      }
+
+      // Order search & filter
+      const orderSearch = document.getElementById('order-search-input');
+      const orderFilter = document.getElementById('order-status-filter');
+      if (orderSearch) {
+        orderSearch.addEventListener('input', () => applyOrderFilters());
+      }
+      if (orderFilter) {
+        orderFilter.addEventListener('change', () => applyOrderFilters());
+      }
+
+      // Partner search & filter
+      const partnerSearch = document.getElementById('partner-search-input');
+      const partnerStatusFilter = document.getElementById('partner-status-filter');
+      const partnerZoneFilter = document.getElementById('partner-zone-filter');
+      if (partnerSearch) {
+        partnerSearch.addEventListener('input', () => applyPartnerFilters());
+      }
+      if (partnerStatusFilter) {
+        partnerStatusFilter.addEventListener('change', () => applyPartnerFilters());
+      }
+      if (partnerZoneFilter) {
+        partnerZoneFilter.addEventListener('change', () => applyPartnerFilters());
+      }
+
+      // Restaurant search
+      const restSearch = document.getElementById('restaurant-search-input');
+      if (restSearch) {
+        restSearch.addEventListener('input', () => applyRestaurantFilters());
+      }
+
+      // Real-time synchronization: listen for orders placed in any tab or session
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_users' || e.key === 'foodwala_mock_delivery_partners') {
+          loadAdminData();
+        }
+      });
+      window.addEventListener('foodwala:orderPlaced', () => loadAdminData());
+      window.addEventListener('foodwala:orderStatusChanged', () => loadAdminData());
+
+      // Auto-recalculate statuses & sync every 15 seconds
+      setInterval(() => {
+        const dash = document.getElementById('admin-dashboard');
+        if (dash && dash.style.display !== 'none') {
+          loadAdminData();
+        }
+      }, 15000);
+    }
+
+    async function updateDbHealthBadge() {
+      const badge = document.getElementById('db-health-badge');
+      if (!badge) return;
+      try {
+        if (window.FoodWalaHealth && typeof window.FoodWalaHealth.checkBackend === 'function') {
+          const isLive = await window.FoodWalaHealth.checkBackend();
+          if (isLive === true || (isLive && isLive.ok)) {
+            badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold';
+            badge.innerHTML = '<i class="bi bi-circle-fill small me-1"></i> DB Connected: fudwala (Live)';
+            return;
+          }
+        }
+      } catch (e) {}
+      badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill fw-semibold';
+      badge.innerHTML = '<i class="bi bi-database me-1"></i> Sandbox / Local Storage View';
+    }
+
+    async function loadAdminData() {
+      updateDbHealthBadge();
+      try {
+        const [usersRes, ordersRes, historyRes, restRes, partnersRes] = await Promise.all([
+          FoodWalaApi.getAdminUsers(),
+          FoodWalaApi.getAdminOrders(),
+          FoodWalaApi.getAdminLoginHistory(),
+          (FoodWalaApi.getAdminRestaurants ? FoodWalaApi.getAdminRestaurants() : FoodWalaApi.getRestaurants({ limit: 120 })),
+          (FoodWalaApi.getAdminDeliveryPartners ? FoodWalaApi.getAdminDeliveryPartners() : { success: true, partners: [] })
+        ]);
+
+        let usersList = [];
+        if (usersRes) {
+          if (Array.isArray(usersRes)) usersList = usersRes;
+          else if (Array.isArray(usersRes.users)) usersList = usersRes.users;
+        }
+
+        let ordersList = [];
+        let totalRev = 0;
+        let totalOrdersCount = 0;
+        if (ordersRes) {
+          if (Array.isArray(ordersRes)) {
+            ordersList = ordersRes;
+            totalOrdersCount = ordersList.length;
+            totalRev = ordersList.reduce((acc, o) => acc + (Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total) || 0), 0);
+          } else if (Array.isArray(ordersRes.orders)) {
+            ordersList = ordersRes.orders;
+            totalOrdersCount = ordersRes.totalOrders !== undefined ? ordersRes.totalOrders : ordersList.length;
+            totalRev = ordersRes.totalRevenue !== undefined ? ordersRes.totalRevenue : ordersList.reduce((acc, o) => acc + (Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total) || 0), 0);
+          }
+        }
+
+        let historyList = [];
+        if (historyRes) {
+          if (Array.isArray(historyRes)) historyList = historyRes;
+          else if (Array.isArray(historyRes.history)) historyList = historyRes.history;
+        }
+
+        let restList = [];
+        if (restRes) {
+          if (Array.isArray(restRes)) restList = restRes;
+          else if (Array.isArray(restRes.restaurants)) restList = restRes.restaurants;
+        }
+
+        let partnersList = [];
+        if (partnersRes) {
+          if (Array.isArray(partnersRes)) partnersList = partnersRes;
+          else if (Array.isArray(partnersRes.partners)) partnersList = partnersRes.partners;
+        }
+
+        // 1. Users Render
+        globalUsers = usersList;
+        renderUsersTable(globalUsers);
+        document.getElementById('kpi-users-count').textContent = globalUsers.length;
+        document.getElementById('tab-users-badge').textContent = globalUsers.length;
+        const adminCount = globalUsers.filter(u => (u.role || '').toLowerCase() === 'admin').length;
+        const lockedCount = globalUsers.filter(u => {
+          const lk = u.locked_until || u.lockedUntil;
+          return lk && new Date(lk) > new Date();
+        }).length;
+        document.getElementById('kpi-users-sub').textContent = \`\${adminCount} Admin(s), \${lockedCount} Locked\`;
+
+        // 2. Orders Render
+        globalOrders = ordersList;
+        renderOrdersTable(globalOrders);
+        document.getElementById('kpi-orders-count').textContent = totalOrdersCount;
+        document.getElementById('tab-orders-badge').textContent = totalOrdersCount;
+        document.getElementById('kpi-revenue').textContent = '₹' + Number(totalRev || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+        // 3. Delivery Fleet Render
+        globalPartners = partnersList;
+        renderDeliveryPartnersTable(globalPartners);
+        const onlineCount = globalPartners.filter(p => p.dutyStatus === 'ONLINE' || p.dutyStatus === 'ON_DELIVERY').length;
+        const onDeliveryCount = globalPartners.filter(p => p.dutyStatus === 'ON_DELIVERY').length;
+        document.getElementById('tab-partners-badge').textContent = globalPartners.length;
+        document.getElementById('kpi-fleet-count').textContent = \`\${onlineCount}/\${globalPartners.length}\`;
+        document.getElementById('kpi-fleet-sub').innerHTML = \`<span class="duty-indicator-pulse me-1"></span>\${onlineCount} Heroes On-Duty\`;
+        document.getElementById('fleet-online-count').textContent = onlineCount;
+        const percent = globalPartners.length > 0 ? Math.round((onlineCount / globalPartners.length) * 100) : 0;
+        document.getElementById('fleet-duty-percent').textContent = \`\${percent}% Active\`;
+        document.getElementById('fleet-active-orders').textContent = onDeliveryCount;
+
+        // 4. Restaurants Render
+        globalRestaurants = restList;
+        renderRestaurantsTable(globalRestaurants);
+        document.getElementById('tab-restaurants-badge').textContent = globalRestaurants.length || 105;
+        document.getElementById('kpi-restaurants-count').textContent = globalRestaurants.length || 105;
+
+        // 5. Security History Render
+        globalHistory = historyList;
+        renderSecurityTable(globalHistory);
+        document.getElementById('kpi-login-count').textContent = globalHistory.length;
+        const failedCount = globalHistory.filter(h => (h.status || '').toUpperCase() === 'FAILED').length;
+        document.getElementById('kpi-login-sub').textContent = \`\${failedCount} Failed attempts logged\`;
+
+      } catch (err) {
+        console.error('[Admin] Error fetching operational data:', err);
+        FoodWalaApp.showToast('Error connecting to backend admin services.', 'danger');
+      }
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('users-table-body');
+      if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">No users found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const userId = u.user_id !== undefined ? u.user_id : (u.userId !== undefined ? u.userId : '-');
+        const username = u.username || u.name || 'User';
+        const email = u.email || '-';
+        const phone = u.phone || '-';
+        const role = (u.role || 'customer').toLowerCase();
+        const totalOrders = u.total_orders !== undefined ? u.total_orders : (u.totalOrders !== undefined ? u.totalOrders : 0);
+        const totalSpent = u.total_spent !== undefined ? u.total_spent : (u.totalSpent !== undefined ? u.totalSpent : 0);
+        const failedAttempts = u.failed_attempts !== undefined ? u.failed_attempts : (u.failedAttempts !== undefined ? u.failedAttempts : 0);
+        const lockedUntil = u.locked_until || u.lockedUntil;
+        const isLocked = lockedUntil && new Date(lockedUntil) > new Date();
+        const lastLogin = u.last_login || u.lastLogin;
+
+        let roleBadge = '<span class="badge badge-soft-info px-2 py-1 rounded-pill fw-semibold">Customer</span>';
+        if (role === 'admin') {
+          roleBadge = '<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>';
+        } else if (role === 'partner' || role === 'delivery_partner') {
+          roleBadge = '<span class="badge badge-soft-warning text-dark px-2 py-1 rounded-pill fw-bold" style="background: rgba(255, 82, 0, 0.15); color: #ff5200 !important; border: 1px solid rgba(255,82,0,0.3);"><i class="bi bi-bicycle me-1"></i>DELIVERY HERO</span>';
+        } else if (role === 'restaurant' || role === 'restaurant_admin' || role === 'manager') {
+          roleBadge = '<span class="badge badge-soft-primary px-2 py-1 rounded-pill fw-semibold"><i class="bi bi-shop me-1"></i>RESTAURANT</span>';
+        }
+        
+        const lockBadge = isLocked 
+          ? '<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-lock-fill me-1"></i>Locked</span>'
+          : '<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-semibold"><i class="bi bi-check-circle me-1"></i>Active</span>';
+
+        return \`
+          <tr>
+            <td class="fw-bold text-muted">#\${userId}</td>
+            <td class="fw-bold text-dark">\${escapeHtml(username)}</td>
+            <td class="small text-muted">\${escapeHtml(email)}</td>
+            <td><code class="fw-bold text-dark">\${escapeHtml(phone)}</code></td>
+            <td>\${roleBadge}</td>
+            <td class="fw-bold">\${totalOrders}</td>
+            <td class="fw-bold text-success">₹\${Number(totalSpent || 0).toFixed(2)}</td>
+            <td>
+              <span class="badge \${failedAttempts > 0 ? 'bg-danger' : 'bg-light text-muted'} rounded-pill">
+                \${failedAttempts}
+              </span>
+            </td>
+            <td>\${lockBadge}</td>
+            <td class="small text-muted">\${lastLogin ? new Date(lastLogin).toLocaleString('en-IN') : 'Never'}</td>
+          </tr>
+        \`;
+      }).join('');
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('orders-table-body');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No orders found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => {
+        const rawId = o.order_id !== undefined ? o.order_id : (o.orderId !== undefined ? o.orderId : (o.id || '-'));
+        const cleanOrderId = String(rawId).replace(/^#?FW-?/i, '').trim();
+        const customerName = o.customer_name || o.customerName || (o.address && o.address.fullName) || 'Customer';
+        const customerPhone = o.customer_phone || o.customerPhone || (o.address && o.address.phone) || '-';
+        const restaurantName = o.restaurant_name || o.restaurantName || 'FoodWala Partner';
+        const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
+        const paymentMode = o.payment_mode || o.paymentMode || o.paymentMethod || 'Razorpay';
+        const paymentStatus = (o.payment_status || o.paymentStatus || 'PAID').toUpperCase();
+        
+        let status = (o.status || 'PLACED').toUpperCase();
+        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+          try {
+            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            if (stInfo && stInfo.status) status = stInfo.status.toUpperCase();
+          } catch (e) {}
+        }
+
+        const orderDate = o.order_date || o.orderDate || o.createdAt;
+
+        let statusBadge = 'badge-soft-info';
+        if (status === 'DELIVERED') statusBadge = 'badge-soft-success';
+        else if (status === 'ON_THE_WAY' || status === 'ON THE WAY') statusBadge = 'badge-soft-warning text-dark';
+        else if (status === 'PREPARING' || status === 'CONFIRMED' || status === 'IN_PROGRESS') statusBadge = 'badge-soft-primary';
+        else if (status === 'CANCELLED') statusBadge = 'badge-soft-danger';
+
+        let payBadge = paymentStatus === 'PAID' ? 'badge-soft-success' : 'badge-soft-warning';
+
+        return \`
+          <tr>
+            <td class="fw-bold text-danger">#FW-\${escapeHtml(cleanOrderId)}</td>
+            <td class="fw-semibold text-dark">\${escapeHtml(customerName)}</td>
+            <td class="small text-muted">\${escapeHtml(customerPhone)}</td>
+            <td class="small fw-semibold text-dark">\${escapeHtml(restaurantName)}</td>
+            <td class="fw-bold text-dark">₹\${totalAmount.toFixed(2)}</td>
+            <td class="small text-muted">\${escapeHtml(paymentMode)}</td>
+            <td><span class="badge \${payBadge} rounded-pill px-2 py-1 small">\${escapeHtml(paymentStatus)}</span></td>
+            <td><span class="badge \${statusBadge} rounded-pill px-2 py-1 small fw-bold">\${escapeHtml(status)}</span></td>
+            <td class="small text-muted">\${orderDate ? new Date(orderDate).toLocaleString('en-IN') : '-'}</td>
+          </tr>
+        \`;
+      }).join('');
+    }
+
+    function renderDeliveryPartnersTable(partners) {
+      const tbody = document.getElementById('partners-table-body');
+      if (!partners || partners.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No delivery partners found in fleet roster.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = partners.map(p => {
+        const id = p.partnerId || p.id || '-';
+        const name = p.name || 'Delivery Hero';
+        const phone = p.phone || '-';
+        const email = p.email || '-';
+        const vehicleType = p.vehicleType || 'Motorcycle';
+        const vehiclePlate = p.vehicleNumber || 'KA-05-MN-7890';
+        const zone = p.deliveryZone || 'Bengaluru';
+        const status = (p.dutyStatus || (p.isAvailable ? 'ONLINE' : 'OFFLINE')).toUpperCase();
+        const rating = Number(p.rating || 4.9).toFixed(1);
+        const total = p.totalDeliveries !== undefined ? p.totalDeliveries : (p.todayDeliveries || 0);
+        const wallet = Number(p.walletBalance || 0).toFixed(2);
+        const avatar = p.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+
+        let statusHtml = '';
+        if (status === 'ONLINE') {
+          statusHtml = \`
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1.5">
+              <span class="duty-indicator-pulse"></span> Online (Ready)
+            </span>
+          \`;
+        } else if (status === 'ON_DELIVERY') {
+          statusHtml = \`
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1.5">
+              <span class="duty-indicator-ondelivery"></span> On Delivery
+            </span>
+          \`;
+        } else {
+          statusHtml = \`
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1 fw-semibold d-inline-flex align-items-center gap-1.5">
+              <span class="duty-indicator-offline"></span> Offline
+            </span>
+          \`;
+        }
+
+        return \`
+          <tr>
+            <td class="fw-bold text-muted font-monospace">#HERO-\${id}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <img src="\${avatar}" class="rounded-circle object-fit-cover shadow-sm" style="width: 38px; height: 38px;" alt="\${escapeHtml(name)}">
+                <div>
+                  <div class="fw-bold text-dark">\${escapeHtml(name)}</div>
+                  <div class="small text-warning fw-semibold"><i class="bi bi-star-fill me-1"></i>\${rating} ★</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="small fw-semibold text-dark"><i class="bi bi-telephone-fill me-1 text-muted"></i>\${escapeHtml(phone)}</div>
+              <div class="small text-muted text-truncate" style="max-width: 160px;">\${escapeHtml(email)}</div>
+            </td>
+            <td>
+              <div class="small fw-bold text-dark">\${escapeHtml(vehicleType)}</div>
+              <code class="small text-muted">\${escapeHtml(vehiclePlate)}</code>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1 small">\${escapeHtml(zone)}</span>
+            </td>
+            <td>
+              \${statusHtml}
+              <div class="dropdown d-inline-block ms-1">
+                <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown" title="Change Duty Status">
+                  <i class="bi bi-gear-fill"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                  <li><h6 class="dropdown-header small">Change Status</h6></li>
+                  <li><a class="dropdown-item small" href="#" onclick="togglePartnerStatus(\${id}, 'ONLINE'); return false;"><span class="duty-indicator-pulse me-1"></span> Set Online (Ready)</a></li>
+                  <li><a class="dropdown-item small" href="#" onclick="togglePartnerStatus(\${id}, 'ON_DELIVERY'); return false;"><span class="duty-indicator-ondelivery me-1"></span> Set On Delivery</a></li>
+                  <li><a class="dropdown-item small" href="#" onclick="togglePartnerStatus(\${id}, 'OFFLINE'); return false;"><span class="duty-indicator-offline me-1"></span> Set Offline</a></li>
+                </ul>
+              </div>
+            </td>
+            <td>
+              <span class="fw-bold text-dark">\${total}</span>
+              <small class="text-muted d-block" style="font-size: 0.72rem;">orders fulfilled</small>
+            </td>
+            <td class="fw-bold text-success">
+              ₹\${wallet}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="launchDeliveryPartnerConsole(\${id})">
+                <i class="bi bi-bicycle"></i>
+                <span>Open Console</span>
+              </button>
+            </td>
+          </tr>
+        \`;
+      }).join('');
+    }
+
+    function renderRestaurantsTable(restaurants) {
+      const tbody = document.getElementById('restaurants-table-body');
+      if (!restaurants || restaurants.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No restaurants found in catalog.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = restaurants.slice(0, 100).map(r => {
+        const id = r.restaurantId || r.restaurant_id || r.id || '-';
+        const name = r.name || 'Restaurant';
+        const cuisines = r.cuisine_type || r.cuisineType || r.cuisine || 'Multi-Cuisine';
+        const area = r.address || r.area || 'Bengaluru';
+        const rating = Number(r.rating || 4.5).toFixed(1);
+        const deliveryTime = r.estimated_delivery_time || r.deliveryTime || '25-35 mins';
+        const priceForTwo = r.price_for_two || r.costForTwo || '₹400 for two';
+        const isOpen = r.is_open !== 0 && r.isOpen !== false;
+
+        return \`
+          <tr>
+            <td class="fw-bold text-muted font-monospace">#\${id}</td>
+            <td class="fw-bold text-dark">\${escapeHtml(name)}</td>
+            <td class="small text-muted text-truncate" style="max-width: 200px;">\${escapeHtml(cuisines)}</td>
+            <td class="small text-muted">\${escapeHtml(area)}</td>
+            <td><span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fw-bold">★ \${rating}</span></td>
+            <td class="small text-dark fw-semibold">\${escapeHtml(deliveryTime)}</td>
+            <td class="small text-muted">\${escapeHtml(priceForTwo)}</td>
+            <td>
+              <span class="badge \${isOpen ? 'bg-success' : 'bg-secondary'} rounded-pill px-2 py-0.5 small">
+                \${isOpen ? 'Active' : 'Closed'}
+              </span>
+            </td>
+            <td>
+              <a href="./restaurant-dashboard.html?id=\${id}" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-2.5 py-1 fw-semibold small">
+                <i class="bi bi-shop me-1"></i>Manage
+              </a>
+            </td>
+          </tr>
+        \`;
+      }).join('');
+    }
+
+    function renderSecurityTable(history) {
+      const tbody = document.getElementById('security-table-body');
+      if (!history || history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No security records logged.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = history.map(h => {
+        const id = h.id !== undefined ? h.id : '-';
+        const loginTime = h.login_time || h.loginTime || new Date().toISOString();
+        const username = h.username || h.name || 'Unknown';
+        const emailOrPhone = h.email || h.phone || '-';
+        const ipAddress = h.ip_address || h.ipAddress || '127.0.0.1';
+        const status = (h.status || 'SUCCESS').toUpperCase();
+        const isSuccess = status === 'SUCCESS';
+        const badge = isSuccess
+          ? '<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-check me-1"></i>SUCCESS</span>'
+          : '<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-exclamation me-1"></i>FAILED</span>';
+
+        return \`
+          <tr>
+            <td class="text-muted small">#\${id}</td>
+            <td class="small text-dark fw-semibold">\${new Date(loginTime).toLocaleString('en-IN')}</td>
+            <td class="fw-bold text-dark">\${escapeHtml(username)}</td>
+            <td class="small text-muted">\${escapeHtml(emailOrPhone)}</td>
+            <td><code class="small text-secondary">\${escapeHtml(ipAddress)}</code></td>
+            <td>\${badge}</td>
+          </tr>
+        \`;
+      }).join('');
+    }
+
+    async function togglePartnerStatus(partnerId, newStatus) {
+      try {
+        if (FoodWalaApi.updateDeliveryPartnerStatus) {
+          const res = await FoodWalaApi.updateDeliveryPartnerStatus(partnerId, newStatus);
+          if (res && res.success) {
+            FoodWalaApp.showToast(\`Hero #\${partnerId} status updated to \${newStatus}\`, 'success');
+            await loadAdminData();
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Status toggle error:', e);
+      }
+      FoodWalaApp.showToast('Failed to update partner duty status.', 'warning');
+    }
+
+    function launchDeliveryPartnerConsole(partnerId) {
+      const partner = globalPartners.find(p => p.partnerId === partnerId || p.id === partnerId);
+      if (partner) {
+        const heroSession = {
+          userId: partner.partnerId || partner.id,
+          id: partner.partnerId || partner.id,
+          partnerId: partner.partnerId || partner.id,
+          name: partner.name,
+          username: partner.name.toLowerCase().replace(/\\s+/g, '_'),
+          email: partner.email,
+          phone: partner.phone,
+          role: 'partner',
+          vehicleType: partner.vehicleType,
+          vehicleNumber: partner.vehicleNumber,
+          deliveryZone: partner.deliveryZone,
+          dutyStatus: partner.dutyStatus || 'ONLINE',
+          isAvailable: partner.isAvailable || 1,
+          rating: partner.rating || 4.9,
+          walletBalance: partner.walletBalance || 1000
+        };
+        try {
+          localStorage.setItem('foodwala_current_user', JSON.stringify(heroSession));
+          localStorage.setItem('currentUser', JSON.stringify(heroSession));
+          localStorage.setItem('foodwala_user', JSON.stringify(heroSession));
+        } catch (e) {}
+        window.open('./delivery-dashboard.html', '_blank');
+      } else {
+        window.open('./delivery-dashboard.html', '_blank');
+      }
+    }
+
+    function filterUsers(term) {
+      if (!term) {
+        renderUsersTable(globalUsers);
+        return;
+      }
+      const filtered = globalUsers.filter(u => {
+        const name = (u.username || u.name || '').toLowerCase();
+        const email = (u.email || '').toLowerCase();
+        const phone = (u.phone || '');
+        return name.includes(term) || email.includes(term) || phone.includes(term);
+      });
+      renderUsersTable(filtered);
+    }
+
+    function applyOrderFilters() {
+      const term = (document.getElementById('order-search-input')?.value || '').toLowerCase().trim();
+      const status = (document.getElementById('order-status-filter')?.value || 'ALL').toUpperCase();
+
+      let filtered = globalOrders;
+      if (status !== 'ALL') {
+        const normTarget = status.replace(/[\\s_]+/g, '_');
+        filtered = filtered.filter(o => {
+          let st = (o.status || '').toUpperCase().replace(/[\\s_]+/g, '_');
+          if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+            try {
+              const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+              if (stInfo && stInfo.status) st = stInfo.status.toUpperCase().replace(/[\\s_]+/g, '_');
+            } catch(e) {}
+          }
+          return st === normTarget;
+        });
+      }
+      if (term) {
+        filtered = filtered.filter(o => {
+          const rawId = o.order_id !== undefined ? o.order_id : (o.orderId !== undefined ? o.orderId : (o.id || ''));
+          const idStr = String(rawId).toLowerCase();
+          const cName = (o.customer_name || o.customerName || '').toLowerCase();
+          const cPhone = String(o.customer_phone || o.customerPhone || '');
+          const rName = (o.restaurant_name || o.restaurantName || '').toLowerCase();
+          return idStr.includes(term) || cName.includes(term) || cPhone.includes(term) || rName.includes(term);
+        });
+      }
+      renderOrdersTable(filtered);
+    }
+
+    function applyPartnerFilters() {
+      const term = (document.getElementById('partner-search-input')?.value || '').toLowerCase().trim();
+      const status = (document.getElementById('partner-status-filter')?.value || 'ALL').toUpperCase();
+      const zone = (document.getElementById('partner-zone-filter')?.value || 'ALL').toLowerCase();
+
+      let filtered = globalPartners;
+      if (status !== 'ALL') {
+        filtered = filtered.filter(p => (p.dutyStatus || '').toUpperCase() === status);
+      }
+      if (zone !== 'all') {
+        filtered = filtered.filter(p => (p.deliveryZone || '').toLowerCase().includes(zone));
+      }
+      if (term) {
+        filtered = filtered.filter(p => {
+          const name = (p.name || '').toLowerCase();
+          const phone = String(p.phone || '');
+          const email = (p.email || '').toLowerCase();
+          const plate = (p.vehicleNumber || '').toLowerCase();
+          const pZone = (p.deliveryZone || '').toLowerCase();
+          return name.includes(term) || phone.includes(term) || email.includes(term) || plate.includes(term) || pZone.includes(term);
+        });
+      }
+      renderDeliveryPartnersTable(filtered);
+    }
+
+    function applyRestaurantFilters() {
+      const term = (document.getElementById('restaurant-search-input')?.value || '').toLowerCase().trim();
+      let filtered = globalRestaurants;
+      if (term) {
+        filtered = filtered.filter(r => {
+          const name = (r.name || '').toLowerCase();
+          const cuisine = (r.cuisine_type || r.cuisineType || r.cuisine || '').toLowerCase();
+          const area = (r.address || r.area || '').toLowerCase();
+          return name.includes(term) || cuisine.includes(term) || area.includes(term);
+        });
+      }
+      renderRestaurantsTable(filtered);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/[&<>"']/g, function (m) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+      });
+    }
+  </script>
+</body>
+</html>
+`;
+
+// Write to admin.html
+fs.writeFileSync(path.join(root, 'admin.html'), adminHtmlContent, 'utf8');
+console.log('Successfully wrote admin.html');
+
+// Mirror all updated files to src/main/webapp/
+const filesToMirror = [
+  'admin.html',
+  path.join('js', 'api.js'),
+  path.join('js', 'adapters', 'mockAdapter.js'),
+  path.join('js', 'adapters', 'liveAdapter.js')
+];
+
+filesToMirror.forEach(relPath => {
+  const srcPath = path.join(root, relPath);
+  const destPath = path.join(root, 'src', 'main', 'webapp', relPath);
+  const dir = path.dirname(destPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.copyFileSync(srcPath, destPath);
+  console.log(`Mirrored ${relPath} to src/main/webapp/${relPath}`);
+});
+
+console.log('All updates and mirroring complete.');

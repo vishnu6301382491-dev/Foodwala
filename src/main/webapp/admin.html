@@ -1,53 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodWala Operations | Super Admin Portal</title>
   <!-- Bootstrap 5 CSS -->
-  <link rel="stylesheet" href="./assets/vendor/bootstrap/css/bootstrap.min.css">
+  <link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="./assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
-  <!-- Custom Style -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/ui.css">
   <style>
     .stat-card {
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .stat-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-    }
-    .nav-pills .nav-link.active {
-      background-color: #dc3545;
-      color: #fff;
-    }
-    .table-responsive {
-      border-radius: 1rem;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
     }
     .badge-soft-success {
-      background-color: #d1e7dd;
-      color: #0f5132;
+      background-color: #d1fae5;
+      color: #065f46;
     }
     .badge-soft-danger {
-      background-color: #f8d7da;
-      color: #842029;
+      background-color: #fee2e2;
+      color: #991b1b;
     }
     .badge-soft-warning {
-      background-color: #fff3cd;
-      color: #664d03;
+      background-color: #fef3c7;
+      color: #92400e;
     }
     .badge-soft-info {
-      background-color: #cff4fc;
-      color: #055160;
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    .badge-soft-primary {
+      background-color: #e0e7ff;
+      color: #3730a3;
+    }
+    .duty-indicator-pulse {
+      width: 10px;
+      height: 10px;
+      background-color: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse-green 1.8s infinite;
+    }
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .duty-indicator-offline {
+      width: 10px;
+      height: 10px;
+      background-color: #94a3b8;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .duty-indicator-ondelivery {
+      width: 10px;
+      height: 10px;
+      background-color: #f59e0b;
+      border-radius: 50%;
+      display: inline-block;
     }
   </style>
-  <link rel="stylesheet" href="./css/animations-3d.css">
   <script src="./js/theme.js"></script>
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
@@ -71,16 +93,16 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <a href="./restaurant-dashboard.html" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold shadow-sm">
+        <a href="./restaurant-dashboard.html" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold shadow-sm" title="Open Restaurant Manager Console">
           <i class="bi bi-shop me-1"></i> Manager Dashboard
         </a>
-        <a href="./delivery-dashboard.html" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
-          <i class="bi bi-bicycle me-1"></i> Delivery Hero
+        <a href="./delivery-dashboard.html" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm" title="Open Delivery Partner & Fleet Console">
+          <i class="bi bi-bicycle me-1"></i> Delivery Hero Portal
         </a>
         <a href="./index.html" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold">
           <i class="bi bi-arrow-left me-1"></i> Storefront
         </a>
-                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn border" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 theme-toggle-btn border" id="fw-theme-toggle-btn" title="Toggle Dark/Light Mode">
           <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
           <span class="theme-toggle-label d-none d-sm-inline">Dark</span>
         </button>
@@ -108,41 +130,47 @@
       <form id="quick-admin-login-form" class="text-start">
         <div class="mb-3">
           <label class="form-label small fw-bold text-muted">Admin Email</label>
-          <input type="email" id="gate-email" class="form-control rounded-3" placeholder="adminfoodwala@gmail.com" required>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+            <input type="email" id="gate-email" class="form-control" value="adminfoodwala@gmail.com" required>
+          </div>
         </div>
         <div class="mb-3">
-          <label class="form-label small fw-bold text-muted">Password</label>
-          <input type="password" id="gate-password" class="form-control rounded-3" placeholder="Enter administrator password" required>
+          <label class="form-label small fw-bold text-muted">Admin Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted"><i class="bi bi-shield-lock"></i></span>
+            <input type="password" id="gate-password" class="form-control" value="Vishnu@143" required>
+          </div>
         </div>
-        <div id="gate-error" class="alert alert-danger small py-2 d-none mb-3"></div>
-        <button type="submit" id="gate-login-btn" class="btn btn-danger w-100 rounded-pill py-2 fw-bold">
+        <div id="gate-error" class="alert alert-danger py-2 small d-none mb-3"></div>
+        <button type="submit" id="gate-login-btn" class="btn btn-danger w-100 rounded-pill fw-bold py-2 shadow-sm">
           <i class="bi bi-key-fill me-1"></i> Sign In to Admin Center
         </button>
       </form>
     </div>
 
-    <!-- Admin Dashboard Content (Visible to Admins) -->
+    <!-- Admin Dashboard Main Surface -->
     <div id="admin-dashboard" style="display: none;">
-      
-      <!-- Top Title & Live DB Ping -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+
+      <!-- Top Operations Control Ribbon -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <h3 class="fw-bold text-dark mb-0"><i class="bi bi-speedometer2 text-danger me-2"></i>Database & Operations Hub</h3>
-          <p class="text-muted small mb-0">Direct live views into MySQL database <code>fudwala</code> using prepared statements.</p>
+          <h3 class="fw-bold text-dark mb-1">Super Operations Command Center</h3>
+          <p class="text-muted small mb-0">Live MySQL <code>fudwala</code> database inspection, delivery fleet radar, and customer order management</p>
         </div>
         <div class="d-flex align-items-center gap-2">
           <span id="db-health-badge" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
-            <i class="bi bi-circle-fill small me-1"></i> DB Connected: fudwala
+            <i class="bi bi-circle-fill small me-1"></i> Checking DB...
           </span>
-          <button id="refresh-all-btn" class="btn btn-white btn-sm border rounded-pill shadow-sm px-3 fw-semibold">
-            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+          <button id="refresh-all-btn" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+            <i class="bi bi-arrow-repeat me-1"></i> Refresh Data
           </button>
         </div>
       </div>
 
-      <!-- 4 Executive KPI Cards -->
+      <!-- Executive KPI Cards -->
       <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4 col-xl-2">
           <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <span class="text-muted small fw-bold text-uppercase">Total Users</span>
@@ -151,11 +179,11 @@
               </div>
             </div>
             <h3 class="fw-bold text-dark mb-1" id="kpi-users-count">-</h3>
-            <div class="small text-muted" id="kpi-users-sub">Registered accounts in MySQL</div>
+            <div class="small text-muted" id="kpi-users-sub">Registered accounts</div>
           </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4 col-xl-2">
           <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <span class="text-muted small fw-bold text-uppercase">Total Orders</span>
@@ -164,11 +192,11 @@
               </div>
             </div>
             <h3 class="fw-bold text-dark mb-1" id="kpi-orders-count">-</h3>
-            <div class="small text-muted">Orders logged in <code>fudwala.orders</code></div>
+            <div class="small text-muted">Orders logged</div>
           </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4 col-xl-2">
           <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <span class="text-muted small fw-bold text-uppercase">Gross Revenue</span>
@@ -177,11 +205,37 @@
               </div>
             </div>
             <h3 class="fw-bold text-dark mb-1" id="kpi-revenue">-</h3>
-            <div class="small text-muted">Total sum of completed orders</div>
+            <div class="small text-muted">Completed orders</div>
           </div>
         </div>
 
-        <div class="col-sm-6 col-lg-3">
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100 border-start border-4 border-warning">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Delivery Fleet</span>
+              <div class="bg-warning-subtle text-warning rounded-3 p-2">
+                <i class="bi bi-bicycle fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-fleet-count">-</h3>
+            <div class="small text-muted" id="kpi-fleet-sub"><span class="duty-indicator-pulse me-1"></span>Heroes on-duty</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
+          <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="text-muted small fw-bold text-uppercase">Restaurants</span>
+              <div class="bg-info-subtle text-info rounded-3 p-2">
+                <i class="bi bi-shop fs-5"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold text-dark mb-1" id="kpi-restaurants-count">105</h3>
+            <div class="small text-muted">Bengaluru outlets</div>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-4 col-xl-2">
           <div class="card border-0 shadow-sm rounded-4 stat-card p-3 bg-white h-100">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <span class="text-muted small fw-bold text-uppercase">Login Audits</span>
@@ -190,7 +244,7 @@
               </div>
             </div>
             <h3 class="fw-bold text-dark mb-1" id="kpi-login-count">-</h3>
-            <div class="small text-muted" id="kpi-login-sub">Tracked in <code>login_history</code></div>
+            <div class="small text-muted" id="kpi-login-sub">Security logs</div>
           </div>
         </div>
       </div>
@@ -208,13 +262,18 @@
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link rounded-pill fw-bold px-4" id="security-tab" data-bs-toggle="pill" data-bs-target="#tab-security" type="button" role="tab">
-            <i class="bi bi-shield-shaded me-2"></i>Login History Log
+          <button class="nav-link rounded-pill fw-bold px-4" id="partners-tab" data-bs-toggle="pill" data-bs-target="#tab-partners" type="button" role="tab">
+            <i class="bi bi-bicycle me-2"></i>Delivery Fleet (<span id="tab-partners-badge">0</span>)
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link rounded-pill fw-bold px-4" id="restaurants-tab" data-bs-toggle="pill" data-bs-target="#tab-restaurants" type="button" role="tab">
             <i class="bi bi-shop me-2"></i>Restaurants (<span id="tab-restaurants-badge">105</span>)
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill fw-bold px-4" id="security-tab" data-bs-toggle="pill" data-bs-target="#tab-security" type="button" role="tab">
+            <i class="bi bi-shield-shaded me-2"></i>Login History Log
           </button>
         </li>
       </ul>
@@ -304,7 +363,164 @@
           </div>
         </div>
 
-        <!-- TAB 3: LOGIN HISTORY -->
+        <!-- TAB 3: DELIVERY FLEET & PARTNER PORTAL -->
+        <div class="tab-pane fade" id="tab-partners" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+            <!-- Header & Actions -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+              <div>
+                <div class="d-flex align-items-center gap-2">
+                  <h5 class="fw-bold text-dark mb-0">Delivery Fleet & Partner Operations</h5>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold small">
+                    <span class="duty-indicator-pulse me-1"></span> Live Fleet Radar
+                  </span>
+                </div>
+                <small class="text-muted">Monitor delivery hero assignments, active duty statuses, vehicle details, and rider performance across Bengaluru</small>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="./delivery-dashboard.html" class="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1.5 shadow-sm">
+                  <i class="bi bi-bicycle"></i>
+                  <span>Launch Delivery Hero Console</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Fleet Live KPI Cards -->
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Riders On-Duty</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-success mb-0" id="fleet-online-count">0</h4>
+                    <span class="badge bg-success text-white rounded-pill px-2 py-0.5 small" id="fleet-duty-percent">0%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Active Deliveries</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-warning mb-0" id="fleet-active-orders">0</h4>
+                    <span class="small text-muted">In Transit</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Avg Dispatch Time</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-primary mb-0">21m</h4>
+                    <span class="small text-success fw-semibold"><i class="bi bi-lightning-charge-fill me-1"></i>Ultra Fast</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="p-3 rounded-3 bg-light border">
+                  <span class="text-muted small fw-semibold d-block mb-1">Fleet Customer Rating</span>
+                  <div class="d-flex align-items-baseline gap-2">
+                    <h4 class="fw-bold text-warning mb-0">4.9 ★</h4>
+                    <span class="small text-muted">Bengaluru Fleet</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+              <div class="d-flex flex-wrap gap-2">
+                <select id="partner-status-filter" class="form-select form-select-sm rounded-pill" style="width: auto;">
+                  <option value="ALL">All Duty Statuses</option>
+                  <option value="ONLINE">Online (Ready)</option>
+                  <option value="ON_DELIVERY">On Delivery</option>
+                  <option value="OFFLINE">Offline</option>
+                </select>
+                <select id="partner-zone-filter" class="form-select form-select-sm rounded-pill" style="width: auto;">
+                  <option value="ALL">All Operational Zones</option>
+                  <option value="Koramangala">Koramangala & HSR</option>
+                  <option value="Indiranagar">Indiranagar & Domlur</option>
+                  <option value="Jayanagar">Jayanagar & JP Nagar</option>
+                  <option value="Whitefield">Whitefield & Marathahalli</option>
+                  <option value="BTM">BTM Layout & Madiwala</option>
+                  <option value="Malleshwaram">Malleshwaram & Rajajinagar</option>
+                </select>
+              </div>
+              <div class="position-relative" style="max-width: 280px; width: 100%;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" id="partner-search-input" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search partner name, phone, plate...">
+              </div>
+            </div>
+
+            <!-- Fleet Table -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="partners-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>Hero ID</th>
+                    <th>Delivery Hero</th>
+                    <th>Contact</th>
+                    <th>Vehicle Details</th>
+                    <th>Operational Zone</th>
+                    <th>Duty Status</th>
+                    <th>Completed</th>
+                    <th>Wallet Balance</th>
+                    <th>Quick Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="partners-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">Loading delivery fleet...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: RESTAURANTS DIRECTORY -->
+        <div class="tab-pane fade" id="tab-restaurants" role="tabpanel">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+              <div>
+                <h5 class="fw-bold text-dark mb-0">Partner Restaurants Directory (<code>105 Outlets</code>)</h5>
+                <small class="text-muted">Live catalog of FSSAI certified restaurants across all Bengaluru zones</small>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="./restaurant-dashboard.html" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-bold">
+                  <i class="bi bi-shop me-1"></i> Manager Dashboard
+                </a>
+                <div class="position-relative" style="max-width: 280px;">
+                  <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                  <input type="text" id="restaurant-search-input" class="form-control form-control-sm rounded-pill ps-5" placeholder="Search restaurant name, cuisine...">
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="restaurants-table">
+                <thead class="table-light text-muted small text-uppercase">
+                  <tr>
+                    <th>ID</th>
+                    <th>Restaurant Name</th>
+                    <th>Cuisines</th>
+                    <th>Area / Hub</th>
+                    <th>Rating</th>
+                    <th>Delivery Time</th>
+                    <th>Price for Two</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="restaurants-table-body">
+                  <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">Loading restaurants...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: LOGIN HISTORY -->
         <div class="tab-pane fade" id="tab-security" role="tabpanel">
           <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -352,17 +568,18 @@
   <!-- Core Scripts -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js?v=20261022_05"></script>
-  <script src="./js/adapters/mockAdapter.js?v=20261022_05"></script>
-  <script src="./js/adapters/liveAdapter.js?v=20261022_05"></script>
-  <script src="./js/api.js?v=20261022_05"></script>
-  <script src="./js/app.js?v=20261022_05"></script>
+  <script src="./js/config.js?v=20261102_03"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261102_03"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261102_03"></script>
+  <script src="./js/api.js?v=20261102_03"></script>
+  <script src="./js/app.js?v=20261102_03"></script>
 
   <script>
     let globalUsers = [];
     let globalOrders = [];
     let globalHistory = [];
     let globalRestaurants = [];
+    let globalPartners = [];
 
     window.addEventListener('pageshow', (event) => {
       if (event.persisted) {
@@ -481,9 +698,29 @@
         orderFilter.addEventListener('change', () => applyOrderFilters());
       }
 
+      // Partner search & filter
+      const partnerSearch = document.getElementById('partner-search-input');
+      const partnerStatusFilter = document.getElementById('partner-status-filter');
+      const partnerZoneFilter = document.getElementById('partner-zone-filter');
+      if (partnerSearch) {
+        partnerSearch.addEventListener('input', () => applyPartnerFilters());
+      }
+      if (partnerStatusFilter) {
+        partnerStatusFilter.addEventListener('change', () => applyPartnerFilters());
+      }
+      if (partnerZoneFilter) {
+        partnerZoneFilter.addEventListener('change', () => applyPartnerFilters());
+      }
+
+      // Restaurant search
+      const restSearch = document.getElementById('restaurant-search-input');
+      if (restSearch) {
+        restSearch.addEventListener('input', () => applyRestaurantFilters());
+      }
+
       // Real-time synchronization: listen for orders placed in any tab or session
       window.addEventListener('storage', (e) => {
-        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_users') {
+        if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_users' || e.key === 'foodwala_mock_delivery_partners') {
           loadAdminData();
         }
       });
@@ -519,11 +756,12 @@
     async function loadAdminData() {
       updateDbHealthBadge();
       try {
-        const [usersRes, ordersRes, historyRes, restRes] = await Promise.all([
+        const [usersRes, ordersRes, historyRes, restRes, partnersRes] = await Promise.all([
           FoodWalaApi.getAdminUsers(),
           FoodWalaApi.getAdminOrders(),
           FoodWalaApi.getAdminLoginHistory(),
-          (FoodWalaApi.getAdminRestaurants ? FoodWalaApi.getAdminRestaurants() : FoodWalaApi.getRestaurants({ limit: 120 }))
+          (FoodWalaApi.getAdminRestaurants ? FoodWalaApi.getAdminRestaurants() : FoodWalaApi.getRestaurants({ limit: 120 })),
+          (FoodWalaApi.getAdminDeliveryPartners ? FoodWalaApi.getAdminDeliveryPartners() : { success: true, partners: [] })
         ]);
 
         let usersList = [];
@@ -553,6 +791,19 @@
           else if (Array.isArray(historyRes.history)) historyList = historyRes.history;
         }
 
+        let restList = [];
+        if (restRes) {
+          if (Array.isArray(restRes)) restList = restRes;
+          else if (Array.isArray(restRes.restaurants)) restList = restRes.restaurants;
+        }
+
+        let partnersList = [];
+        if (partnersRes) {
+          if (Array.isArray(partnersRes)) partnersList = partnersRes;
+          else if (Array.isArray(partnersRes.partners)) partnersList = partnersRes.partners;
+        }
+
+        // 1. Users Render
         globalUsers = usersList;
         renderUsersTable(globalUsers);
         document.getElementById('kpi-users-count').textContent = globalUsers.length;
@@ -564,12 +815,33 @@
         }).length;
         document.getElementById('kpi-users-sub').textContent = `${adminCount} Admin(s), ${lockedCount} Locked`;
 
+        // 2. Orders Render
         globalOrders = ordersList;
         renderOrdersTable(globalOrders);
         document.getElementById('kpi-orders-count').textContent = totalOrdersCount;
         document.getElementById('tab-orders-badge').textContent = totalOrdersCount;
         document.getElementById('kpi-revenue').textContent = '₹' + Number(totalRev || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
+        // 3. Delivery Fleet Render
+        globalPartners = partnersList;
+        renderDeliveryPartnersTable(globalPartners);
+        const onlineCount = globalPartners.filter(p => p.dutyStatus === 'ONLINE' || p.dutyStatus === 'ON_DELIVERY').length;
+        const onDeliveryCount = globalPartners.filter(p => p.dutyStatus === 'ON_DELIVERY').length;
+        document.getElementById('tab-partners-badge').textContent = globalPartners.length;
+        document.getElementById('kpi-fleet-count').textContent = `${onlineCount}/${globalPartners.length}`;
+        document.getElementById('kpi-fleet-sub').innerHTML = `<span class="duty-indicator-pulse me-1"></span>${onlineCount} Heroes On-Duty`;
+        document.getElementById('fleet-online-count').textContent = onlineCount;
+        const percent = globalPartners.length > 0 ? Math.round((onlineCount / globalPartners.length) * 100) : 0;
+        document.getElementById('fleet-duty-percent').textContent = `${percent}% Active`;
+        document.getElementById('fleet-active-orders').textContent = onDeliveryCount;
+
+        // 4. Restaurants Render
+        globalRestaurants = restList;
+        renderRestaurantsTable(globalRestaurants);
+        document.getElementById('tab-restaurants-badge').textContent = globalRestaurants.length || 105;
+        document.getElementById('kpi-restaurants-count').textContent = globalRestaurants.length || 105;
+
+        // 5. Security History Render
         globalHistory = historyList;
         renderSecurityTable(globalHistory);
         document.getElementById('kpi-login-count').textContent = globalHistory.length;
@@ -585,7 +857,7 @@
     function renderUsersTable(users) {
       const tbody = document.getElementById('users-table-body');
       if (!users || users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-muted">No users found.</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">No users found.</td></tr>';
         return;
       }
 
@@ -602,13 +874,18 @@
         const isLocked = lockedUntil && new Date(lockedUntil) > new Date();
         const lastLogin = u.last_login || u.lastLogin;
 
-        const roleBadge = role === 'admin' 
-          ? `<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>`
-          : `<span class="badge badge-soft-info px-2 py-1 rounded-pill fw-semibold">Customer</span>`;
+        let roleBadge = '<span class="badge badge-soft-info px-2 py-1 rounded-pill fw-semibold">Customer</span>';
+        if (role === 'admin') {
+          roleBadge = '<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>';
+        } else if (role === 'partner' || role === 'delivery_partner') {
+          roleBadge = '<span class="badge badge-soft-warning text-dark px-2 py-1 rounded-pill fw-bold" style="background: rgba(255, 82, 0, 0.15); color: #ff5200 !important; border: 1px solid rgba(255,82,0,0.3);"><i class="bi bi-bicycle me-1"></i>DELIVERY HERO</span>';
+        } else if (role === 'restaurant' || role === 'restaurant_admin' || role === 'manager') {
+          roleBadge = '<span class="badge badge-soft-primary px-2 py-1 rounded-pill fw-semibold"><i class="bi bi-shop me-1"></i>RESTAURANT</span>';
+        }
         
         const lockBadge = isLocked 
-          ? `<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-lock-fill me-1"></i>Locked</span>`
-          : `<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-semibold"><i class="bi bi-check-circle me-1"></i>Active</span>`;
+          ? '<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-lock-fill me-1"></i>Locked</span>'
+          : '<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-semibold"><i class="bi bi-check-circle me-1"></i>Active</span>';
 
         return `
           <tr>
@@ -634,7 +911,7 @@
     function renderOrdersTable(orders) {
       const tbody = document.getElementById('orders-table-body');
       if (!orders || orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No orders found.</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No orders found.</td></tr>';
         return;
       }
 
@@ -682,10 +959,148 @@
       }).join('');
     }
 
+    function renderDeliveryPartnersTable(partners) {
+      const tbody = document.getElementById('partners-table-body');
+      if (!partners || partners.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No delivery partners found in fleet roster.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = partners.map(p => {
+        const id = p.partnerId || p.id || '-';
+        const name = p.name || 'Delivery Hero';
+        const phone = p.phone || '-';
+        const email = p.email || '-';
+        const vehicleType = p.vehicleType || 'Motorcycle';
+        const vehiclePlate = p.vehicleNumber || 'KA-05-MN-7890';
+        const zone = p.deliveryZone || 'Bengaluru';
+        const status = (p.dutyStatus || (p.isAvailable ? 'ONLINE' : 'OFFLINE')).toUpperCase();
+        const rating = Number(p.rating || 4.9).toFixed(1);
+        const total = p.totalDeliveries !== undefined ? p.totalDeliveries : (p.todayDeliveries || 0);
+        const wallet = Number(p.walletBalance || 0).toFixed(2);
+        const avatar = p.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+
+        let statusHtml = '';
+        if (status === 'ONLINE') {
+          statusHtml = `
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1.5">
+              <span class="duty-indicator-pulse"></span> Online (Ready)
+            </span>
+          `;
+        } else if (status === 'ON_DELIVERY') {
+          statusHtml = `
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1.5">
+              <span class="duty-indicator-ondelivery"></span> On Delivery
+            </span>
+          `;
+        } else {
+          statusHtml = `
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1 fw-semibold d-inline-flex align-items-center gap-1.5">
+              <span class="duty-indicator-offline"></span> Offline
+            </span>
+          `;
+        }
+
+        return `
+          <tr>
+            <td class="fw-bold text-muted font-monospace">#HERO-${id}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <img src="${avatar}" class="rounded-circle object-fit-cover shadow-sm" style="width: 38px; height: 38px;" alt="${escapeHtml(name)}">
+                <div>
+                  <div class="fw-bold text-dark">${escapeHtml(name)}</div>
+                  <div class="small text-warning fw-semibold"><i class="bi bi-star-fill me-1"></i>${rating} ★</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="small fw-semibold text-dark"><i class="bi bi-telephone-fill me-1 text-muted"></i>${escapeHtml(phone)}</div>
+              <div class="small text-muted text-truncate" style="max-width: 160px;">${escapeHtml(email)}</div>
+            </td>
+            <td>
+              <div class="small fw-bold text-dark">${escapeHtml(vehicleType)}</div>
+              <code class="small text-muted">${escapeHtml(vehiclePlate)}</code>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1 small">${escapeHtml(zone)}</span>
+            </td>
+            <td>
+              ${statusHtml}
+              <div class="dropdown d-inline-block ms-1">
+                <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown" title="Change Duty Status">
+                  <i class="bi bi-gear-fill"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                  <li><h6 class="dropdown-header small">Change Status</h6></li>
+                  <li><a class="dropdown-item small" href="#" onclick="togglePartnerStatus(${id}, 'ONLINE'); return false;"><span class="duty-indicator-pulse me-1"></span> Set Online (Ready)</a></li>
+                  <li><a class="dropdown-item small" href="#" onclick="togglePartnerStatus(${id}, 'ON_DELIVERY'); return false;"><span class="duty-indicator-ondelivery me-1"></span> Set On Delivery</a></li>
+                  <li><a class="dropdown-item small" href="#" onclick="togglePartnerStatus(${id}, 'OFFLINE'); return false;"><span class="duty-indicator-offline me-1"></span> Set Offline</a></li>
+                </ul>
+              </div>
+            </td>
+            <td>
+              <span class="fw-bold text-dark">${total}</span>
+              <small class="text-muted d-block" style="font-size: 0.72rem;">orders fulfilled</small>
+            </td>
+            <td class="fw-bold text-success">
+              ₹${wallet}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="launchDeliveryPartnerConsole(${id})">
+                <i class="bi bi-bicycle"></i>
+                <span>Open Console</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderRestaurantsTable(restaurants) {
+      const tbody = document.getElementById('restaurants-table-body');
+      if (!restaurants || restaurants.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No restaurants found in catalog.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = restaurants.slice(0, 100).map(r => {
+        const id = r.restaurantId || r.restaurant_id || r.id || '-';
+        const name = r.name || 'Restaurant';
+        const cuisines = r.cuisine_type || r.cuisineType || r.cuisine || 'Multi-Cuisine';
+        const area = r.address || r.area || 'Bengaluru';
+        const rating = Number(r.rating || 4.5).toFixed(1);
+        const deliveryTime = r.estimated_delivery_time || r.deliveryTime || '25-35 mins';
+        const priceForTwo = r.price_for_two || r.costForTwo || '₹400 for two';
+        const isOpen = r.is_open !== 0 && r.isOpen !== false;
+
+        return `
+          <tr>
+            <td class="fw-bold text-muted font-monospace">#${id}</td>
+            <td class="fw-bold text-dark">${escapeHtml(name)}</td>
+            <td class="small text-muted text-truncate" style="max-width: 200px;">${escapeHtml(cuisines)}</td>
+            <td class="small text-muted">${escapeHtml(area)}</td>
+            <td><span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 fw-bold">★ ${rating}</span></td>
+            <td class="small text-dark fw-semibold">${escapeHtml(deliveryTime)}</td>
+            <td class="small text-muted">${escapeHtml(priceForTwo)}</td>
+            <td>
+              <span class="badge ${isOpen ? 'bg-success' : 'bg-secondary'} rounded-pill px-2 py-0.5 small">
+                ${isOpen ? 'Active' : 'Closed'}
+              </span>
+            </td>
+            <td>
+              <a href="./restaurant-dashboard.html?id=${id}" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-2.5 py-1 fw-semibold small">
+                <i class="bi bi-shop me-1"></i>Manage
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     function renderSecurityTable(history) {
       const tbody = document.getElementById('security-table-body');
       if (!history || history.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No security records logged.</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No security records logged.</td></tr>';
         return;
       }
 
@@ -698,8 +1113,8 @@
         const status = (h.status || 'SUCCESS').toUpperCase();
         const isSuccess = status === 'SUCCESS';
         const badge = isSuccess
-          ? `<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-check me-1"></i>SUCCESS</span>`
-          : `<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-exclamation me-1"></i>FAILED</span>`;
+          ? '<span class="badge badge-soft-success px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-check me-1"></i>SUCCESS</span>'
+          : '<span class="badge badge-soft-danger px-2 py-1 rounded-pill fw-bold"><i class="bi bi-shield-exclamation me-1"></i>FAILED</span>';
 
         return `
           <tr>
@@ -712,6 +1127,53 @@
           </tr>
         `;
       }).join('');
+    }
+
+    async function togglePartnerStatus(partnerId, newStatus) {
+      try {
+        if (FoodWalaApi.updateDeliveryPartnerStatus) {
+          const res = await FoodWalaApi.updateDeliveryPartnerStatus(partnerId, newStatus);
+          if (res && res.success) {
+            FoodWalaApp.showToast(`Hero #${partnerId} status updated to ${newStatus}`, 'success');
+            await loadAdminData();
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Status toggle error:', e);
+      }
+      FoodWalaApp.showToast('Failed to update partner duty status.', 'warning');
+    }
+
+    function launchDeliveryPartnerConsole(partnerId) {
+      const partner = globalPartners.find(p => p.partnerId === partnerId || p.id === partnerId);
+      if (partner) {
+        const heroSession = {
+          userId: partner.partnerId || partner.id,
+          id: partner.partnerId || partner.id,
+          partnerId: partner.partnerId || partner.id,
+          name: partner.name,
+          username: partner.name.toLowerCase().replace(/\s+/g, '_'),
+          email: partner.email,
+          phone: partner.phone,
+          role: 'partner',
+          vehicleType: partner.vehicleType,
+          vehicleNumber: partner.vehicleNumber,
+          deliveryZone: partner.deliveryZone,
+          dutyStatus: partner.dutyStatus || 'ONLINE',
+          isAvailable: partner.isAvailable || 1,
+          rating: partner.rating || 4.9,
+          walletBalance: partner.walletBalance || 1000
+        };
+        try {
+          localStorage.setItem('foodwala_current_user', JSON.stringify(heroSession));
+          localStorage.setItem('currentUser', JSON.stringify(heroSession));
+          localStorage.setItem('foodwala_user', JSON.stringify(heroSession));
+        } catch (e) {}
+        window.open('./delivery-dashboard.html', '_blank');
+      } else {
+        window.open('./delivery-dashboard.html', '_blank');
+      }
     }
 
     function filterUsers(term) {
@@ -757,6 +1219,45 @@
         });
       }
       renderOrdersTable(filtered);
+    }
+
+    function applyPartnerFilters() {
+      const term = (document.getElementById('partner-search-input')?.value || '').toLowerCase().trim();
+      const status = (document.getElementById('partner-status-filter')?.value || 'ALL').toUpperCase();
+      const zone = (document.getElementById('partner-zone-filter')?.value || 'ALL').toLowerCase();
+
+      let filtered = globalPartners;
+      if (status !== 'ALL') {
+        filtered = filtered.filter(p => (p.dutyStatus || '').toUpperCase() === status);
+      }
+      if (zone !== 'all') {
+        filtered = filtered.filter(p => (p.deliveryZone || '').toLowerCase().includes(zone));
+      }
+      if (term) {
+        filtered = filtered.filter(p => {
+          const name = (p.name || '').toLowerCase();
+          const phone = String(p.phone || '');
+          const email = (p.email || '').toLowerCase();
+          const plate = (p.vehicleNumber || '').toLowerCase();
+          const pZone = (p.deliveryZone || '').toLowerCase();
+          return name.includes(term) || phone.includes(term) || email.includes(term) || plate.includes(term) || pZone.includes(term);
+        });
+      }
+      renderDeliveryPartnersTable(filtered);
+    }
+
+    function applyRestaurantFilters() {
+      const term = (document.getElementById('restaurant-search-input')?.value || '').toLowerCase().trim();
+      let filtered = globalRestaurants;
+      if (term) {
+        filtered = filtered.filter(r => {
+          const name = (r.name || '').toLowerCase();
+          const cuisine = (r.cuisine_type || r.cuisineType || r.cuisine || '').toLowerCase();
+          const area = (r.address || r.area || '').toLowerCase();
+          return name.includes(term) || cuisine.includes(term) || area.includes(term);
+        });
+      }
+      renderRestaurantsTable(filtered);
     }
 
     function escapeHtml(text) {
