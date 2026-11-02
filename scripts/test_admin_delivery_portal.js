@@ -80,9 +80,11 @@ async function run() {
   console.log('\nTest 3: Verifying admin.html UI and Portal Components...');
   const adminHtml = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
 
-  check('admin.html navbar contains Delivery Hero Portal link', () => {
-    assert(adminHtml.includes('Delivery Hero Portal'));
+  check('admin.html navbar contains Delivery Partner Portal and Customer Access Portal links', () => {
+    assert(adminHtml.includes('Delivery Partner Portal') || adminHtml.includes('Delivery Hero Portal'));
+    assert(adminHtml.includes('Customer Access Portal'));
     assert(adminHtml.includes('delivery-dashboard.html'));
+    assert(adminHtml.includes('./index.html'));
   });
 
   check('admin.html contains Delivery Fleet KPI card (#kpi-fleet-count)', () => {

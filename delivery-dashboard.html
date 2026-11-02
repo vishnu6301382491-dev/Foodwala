@@ -182,7 +182,17 @@
       </div>
 
       <!-- Right Controls: Profile, Pocket, SOS, Logout -->
-      <div class="d-flex align-items-center gap-2 gap-md-3">
+      <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap">
+        <!-- Cross-Portal Navigation Links -->
+        <a href="./index.html" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold d-none d-md-inline-flex align-items-center gap-1 shadow-sm" title="Customer Access Portal">
+          <i class="bi bi-bag-heart-fill text-success"></i> Customer Portal
+        </a>
+        <a href="./admin.html" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Super Admin Operations Portal">
+          <i class="bi bi-shield-lock"></i> Admin Portal
+        </a>
+        <a href="./restaurant-dashboard.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold text-white d-none d-lg-inline-flex align-items-center gap-1 shadow-sm" title="Restaurant Manager Console">
+          <i class="bi bi-shop"></i> Manager Portal
+        </a>
         <!-- Pocket Balance -->
         <div class="d-none d-sm-flex align-items-center gap-2 bg-dark px-3.5 py-1.5 rounded-pill border border-secondary shadow-sm">
           <i class="bi bi-wallet2 text-warning fs-5"></i>
@@ -208,6 +218,10 @@
             <li><h6 class="dropdown-header text-muted fw-bold" id="nav-partner-id-badge">ID: FW-RIDER-108</h6></li>
             <li><div class="dropdown-item-text small text-dark fw-semibold"><i class="bi bi-phone me-1 text-danger"></i> <span id="nav-partner-phone">9900000201</span></div></li>
             <li><div class="dropdown-item-text small text-dark fw-semibold"><i class="bi bi-ev-front me-1 text-primary"></i> <span id="nav-partner-vehicle">KA 05 MN 7890</span></div></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item small fw-bold py-1.5" href="./index.html"><i class="bi bi-bag-heart-fill text-success me-2"></i>Customer Access Portal</a></li>
+            <li><a class="dropdown-item small fw-bold py-1.5" href="./admin.html"><i class="bi bi-shield-lock text-danger me-2"></i>Super Admin Portal</a></li>
+            <li><a class="dropdown-item small fw-bold py-1.5" href="./restaurant-dashboard.html"><i class="bi bi-shop text-warning me-2"></i>Restaurant Manager</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item text-danger fw-bold rounded-2 py-2" href="#" id="partner-logout-btn"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
           </ul>
