@@ -96,8 +96,8 @@
         '          </div>',
         '        </div>',
         '        <div class="d-flex align-items-center gap-2">',
-        '          <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" id="fw-help-external-wa-btn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-1 text-white fw-bold d-flex align-items-center gap-1 shadow-sm text-decoration-none" style="font-size: 0.74rem;" title="Open in official WhatsApp App">',
-        '            <i class="bi bi-box-arrow-up-right"></i> Open App',
+        '          <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" id="fw-help-external-wa-btn" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-1 text-white fw-bold d-flex align-items-center gap-1 shadow-sm text-decoration-none" style="font-size: 0.74rem;" title="Chat with FoodWala on WhatsApp (+91 85004 57005)">',
+        '            <i class="bi bi-whatsapp"></i> +91 85004 57005',
         '          </a>',
         '          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>',
         '        </div>',
@@ -105,18 +105,30 @@
         '      <!-- Chat Body -->',
         '      <div class="fw-help-chat-box p-3" id="fw-help-chat-messages" style="background: #f8fafc; min-height: 280px; max-height: 360px; overflow-y: auto;">',
         '        <div class="fw-chat-msg-agent shadow-sm" style="background: #ffffff; border-left: 3px solid #25D366; border-radius: 0.75rem; padding: 0.85rem 1rem;">',
-        '          👋 <strong>Hello! Welcome to FoodWala 24/7 WhatsApp AI Care.</strong><br>',
+        '          👋 <strong>Hello! Welcome to FoodWala 24/7 Care & WhatsApp AI.</strong><br>',
         '          I am your instant culinary assistant. Ask me anything about tracking your order, cancellation policies, 50% discount coupons, or dish suggestions!<br>',
-        '          <div class="mt-2.5 pt-2 border-top border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-1 small text-muted">',
+        '          <div class="p-2.5 my-2.5 bg-light rounded-3 border d-flex align-items-center justify-content-between flex-wrap gap-2">',
+        '            <div>',
+        '              <div class="fw-bold text-dark" style="font-size: 0.82rem;"><i class="bi bi-telephone-fill text-danger me-1"></i> Helpline & WhatsApp</div>',
+        '              <span class="fs-6 fw-bolder text-success">+91 85004 57005</span>',
+        '            </div>',
+        '            <div class="d-flex gap-1.5">',
+        '              <a href="tel:+918500457005" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-bold text-decoration-none shadow-sm" style="font-size: 0.75rem;"><i class="bi bi-telephone"></i> Call</a>',
+        '              <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success rounded-pill px-2.5 py-1 fw-bold text-white text-decoration-none shadow-sm" style="font-size: 0.75rem;"><i class="bi bi-whatsapp"></i> WhatsApp</a>',
+        '            </div>',
+        '          </div>',
+        '          <div class="pt-1 border-top border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-1 small text-muted">',
         '            <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Instant 0s Verified AI Replies</span>',
-        '            <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="badge bg-success text-white text-decoration-none py-1.5 px-2 rounded-pill d-inline-flex align-items-center gap-1">',
-        '              <i class="bi bi-whatsapp"></i> WhatsApp Helpline',
-        '            </a>',
+        '            <span class="badge bg-success bg-opacity-10 text-success border border-success py-1 px-2 rounded-pill d-inline-flex align-items-center gap-1">',
+        '              <i class="bi bi-shield-check"></i> +91 85004 57005',
+        '            </span>',
         '          </div>',
         '        </div>',
         '      </div>',
         '      <!-- Smart Suggestions Chips -->',
         '      <div class="p-2.5 px-3 bg-white border-top border-bottom d-flex flex-wrap gap-1.5" id="fw-help-chips-container">',
+        '        <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="fw-smart-chip-btn bg-success bg-opacity-10 text-success border-success fw-bold text-decoration-none"><i class="bi bi-whatsapp me-1"></i> WhatsApp: 8500457005</a>',
+        '        <a href="tel:+918500457005" class="fw-smart-chip-btn bg-danger bg-opacity-10 text-danger border-danger fw-bold text-decoration-none"><i class="bi bi-telephone-fill me-1"></i> Call: 8500457005</a>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="track_order">🛵 Where is my order?</button>',
         '        <button type="button" class="fw-smart-chip-btn bg-warning bg-opacity-10 text-dark border-warning fw-bold" data-query="coupon">🏷️ 50% Off Coupon</button>',
         '        <button type="button" class="fw-smart-chip-btn" data-query="refund">💰 Refund & Cancel</button>',
@@ -136,12 +148,12 @@
         '        <!-- Privacy-Protected Escalation Bar -->',
         '        <div class="d-flex align-items-center justify-content-between pt-2 border-top text-muted" style="font-size: 0.74rem;">',
         '          <a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-link text-decoration-none text-success fw-bold d-flex align-items-center gap-1 p-0">',
-        '            <i class="bi bi-whatsapp"></i> WhatsApp App',
+        '            <i class="bi bi-whatsapp"></i> +91 85004 57005',
         '          </a>',
         '          <span class="text-muted">•</span>',
-        '          <button type="button" class="btn btn-link text-decoration-none text-danger fw-bold d-flex align-items-center gap-1 p-0 js-callback-prompt-btn">',
-        '            <i class="bi bi-telephone-inbound-fill"></i> Callback',
-        '          </button>',
+        '          <a href="tel:+918500457005" class="btn btn-link text-decoration-none text-danger fw-bold d-flex align-items-center gap-1 p-0">',
+        '            <i class="bi bi-telephone-fill"></i> Call',
+        '          </a>',
         '          <span class="text-muted">•</span>',
         '          <button type="button" class="btn btn-link text-decoration-none text-success fw-bold d-flex align-items-center gap-1 p-0 js-priority-ticket-btn">',
         '            <i class="bi bi-ticket-perforated-fill"></i> Ticket',
@@ -171,6 +183,12 @@
       var sendBtn = document.getElementById('fw-help-send-btn');
       var waUrl = this.getWhatsAppUrl();
 
+      var extWaBtn = document.getElementById('fw-help-external-wa-btn');
+      if (extWaBtn) {
+        extWaBtn.href = waUrl;
+        extWaBtn.innerHTML = '<i class="bi bi-whatsapp"></i> +91 85004 57005';
+      }
+
       if (isWhatsApp) {
         if (header) header.style.background = 'linear-gradient(135deg, #128C7E 0%, #075E54 100%)';
         if (icon) icon.innerHTML = '<i class="bi bi-whatsapp fs-5 text-success"></i>';
@@ -184,8 +202,8 @@
       } else {
         if (header) header.style.background = 'linear-gradient(135deg, #e23744 0%, #b81423 100%)';
         if (icon) icon.innerHTML = '<i class="bi bi-headset fs-5 text-danger"></i>';
-        if (title) title.textContent = 'FoodWala 24/7 Care Desk';
-        if (sub) sub.innerHTML = '<span class="fw-help-pulse-dot" style="width: 7px; height: 7px;"></span> Live Online • Avg Response: 0s';
+        if (title) title.textContent = 'FoodWala 24/7 Care & WhatsApp AI';
+        if (sub) sub.innerHTML = '<span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> Helpline: +91 85004 57005 • Online';
         if (sendBtn) {
           sendBtn.className = 'btn btn-danger btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 shadow-sm';
           sendBtn.style.background = '#e23744';
@@ -359,9 +377,12 @@
         return [
           '📲 <strong>FoodWala WhatsApp 24/7 AI Helpline</strong><br><br>',
           '• <strong>Verified WhatsApp Assistance</strong>: <code>+91 85004 57005</code><br>',
-          '• <strong>Live Interactive Care</strong>: You are chatting with our AI assistant right now with 0s latency!<br>',
-          '• <strong>WhatsApp Direct Chat</strong>: Click below to open directly in WhatsApp:<br><br>',
-          '<a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp Chat</a>'
+          '• <strong>Official Care Hotline</strong>: <code>8500457005</code><br>',
+          '• <strong>Live Interactive Care</strong>: You are chatting with our AI assistant right now with 0s latency!<br><br>',
+          '<div class="d-flex gap-2 flex-wrap">',
+          '  <a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> WhatsApp: 8500457005</a>',
+          '  <a href="tel:+918500457005" class="btn btn-sm btn-danger rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-telephone-fill me-1"></i> Call 8500457005</a>',
+          '</div>'
         ].join('');
       }
 
