@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 5000;
 const BASE_URL = `http://localhost:${PORT}`;
 const APP_SECRET = process.env.WHATSAPP_APP_SECRET || '';
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'FW_wh_verify_9c8e2a71f6404bf4b7b5a3d1e8c6f204d7a9b61e';
-const SUPPORT_PHONE = process.env.SUPPORT_PHONE_NUMBER || '15551960307';
+const SUPPORT_PHONE = process.env.WHATSAPP_BUSINESS_NUMBER ? String(process.env.WHATSAPP_BUSINESS_NUMBER).replace(/\D/g, '') : (process.env.SUPPORT_PHONE_NUMBER || '918500457005');
 
 function request({ method, path: reqPath, headers = {}, body = null }) {
   return new Promise((resolve, reject) => {

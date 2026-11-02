@@ -18,7 +18,7 @@ Built on enterprise Java architecture (**Java 17 LTS, Jakarta EE Servlets, JSP, 
 
 ### 2.2 The FoodWala Solution
 - **Instant Discovery & Fuzzy Search**: 105 verified restaurants across 5 major Bengaluru culinary zones with multi-category submenus and instant fuzzy autocomplete (`FuzzySearchUtil.java` and `FoodAliasDictionary.java`).
-- **Grounded AI Customer Care**: Live, automated WhatsApp assistance powered by Meta Cloud API and local database telemetry (`+1 555-196-0307`), resolving order ETAs, cancellations within 60 seconds, and delivery notes with 0ms response latency.
+- **Grounded AI Customer Care**: Live, automated WhatsApp assistance powered by Meta Cloud API and local database telemetry (`+91 85004 57005`), resolving order ETAs, cancellations within 60 seconds, and delivery notes with 0ms response latency.
 - **OWASP-Recommended Cryptography**: State-of-the-art **Argon2id** password hashing (`PasswordUtil.java`) with cryptographically secure random salting and automatic account lockout.
 - **Cryptographic Payment Integrity**: Live **Razorpay** payment gateway integration utilizing server-side **HMAC-SHA256** signature verification (`RazorpayService.java`) preventing man-in-the-middle payment spoofing.
 - **Live Valet Telemetry**: Interactive Leaflet maps rendering valet coordinates, restaurant pickup points, and destination polyline routes calculated via the Haversine formula (`LocationUtil.java`).

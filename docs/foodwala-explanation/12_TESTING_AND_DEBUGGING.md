@@ -123,5 +123,5 @@ public class RestaurantControllerTest {
 - **Solution**: Verify `CORSFilter.java` is active on `@WebFilter("/*")` and adds `Access-Control-Allow-Origin: *`.
 
 ### Error 4: `Meta WhatsApp Error 131030: Recipient phone number is not on the allowed list`
-- **Root Cause**: Meta Cloud API test numbers (`+1 555-196-0307`) are in Sandbox Mode and require recipient numbers to be OTP-verified in Meta Developer Portal.
-- **Solution**: Add customer number under **Meta Dashboard &rarr; WhatsApp &rarr; API Setup &rarr; To: Manage phone number list**.
+- **Root Cause**: Occurs only when using Meta Cloud API sandbox test numbers (`+1 555-196-0307`), which require recipient numbers to be OTP-verified in Meta Developer Portal.
+- **Solution**: Migrated to official FoodWala WhatsApp Business Number (`+91 85004 57005`), eliminating sandbox allowlist requirements for real customer assistance within the 24h customer window. For test numbers, add recipient under **Meta Dashboard &rarr; WhatsApp &rarr; API Setup &rarr; To: Manage phone number list**.

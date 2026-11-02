@@ -20,7 +20,7 @@
     },
 
     getWhatsAppUrl: function(customText) {
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '15551960307';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
       var text = customText || 'Hi FoodWala, I need assistance with my order';
       return 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent(text);
     },
@@ -29,7 +29,7 @@
       if (document.getElementById('fw-floating-help-btn')) return;
 
       var self = this;
-      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '15551960307';
+      var waPhone = (window.FOODWALA_CONFIG && window.FOODWALA_CONFIG.WHATSAPP_SUPPORT_NUMBER) || '918500457005';
 
       // 1. Floating WhatsApp Assistance Button (Opens Interactive WhatsApp AI Assistant)
       var waBtn = document.createElement('button');
@@ -39,7 +39,7 @@
       waBtn.setAttribute('data-bs-toggle', 'modal');
       waBtn.setAttribute('data-bs-target', '#foodwalaHelpModal');
       waBtn.setAttribute('aria-label', 'Open FoodWala 24/7 WhatsApp AI Assistant');
-      waBtn.setAttribute('title', 'FoodWala WhatsApp 24/7 AI Assistance (+1 (555) 196-0307)');
+      waBtn.setAttribute('title', 'FoodWala WhatsApp 24/7 AI Assistance (+91 85004 57005)');
       waBtn.innerHTML = [
         '<i class="bi bi-whatsapp fs-5"></i>',
         '<span>WhatsApp AI</span>'
@@ -91,7 +91,7 @@
         '          <div>',
         '            <h6 class="modal-title fw-bold lh-1 mb-1 text-white" id="foodwalaHelpModalLabel">FoodWala WhatsApp 24/7 AI Desk</h6>',
         '            <small class="text-white text-opacity-90 d-flex align-items-center gap-1" id="fw-help-header-sub" style="font-size: 0.75rem;">',
-        '              <span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +1 (555) 196-0307 • Online',
+        '              <span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +91 85004 57005 • Online',
         '            </small>',
         '          </div>',
         '        </div>',
@@ -175,7 +175,7 @@
         if (header) header.style.background = 'linear-gradient(135deg, #128C7E 0%, #075E54 100%)';
         if (icon) icon.innerHTML = '<i class="bi bi-whatsapp fs-5 text-success"></i>';
         if (title) title.textContent = 'FoodWala WhatsApp 24/7 AI Desk';
-        if (sub) sub.innerHTML = '<span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +1 (555) 196-0307 • Online';
+        if (sub) sub.innerHTML = '<span class="fw-help-pulse-dot" style="width: 7px; height: 7px; background: #25D366;"></span> WhatsApp Helpline: +91 85004 57005 • Online';
         if (sendBtn) {
           sendBtn.className = 'btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 shadow-sm';
           sendBtn.style.background = '#25D366';
@@ -298,7 +298,7 @@
 
     handleSmartQuery: function(type, userLabel) {
       var queryMap = {
-        'whatsapp': 'How can I connect with FoodWala WhatsApp AI support assistance on +1 (555) 196-0307?',
+        'whatsapp': 'How can I connect with FoodWala WhatsApp AI support assistance on +91 85004 57005?',
         'track_order': 'Where is my order?',
         'refund': 'What is your order cancellation and refund policy?',
         'coupon': 'What discount coupons and offers are available?',
@@ -355,10 +355,10 @@
       }
 
       // 4. WhatsApp Support Details
-      if (q.includes('whatsapp') || q.includes('phone') || q.includes('hotline') || q.includes('agent') || q.includes('8500457005') || q.includes('15551960307')) {
+      if (q.includes('whatsapp') || q.includes('phone') || q.includes('hotline') || q.includes('agent') || q.includes('8500457005')) {
         return [
           '📲 <strong>FoodWala WhatsApp 24/7 AI Helpline</strong><br><br>',
-          '• <strong>Verified WhatsApp Assistance</strong>: <code>+1 (555) 196-0307</code><br>',
+          '• <strong>Verified WhatsApp Assistance</strong>: <code>+91 85004 57005</code><br>',
           '• <strong>Live Interactive Care</strong>: You are chatting with our AI assistant right now with 0s latency!<br>',
           '• <strong>WhatsApp Direct Chat</strong>: Click below to open directly in WhatsApp:<br><br>',
           '<a href="' + waUrl + '" target="_blank" class="btn btn-sm btn-success rounded-pill fw-bold text-white text-decoration-none shadow-sm"><i class="bi bi-whatsapp me-1"></i> Open WhatsApp Chat</a>'

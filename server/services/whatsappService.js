@@ -31,11 +31,15 @@ class WhatsAppService {
   }
 
   get accessToken() {
-    return process.env.META_ACCESS_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN || '';
+    return process.env.WHATSAPP_ACCESS_TOKEN || process.env.META_ACCESS_TOKEN || '';
   }
 
   get businessAccountId() {
     return process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || '';
+  }
+
+  get businessNumber() {
+    return process.env.WHATSAPP_BUSINESS_NUMBER || '+918500457005';
   }
 
   get apiVersion() {
@@ -51,7 +55,7 @@ class WhatsAppService {
   }
 
   get hotline() {
-    return process.env.SUPPORT_PHONE_NUMBER || '15551960307';
+    return process.env.WHATSAPP_BUSINESS_NUMBER || process.env.SUPPORT_PHONE_NUMBER || '+918500457005';
   }
 
   /**
@@ -87,10 +91,11 @@ class WhatsAppService {
     if (!phone) return false;
     const digits = String(phone).replace(/\D/g, '');
     const phone10 = digits.length >= 10 ? digits.slice(-10) : digits;
-    // Only match the bot's own hotline and phone ID; never match customer or admin mobile numbers
-    const known = ['15551960307'];
+    // Only match the bot's own business number, hotline and phone ID; never match customer or admin mobile numbers
+    const known = ['8500457005', '918500457005'];
+    if (process.env.WHATSAPP_BUSINESS_NUMBER) known.push(String(process.env.WHATSAPP_BUSINESS_NUMBER).replace(/\D/g, ''));
     if (process.env.SUPPORT_PHONE_NUMBER) known.push(String(process.env.SUPPORT_PHONE_NUMBER).replace(/\D/g, ''));
-    if (process.env.WHATSAPP_PHONE_NUMBER_ID) known.push(String(process.env.WHATSAPP_PHONE_NUMBER_ID));
+    if (process.env.WHATSAPP_PHONE_NUMBER_ID) known.push(String(process.env.WHATSAPP_PHONE_NUMBER_ID).replace(/\D/g, ''));
     return known.some(k => k && (k === digits || k.slice(-10) === phone10));
   }
 

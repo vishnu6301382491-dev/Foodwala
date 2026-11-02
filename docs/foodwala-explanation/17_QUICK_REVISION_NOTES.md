@@ -18,7 +18,7 @@ Print or bookmark this sheet for high-speed review 15 minutes before an intervie
 │ Payment Gateway     │ Razorpay API with server-side HMAC-SHA256 check  │
 │ Geolocation Engine  │ Haversine Spherical Distance Formula + Leaflet   │
 │ Client Stack        │ HTML5, CSS3, Vanilla ES6+ JS, Bootstrap 5.3      │
-│ Customer AI Support │ Meta WhatsApp Cloud API (+1 555-196-0307)        │
+│ Customer AI Support │ Meta WhatsApp Cloud API (+91 85004 57005)        │
 │ Edge Ingress        │ Cloudflare Zero-Trust Tunnel (cloudflared)       │
 │ Active Catalog      │ 105 Restaurants, 416 Categories, 756 Menu Items  │
 └─────────────────────┴──────────────────────────────────────────────────┘
@@ -133,7 +133,7 @@ These are the **20 most critical questions** asked by clients, technical project
 ---
 
 ### Q14. How does your WhatsApp AI customer assistance work?
-- **Answer**: We integrated Meta's WhatsApp Cloud API (`+1 555-196-0307`). When a customer sends a message, Meta dispatches an encrypted webhook to our server via a Cloudflare zero-trust tunnel. The backend extracts the customer's phone number, performs a sub-second relational lookup on MySQL for active orders, and replies with Order #FW70 status and valet contact details within 50 milliseconds.
+- **Answer**: We integrated Meta's WhatsApp Cloud API (`+91 85004 57005`). When a customer sends a message, Meta dispatches an encrypted webhook to our server via a Cloudflare zero-trust tunnel. The backend extracts the customer's phone number, performs a sub-second relational lookup on MySQL for active orders, and replies with Order #FW70 status and valet contact details within 50 milliseconds.
 - **FoodWala File**: `server/controllers/whatsappController.js` and `scripts/tunnel.js`.
 
 ---

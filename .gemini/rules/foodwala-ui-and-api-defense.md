@@ -17,7 +17,7 @@
 ## 3. Hybrid AI Assistance & Resilient Communication
 - Never redirect customer support inquiries exclusively to third-party sandbox endpoints (e.g. Meta Graph API WhatsApp sandbox) that may fail or require whitelist verification without providing an in-app fallback.
 - The 24/7 AI Assistance widget (`js/help-assistance.js`) must provide a full in-app Live AI Care Chat with immediate 0-second responses for order tracking, 50% discount coupons, cancellation & refund policies, and human agent callback requests.
-- Always provide dual communication avenues: Live In-App Chat and WhatsApp Helpline (`+1 (555) 196-0307` / `8500457005`).
+- Always provide dual communication avenues: Live In-App Chat and WhatsApp Helpline (`+91 85004 57005` / `8500457005`).
 
 ## 4. Dual Project Parity (Root and `src/main/webapp/`)
 - Every edit to static HTML, client-side JavaScript, CSS, or images in `D:\FoodWala_Eclipse_Project` MUST be mirrored identically in `src/main/webapp/` to ensure full Eclipse dynamic web project deployment compatibility.

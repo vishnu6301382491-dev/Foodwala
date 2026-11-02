@@ -69,11 +69,13 @@ class WhatsAppParser {
       }
     }
     // Only suppress the bot's own hotline numbers/IDs to prevent bot echo loops.
-    // NEVER suppress customer or admin numbers (e.g. 6301382491 or 8500457005).
-    ['15551960307', process.env.SUPPORT_PHONE_NUMBER, process.env.WHATSAPP_PHONE_NUMBER_ID].forEach(h => {
+    // Suppresses messages originating from the business's own account.
+    ['8500457005', '918500457005', process.env.WHATSAPP_BUSINESS_NUMBER, process.env.SUPPORT_PHONE_NUMBER, process.env.WHATSAPP_PHONE_NUMBER_ID].forEach(h => {
       if (h) {
         const norm = this.normalizePhoneNumber(h).phone10;
         if (norm) knownHotlines.add(norm);
+        const digits = String(h).replace(/\D/g, '');
+        if (digits) knownHotlines.add(digits);
       }
     });
 
@@ -108,14 +110,35 @@ class WhatsAppParser {
           }
 
           let messageText = '';
-          if (msg.type === 'text') {
+          const msgType = msg.type || 'text';
+
+          if (msgType === 'text') {
             messageText = msg.text?.body || '';
-          } else if (msg.type === 'interactive') {
+          } else if (msgType === 'interactive') {
             messageText = msg.interactive?.button_reply?.title ||
                           msg.interactive?.list_reply?.title ||
                           msg.interactive?.button_reply?.id || '';
-          } else if (msg.type === 'button') {
+          } else if (msgType === 'button') {
             messageText = msg.button?.text || '';
+          } else if (msgType === 'image') {
+            messageText = msg.image?.caption ? `[Image: ${msg.image.caption}]` : '[Image received]';
+          } else if (msgType === 'location') {
+            const loc = msg.location;
+            messageText = loc ? `[Location: ${loc.latitude}, ${loc.longitude}${loc.name ? ' - ' + loc.name : ''}${loc.address ? ', ' + loc.address : ''}]` : '[Location received]';
+          } else if (msgType === 'document') {
+            messageText = msg.document?.caption ? `[Document: ${msg.document.caption}]` : `[Document: ${msg.document?.filename || 'received'}]`;
+          } else if (msgType === 'audio' || msgType === 'voice') {
+            messageText = '[Audio message received]';
+          } else if (msgType === 'video') {
+            messageText = msg.video?.caption ? `[Video: ${msg.video.caption}]` : '[Video received]';
+          } else if (msgType === 'contacts') {
+            messageText = '[Contact card received]';
+          } else {
+            messageText = `[Received message of type: ${msgType}]`;
+          }
+
+          if (!messageText.trim()) {
+            messageText = `[Received ${msgType}]`;
           }
 
           extractedMessages.push({
@@ -123,8 +146,9 @@ class WhatsAppParser {
             fromWaId: waId,
             fromPhone10: phone10,
             customerName: contactMap.get(rawFrom) || contactMap.get(waId) || 'FoodWala Customer',
-            messageType: msg.type,
+            messageType: msgType,
             messageText: messageText.trim(),
+            rawMessage: msg,
             timestamp: msg.timestamp ? parseInt(msg.timestamp, 10) : Math.floor(Date.now() / 1000),
             phoneNumberId: value.metadata?.phone_number_id || null
           });

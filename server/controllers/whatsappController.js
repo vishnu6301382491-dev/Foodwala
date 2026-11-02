@@ -198,6 +198,7 @@ class WhatsAppController {
       return res.status(200).json({
         success: true,
         service: 'FoodWala WhatsApp AI',
+        businessNumber: whatsappService.businessNumber,
         whatsappConfigured: waHealth.configured,
         tokenValid: waHealth.tokenValid,
         metaError: waHealth.message || null,

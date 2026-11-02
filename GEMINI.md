@@ -68,9 +68,10 @@ This file defines persistent engineering standards, architectural decisions, and
 
 ---
 
-## 7. Meta WhatsApp Cloud API Development Sandbox Constraints
-- **Phone Allowlist Requirement (Error 131030)**: When using a Meta developer test phone number (e.g. `+1 555-196-0307`), Meta Cloud API rejects outbound messages to unverified numbers with code `131030` (`Recipient phone number not in allowed list`).
-  - **Rule**: Recipients must be explicitly added to the "Manage phone number list" in the Meta Developer Portal before sending messages in development mode.
+## 7. Meta WhatsApp Cloud API & Business Account Configuration
+- **Official Business Number (+91 85004 57005)**: FoodWala uses an official WhatsApp Business account. Outbound replies to customers within the 24-hour customer service window do not require whitelisting once fully registered.
+- **Phone Allowlist Requirement on Test Numbers (Error 131030)**: If temporarily falling back to a Meta developer test phone number, Meta Cloud API rejects outbound messages to unverified numbers with code `131030` (`Recipient phone number not in allowed list`).
+  - **Rule**: Recipients must be explicitly added to the "Manage phone number list" in the Meta Developer Portal before sending messages in test/sandbox mode.
 - **Token Expiration (Error 190 / 463)**: Temporary developer tokens expire every 24 hours. Production setups must use permanent System User access tokens from Meta Business Manager.
 
 ---

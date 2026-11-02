@@ -98,7 +98,7 @@ FoodWala renders live valet tracking using **Leaflet.js (v1.9.4)**:
 ## 4. Meta WhatsApp Cloud API AI Integration
 
 ### 4.1 Purpose & User Experience
-Customers can text the official FoodWala WhatsApp hotline (`+1 555-196-0307`):
+Customers can text the official FoodWala WhatsApp hotline (`+91 85004 57005`):
 - *"Where is my order?"* &rarr; AI identifies the customer's phone number, queries active orders in MySQL, and replies with Order #FW70 status, valet name (Suresh Kumar), and ETA.
 - *"How do I cancel?"* &rarr; AI explains the 60-second instant refund cancellation policy.
 

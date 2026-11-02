@@ -144,6 +144,89 @@ class WhatsAppAIService {
   }
 
   /**
+   * Retrieves active dishes and partner restaurants from MySQL for live menu
+   */
+  async getLiveMenu(searchTerm = '') {
+    try {
+      let query = `
+        SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
+        FROM menu m
+        JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+        WHERE m.is_available = 1 AND r.is_active = 1
+      `;
+      const params = [];
+      if (searchTerm && searchTerm.trim()) {
+        const clean = `%${searchTerm.trim()}%`;
+        query += ` AND (m.item_name LIKE ? OR r.name LIKE ? OR r.cuisine_type LIKE ?)`;
+        params.push(clean, clean, clean);
+      }
+      query += ` ORDER BY m.rating DESC, m.menu_id ASC LIMIT 5`;
+      const [dishes] = await db.query(query, params);
+
+      const [restaurants] = await db.query(
+        `SELECT name, area, cuisine_type, rating FROM restaurant WHERE is_active = 1 ORDER BY rating DESC LIMIT 3`
+      );
+
+      return { dishes: dishes || [], restaurants: restaurants || [] };
+    } catch (err) {
+      console.error('[DATABASE ERROR] Failed to query live menu:', err.message);
+      return { dishes: [], restaurants: [] };
+    }
+  }
+
+  /**
+   * Looks up the price of a specific dish from MySQL
+   */
+  async getItemPrice(itemName) {
+    if (!itemName) return [];
+    try {
+      const clean = itemName.trim();
+      const term = `%${clean}%`;
+      const [rows] = await db.query(
+        `SELECT m.item_name, m.price, m.description, m.is_veg, r.name as restaurant_name, r.area
+         FROM menu m
+         JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+         WHERE m.item_name LIKE ? AND m.is_available = 1 AND r.is_active = 1
+         ORDER BY m.price ASC LIMIT 5`,
+        [term]
+      );
+      return rows || [];
+    } catch (err) {
+      console.error('[DATABASE ERROR] Failed to query item price:', err.message);
+      return [];
+    }
+  }
+
+  /**
+   * Grounded delivery charges response
+   */
+  getDeliveryChargesResponse() {
+    return `🛵 *FoodWala Delivery Charges (Bengaluru)*:\n\n` +
+           `• *Free Delivery:* Automatically unlocked on all orders over *₹299*! 🎉\n` +
+           `• *Standard Delivery Fee:* Flat *₹35* for orders below ₹299.\n` +
+           `• *Zero Hidden Fees:* Transparent pricing with no arbitrary surge charges during standard operating hours.\n` +
+           `• *Hyperlocal Reach:* Delivering hot meals across 14+ hubs in Bengaluru within 25–35 minutes.\n\n` +
+           `Add items to your cart on FoodWala to enjoy automatic free delivery above ₹299! 🍕`;
+  }
+
+  /**
+   * Grounded unknown question fallback
+   */
+  getUnknownFallbackResponse(customerName = null) {
+    const greetingName = customerName ? ` ${customerName}` : '';
+    return `Hello${greetingName}! 👋 I am your FoodWala 24/7 AI Assistant.\n\n` +
+           `I specialize in food delivery services across Bengaluru! Here is what I can help you with:\n\n` +
+           `• 🍽️ *Menu & Prices:* Ask *"Show me today's menu"* or *"Price of Benne Masala Dosa"*\n` +
+           `• 🛵 *Order Tracking:* Ask *"Where is my order?"* (or reply with your Order ID, e.g. *#80*)\n` +
+           `• 🏷️ *Today's Offers:* Ask *"What are today's offers?"* (Coupon FOODWALA50)\n` +
+           `• 💰 *Delivery Charges:* Ask *"What are your delivery charges?"*\n` +
+           `• ⏱️ *Policies:* Ask *"Cancellation policy"* or *"Refund policy"*\n` +
+           `• 📞 *Customer Support:* Contact our official Care Desk on WhatsApp at *+91 85004 57005* or reply *Agent*.\n\n` +
+           `How may I assist your meal today? 🍕`;
+  }
+
+
+  /**
    * 25-Intent Detection Engine (Rule-based & Semantic)
    */
   classifyIntent(rawText) {
@@ -201,6 +284,22 @@ class WhatsAppAIService {
       return 'coupon_offers';
     }
 
+    // 4c. Delivery Charges & Shipping Fee
+    if (
+      /\b(delivery\s*(charges?|fees?|cost|pricing|rates?)|shipping\s*(charges?|fees?))\b/i.test(text)
+    ) {
+      return 'delivery_charges';
+    }
+
+    // 4d. Item Price Check
+    if (
+      /\b(price\s*(of|for)?|cost\s*(of|for)?|how\s*much\s*(is|for|does)|rate\s*(of|for)?)\b/i.test(text) &&
+      !/order/i.test(text) &&
+      !/delivery/i.test(text)
+    ) {
+      return 'item_price';
+    }
+
     // 5. Payment Methods
     if (
       /\bpayment\s*(methods?|modes?|options?)\b/i.test(text) ||
@@ -239,7 +338,7 @@ class WhatsAppAIService {
 
     // 8. Order Status & Tracking
     if (
-      /\bwhere\s*is\s*my\s*order\b/i.test(text) ||
+      /\bwhere\s*is\s*my\s*(order|delivery|food)\b/i.test(text) ||
       /\border\s*status\b/i.test(text) ||
       /\btrack\s*(my\s*)?order\b/i.test(text) ||
       /\bhas\s*my\s*order\s*been\s*delivered\b/i.test(text) ||
@@ -284,7 +383,13 @@ class WhatsAppAIService {
 
     // 11. Restaurant & Menu Information
     if (
-      /\b(menu|dishes|food|restaurants?|biryani|pizza|burger|dosa)\b/i.test(text) &&
+      /\b(menu|dishes|popular\s*dishes|food\s*items?|show\s*(me\s*)?(today'?s?\s*)?menu|today'?s?\s*menu|available\s*(food|dishes))\b/i.test(text) &&
+      !/order/i.test(text)
+    ) {
+      return 'restaurant_menu';
+    }
+    if (
+      /\b(restaurants?|biryani|pizza|burger|dosa)\b/i.test(text) &&
       !/order/i.test(text)
     ) {
       return 'restaurant_info';
@@ -301,6 +406,13 @@ class WhatsAppAIService {
       /\bwho\s*are\s*you\b/i.test(text)
     ) {
       return 'greeting';
+    }
+
+    // 13b. Out-of-scope / Unknown query (e.g., flight, hotel, train, cinema, weather, etc.)
+    if (
+      /\b(flight|airline|plane|airport|ticket|hotel|room|booking|train|railway|irctc|bus|movie|cinema|theater|weather|temperature|forecast|cricket|ipl|score|match|stock|crypto|bitcoin|code|programming|essay|homework|actor|actress)\b/i.test(text)
+    ) {
+      return 'unknown_fallback';
     }
 
     // 14. Conversational Open-Ended
@@ -377,24 +489,24 @@ class WhatsAppAIService {
       if (!customer) {
         return `Hi! 👋 Welcome to FoodWala.\n\n` +
                `I couldn't find a FoodWala account linked to this WhatsApp number.\n\n` +
-               `Please log in to FoodWala and make sure your mobile number is linked to your account.\n\n` +
-               `You can also send your Order ID so I can help you check the order.`;
+               `Please reply with your *Order ID* (e.g. *#80* or *FW12345*) so I can retrieve your live order status, preparation progress, and delivery valet details! 🛵`;
       }
 
       const latestOrder = await this.getCustomerLatestOrder(customer.user_id, senderPhone10);
       if (!latestOrder) {
         return `Hi ${customer.username}! 👋\n\n` +
                `I checked your account, but there are no active in-transit orders at the moment.\n\n` +
-               `Ready to order? Explore over 105+ partner restaurants on FoodWala! 🍕🍔\n\n` +
-               `If you placed an order under another number, please reply with your *Order ID* (e.g. *FW12345*).`;
+               `If you placed an order under another number or account, please reply with your *Order ID* (e.g. *#80* or *FW12345*) and I'll track it for you! 🛵\n\n` +
+               `Ready to order? Explore over 105+ partner restaurants on FoodWala! 🍕🍔`;
       }
 
       return `🍽️ *FoodWala Order Update*\n\n` +
              `*Order:* #FW${latestOrder.order_id}\n` +
              `*Restaurant:* ${latestOrder.restaurant_name || 'Partner Kitchen'}\n` +
              `*Status:* ${latestOrder.status} 🚴\n` +
-             `*Estimated Delivery:* ${latestOrder.estimated_delivery_time || '20–30 minutes'}\n\n` +
-             `I'll help you track it.`;
+             `*Estimated Delivery:* ${latestOrder.estimated_delivery_time || '20–30 minutes'}\n` +
+             `*Total Amount:* ₹${latestOrder.total_amount}\n\n` +
+             `I'll help you track it. Need anything else for this order?`;
     }
 
     // C. Cancellation Policy
@@ -403,6 +515,35 @@ class WhatsAppAIService {
              `• *60-Second Instant Window:* You can cancel your order within *60 seconds* of placing it for a *100% instant refund*.\n` +
              `• *Kitchen Preparation Window:* Once the restaurant confirms preparation or a valet is assigned, cancellation requires restaurant authorization and may incur a preparation charge.\n\n` +
              `To cancel an active order, visit your *Orders* tab on the website or reply with your *Order ID*! 😊`;
+    }
+
+    // C2. Delivery Charges
+    if (intent === 'delivery_charges') {
+      return this.getDeliveryChargesResponse();
+    }
+
+    // C3. Item Price Check
+    if (intent === 'item_price') {
+      const cleanItem = text
+        .replace(/^(?:what\s+is\s+the\s+price\s+of|what\s+is\s+the\s+cost\s+of|what\s+does\s+|how\s+much\s+is\s+|how\s+much\s+for\s+|price\s+of|cost\s+of|rate\s+of)\s*/i, '')
+        .replace(/\?+$/, '')
+        .trim();
+
+      if (!cleanItem || /^(food|dish|an?\s*item|a\s*particular\s*food\s*item|item)$/i.test(cleanItem)) {
+        return `🍽️ *FoodWala Live Price Check:*\n\nPlease mention the specific dish name (for example: *"price of Benne Masala Dosa"* or *"price of Biryani"*), and I will look up the authentic price from our partner restaurants in Bengaluru! 🍕`;
+      }
+
+      const items = await this.getItemPrice(cleanItem);
+      if (items && items.length > 0) {
+        let res = `🍽️ *FoodWala Live Price Check for "${cleanItem}":*\n\n`;
+        items.forEach(d => {
+          res += `• ${d.is_veg ? '🟢' : '🔴'} *${d.item_name}*: ₹${d.price} at *${d.restaurant_name}* (${d.area})\n`;
+        });
+        res += `\n🎉 Apply coupon *FOODWALA50* at checkout for 50% OFF up to ₹150! 🛵`;
+        return res;
+      } else {
+        return `🍽️ *FoodWala Price Check:*\n\nI couldn't find active dishes matching "${cleanItem}" on our partner menus right now.\n\nReady to feast? Reply *"Show me today's menu"* or search our 105+ partner kitchens on FoodWala! 🍕`;
+      }
     }
 
     // D. Refund Policy
@@ -497,20 +638,33 @@ class WhatsAppAIService {
         text,
         'HUMAN_ESCALATION'
       );
-      return `I'm sorry I couldn't fully resolve this automatically. 😔\n\n` +
-             `I've marked this conversation for FoodWala Support under ticket *#${ticketNum}*.\n\n` +
-             `Please provide your Order ID and our support team can assist you within 15 minutes! 📞`;
+      return `📞 *FoodWala 24/7 Priority Support Desk*\n\n` +
+             `I have marked this conversation for FoodWala Support under ticket *#${ticketNum}*.\n\n` +
+             `• *Official WhatsApp Support:* +91 85004 57005\n` +
+             `• *Email:* adminfoodwala@gmail.com\n` +
+             `• *Resolution Window:* Within 15 minutes\n\n` +
+             `Please share your Order ID and our support supervisor will assist you directly! 🛵`;
     }
 
-    // K. Restaurant / Menu Info
-    if (intent === 'restaurant_info') {
-      return `🍕 *FoodWala Curated Dining in Bengaluru:*\n\n` +
-             `We partner with over *105+ iconic restaurants* offering:\n` +
-             `• Authentic Dum Biryanis & Kebabs\n` +
-             `• Woodfired Pizzas & Pastas\n` +
-             `• Crispy Benne Dosas & South Indian\n` +
-             `• Gourmet Burgers & Desserts\n\n` +
-             `Use coupon code *FOODWALA50* on our website for Flat 50% off! 🏷️`;
+    // K. Restaurant / Menu Info (Grounded in MySQL)
+    if (intent === 'restaurant_menu' || intent === 'restaurant_info') {
+      const liveMenu = await this.getLiveMenu();
+      let res = `🍽️ *Today's FoodWala Menu & Top Picks in Bengaluru:*\n\n`;
+      if (liveMenu.dishes && liveMenu.dishes.length > 0) {
+        res += `*Featured Popular Dishes:*\n`;
+        liveMenu.dishes.forEach(d => {
+          res += `• ${d.is_veg ? '🟢' : '🔴'} *${d.item_name}* (₹${d.price}) — *${d.restaurant_name}*\n`;
+        });
+      }
+      if (liveMenu.restaurants && liveMenu.restaurants.length > 0) {
+        res += `\n*Popular Partner Kitchens:*\n`;
+        liveMenu.restaurants.forEach(r => {
+          res += `• *${r.name}* (${r.area}) — ⭐ ${r.rating} (${r.cuisine_type})\n`;
+        });
+      }
+      res += `\n🏷️ Use coupon *FOODWALA50* on checkout for Flat 50% OFF (up to ₹150)!\n` +
+             `Reply with a dish name (e.g. *"price of Benne Masala Dosa"*) to check pricing. 🍕`;
+      return res;
     }
 
     // L. Login, OTP, Account
@@ -519,6 +673,11 @@ class WhatsAppAIService {
              `• To sign in, open FoodWala on your browser, enter your 10-digit mobile number, and submit the 6-digit OTP sent via SMS.\n` +
              `• If you are experiencing OTP delays, wait 30 seconds and tap *Resend OTP*.\n\n` +
              `Need account verification? Our care desk is available 24/7!`;
+    }
+
+    // L2. Unknown / Out-of-scope Fallback
+    if (intent === 'unknown_fallback') {
+      return this.getUnknownFallbackResponse(customer?.username || customerName);
     }
 
     // M. Conversational Fallback to AI Service
@@ -536,6 +695,7 @@ class WhatsAppAIService {
       } catch (aiErr) {
         console.warn('[WhatsApp AI Service] Conversational fallback warning:', aiErr.message);
       }
+      return this.getUnknownFallbackResponse(customer?.username || customerName);
     }
 
     // N. Default Greeting / Menu

@@ -29,7 +29,7 @@ CORE POLICIES & KNOWLEDGE:
 - REFUND POLICY: Approved refunds for UPI, debit/credit cards, and net banking are credited directly to original payment method within 15 minutes. Automatic wallet credits are granted if delivery delay exceeds 45 minutes.
 - HYGIENE STANDARDS: FSSAI 40-point hygiene audited, tamper-proof thermal sealed packaging, contactless delivery.
 - HUMAN CARE DESK: Priority Ticket Support & Rapid Callback within 15 minutes (24/7 Care Desk).
-- WHATSAPP CARE DESK: Official 24/7 WhatsApp AI Assistance Hotline +1 (555) 196-0307 (https://wa.me/15551960307). When customers ask about WhatsApp, provide this official link and helpline directly.
+- WHATSAPP CARE DESK: Official 24/7 WhatsApp AI Assistance Hotline +91 85004 57005 (https://wa.me/918500457005). When customers ask about WhatsApp, provide this official link and helpline directly.
 
 STRICT RESPONSE RULES:
 1. When asked about policies (e.g. cancellation policy, refund policy, hygiene), answer the policy question directly and clearly. NEVER provide live order status or valet details for a policy question.
@@ -120,6 +120,13 @@ class AIService {
       /\bwhatsapp\s*(number|helpline|support|bot|assistant|assistance)\b/i.test(text)
     ) {
       return 'WHATSAPP_SUPPORT';
+    }
+
+    // 4c. Delivery Charges
+    if (
+      /\b(delivery\s*(charges?|fees?|cost|pricing)|shipping\s*(charges?|fees?))\b/i.test(text)
+    ) {
+      return 'DELIVERY_CHARGES';
     }
 
     // 5. Delivery Address / Location Management
@@ -461,14 +468,24 @@ class AIService {
 
     // 3b. WHATSAPP SUPPORT ASSISTANCE
     if (intent === 'WHATSAPP_SUPPORT') {
-      const waNumber = process.env.SUPPORT_PHONE_NUMBER || '15551960307';
+      const waNumber = process.env.WHATSAPP_BUSINESS_NUMBER ? String(process.env.WHATSAPP_BUSINESS_NUMBER).replace(/\D/g, '') : (process.env.SUPPORT_PHONE_NUMBER || '918500457005');
       const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent('Hi FoodWala, I need assistance with my order')}`;
       return `💬 *FoodWala 24/7 Official WhatsApp Care Assistant*\n\n` +
              `You can connect directly with our WhatsApp AI Care Desk:\n` +
-             `• *WhatsApp Helpline:* +1 (555) 196-0307\n` +
+             `• *WhatsApp Helpline:* +91 85004 57005\n` +
              `• *Instant Chat Link:* ${waLink}\n` +
              `• *Available Services:* Live GPS Order Tracking, 60-Second Instant Cancellations, Flat 50% Coupons, and Human Agent Priority Tickets.\n\n` +
              `Tap the link above or text *"Hi FoodWala"* to start chatting with our AI assistant on WhatsApp right away! 🛵✨`;
+    }
+
+    // 3c. DELIVERY CHARGES
+    if (intent === 'DELIVERY_CHARGES') {
+      return `🛵 *FoodWala Delivery Charges (Bengaluru)*:\n\n` +
+             `• *Free Delivery:* Automatically unlocked on all orders above *₹299*! 🎉\n` +
+             `• *Standard Delivery Fee:* Flat *₹35* for orders under ₹299.\n` +
+             `• *Zero Hidden Costs:* No surge charges during regular operating hours.\n` +
+             `• *Hyperlocal Reach:* Delivering across 14+ hubs in Bengaluru within 25–35 minutes.\n\n` +
+             `Add your favorite dishes to cart to enjoy automatic free delivery above ₹299! 🍕`;
     }
 
     // 4. DELIVERY ADDRESS MANAGEMENT

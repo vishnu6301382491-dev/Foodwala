@@ -156,7 +156,7 @@ This document provides a comprehensive technical walkthrough for all 30 features
 - **Engine**: `server/services/emailService.js` rendering `receipt-email-template.html`.
 
 ### Feature 24: Meta WhatsApp AI Customer Support
-- **Purpose**: Live automated customer assistance on WhatsApp (`+1 555-196-0307`).
+- **Purpose**: Live automated customer assistance on WhatsApp (`+91 85004 57005`).
 - **Engine**: `server/controllers/whatsappController.js` and `scripts/tunnel.js`.
 - **Capabilities**: Resolves order status, ETA, cancellation policies, and customer inquiries with 0ms latency.
 
