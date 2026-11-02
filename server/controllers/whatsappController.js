@@ -81,9 +81,19 @@ class WhatsAppController {
     try {
       const parsed = whatsappParser.parseInboundEvent(req.body, whatsappService.hotline);
 
-      if (parsed.isStatus) {
-        // Safe status acknowledgment
-        return;
+      // Handle delivery status notifications (sent, delivered, read, failed)
+      if (parsed.statuses && parsed.statuses.length > 0) {
+        for (const stat of parsed.statuses) {
+          try {
+            await db.query(
+              'UPDATE whatsapp_messages SET delivery_status = ? WHERE wa_message_id = ?',
+              [stat.status, stat.messageId]
+            );
+            console.log(`📊 [WhatsApp Status Callback] Message ${stat.messageId} -> ${stat.status}`);
+          } catch (statErr) {
+            console.warn('[WhatsApp] Failed to update delivery status in DB:', statErr.message);
+          }
+        }
       }
 
       if (!parsed.isMessage || parsed.messages.length === 0) {
@@ -91,10 +101,24 @@ class WhatsAppController {
       }
 
       for (const msg of parsed.messages) {
-        // Check duplicate
+        // Check duplicate (in-memory)
         if (isDuplicate(msg.messageId)) {
-          console.log(`[WhatsApp] Duplicate message ID ${msg.messageId} ignored.`);
+          console.log(`[WhatsApp] Duplicate message ID ${msg.messageId} ignored (in-memory cache).`);
           continue;
+        }
+
+        // Check duplicate (MySQL persistent)
+        try {
+          const [existing] = await db.query(
+            'SELECT message_id FROM whatsapp_messages WHERE wa_message_id = ? AND direction = "INBOUND" LIMIT 1',
+            [msg.messageId]
+          );
+          if (existing && existing.length > 0) {
+            console.log(`[WhatsApp] Duplicate message ID ${msg.messageId} already exists in DB; skipping.`);
+            continue;
+          }
+        } catch (dbErr) {
+          console.warn('[WhatsApp] DB deduplication check warning:', dbErr.message);
         }
 
         console.log(`[WhatsApp] Incoming webhook`);

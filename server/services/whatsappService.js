@@ -91,12 +91,25 @@ class WhatsAppService {
     if (!phone) return false;
     const digits = String(phone).replace(/\D/g, '');
     const phone10 = digits.length >= 10 ? digits.slice(-10) : digits;
-    // Only match the bot's own business number, hotline and phone ID; never match customer or admin mobile numbers
+
+    // Match Meta Phone Number ID strictly as an exact full ID, NEVER slice it as a 10-digit phone
+    const phoneIdDigits = process.env.WHATSAPP_PHONE_NUMBER_ID ? String(process.env.WHATSAPP_PHONE_NUMBER_ID).replace(/\D/g, '') : '';
+    if (phoneIdDigits && (digits === phoneIdDigits || String(phone).trim() === String(process.env.WHATSAPP_PHONE_NUMBER_ID).trim())) {
+      return true;
+    }
+
+    // Only match verified FoodWala business numbers (+91 85004 57005)
     const known = ['8500457005', '918500457005'];
-    if (process.env.WHATSAPP_BUSINESS_NUMBER) known.push(String(process.env.WHATSAPP_BUSINESS_NUMBER).replace(/\D/g, ''));
-    if (process.env.SUPPORT_PHONE_NUMBER) known.push(String(process.env.SUPPORT_PHONE_NUMBER).replace(/\D/g, ''));
-    if (process.env.WHATSAPP_PHONE_NUMBER_ID) known.push(String(process.env.WHATSAPP_PHONE_NUMBER_ID).replace(/\D/g, ''));
-    return known.some(k => k && (k === digits || k.slice(-10) === phone10));
+    if (process.env.WHATSAPP_BUSINESS_NUMBER) {
+      const d = String(process.env.WHATSAPP_BUSINESS_NUMBER).replace(/\D/g, '');
+      if (d) known.push(d);
+    }
+    if (process.env.SUPPORT_PHONE_NUMBER) {
+      const d = String(process.env.SUPPORT_PHONE_NUMBER).replace(/\D/g, '');
+      if (d) known.push(d);
+    }
+
+    return known.some(k => k && (k === digits || (k.length >= 10 && k.slice(-10) === phone10)));
   }
 
   /**

@@ -56,7 +56,7 @@ class WhatsAppParser {
 
     const entries = payload.entry || [];
     const extractedMessages = [];
-    let hasStatusOnly = false;
+    const extractedStatuses = [];
 
     const knownHotlines = new Set();
     if (businessHotline) {
@@ -70,7 +70,7 @@ class WhatsAppParser {
     }
     // Only suppress the bot's own hotline numbers/IDs to prevent bot echo loops.
     // Suppresses messages originating from the business's own account.
-    ['8500457005', '918500457005', process.env.WHATSAPP_BUSINESS_NUMBER, process.env.SUPPORT_PHONE_NUMBER, process.env.WHATSAPP_PHONE_NUMBER_ID].forEach(h => {
+    ['8500457005', '918500457005', process.env.WHATSAPP_BUSINESS_NUMBER, process.env.SUPPORT_PHONE_NUMBER].forEach(h => {
       if (h) {
         const norm = this.normalizePhoneNumber(h).phone10;
         if (norm) knownHotlines.add(norm);
@@ -78,6 +78,11 @@ class WhatsAppParser {
         if (digits) knownHotlines.add(digits);
       }
     });
+    // Add raw Phone Number ID strictly as an exact ID string (never normalize/slice as 10-digit phone)
+    if (process.env.WHATSAPP_PHONE_NUMBER_ID) {
+      const idStr = String(process.env.WHATSAPP_PHONE_NUMBER_ID).trim();
+      if (idStr) knownHotlines.add(idStr);
+    }
 
     for (const entry of entries) {
       const changes = entry.changes || [];
@@ -85,10 +90,17 @@ class WhatsAppParser {
         const value = change.value;
         if (!value) continue;
 
-        // Check for status-only callbacks (sent, delivered, read)
-        if (value.statuses && (!value.messages || value.messages.length === 0)) {
-          hasStatusOnly = true;
-          continue;
+        // Extract delivery status notifications (sent, delivered, read, failed)
+        if (value.statuses && Array.isArray(value.statuses)) {
+          for (const stat of value.statuses) {
+            extractedStatuses.push({
+              messageId: stat.id,
+              status: stat.status,
+              timestamp: stat.timestamp ? parseInt(stat.timestamp, 10) : Math.floor(Date.now() / 1000),
+              recipientId: stat.recipient_id || null,
+              errors: stat.errors || null
+            });
+          }
         }
 
         const messages = value.messages || [];
@@ -105,7 +117,7 @@ class WhatsAppParser {
           const { phone10, waId } = this.normalizePhoneNumber(rawFrom);
 
           // Loop Prevention: Ignore messages from the business's own hotline or known numbers
-          if (knownHotlines.has(phone10) || knownHotlines.has(waId)) {
+          if (knownHotlines.has(phone10) || knownHotlines.has(waId) || knownHotlines.has(String(rawFrom))) {
             continue;
           }
 
@@ -158,13 +170,15 @@ class WhatsAppParser {
 
     return {
       isMessage: extractedMessages.length > 0,
-      isStatus: hasStatusOnly,
+      isStatus: extractedStatuses.length > 0 && extractedMessages.length === 0,
+      statuses: extractedStatuses,
       messages: extractedMessages
     };
   }
 
   /**
    * Extracts explicit Order ID from message text (e.g. "FW12345", "Order #80", "#FW12345")
+   * Disregards bare single digits 1-9 to allow menu choice navigation without false order lookups.
    */
   extractOrderId(text) {
     if (!text) return null;
@@ -176,7 +190,11 @@ class WhatsAppParser {
     }
     const numOnly = clean.match(/^\s*#?(\d{1,8})\s*$/);
     if (numOnly && numOnly[1]) {
-      return parseInt(numOnly[1], 10);
+      const val = parseInt(numOnly[1], 10);
+      // Standalone numbers 1-9 without # or FW or 'order' are menu choices, NOT order IDs
+      if (val >= 10 || clean.includes('#')) {
+        return val;
+      }
     }
     return null;
   }

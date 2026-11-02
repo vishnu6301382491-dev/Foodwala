@@ -176,21 +176,62 @@ class WhatsAppAIService {
 
   /**
    * Looks up the price of a specific dish from MySQL
+   * Supports dish name, optional restaurant filter ("at Spice Route"), and keyword fallback
    */
-  async getItemPrice(itemName) {
-    if (!itemName) return [];
+  async getItemPrice(rawQuery) {
+    if (!rawQuery) return [];
     try {
-      const clean = itemName.trim();
-      const term = `%${clean}%`;
-      const [rows] = await db.query(
-        `SELECT m.item_name, m.price, m.description, m.is_veg, r.name as restaurant_name, r.area
-         FROM menu m
-         JOIN restaurant r ON m.restaurant_id = r.restaurant_id
-         WHERE m.item_name LIKE ? AND m.is_available = 1 AND r.is_active = 1
-         ORDER BY m.price ASC LIMIT 5`,
-        [term]
-      );
-      return rows || [];
+      let dishPart = rawQuery.trim();
+      let restPart = '';
+      const atMatch = dishPart.match(/^(.*?)\s+(?:at|from|in)\s+(.*)$/i);
+      if (atMatch) {
+        dishPart = atMatch[1].trim();
+        restPart = atMatch[2].trim();
+      }
+      dishPart = dishPart.replace(/^(?:the|a|an)\s+/i, '').trim();
+
+      let query = `
+        SELECT m.item_name, m.price, m.description, m.is_veg, r.name as restaurant_name, r.area
+        FROM menu m
+        JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+        WHERE m.is_available = 1 AND r.is_active = 1
+      `;
+      const params = [];
+      if (dishPart) {
+        query += ` AND m.item_name LIKE ?`;
+        params.push(`%${dishPart}%`);
+      }
+      if (restPart) {
+        query += ` AND r.name LIKE ?`;
+        params.push(`%${restPart}%`);
+      }
+      query += ` ORDER BY m.price ASC LIMIT 5`;
+      const [rows] = await db.query(query, params);
+      if (rows && rows.length > 0) return rows;
+
+      // Fallback: match individual keywords if multi-word query
+      const words = dishPart.split(/\s+/).filter(w => w.length > 2);
+      if (words.length > 1) {
+        let fbQuery = `
+          SELECT m.item_name, m.price, m.description, m.is_veg, r.name as restaurant_name, r.area
+          FROM menu m
+          JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+          WHERE m.is_available = 1 AND r.is_active = 1
+        `;
+        const fbParams = [];
+        words.forEach(w => {
+          fbQuery += ` AND m.item_name LIKE ?`;
+          fbParams.push(`%${w}%`);
+        });
+        if (restPart) {
+          fbQuery += ` AND r.name LIKE ?`;
+          fbParams.push(`%${restPart}%`);
+        }
+        fbQuery += ` ORDER BY m.price ASC LIMIT 5`;
+        const [fbRows] = await db.query(fbQuery, fbParams);
+        return fbRows || [];
+      }
+      return [];
     } catch (err) {
       console.error('[DATABASE ERROR] Failed to query item price:', err.message);
       return [];
@@ -232,6 +273,23 @@ class WhatsAppAIService {
   classifyIntent(rawText) {
     const text = (rawText || '').trim().toLowerCase();
     if (!text) return 'greeting';
+
+    // 0. Numeric menu choices from greeting or assistance menu (1 to 5)
+    if (/^(?:1|1️⃣|option\s*1)$/i.test(text)) {
+      return 'order_tracking';
+    }
+    if (/^(?:2|2️⃣|option\s*2)$/i.test(text)) {
+      return 'cancellation';
+    }
+    if (/^(?:3|3️⃣|option\s*3)$/i.test(text)) {
+      return 'payment_failure';
+    }
+    if (/^(?:4|4️⃣|option\s*4)$/i.test(text)) {
+      return 'delivery_time';
+    }
+    if (/^(?:5|5️⃣|option\s*5)$/i.test(text)) {
+      return 'human_support';
+    }
 
     // 1. Explicit Order ID queries
     if (/^(?:check\s+order|status\s+of|where\s+is\s+order)\s+#?(\d+|fw\d+)/i.test(text)) {
