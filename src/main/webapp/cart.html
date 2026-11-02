@@ -483,14 +483,14 @@
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js" defer></script>
   <!-- Core FoodWala JS (Minified) -->
-  <script src="./js/ui.js" defer></script>
+  <script src="./js/ui.js?v=20261102_02" defer></script>
     <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js" defer></script>
+  <script src="./js/config.js?v=20261102_03" defer></script>
   <script src="./js/adapters/mockAdapter.js" defer></script>
   <script src="./js/adapters/liveAdapter.js" defer></script>
-  <script src="./js/api.js" defer></script>
+  <script src="./js/api.js?v=20261102_02" defer></script>
   <script src="./js/areas.js" defer></script>
-  <script src="./js/app.min.js?v=20261022_05" defer></script>
+  <script src="./js/app.min.js?v=20261102_02" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -509,6 +509,7 @@
         const totals = FoodWalaApp.Cart.getBillTotals();
 
         if (!cart.items || cart.items.length === 0) {
+          try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (e) {}
           cartRow.style.display = 'none';
           emptyCart.style.display = 'block';
           document.getElementById('bill-item-total').textContent = '₹0';

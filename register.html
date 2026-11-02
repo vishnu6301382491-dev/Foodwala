@@ -415,19 +415,19 @@
   <script src="./firebase-config.js"></script>
   <!-- API & Areas -->
   <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js?v=20261028_23"></script>
-  <script src="./js/adapters/mockAdapter.js?v=20261028_23"></script>
-  <script src="./js/adapters/liveAdapter.js?v=20261028_23"></script>
-  <script src="./js/api.js?v=20261028_23"></script>
+  <script src="./js/config.js?v=20261102_02"></script>
+  <script src="./js/adapters/mockAdapter.js?v=20261102_02"></script>
+  <script src="./js/adapters/liveAdapter.js?v=20261102_02"></script>
+  <script src="./js/api.js?v=20261102_02"></script>
   <script src="./js/emailService.js?v=20261022_05"></script>
-  <script src="./js/google-auth.js?v=20261022_05"></script>
-  <script src="./js/facebook-auth.js"></script>
+  <script src="./js/google-auth.js?v=20261102_02"></script>
+  <script src="./js/facebook-auth.js?v=20261102_02"></script>
   <script src="./js/areas.js?v=20261022_05" defer></script>
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
   <script src="./js/ui.js?v=20261022_05" defer></script>
-  <script src="./js/app.js?v=20261028_23"></script>
+  <script src="./js/app.js?v=20261102_02"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -444,27 +444,44 @@
         }
       }
 
-      // If redirect target points to checkout, verify that user actually has items in the cart
-      if (redirectTarget && redirectTarget.includes('checkout.html')) {
-        let itemCount = 0;
+      function getActiveCartCount() {
+        let count = 0;
         try {
-          if (window.FoodWalaApp && window.FoodWalaApp.Cart) {
-            itemCount = window.FoodWalaApp.Cart.getItemCount();
+          if (window.FoodWalaApp && window.FoodWalaApp.Cart && typeof window.FoodWalaApp.Cart.getItemCount === 'function') {
+            count = window.FoodWalaApp.Cart.getItemCount();
           }
         } catch (e) {}
-        if (itemCount === 0) {
+        if (count === 0) {
           try {
-            const raw = localStorage.getItem('foodwala_cart') || localStorage.getItem('cart') || sessionStorage.getItem('foodwala_cart');
+            const raw = localStorage.getItem('foodwala_cart') || localStorage.getItem('cart') || sessionStorage.getItem('foodwala_cart') || sessionStorage.getItem('cart') || localStorage.getItem('foodwalaCart');
             if (raw) {
               const parsed = JSON.parse(raw);
-              itemCount = Array.isArray(parsed) ? parsed.length : (parsed.items ? parsed.items.length : 0);
+              count = Array.isArray(parsed) ? parsed.length : (parsed.items && Array.isArray(parsed.items) ? parsed.items.length : 0);
             }
           } catch (e) {}
         }
-        if (itemCount === 0) {
+        return count;
+      }
+
+      // If redirect target points to checkout or cart, verify that user actually has items in the cart
+      if (redirectTarget && (redirectTarget.includes('checkout.html') || redirectTarget.includes('cart.html'))) {
+        const count = getActiveCartCount();
+        if (count === 0) {
+          try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (e) {}
           redirectTarget = './index.html';
         }
       }
+
+      // Expose handlePostLoginNavigation globally on register page as well
+      window.handlePostLoginNavigation = function (user) {
+        let finalTarget = redirectTarget || './index.html';
+        const count = getActiveCartCount();
+        if ((finalTarget.includes('checkout.html') || finalTarget.includes('cart.html')) && count === 0) {
+          try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (e) {}
+          finalTarget = './index.html';
+        }
+        window.location.href = finalTarget;
+      };
 
       // Propagate redirect parameter to login link if present
       const loginLink = document.querySelector('a[href="./login.html"]');

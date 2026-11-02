@@ -16,6 +16,7 @@
 
   // Configured Meta App ID
   const FACEBOOK_APP_ID = '4702946809933364';
+  console.log('[FoodWala Facebook Auth] Official Facebook SDK Engine v2026.11.02 initialized');
 
   /**
    * Process Facebook Login Status response
@@ -192,25 +193,26 @@
           }
         }
 
-        // If redirect target points to checkout, verify that user actually has items in the cart
-        if (redirectUrl && redirectUrl.includes('checkout.html')) {
+        // If redirect target points to checkout or cart, verify that user actually has items in the cart
+        if (redirectUrl && (redirectUrl.includes('checkout.html') || redirectUrl.includes('cart.html'))) {
           let itemCount = 0;
           try {
-            if (window.FoodWalaApp && window.FoodWalaApp.Cart) {
+            if (window.FoodWalaApp && window.FoodWalaApp.Cart && typeof window.FoodWalaApp.Cart.getItemCount === 'function') {
               itemCount = window.FoodWalaApp.Cart.getItemCount();
             }
           } catch (e) {}
           if (itemCount === 0) {
             try {
-              const raw = localStorage.getItem('foodwala_cart') || localStorage.getItem('cart') || sessionStorage.getItem('foodwala_cart');
+              const raw = localStorage.getItem('foodwala_cart') || localStorage.getItem('cart') || sessionStorage.getItem('foodwala_cart') || sessionStorage.getItem('cart') || localStorage.getItem('foodwalaCart');
               if (raw) {
                 const parsed = JSON.parse(raw);
-                itemCount = Array.isArray(parsed) ? parsed.length : (parsed.items ? parsed.items.length : 0);
+                itemCount = Array.isArray(parsed) ? parsed.length : (parsed.items && Array.isArray(parsed.items) ? parsed.items.length : 0);
               }
             } catch (e) {}
           }
-          // If cart is empty, do NOT send user to checkout.html (which would bounce to cart.html)
+          // If cart is empty, do NOT send user to checkout.html or cart.html
           if (itemCount === 0) {
+            try { localStorage.removeItem('foodwala_post_login_redirect'); } catch (e) {}
             redirectUrl = './index.html';
           }
         }

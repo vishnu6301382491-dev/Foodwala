@@ -456,14 +456,14 @@
   <!-- Bootstrap 5 JS Bundle -->
   <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core FoodWala JS -->
-  <script src="./js/ui.js"></script>
+  <script src="./js/ui.js?v=20261102_02"></script>
     <!-- FoodWala Architecture: Config & Adapters -->
-  <script src="./js/config.js"></script>
+  <script src="./js/config.js?v=20261102_02"></script>
   <script src="./js/adapters/mockAdapter.js"></script>
   <script src="./js/adapters/liveAdapter.js"></script>
-  <script src="./js/api.js"></script>
+  <script src="./js/api.js?v=20261102_02"></script>
   <script src="./js/areas.js"></script>
-  <script src="./js/app.js"></script>
+  <script src="./js/app.js?v=20261102_02"></script>
   <!-- jsPDF & Receipt Service -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="./js/receiptService.js"></script>
@@ -474,6 +474,22 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       console.log('[FoodWala Checkout] Initializing checkout page...');
+
+      // --- SECTION 1: Cart Validation & Restaurant Resolution ---
+      let cart = FoodWalaApp.Cart.getCart();
+      const cartItems = (cart && Array.isArray(cart.items)) ? cart.items : (FoodWalaApp.Cart.getItems ? FoodWalaApp.Cart.getItems() : []);
+      if (!cart || cartItems.length === 0) {
+        try {
+          localStorage.removeItem('foodwala_post_login_redirect');
+        } catch (e) {}
+        if (window.FoodWalaApp && FoodWalaApp.showToast) {
+          FoodWalaApp.showToast('Your cart is empty. Please add items from a restaurant.', 'warning');
+        }
+        setTimeout(() => {
+          window.location.replace('./cart.html');
+        }, 400);
+        return;
+      }
 
       // --- SECTION 0: Top-Level Authentication & Profile Resolution ---
       const currentUser = (window.FoodWalaApp && FoodWalaApp.Auth) ? FoodWalaApp.Auth.getCurrentUser() : null;
@@ -490,18 +506,7 @@
         return;
       }
 
-      // --- SECTION 1: Cart Validation & Restaurant Resolution ---
-      let cart = FoodWalaApp.Cart.getCart();
-      const cartItems = (cart && Array.isArray(cart.items)) ? cart.items : (FoodWalaApp.Cart.getItems ? FoodWalaApp.Cart.getItems() : []);
-      if (!cart || cartItems.length === 0) {
-        if (window.FoodWalaApp && FoodWalaApp.showToast) {
-          FoodWalaApp.showToast('Your cart is empty. Please add items from a restaurant.', 'warning');
-        }
-        setTimeout(() => {
-          window.location.replace('./cart.html');
-        }, 400);
-        return;
-      }
+      // Clean post-login redirect immediately once authenticated user enters populated checkout
       try {
         localStorage.removeItem('foodwala_post_login_redirect');
       } catch (e) {}
@@ -517,7 +522,7 @@
       // Resolve real restaurant name and address if generic or missing
       try {
         const allRestaurants = (window.FoodWalaApp && FoodWalaApp.getRestaurants) ? FoodWalaApp.getRestaurants() : [];
-        const rId = cart.restaurantId || (cart.items[0] && cart.items[0].restaurantId);
+        const rId = cart.restaurantId || (cartItems[0] && (cartItems[0].restaurantId || cartItems[0].restaurant_id));
         const matched = allRestaurants.find(r => r.id === rId || r.restaurantId === rId);
         if (matched) {
           if (!cart.restaurantName || cart.restaurantName === 'Bengaluru Restaurant') {
