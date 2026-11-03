@@ -1577,9 +1577,9 @@
         const numTotal = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
         
         let liveStatus = (o.status || o.orderStatus || o.deliveryStatus || 'PLACED').toUpperCase();
-        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+        if (typeof window !== 'undefined' && window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.getOrderStatus === 'function') {
           try {
-            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            const stInfo = window.FoodWalaApp.Orders.getOrderStatus(o);
             if (stInfo && stInfo.status) liveStatus = stInfo.status.toUpperCase();
           } catch (e) {}
         }
@@ -2173,9 +2173,9 @@
         const numTotal = Number(o.total_amount ?? o.totalAmount ?? o.grandTotal ?? o.total ?? 0);
 
         let liveStatus = (o.status || 'PLACED').toUpperCase();
-        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+        if (typeof window !== 'undefined' && window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.getOrderStatus === 'function') {
           try {
-            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            const stInfo = window.FoodWalaApp.Orders.getOrderStatus(o);
             if (stInfo && stInfo.status) liveStatus = stInfo.status.toUpperCase();
           } catch (e) {}
         }

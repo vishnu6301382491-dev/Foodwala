@@ -1189,9 +1189,9 @@
         const total = Number(o.total_amount || o.totalAmount || o.grandTotal || o.total || 0).toFixed(2);
         
         let status = (o.status || 'PLACED').toUpperCase();
-        if (typeof window !== 'undefined' && window.FoodWalaApp && FoodWalaApp.Orders && typeof FoodWalaApp.Orders.getOrderStatus === 'function') {
+        if (typeof window !== 'undefined' && window.FoodWalaApp && window.FoodWalaApp.Orders && typeof window.FoodWalaApp.Orders.getOrderStatus === 'function') {
           try {
-            const stInfo = FoodWalaApp.Orders.getOrderStatus(o);
+            const stInfo = window.FoodWalaApp.Orders.getOrderStatus(o);
             if (stInfo && stInfo.status) status = stInfo.status.toUpperCase();
           } catch (e) {}
         }
@@ -1632,7 +1632,18 @@
     }
 
     // Real-time synchronization
+    let isReloadingKitchenOrders = false;
+    let kitchenOrdersTimer = null;
+    function scheduleKitchenOrdersReload(delay = 300) {
+      if (kitchenOrdersTimer) clearTimeout(kitchenOrdersTimer);
+      kitchenOrdersTimer = setTimeout(() => {
+        reloadKitchenOrders();
+      }, delay);
+    }
+
     async function reloadKitchenOrders() {
+      if (isReloadingKitchenOrders) return;
+      isReloadingKitchenOrders = true;
       try {
         const res = await FoodWalaApi.getRestaurantOrders(currentRestId);
         if (res && res.success) {
@@ -1643,24 +1654,28 @@
           const badge = document.getElementById('tab-orders-badge');
           if (badge) badge.textContent = globalOrders.length;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('[Kitchen] Error reloading kitchen orders:', e);
+      } finally {
+        isReloadingKitchenOrders = false;
+      }
     }
 
-    window.addEventListener('foodwala:orderPlaced', reloadKitchenOrders);
-    window.addEventListener('foodwala:orderStatusChanged', reloadKitchenOrders);
-    window.addEventListener('foodwala:order-updated', reloadKitchenOrders);
+    window.addEventListener('foodwala:orderPlaced', () => scheduleKitchenOrdersReload(300));
+    window.addEventListener('foodwala:orderStatusChanged', () => scheduleKitchenOrdersReload(300));
+    window.addEventListener('foodwala:order-updated', () => scheduleKitchenOrdersReload(300));
     window.addEventListener('storage', (e) => {
       if (e.key === 'foodwala_orders' || e.key === 'foodwala_mock_orders' || e.key === 'foodwala_mock_kitchen_orders' || e.key === 'foodwala_order_placed_ping' || e.key === 'foodwala_order_updated') {
-        reloadKitchenOrders();
+        scheduleKitchenOrdersReload(300);
       }
     });
     if (typeof BroadcastChannel !== 'undefined') {
       try {
         const bc = new BroadcastChannel('foodwala_orders_channel');
-        bc.onmessage = () => { reloadKitchenOrders(); };
+        bc.onmessage = () => { scheduleKitchenOrdersReload(300); };
       } catch (e) {}
     }
-    setInterval(reloadKitchenOrders, 5000);
+    setInterval(() => scheduleKitchenOrdersReload(0), 10000);
 
     function escapeHtml(text) {
       if (!text) return '';

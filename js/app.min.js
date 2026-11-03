@@ -1917,10 +1917,6 @@ const FoodWalaApp = (function () {
         if (order.status !== 'Delivered') {
           order.status = 'Delivered';
           order.deliveredAt = deliveredTime;
-          Orders.saveOrder(order);
-          if (typeof window !== "undefined" && window.FoodWalaApi && window.FoodWalaApi.saveOrder) {
-            window.FoodWalaApi.saveOrder(order);
-          }
         }
         return {
           status: 'DELIVERED',
