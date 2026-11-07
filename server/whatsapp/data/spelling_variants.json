@@ -1,0 +1,21 @@
+{
+  "biryani": ["biriyani", "biryani", "briyani", "biriani", "biryaani", "birianis", "biryanis", "biriyanis"],
+  "chicken": ["chiken", "chikken", "chicken", "chikn", "chickn"],
+  "paneer": ["panir", "panner", "paneer", "paneer-butter"],
+  "paratha": ["parotta", "parota", "parotha", "paratha", "porotta"],
+  "dosa": ["dosai", "dosa", "dhosa", "dose", "benne dosa"],
+  "idli": ["idly", "idli", "iddly", "idle"],
+  "shawarma": ["shwarma", "shawarma", "shavarma", "showarma"],
+  "kebab": ["kabab", "kebab", "kababs", "kebabs"],
+  "mutton": ["muton", "mutton", "matton"],
+  "noodles": ["noodle", "noodles", "nudles", "hakka"],
+  "fried rice": ["friedrice", "fried rice", "fried-rice"],
+  "burger": ["burgar", "burger", "burgur"],
+  "pizza": ["piza", "pizzas", "pizza"],
+  "pasta": ["pashtha", "pasta", "pastas"],
+  "curry": ["cury", "curry", "curries"],
+  "sandwich": ["sandwitch", "sandwiches", "sandwich"],
+  "coffee": ["filter coffee", "kaapi", "coffee", "coffe"],
+  "tea": ["chai", "tea", "masala chai"],
+  "dessert": ["ice cream", "icecream", "dessert", "sweet", "dbc", "gulab jamun"]
+}

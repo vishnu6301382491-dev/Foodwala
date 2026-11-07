@@ -257,12 +257,13 @@ app.use(authenticateUser);
 // =======================================================================
 // WHATSAPP CLOUD API & AI CUSTOMER SUPPORT WEBHOOKS
 // =======================================================================
-const whatsappRoutes = require('./routes/whatsappRoutes');
-const whatsappWebhookRouter = require('./routes/whatsappWebhook');
+const whatsappWebhook = require('./whatsapp/webhook');
 
-app.use('/api/whatsapp', whatsappRoutes);
-app.use('/api/webhook/whatsapp', whatsappRoutes);
-app.use('/api/support', whatsappWebhookRouter);
+
+app.use('/webhook', whatsappWebhook);
+app.use('/api/whatsapp', whatsappWebhook);
+app.use('/api/webhook/whatsapp', whatsappWebhook);
+app.use('/api/support', whatsappWebhook);
 
 // =======================================================================
 // 1. HEALTH & DIAGNOSTIC ENDPOINTS
@@ -3294,6 +3295,21 @@ if (require.main === module) {
       await seedAdminUser();
     } catch (e) {
       console.warn('[Startup] Admin seed deferred:', e.message);
+    }
+
+    try {
+      const whatsappSender = require('./whatsapp/sender');
+      const waHealth = await whatsappSender.verifyHealth();
+      if (!waHealth.tokenValid && process.env.NODE_ENV === 'production') {
+        console.error('🚨 [WhatsApp Startup Error]: WhatsApp token invalid or expired. Exiting non-zero.');
+        process.exit(1);
+      } else if (!waHealth.tokenValid) {
+        console.warn(`⚠️ [WhatsApp Startup Notice]: ${waHealth.message || 'WhatsApp token unset; running in mock simulation mode.'}`);
+      } else {
+        console.log(`✅ [WhatsApp Startup]: Token verified for ${waHealth.displayPhoneNumber || waHealth.phoneId}`);
+      }
+    } catch (waErr) {
+      console.warn('[Startup] WhatsApp verification notice:', waErr.message);
     }
   });
 

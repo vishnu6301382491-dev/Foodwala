@@ -144,34 +144,262 @@ class WhatsAppAIService {
   }
 
   /**
+   * Helper: accurately determine veg/non-veg status with safety check for meat keywords
+   */
+  getVegEmoji(dish) {
+    const name = ((dish && dish.item_name) || '').toLowerCase();
+    const isMeat = /\b(chicken|mutton|fish|prawns?|shrimp|egg|eggs|meat|beef|pork|keema|seafood|bacon|crab)\b/i.test(name);
+    if (isMeat) return '🔴';
+    return dish && dish.is_veg ? '🟢' : '🔴';
+  }
+
+  /**
    * Retrieves active dishes and partner restaurants from MySQL for live menu
+   * Supports specific dish / cuisine search term with spelling variation normalization
    */
   async getLiveMenu(searchTerm = '') {
     try {
-      let query = `
-        SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
-        FROM menu m
-        JOIN restaurant r ON m.restaurant_id = r.restaurant_id
-        WHERE m.is_available = 1 AND r.is_active = 1
-      `;
-      const params = [];
+      let isSpecificSearch = false;
+      let finalDishes = [];
+      let finalRestaurants = [];
+
       if (searchTerm && searchTerm.trim()) {
-        const clean = `%${searchTerm.trim()}%`;
-        query += ` AND (m.item_name LIKE ? OR r.name LIKE ? OR r.cuisine_type LIKE ?)`;
-        params.push(clean, clean, clean);
+        isSpecificSearch = true;
+        let clean = searchTerm.trim().toLowerCase();
+        clean = clean.replace(/\bbir[iy]+an(?:i|is)?\b/gi, 'biryani');
+        clean = clean.replace(/\bbriyani\b/gi, 'biryani');
+        clean = clean.replace(/\bshwarmas?\b/gi, 'shawarma');
+        clean = clean.replace(/\bparottas?\b/gi, 'paratha');
+        clean = clean.replace(/\bkabab\b/gi, 'kebab');
+        clean = clean.replace(/\bdosai\b/gi, 'dosa');
+        clean = clean.replace(/\bicecreams?\b/gi, 'ice cream');
+
+        // Extract area if mentioned in clean
+        const areaMatch = clean.match(/\b(koramangala|indiranagar|hsr|whitefield|maruthi\s*nagar|jp\s*nagar|jayanagar|btm|electronic\s*city|malleshwaram|hebbal|bellandur|majestic|residency\s*road|lalbagh)\b/i);
+        const detectedArea = areaMatch ? areaMatch[1].trim() : null;
+        let foodPart = clean;
+        if (detectedArea) {
+          foodPart = clean.replace(new RegExp(`\\b${detectedArea}\\b`, 'gi'), '').replace(/\s*(?:in|at|around)\s*$/gi, '').trim();
+        }
+
+        const words = (foodPart || clean).split(/\s+/).filter(w => w.length > 1 && !/^(?:in|at|for|the|a|an|some|any|with|and|or)$/i.test(w));
+
+        // 1. First priority: match dish name specifically
+        let dishQuery = `
+          SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
+          FROM menu m
+          JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+          WHERE m.is_available = 1 AND r.is_active = 1
+        `;
+        const dishParams = [];
+        if (words.length > 1) {
+          const conditions = words.map(() => `m.item_name LIKE ?`).join(' AND ');
+          dishQuery += ` AND (${conditions})`;
+          words.forEach(w => dishParams.push(`%${w}%`));
+        } else if (words.length === 1) {
+          dishQuery += ` AND m.item_name LIKE ?`;
+          dishParams.push(`%${words[0]}%`);
+        } else {
+          dishQuery += ` AND m.item_name LIKE ?`;
+          dishParams.push(`%${clean}%`);
+        }
+        if (detectedArea) {
+          dishQuery += ` AND r.area LIKE ?`;
+          dishParams.push(`%${detectedArea}%`);
+        }
+        dishQuery += ` ORDER BY m.rating DESC, m.price ASC LIMIT 60`;
+        let [nameMatches] = await db.query(dishQuery, dishParams);
+
+        // If no matches with area filter, retry without area filter
+        if ((!nameMatches || nameMatches.length === 0) && detectedArea) {
+          let retryQuery = `
+            SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
+            FROM menu m
+            JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+            WHERE m.is_available = 1 AND r.is_active = 1
+          `;
+          const retryParams = [];
+          if (words.length > 1) {
+            retryQuery += ` AND (${words.map(() => `m.item_name LIKE ?`).join(' AND ')})`;
+            words.forEach(w => retryParams.push(`%${w}%`));
+          } else if (words.length === 1) {
+            retryQuery += ` AND m.item_name LIKE ?`;
+            retryParams.push(`%${words[0]}%`);
+          }
+          retryQuery += ` ORDER BY m.rating DESC, m.price ASC LIMIT 60`;
+          [nameMatches] = await db.query(retryQuery, retryParams);
+        }
+
+        // If still no matches and multiple words, fall back to core food keyword
+        if (!nameMatches || nameMatches.length === 0) {
+          const coreFood = words.find(w => /^(?:biryani|dosa|pizza|burger|shawarma|paneer|kebab|curry|idli|vada|coffee|tea|shake|dessert|cake|pasta|sandwich|chaat|thali|paratha|noodles?|rice)$/i.test(w)) ||
+                           clean.match(/\b(biryani|pizza|burger|dosa|shawarma|roll|paneer|ice\s*cream|chinese|noodle|fried\s*rice|momo|pasta|sandwich|chaat|thali|paratha|kebab|curry|coffee|tea|shake|dessert|cake|idli|vada)\b/i)?.[1];
+          if (coreFood) {
+            let coreQuery = `
+              SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
+              FROM menu m
+              JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+              WHERE m.is_available = 1 AND r.is_active = 1 AND m.item_name LIKE ?
+              ORDER BY m.rating DESC, m.price ASC LIMIT 60
+            `;
+            [nameMatches] = await db.query(coreQuery, [`%${coreFood}%`]);
+          }
+        }
+
+        if (nameMatches && nameMatches.length > 0) {
+          // Provide variety of distinct dishes (e.g. Mutton Biryani, Chicken Biryani, Veg Biryani)
+          const seenNames = new Set();
+          for (const d of nameMatches) {
+            if (!seenNames.has(d.item_name)) {
+              seenNames.add(d.item_name);
+              finalDishes.push(d);
+            }
+            if (finalDishes.length >= 5) break;
+          }
+          // If fewer than 5 distinct dishes, fill with other matching restaurants
+          if (finalDishes.length < 5) {
+            for (const d of nameMatches) {
+              const key = `${d.item_name}-${d.restaurant_name}`;
+              if (!finalDishes.some(x => `${x.item_name}-${x.restaurant_name}` === key)) {
+                finalDishes.push(d);
+              }
+              if (finalDishes.length >= 5) break;
+            }
+          }
+        } else {
+          // Fallback: match restaurant name or cuisine type
+          let broaderQuery = `
+            SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
+            FROM menu m
+            JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+            WHERE m.is_available = 1 AND r.is_active = 1
+              AND (r.name LIKE ? OR r.cuisine_type LIKE ?)
+            ORDER BY m.rating DESC, m.menu_id ASC LIMIT 5
+          `;
+          const [broaderMatches] = await db.query(broaderQuery, [`%${clean}%`, `%${clean}%`]);
+          finalDishes = broaderMatches || [];
+        }
+
+        // 2. Query partner kitchens
+        const searchKeyword = (words[0] || clean);
+        let restQuery = `
+          SELECT name, area, cuisine_type, rating 
+          FROM restaurant 
+          WHERE is_active = 1 AND (name LIKE ? OR cuisine_type LIKE ? OR area LIKE ?)
+          ORDER BY rating DESC LIMIT 3
+        `;
+        let [matchedRest] = await db.query(restQuery, [`%${searchKeyword}%`, `%${searchKeyword}%`, `%${searchKeyword}%`]);
+
+        if (!matchedRest || matchedRest.length === 0) {
+          const [topRest] = await db.query(
+            `SELECT name, area, cuisine_type, rating FROM restaurant WHERE is_active = 1 ORDER BY rating DESC LIMIT 3`
+          );
+          finalRestaurants = topRest || [];
+        } else {
+          finalRestaurants = matchedRest;
+        }
+      } else {
+        // General top picks menu (e.g. "Show me today's menu")
+        const [defaultDishes] = await db.query(`
+          SELECT m.item_name, m.price, m.is_veg, r.name as restaurant_name, r.area
+          FROM menu m
+          JOIN restaurant r ON m.restaurant_id = r.restaurant_id
+          WHERE m.is_available = 1 AND r.is_active = 1
+          ORDER BY m.rating DESC, m.menu_id ASC LIMIT 5
+        `);
+        finalDishes = defaultDishes || [];
+
+        const [defaultRest] = await db.query(
+          `SELECT name, area, cuisine_type, rating FROM restaurant WHERE is_active = 1 ORDER BY rating DESC LIMIT 3`
+        );
+        finalRestaurants = defaultRest || [];
       }
-      query += ` ORDER BY m.rating DESC, m.menu_id ASC LIMIT 5`;
-      const [dishes] = await db.query(query, params);
 
-      const [restaurants] = await db.query(
-        `SELECT name, area, cuisine_type, rating FROM restaurant WHERE is_active = 1 ORDER BY rating DESC LIMIT 3`
-      );
-
-      return { dishes: dishes || [], restaurants: restaurants || [] };
+      return {
+        dishes: finalDishes,
+        restaurants: finalRestaurants,
+        searchTerm: isSpecificSearch ? searchTerm : null,
+        isSpecificSearch: isSpecificSearch
+      };
     } catch (err) {
       console.error('[DATABASE ERROR] Failed to query live menu:', err.message);
-      return { dishes: [], restaurants: [] };
+      return { dishes: [], restaurants: [], searchTerm: null, isSpecificSearch: false };
     }
+  }
+
+  /**
+   * Extracts dish / category search term from customer message
+   * Normalizes spelling variations (biriyani/briyani -> biryani) and strips craving prefixes
+   */
+  extractFoodSearchTerm(rawText) {
+    if (!rawText) return null;
+    let text = rawText.trim().toLowerCase();
+
+    // Remove punctuation at ends
+    text = text.replace(/^[!?.,\s]+|[!?.,\s]+$/g, '');
+
+    // Pure general menu phrases return null so the default featured menu is presented
+    if (
+      /^(?:show\s*(?:me\s*)?)?(?:today'?s?\s*)?menu$/i.test(text) ||
+      /^(?:popular\s*dishes|available\s*(?:food|dishes)|today'?s?\s*menu)$/i.test(text) ||
+      /^(?:menu|restaurants?|food|kitchens?)$/i.test(text)
+    ) {
+      return null;
+    }
+
+    // Normalize spelling variants
+    text = text.replace(/\bbir[iy]+an(?:i|is)?\b/gi, 'biryani');
+    text = text.replace(/\bbriyani\b/gi, 'biryani');
+    text = text.replace(/\bshwarmas?\b/gi, 'shawarma');
+    text = text.replace(/\bparottas?\b/gi, 'paratha');
+    text = text.replace(/\bkabab\b/gi, 'kebab');
+    text = text.replace(/\bdosai\b/gi, 'dosa');
+    text = text.replace(/\bicecreams?\b/gi, 'ice cream');
+
+    let cleaned = text;
+
+    // Strip conversational hunger / query wrappers
+    cleaned = cleaned.replace(/^(?:i\s*am\s*hungry|hungry|feeling\s*hungry)[,.\s]*/gi, '');
+    cleaned = cleaned.replace(
+      /^(?:(?:can|could)\s*(?:i|you)\s*(?:please\s*)?(?:order|get|have|find|suggest|recommend|show)|do\s*you\s*have|what\s*(?:kind\s*of|type\s*of)?\s*(?:are\s*the\s*)?|is\s*(?:there\s*)?(?:any)?|where\s*(?:can\s*i\s*(?:get|find|order|have)|to\s*(?:get|find|order|have)|is\s*the\s*best)?|what\s*to\s*eat)\s*/gi,
+      ''
+    );
+    cleaned = cleaned.replace(
+      /^(?:i\s*(?:want|wanna|need|feel\s*like(?:\s*(?:having|eating))?|am\s*craving|craving|prefer|would\s*like)\s*(?:to\s*)?(?:eat|order|have|get)?)\s*/gi,
+      ''
+    );
+    cleaned = cleaned.replace(
+      /^(?:(?:please\s+)?(?:get(?:\s*me)?|give(?:\s*me)?|send(?:\s*me)?|bring(?:\s*me)?|feed\s*me|deliver(?:\s*me)?|show(?:\s*me)?|recommend(?:\s*me)?|suggest(?:\s*me)?|find(?:\s*me)?|search(?:\s*for)?|order(?:\s*me)?|looking\s*for))\s*/gi,
+      ''
+    );
+    cleaned = cleaned.replace(/^(?:craving|cravings)(?:\s*for)?\s*/gi, '');
+
+    // Strip leading qualifiers/articles
+    cleaned = cleaned.replace(/^(?:some|a|an|the|any)\s+/gi, '');
+
+    // Strip trailing locations
+    cleaned = cleaned.replace(/\s*(?:near\s*me|around\s*here|nearby|in\s*bengaluru|in\s*bangalore|online|for\s*delivery|fast|please|plz)$/gi, '');
+    cleaned = cleaned.replace(/\s*(?:in|at|around)\s+(?:koramangala|indiranagar|hsr|whitefield|maruthi\s*nagar|jp\s*nagar|jayanagar|btm|electronic\s*city|malleshwaram|hebbal|bellandur|majestic|residency\s*road|lalbagh)$/gi, '');
+
+    // Strip trailing conversational suffixes / nouns
+    cleaned = cleaned.replace(/\s*(?:options?|types?|menu|items?|dishes|available|food|places?|restaurants?|delivery)$/gi, '');
+    cleaned = cleaned.replace(/\s+(?:do\s+you\s+have|can\s+i\s+get|is\s+available)$/gi, '');
+
+    // Strip leading qualitative adjectives (best, good, spicy, etc.)
+    cleaned = cleaned.replace(/^(?:best|good|top|popular|tasty|delicious|spicy|hot|fresh|authentic|famous)\s+/gi, '');
+
+    cleaned = cleaned.replace(/^[!?.,\s]+|[!?.,\s]+$/g, '').trim();
+
+    // Fallback: if cleaned is empty or became generic (e.g. user just said "craving something"), check for any known dish keyword in text
+    if (!cleaned || /^(?:food|menu|dish|item|items|dishes|something|anything)$/i.test(cleaned)) {
+      const match = text.match(/\b(biryani|pizza|burger|dosa|shawarma|roll|paneer|ice\s*cream|chinese|noodle|fried\s*rice|momo|pasta|sandwich|chaat|thali|paratha|kebab|curry|coffee|tea|shake|dessert|cake|idli|vada)\b/i);
+      if (match) {
+        return match[1].toLowerCase().replace(/\s+/, ' ');
+      }
+      return null;
+    }
+
+    return cleaned;
   }
 
   /**
@@ -189,6 +417,8 @@ class WhatsAppAIService {
         restPart = atMatch[2].trim();
       }
       dishPart = dishPart.replace(/^(?:the|a|an)\s+/i, '').trim();
+      dishPart = dishPart.replace(/\bbir[iy]+an(?:i|is)?\b/gi, 'biryani');
+      dishPart = dishPart.replace(/\bbriyani\b/gi, 'biryani');
 
       let query = `
         SELECT m.item_name, m.price, m.description, m.is_veg, r.name as restaurant_name, r.area
@@ -416,10 +646,19 @@ class WhatsAppAIService {
     }
 
     // 10. Hyperlocal Delivery Areas & Micro-Zones
+    const isFoodCravingOrSearch =
+      /\b(?:bir[iy]+an(?:i|is)?|briyani|pizzas?|burgers?|dosas?|dosai|shawarmas?|shwarmas?|rolls?|paneer|ice\s*creams?|icecreams?|chinese|noodles?|fried\s*rice|momos?|pasta|sandwiches?|sandwich|chaat|thali|parathas?|parottas?|k[ae]babs?|curry|curries|coffees?|tea|chai|shakes?|desserts?|cakes?|pastr(?:y|ies)|chole\s*bhature|vada[si]?|idlis?|rava\s*idli|meals?|roti|naan|butter\s*chicken|tandoori|dal\s*makhani|pulav|pulao)\b/i.test(text) ||
+      /\b(?:i\s*(?:want|wanna|need|feel\s*like|am\s*craving|craving|prefer|would\s*like)|craving|cravings)\b/i.test(text) ||
+      /\b(?:recommend|suggest|show\s*me|what\s*to\s*eat|order\s*food|order\s*something|feed\s*me|hungry)\b/i.test(text);
+
+    const isOrderLifecycleQuery =
+      /\b(?:where\s*is|track|status|cancel|refund|delivery\s*valet|has\s*my\s*order|when\s*will\s*(?:my\s*)?order|assistance\s*with\s*(?:my\s*)?order|problem\s*with\s*(?:my\s*)?order)\b/i.test(text);
+
     if (
-      /\b(where\s*do\s*you\s*deliver|delivery\s*(areas?|zones?|locations?|hubs?))\b/i.test(text) ||
-      /\b(deliver(y)?\s*(to|in|at)\s*|reach\s*to\s*)\b/i.test(text) ||
-      /\b(koramangala|indiranagar|hsr|whitefield|maruthi\s*nagar|jp\s*nagar|jayanagar|btm|electronic\s*city|malleshwaram|hebbal|bellandur)\b/i.test(text)
+      !isFoodCravingOrSearch &&
+      (/\b(where\s*do\s*you\s*deliver|delivery\s*(areas?|zones?|locations?|hubs?))\b/i.test(text) ||
+       /\b(deliver(y)?\s*(to|in|at)\s*|reach\s*to\s*)\b/i.test(text) ||
+       /\b(koramangala|indiranagar|hsr|whitefield|maruthi\s*nagar|jp\s*nagar|jayanagar|btm|electronic\s*city|malleshwaram|hebbal|bellandur)\b/i.test(text))
     ) {
       return 'hyperlocal_delivery';
     }
@@ -439,16 +678,16 @@ class WhatsAppAIService {
       return 'change_address';
     }
 
-    // 11. Restaurant & Menu Information
+    // 11. Restaurant & Menu Information / Food & Craving Search
     if (
       /\b(menu|dishes|popular\s*dishes|food\s*items?|show\s*(me\s*)?(today'?s?\s*)?menu|today'?s?\s*menu|available\s*(food|dishes))\b/i.test(text) &&
-      !/order/i.test(text)
+      !isOrderLifecycleQuery
     ) {
       return 'restaurant_menu';
     }
     if (
-      /\b(restaurants?|biryani|pizza|burger|dosa)\b/i.test(text) &&
-      !/order/i.test(text)
+      (isFoodCravingOrSearch || /\b(restaurants?|food|kitchens?|eat|meals?|dishes|cuisines?)\b/i.test(text)) &&
+      !isOrderLifecycleQuery
     ) {
       return 'restaurant_info';
     }
@@ -595,7 +834,7 @@ class WhatsAppAIService {
       if (items && items.length > 0) {
         let res = `🍽️ *FoodWala Live Price Check for "${cleanItem}":*\n\n`;
         items.forEach(d => {
-          res += `• ${d.is_veg ? '🟢' : '🔴'} *${d.item_name}*: ₹${d.price} at *${d.restaurant_name}* (${d.area})\n`;
+          res += `• ${this.getVegEmoji(d)} *${d.item_name}*: ₹${d.price} at *${d.restaurant_name}* (${d.area})\n`;
         });
         res += `\n🎉 Apply coupon *FOODWALA50* at checkout for 50% OFF up to ₹150! 🛵`;
         return res;
@@ -704,25 +943,63 @@ class WhatsAppAIService {
              `Please share your Order ID and our support supervisor will assist you directly! 🛵`;
     }
 
-    // K. Restaurant / Menu Info (Grounded in MySQL)
+    // K. Restaurant / Menu Info & Food Craving Search (Grounded in MySQL)
     if (intent === 'restaurant_menu' || intent === 'restaurant_info') {
-      const liveMenu = await this.getLiveMenu();
-      let res = `🍽️ *Today's FoodWala Menu & Top Picks in Bengaluru:*\n\n`;
-      if (liveMenu.dishes && liveMenu.dishes.length > 0) {
-        res += `*Featured Popular Dishes:*\n`;
+      const searchTerm = this.extractFoodSearchTerm(text);
+      const liveMenu = await this.getLiveMenu(searchTerm);
+
+      if (searchTerm && liveMenu.dishes && liveMenu.dishes.length > 0) {
+        const capitalizedTerm = searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1);
+        let res = `🍽️ *Craving ${capitalizedTerm}? Top Picks in Bengaluru:*\n\n`;
+        res += `*Matching Dishes:*\n`;
         liveMenu.dishes.forEach(d => {
-          res += `• ${d.is_veg ? '🟢' : '🔴'} *${d.item_name}* (₹${d.price}) — *${d.restaurant_name}*\n`;
+          res += `• ${this.getVegEmoji(d)} *${d.item_name}* (₹${d.price}) — *${d.restaurant_name}* (${d.area})\n`;
         });
+
+        if (liveMenu.restaurants && liveMenu.restaurants.length > 0) {
+          res += `\n*Recommended Partner Kitchens:*\n`;
+          liveMenu.restaurants.forEach(r => {
+            res += `• *${r.name}* (${r.area}) — ⭐ ${r.rating} (${r.cuisine_type})\n`;
+          });
+        }
+
+        res += `\n🎉 Apply coupon *FOODWALA50* at checkout for Flat 50% OFF up to ₹150!\n` +
+               `⚡ Free delivery automatically unlocked on orders above ₹299!\n` +
+               `Reply with a dish name or restaurant to explore more! 🛵`;
+        return res;
+      } else if (searchTerm && (!liveMenu.dishes || liveMenu.dishes.length === 0)) {
+        const fallbackMenu = await this.getLiveMenu(null);
+        let res = `🍽️ *FoodWala Menu Recommendations:*\n\n` +
+               `We couldn't find active dishes matching "*${searchTerm}*" right now, but here are our top-rated recommendations in Bengaluru:\n\n`;
+        if (fallbackMenu.dishes && fallbackMenu.dishes.length > 0) {
+          res += `*Featured Popular Dishes:*\n`;
+          fallbackMenu.dishes.forEach(d => {
+            res += `• ${this.getVegEmoji(d)} *${d.item_name}* (₹${d.price}) — *${d.restaurant_name}* (${d.area})\n`;
+          });
+        }
+        res += `\n*Popular Food Categories:*\n` +
+               `🍕 Pizza | 🍔 Burgers | 🍛 Biryani | 🥞 South Indian | 🍜 Chinese | 🍦 Desserts\n\n` +
+               `🎉 Apply coupon *FOODWALA50* at checkout for Flat 50% OFF up to ₹150!\n` +
+               `Reply with any dish or category to explore menus! 🛵`;
+        return res;
+      } else {
+        let res = `🍽️ *Today's FoodWala Menu & Top Picks in Bengaluru:*\n\n`;
+        if (liveMenu.dishes && liveMenu.dishes.length > 0) {
+          res += `*Featured Popular Dishes:*\n`;
+          liveMenu.dishes.forEach(d => {
+            res += `• ${this.getVegEmoji(d)} *${d.item_name}* (₹${d.price}) — *${d.restaurant_name}*\n`;
+          });
+        }
+        if (liveMenu.restaurants && liveMenu.restaurants.length > 0) {
+          res += `\n*Popular Partner Kitchens:*\n`;
+          liveMenu.restaurants.forEach(r => {
+            res += `• *${r.name}* (${r.area}) — ⭐ ${r.rating} (${r.cuisine_type})\n`;
+          });
+        }
+        res += `\n🏷️ Use coupon *FOODWALA50* on checkout for Flat 50% OFF (up to ₹150)!\n` +
+               `Reply with a dish name (e.g. *"price of Benne Masala Dosa"*) to check pricing. 🍕`;
+        return res;
       }
-      if (liveMenu.restaurants && liveMenu.restaurants.length > 0) {
-        res += `\n*Popular Partner Kitchens:*\n`;
-        liveMenu.restaurants.forEach(r => {
-          res += `• *${r.name}* (${r.area}) — ⭐ ${r.rating} (${r.cuisine_type})\n`;
-        });
-      }
-      res += `\n🏷️ Use coupon *FOODWALA50* on checkout for Flat 50% OFF (up to ₹150)!\n` +
-             `Reply with a dish name (e.g. *"price of Benne Masala Dosa"*) to check pricing. 🍕`;
-      return res;
     }
 
     // L. Login, OTP, Account

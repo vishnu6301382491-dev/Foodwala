@@ -1,113 +1,28 @@
-# FoodWala Engineering Guardrails & Project Guidelines
+# FoodWala Project Knowledge & Operational Rules
 
-This file defines persistent engineering standards, architectural decisions, and guardrails for the FoodWala codebase.
+## 1. Architectural Patterns & Flow Routing
+- **Global Intent Interception**: E-commerce cart actions (`CART_CHECKOUT`, `CHECKOUT`, `PAY`, `VIEW_CART`, `CART_CLEAR`, `CART_ADD_MORE`) must be evaluated globally in Step 2 of `server/whatsapp/router.js` and in `orderFlow.js`, regardless of conversational state (including `IDLE`, expired, and `CONFIRMED`).
+- **Priority Support Precedence**: Customer queries containing keywords like `need assistance`, `help`, `support`, `issue`, or `agent` must take strict precedence over greeting/chitchat regexes, creating priority support desk tickets with active cart buttons.
+- **Address Inquiry Protection**: In `orderFlow.js` (`handleAddress`), never assign user input containing `?` or question prefixes (`what`, `where`, `how`, `when`, `why`, `charges`, `fees`) as the delivery street address; always pass to outer FAQ router to answer while preserving address state.
 
----
+## 2. Session Store & Memory Persistence
+- **24-Hour E-Commerce Cart Retention**: Carts with items must be preserved in MySQL `whatsapp_sessions` for 24 hours. Even if the conversational prompt expires (30 min TTL), returning customers retain their active cart and are routed to `CART_REVIEW`.
+- **Pending Item Preservation**: When switching restaurants or selecting quantity, `session.pendingItem` must be serialized into `safeSession.context.pendingItem` in `server/whatsapp/sessionStore.js` (`saveSession` & `getSession`) so button clicks like *"Yes, clear & add"* (`CART_SWITCH_CONFIRM`) never encounter undefined references.
 
-## 1. Node.js HTTP/HTTPS Socket & Timeout Management
-- In Node.js, specifying `timeout: <ms>` in `http.request()` or `https.request()` only emits a `'timeout'` event on the request object. It does **NOT** automatically destroy the underlying socket.
-- **Mandatory Practice**: Whenever creating an `http.request()` or `https.request()`, ALWAYS attach an explicit abort handler:
-  ```javascript
-  req.on('timeout', () => {
-    req.destroy(new Error('Request timed out'));
-  });
-  ```
-- Set conservative timeouts (e.g. 3000ms for AI completions) to prevent upstream latency from starving client abort timers.
+## 3. Database Schema Conventions (`fudwala` on MySQL 3306)
+- **`orders` table**:
+  - Timestamp column is `order_date` (DATETIME) and `updated_at`. There is NO `created_at` column in `orders`.
+  - Status values: `PLACED`, `CONFIRMED`, `PREPARING`, `OUT_FOR_DELIVERY`, `DELIVERED`, `CANCELLED`.
+- **`restaurant` table**:
+  - Cuisine column is `cuisine_type`.
+- **`whatsapp_messages` table**:
+  - Message body column is `message_text`. Delivery status column is `delivery_status`.
 
----
+## 4. Cloudflare Tunnel & Meta Webhook Synchronization
+- Free Cloudflare tunnels (`trycloudflare.com`) generate dynamic URLs upon reconnection.
+- `scripts/tunnel.js` must parse `currentTunnelUrl` dynamically and call `syncMetaWebhookWithRetry` to auto-register the active callback URL (`/api/whatsapp/webhook`) with Meta Graph API (`POST /v21.0/{APP_ID}/subscriptions`).
+- Windows Persistent Auto-Start is maintained via `C:\Users\vishn\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\FoodWala_Services.lnk` pointing to `start_foodwala_services.bat`.
 
-## 2. Gemini API Model Compatibility & Grounded Local Fallback
-- Use `gemini-3.8-flash` for Google Gemini Developer API completions on `v1beta`. Older aliases (`gemini-1.5-flash`, `gemini-2.0-flash`) return `404 NOT_FOUND` on newer project endpoints.
-- **Fail-Fast Fallback**: Always pair external LLM calls with FoodWala's built-in intelligent semantic engine (`_generateBuiltinResponse`). On any external latency, 429 quota limit, or network failure, fail fast (<5ms) to the grounded local policy engine so that customer answers are delivered instantly without error cards.
-
----
-
-## 3. Helmet & Content Security Policy (CSP) in Full-Stack Apps
-- The frontend loads external CDN assets (e.g. `images.unsplash.com` restaurant photos, Bootstrap icons, Google Fonts) and uses standard inline script patterns.
-- Default Helmet v8 CSP blocks these assets unless configured. In `server/server.js`, maintain:
-  ```javascript
-  app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-  }));
-  ```
-
----
-
-## 4. Customer Privacy & Order Authorization
-- Support and tracking endpoints (`/api/support/chat`, `/api/orders/:id/track`) MUST strictly verify customer ownership via JWT authorization or verified 10-digit mobile phone.
-- **NEVER** return a default or globally recent order (such as Order #80 / Suresh Kumar) to an unauthenticated or anonymous visitor. Unauthenticated tracking queries must instruct the user to log in or provide their verified order ID.
-
----
-
-## 5. Meta WhatsApp Cloud API Guidelines
-- **Webhook Handshake (GET `/api/webhook/whatsapp`)**: Compare `hub.verify_token` against `WHATSAPP_VERIFY_TOKEN` and return `hub.challenge` as plain text with HTTP 200.
-- **Signature Validation (POST `/api/webhook/whatsapp`)**: Compute HMAC-SHA256 of the raw body using `WHATSAPP_APP_SECRET` and perform constant-time comparison against `X-Hub-Signature-256`.
-- **Immediate Acknowledgment**: Return HTTP 200 `{ "status": "EVENT_RECEIVED" }` immediately before triggering asynchronous background AI processing to prevent Meta retry loops.
-- **Deduplication**: Cache incoming `wamid` message IDs in memory with TTL to suppress duplicate webhook deliveries.
-- **Loop Suppression**: Ignore messages originating from the business's own phone ID or hotline number (`SUPPORT_PHONE_NUMBER`).
-- **PII & Secret Protection**: Never print `WHATSAPP_ACCESS_TOKEN`, `AI_API_KEY`, or full unmasked customer phone numbers in logs. Always mask phone numbers (e.g. `+9198****53`).
-
----
-
-## 6. Node.js Class Method Binding for Safe Destructuring
-- In modular Node.js architectures where singleton service classes are exported (`module.exports = new Service()`), developers frequently destructure methods:
-  ```javascript
-  const { sendWhatsAppMessage } = require('./services/whatsappService');
-  ```
-- **Rule**: ALWAYS bind all public instance methods to `this` inside the constructor:
-  ```javascript
-  constructor() {
-    this.sendWhatsAppMessage = this.sendWhatsAppMessage.bind(this);
-    this.normalizeSender = this.normalizeSender.bind(this);
-    this.verifySignature = this.verifySignature.bind(this);
-    this.checkHealth = this.checkHealth.bind(this);
-  }
-  ```
-- This prevents `TypeError: Cannot read properties of undefined` when methods are called out of context.
-
----
-
-## 7. Meta WhatsApp Cloud API & Business Account Configuration
-- **Official Business Number (+91 85004 57005)**: FoodWala uses an official WhatsApp Business account. Outbound replies to customers within the 24-hour customer service window do not require whitelisting once fully registered.
-- **Phone Allowlist Requirement on Test Numbers (Error 131030)**: If temporarily falling back to a Meta developer test phone number, Meta Cloud API rejects outbound messages to unverified numbers with code `131030` (`Recipient phone number not in allowed list`).
-  - **Rule**: Recipients must be explicitly added to the "Manage phone number list" in the Meta Developer Portal before sending messages in test/sandbox mode.
-- **Token Expiration (Error 190 / 463)**: Temporary developer tokens expire every 24 hours. Production setups must use permanent System User access tokens from Meta Business Manager.
-
----
-
-## 9. Multi-Tenant Role Isolation: Store Managers vs. Platform Admins
-- **Manager Data Scoping**: When a restaurant manager logs in, the backend API (`/api/restaurant/*`) and frontend MUST strictly scope all data queries (orders, menus, inventory, settings) to their assigned entity (`WHERE admin_user_id = user_id`).
-- **Dropdown & Parameter Sanitization**:
-  - The restaurant selector dropdown (`#restaurant-selector-dropdown`) MUST remain completely hidden (`display: none !important`) for managers.
-  - Query parameter tampering (e.g. `?restaurantId=99` or `?id=12`) MUST be sanitized, stripped from the browser address bar via `window.history.replaceState`, and resolved server-side solely from the authenticated manager's session.
-- **Platform Admins**: Only authenticated users with `role = 'admin'` (e.g., `adminfoodwala@gmail.com`) are granted cross-store oversight to switch between all restaurants and inspect global platform analytics.
-
----
-
-## 10. UI Credential Hygiene & Demo Account Suppression
-- **No Hardcoded Demo Buttons**: Never expose 1-click demo logins or hardcoded credentials on production or public-facing login portals (`login.html`, `admin.html`, `restaurant-dashboard.html`).
-- **Input Placeholders**: Input field placeholders should remain descriptive yet clean (e.g., `adminfoodwala@gmail.com` or `restaurantname@gmail.com`), requiring users and managers to enter authentic credentials.
-
----
-
-## 11. Automated Client-Side `<script>` Syntax Validation Pre-Flight
-- When editing vanilla HTML files containing inline `<script>` blocks (e.g. `login.html`, `register.html`, `index.html`):
-  - A single unclosed brace, trailing parenthesis, or syntax typo halts the entire script execution immediately upon page load.
-  - **Rule**: ALWAYS run an automated syntax check using Node.js `vm.Script` or an AST parser on all `<script>` tags in modified `.html` files before committing or deploying:
-    ```javascript
-    new vm.Script(scriptCode, { filename: 'file.html' });
-    ```
-  - Never mark an engineering task complete if any client HTML file contains an uncaught `SyntaxError`.
-
----
-
-## 12. Standard Multi-Role Route Redirection Matrix
-- In multi-vendor delivery platforms, user login redirection MUST adhere to this explicit role hierarchy:
-  - `role === 'admin'`: Redirect to `./admin.html` (Platform Super Admin).
-  - `role === 'partner' || role === 'delivery_partner'`: Redirect to `./delivery-dashboard.html` (Rider Portal).
-  - `role === 'restaurant' || role === 'restaurant_admin'`: Redirect to `./restaurant-dashboard.html` (Store Manager).
-  - `role === 'customer'`: Redirect to `redirectTarget || './index.html'`.
-- Never redirect delivery riders to generic customer order history (`orders.html`).
-
-
+## 5. AI Engine & LLM Fallback Failsafe
+- Primary AI Model: `gemini-2.0-flash`.
+- Always check `res.statusCode >= 400` in `_callGemini` and `_callOpenAI` in `server/whatsapp/llmFallback.js` to catch quota limits (HTTP 429) immediately and safely fallback to local semantic classification (<5ms) without crashing on JSON parsing.

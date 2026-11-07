@@ -1,20 +1,19 @@
-require('dotenv').config({ path: 'server/.env' });
-const ws = require('../server/services/whatsappService');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../server/.env') });
+const sender = require('../server/whatsapp/sender');
 
 async function testSend() {
   const phone = '916301382491';
   const msg = `🎉 *FoodWala 24/7 AI Assistant is now LIVE!*\n\n` +
-              `Hi Vishnu! Welcome to FoodWala Customer Care.\n\n` +
-              `How can I assist you right now?\n` +
-              `1️⃣ Track my order\n` +
-              `2️⃣ Cancel an order\n` +
-              `3️⃣ Payment issue\n` +
-              `4️⃣ Delivery issue\n` +
-              `5️⃣ Talk to support\n\n` +
-              `Reply with any question or your *Order ID* (e.g. *FW70*)! 🛵`;
+              `Hi Vishnu! Your WhatsApp ordering assistant is fully operational.\n\n` +
+              `Try replying:\n` +
+              `• "I want biriyani"\n` +
+              `• "Where is my order?"\n` +
+              `• "Coupons"\n\n` +
+              `We are ready to take your order! 🛵`;
 
   console.log(`Sending message to ${phone}...`);
-  const result = await ws.sendWhatsAppMessage(phone, msg);
+  const result = await sender.sendTextMessage(phone, msg);
   console.log('Result:', JSON.stringify(result, null, 2));
   process.exit(0);
 }

@@ -307,4 +307,101 @@ GROUP BY c.coupon_id;
 - **Regular Backups**: Take regular database backups via MySQL Workbench (**Server** $\rightarrow$ **Data Export** $\rightarrow$ **Self-Contained File**).
 
 ---
+
+## 📱 WhatsApp Business Cloud API Ordering Assistant
+
+FoodWala features a production-grade WhatsApp AI ordering assistant powered by Meta WhatsApp Cloud API (Graph API v21.0) and MySQL. It enables conversational food discovery ("I want biriyani"), interactive cart management, address validation, coupon redemption, and transactional order placement directly inside WhatsApp.
+
+### 1. Target Architecture & Flow Diagram
+
+```
+WhatsApp User (+91...)
+       │
+Meta Cloud API ──POST──> /webhook (verify X-Hub-Signature-256, dedupe via wamid, HTTP 200 in <200ms)
+                              │
+                        enqueue job (Concurrent Queue, 12 workers)
+                              │
+                        Worker Pipeline:
+                         1. Mark as read + typing reaction
+                         2. Load/Create user & session (whatsapp_users, whatsapp_sessions)
+                         3. 8-Step Intent Router:
+                            • Step 1: Interactive replies (ADD_ITEM, QTY, CHECKOUT, PAY_COD)
+                            • Step 2: Global commands (menu, hi, back, cancel, agent, stop)
+                            • Step 3: Order ID pattern FW\d+ -> order lookup
+                            • Step 4: Active flow handling (state machine)
+                            • Step 5: Food intent -> Menu fuzzy search
+                            • Step 6: Rule keywords (track, cancel, refund, payment, coupon)
+                            • Step 7: FAQ semantic matcher (Jaccard similarity >= 0.75)
+                            • Step 8: LLM fallback (strict JSON output, 3s timeout)
+                            • Step 9: Unknown 2x -> Human support escalation
+                         4. Call internal services (menu, cart, orders, payment, coupons)
+                         5. Meta Graph API sender (Buttons, Lists, Text, Templates)
+                         6. Audit log in whatsapp_messages + latency telemetry
+```
+
+### 2. State Machine Flow (`orderFlow.js`)
+
+```
+[IDLE] ──(Search/Craving)──> [BROWSING] ──(Select Dish)──> [ITEM_SELECTED]
+                                                                │
+[CONFIRMED] <──(Place Order)── [ASK_PAYMENT] <── [ASK_ADDRESS] <── [CART_REVIEW]
+```
+- Every state supports `back`, `cancel`, `menu`, and `cart`.
+- Single-restaurant rule: switching kitchens prompts "Clear cart and switch?" with buttons.
+- Idempotency key: `wa_{phone}_{cartHash}` prevents duplicate orders on Meta retries.
+
+### 3. Environment Variables (`server/.env`)
+
+| Variable | Description | Example / Default |
+|---|---|---|
+| `WHATSAPP_ACCESS_TOKEN` | System User Permanent Token (Never expires) | `EAAG...` |
+| `WHATSAPP_PHONE_NUMBER_ID` | Meta Phone Number ID | `1386367944566022` |
+| `WHATSAPP_BUSINESS_ACCOUNT_ID` | Meta WABA ID | `2880628932353805` |
+| `WEBHOOK_VERIFY_TOKEN` | Meta Webhook Handshake Verification Token | `FW_wh_verify_9c8e2a...` |
+| `APP_SECRET` | Meta App Secret for HMAC-SHA256 verification | `7459963c3345...` |
+| `GRAPH_API_VERSION` | Meta Graph API Version | `v21.0` |
+| `REDIS_URL` | Redis Connection URL (optional, in-memory fallback) | `redis://localhost:6379` |
+| `SUPPORT_AGENT_PHONE_OR_URL` | Escalation Helpline / Direct WhatsApp link | `+918500457005` |
+| `LLM_API_KEY` | Gemini / OpenAI API key for fallback reasoning | `AIzaSy...` |
+
+### 4. How to Extend Menu Aliases & FAQs
+
+- **Menu Spelling Variants**: Add new spelling variations to `server/whatsapp/data/spelling_variants.json`:
+  ```json
+  {
+    "biryani": ["biriyani", "biryani", "briyani", "biriani"],
+    "paneer": ["panir", "paneer", "panner"]
+  }
+  ```
+- **Dynamic FAQs**: Add questions and localized answers directly to MySQL `faq` table:
+  ```sql
+  INSERT INTO faq (intent, question_variants_json, answer_en, answer_hi, active)
+  VALUES ('vegan_options', '["vegan food", "pure vegan", "is food vegan"]',
+          'We have dedicated 100% vegan certified options clearly marked with green indicators.',
+          'हमारे पास स्पष्ट रूप से चिह्नित 100% शाकाहारी विकल्प उपलब्ध हैं।', 1);
+  ```
+
+### 5. Meta WhatsApp Manager Utility Templates (For 24h Window)
+
+Submit these 4 templates under **WhatsApp Manager** $\rightarrow$ **Message Templates** $\rightarrow$ **Create Template** (Category: `UTILITY`):
+1. `foodwala_order_confirmation` — Order confirmation with live tracking button.
+2. `foodwala_order_out_for_delivery` — Out for delivery notice with rider name & ETA.
+3. `foodwala_order_delivered` — Delivery notification and rating prompt.
+4. `foodwala_payment_pending` — Payment reminder (15-minute unpaid timeout).
+
+### 6. Local Testing with Cloudflare Tunnel
+
+```bash
+# 1. Start backend server
+node server/server.js
+
+# 2. In another terminal, start auto-tunnel (auto-registers webhook with Meta)
+node scripts/tunnel.js
+
+# 3. Run full automated integration test suite (12/12 Phase 11 tests)
+npm test
+```
+
+---
 © 2026 FoodWala Inc. All rights reserved.
+

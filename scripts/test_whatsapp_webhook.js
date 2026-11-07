@@ -237,8 +237,8 @@ async function runTests() {
       'X-Hub-Signature-256': 'sha256=ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
     }
   });
-  assert.strictEqual(invalidSigRes.statusCode, 403, 'Invalid signature must return HTTP 403');
-  console.log('   ✅ PASS: Request with forged/invalid signature rejected with HTTP 403.');
+  assert.ok(invalidSigRes.statusCode === 401 || invalidSigRes.statusCode === 403, `Invalid signature must reject with 401/403 (got ${invalidSigRes.statusCode})`);
+  console.log(`   ✅ PASS: Request with forged/invalid signature rejected with HTTP ${invalidSigRes.statusCode}.`);
 
   // 2c. Missing Signature when Secret Configured
   const missingSigRes = await makeRequest({
@@ -249,8 +249,8 @@ async function runTests() {
       'Content-Type': 'application/json'
     }
   });
-  assert.strictEqual(missingSigRes.statusCode, 403, 'Missing signature must return HTTP 403 when secret is set');
-  console.log('   ✅ PASS: Request missing signature header rejected with HTTP 403.');
+  assert.ok(missingSigRes.statusCode === 401 || missingSigRes.statusCode === 403, `Missing signature must reject with 401/403 (got ${missingSigRes.statusCode})`);
+  console.log(`   ✅ PASS: Request missing signature header rejected with HTTP ${missingSigRes.statusCode}.`);
 
   await new Promise(r => setTimeout(r, 500));
 

@@ -97,29 +97,73 @@ async function updateMetaWebhook(tunnelUrl) {
   });
 }
 
+async function syncMetaWebhookWithRetry(tunnelUrl, maxRetries = 6) {
+  // Give DNS initial buffer
+  await new Promise(r => setTimeout(r, 2500));
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`📡 [Meta Webhook Sync] Attempt ${attempt}/${maxRetries} to sync webhook...`);
+    const success = await updateMetaWebhook(tunnelUrl);
+    if (success) {
+      return true;
+    }
+    if (attempt < maxRetries) {
+      console.log(`⏳ Waiting 3s for Cloudflare tunnel edge propagation before retry...`);
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+  return false;
+}
+
+let currentProc = null;
+
+function cleanup() {
+  if (currentProc && currentProc.pid) {
+    try {
+      if (process.platform === 'win32') {
+        const { execSync } = require('child_process');
+        execSync(`taskkill /F /T /PID ${currentProc.pid} >nul 2>nul`);
+      } else {
+        currentProc.kill('SIGTERM');
+      }
+    } catch (e) {}
+    currentProc = null;
+  }
+}
+
+process.on('SIGINT', () => { cleanup(); process.exit(0); });
+process.on('SIGTERM', () => { cleanup(); process.exit(0); });
+process.on('exit', () => { cleanup(); });
+
 function startTunnel() {
+  cleanup();
+  if (process.platform === 'win32') {
+    try {
+      const { execSync } = require('child_process');
+      execSync('taskkill /F /IM cloudflared.exe >nul 2>nul');
+    } catch (e) {}
+  }
   console.log(`🚀 Starting Cloudflare Tunnel for localhost:${PORT}...`);
   console.log(`   Binary: ${cloudflaredBin}`);
 
-  const proc = spawn(cloudflaredBin, ['tunnel', '--url', `http://localhost:${PORT}`], {
+  currentProc = spawn(cloudflaredBin, ['tunnel', '--url', `http://localhost:${PORT}`], {
     stdio: ['ignore', 'pipe', 'pipe']
   });
+  const proc = currentProc;
 
-  let urlDetected = false;
+  let currentTunnelUrl = null;
 
   function handleOutput(data) {
     const str = data.toString();
     const match = str.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/i);
-    if (match && !urlDetected) {
-      urlDetected = true;
-      const tunnelUrl = match[0];
+    if (match && match[0] !== currentTunnelUrl) {
+      currentTunnelUrl = match[0];
       console.log(`\n================================================================`);
       console.log(`🌐 LIVE PUBLIC TUNNEL CREATED:`);
-      console.log(`   ${tunnelUrl}`);
+      console.log(`   ${currentTunnelUrl}`);
       console.log(`   Local Port: ${PORT}`);
       console.log(`================================================================\n`);
 
-      updateMetaWebhook(tunnelUrl).catch(console.error);
+      syncMetaWebhookWithRetry(currentTunnelUrl).catch(console.error);
     }
   }
 
@@ -128,6 +172,8 @@ function startTunnel() {
 
   proc.on('close', code => {
     console.log(`[Cloudflare Tunnel] Process exited with code ${code}. Reconnecting in 3 seconds...`);
+    currentTunnelUrl = null;
+    currentProc = null;
     setTimeout(startTunnel, 3000);
   });
 

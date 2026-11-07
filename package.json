@@ -5,7 +5,11 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "test": "node scripts/test_whatsapp_full_suite.js && node scripts/test_whatsapp_webhook.js",
+    "services:start": "start_foodwala_services.bat",
+    "services:stop": "stop_foodwala_services.bat",
+    "autostart:enable": "node scripts/setup_autostart.js",
+    "autostart:disable": "node scripts/setup_autostart.js --disable",
+    "test": "node scripts/test_whatsapp_phase11_suite.js && node scripts/test_whatsapp_full_suite.js && node scripts/test_whatsapp_webhook.js",
     "build": "npm install --prefix server",
     "postinstall": "npm install --prefix server",
     "verify": "node scripts/verify-deploy.js"
