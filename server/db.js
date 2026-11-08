@@ -12,11 +12,24 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
 const isDeployed = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
 
 // Database host selection: in production / Render deployment, do NOT fallback to localhost
-const host = process.env.DB_HOST || (isDeployed ? '' : 'localhost');
-const port = parseInt(process.env.DB_PORT, 10) || 3306;
-const user = process.env.DB_USER || (isDeployed ? '' : 'root');
-const password = process.env.DB_PASSWORD || '';
-const database = process.env.DB_NAME || 'fudwala';
+let host = process.env.DB_HOST || (isDeployed ? '' : 'localhost');
+let port = parseInt(process.env.DB_PORT, 10) || 3306;
+let user = process.env.DB_USER || (isDeployed ? '' : 'root');
+let password = process.env.DB_PASSWORD || '';
+let database = process.env.DB_NAME || 'fudwala';
+
+// Automatic support for 1-click connection strings (DATABASE_URL or MYSQL_URL from Railway, Render, etc.)
+const connUri = process.env.DATABASE_URL || process.env.MYSQL_URL;
+if (connUri) {
+  try {
+    const parsed = new URL(connUri);
+    host = parsed.hostname || host;
+    port = parseInt(parsed.port, 10) || port;
+    user = decodeURIComponent(parsed.username || user);
+    password = decodeURIComponent(parsed.password || password);
+    database = parsed.pathname ? parsed.pathname.replace(/^\//, '') : database;
+  } catch (e) {}
+}
 
 // Determine SSL: Enable if DB_SSL=true, or if cloud host unless DB_SSL=false
 const enableSSL = process.env.DB_SSL === 'true' || 
