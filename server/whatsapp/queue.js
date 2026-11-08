@@ -123,9 +123,9 @@ class WhatsAppQueue {
       }
 
       await db.query(
-        `INSERT INTO whatsapp_messages (conversation_id, user_id, wa_message_id, direction, sender_type, message_text, message_type, delivery_status)
-         VALUES (?, ?, ?, 'INBOUND', 'USER', ?, ?, 'delivered')`,
-        [conversationId, user.user_id, messageId, messageText || `[${type}]`, type || 'text']
+        `INSERT INTO whatsapp_messages (conversation_id, wa_message_id, direction, sender_type, message_text, message_type, delivery_status)
+         VALUES (?, ?, 'INBOUND', 'USER', ?, ?, 'delivered')`,
+        [conversationId, messageId, messageText || `[${type}]`, type || 'text']
       );
     } catch (dbErr) {
       console.warn('[WhatsApp Worker] Inbound DB log warning:', dbErr.message);
@@ -176,9 +176,9 @@ class WhatsAppQueue {
 
     try {
       await db.query(
-        `INSERT INTO whatsapp_messages (conversation_id, user_id, wa_message_id, direction, sender_type, message_text, message_type, delivery_status, latency_ms)
-         VALUES (?, ?, ?, 'OUTBOUND', 'AI_BOT', ?, ?, ?, ?)`,
-        [conversationId, user.user_id, outMsgId, routeResult.bodyText, routeResult.replyType || 'text', status, latencyMs]
+        `INSERT INTO whatsapp_messages (conversation_id, wa_message_id, direction, sender_type, message_text, message_type, delivery_status)
+         VALUES (?, ?, 'OUTBOUND', 'AI_BOT', ?, ?, ?)`,
+        [conversationId, outMsgId, routeResult.bodyText, routeResult.replyType || 'text', status]
       );
     } catch (e) {}
 
