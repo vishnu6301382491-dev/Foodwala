@@ -14,6 +14,14 @@ if exist "%~dp0server\server.js" (
     cd /d "%~dp0\.."
 )
 
+echo [*] Stopping FoodWala worker console windows...
+for /f "usebackq" %%a in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'cmd.exe' -and $_.CommandLine -notmatch 'Win32_Process' -and ($_.CommandLine -match 'run-server' -or $_.CommandLine -match 'run-tunnel' -or $_.CommandLine -match 'FoodWala API Server' -or $_.CommandLine -match 'FoodWala Cloudflare Tunnel') } | Select-Object -ExpandProperty ProcessId" 2^>nul`) do (
+    if %%a gtr 0 (
+        echo   [-] Terminating worker window ^(PID: %%a^)...
+        taskkill /F /T /PID %%a >nul 2>nul
+    )
+)
+
 echo [*] Stopping port 5000 listeners...
 for /f "usebackq" %%a in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique" 2^>nul`) do (
     if %%a gtr 0 (
@@ -26,7 +34,7 @@ echo [*] Stopping Cloudflare tunnel processes (cloudflared.exe)...
 taskkill /F /IM cloudflared.exe >nul 2>nul
 
 echo [*] Stopping FoodWala Node.js server and tunnel runner scripts...
-for /f "usebackq" %%a in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process 2^>nul | Where-Object { $_.Name -match 'node' -and ($_.CommandLine -match 'server\.js' -or $_.CommandLine -match 'tunnel\.js') } | Select-Object -ExpandProperty ProcessId" 2^>nul`) do (
+for /f "usebackq" %%a in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'node.exe' -and ($_.CommandLine -match 'server\.js' -or $_.CommandLine -match 'tunnel\.js') } | Select-Object -ExpandProperty ProcessId" 2^>nul`) do (
     echo   [-] Terminating Node runner ^(PID: %%a^)...
     taskkill /F /PID %%a >nul 2>nul
 )
