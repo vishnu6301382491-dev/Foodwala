@@ -3,7 +3,7 @@ services:
     name: foodwala-backend
     runtime: node
     plan: free
-    region: oregon
+    region: singapore
     rootDir: server
     buildCommand: npm install
     startCommand: npm start
@@ -18,7 +18,7 @@ services:
       - key: DB_HOST
         sync: false
       - key: DB_PORT
-        value: 3306
+        value: 4000
       - key: DB_USER
         sync: false
       - key: DB_PASSWORD
@@ -57,6 +57,6 @@ services:
       - key: AI_API_KEY
         sync: false
       - key: AI_MODEL_NAME
-        value: gemini-3.8-flash
+        value: gemini-2.0-flash
       - key: META_GRAPH_API_VERSION
         value: v21.0
